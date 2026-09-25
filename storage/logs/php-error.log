@@ -1,0 +1,289 @@
+[14-Sep-2026 10:29:04 Asia/Manila] PHP Notice:  Undefined variable: response in C:\xampp\htdocs\dev_e_app\src\Handlers\Api\system_login.php on line 32
+[14-Sep-2026 10:40:47 Asia/Manila] PHP Warning:  INSERT LOGIN Prepare Error: Unknown column 'user_level' in 'field list' in C:\xampp\htdocs\dev_e_app\src\Database\connect.php on line 264
+[14-Sep-2026 10:42:32 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_app\src\Common\cl_session.php on line 281
+[14-Sep-2026 10:42:32 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_app\src\Common\cl_session.php on line 282
+[14-Sep-2026 10:42:32 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_app\src\Common\cl_session.php on line 283
+[14-Sep-2026 10:42:32 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_app\src\Common\cl_session.php on line 284
+[14-Sep-2026 10:42:32 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_app\src\Common\cl_session.php on line 285
+[14-Sep-2026 10:42:32 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_app\src\Common\cl_session.php on line 286
+[14-Sep-2026 10:42:32 Asia/Manila] PHP Fatal error:  Uncaught Error: Call to a member function formatFullName() on null in C:\xampp\htdocs\dev_e_app\src\Common\AppContext.php:245
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_app\src\Controllers\IsLogin.php(23): Src\Common\AppContext->get_full_name()
+#1 C:\xampp\htdocs\dev_e_app\public\admin\index.php(12): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_app\src\Common\AppContext.php on line 245
+[14-Sep-2026 11:21:48 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_app\src\Common\cl_session.php on line 281
+[14-Sep-2026 11:21:48 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_app\src\Common\cl_session.php on line 282
+[14-Sep-2026 11:21:48 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_app\src\Common\cl_session.php on line 283
+[14-Sep-2026 11:21:48 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_app\src\Common\cl_session.php on line 284
+[14-Sep-2026 11:21:48 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_app\src\Common\cl_session.php on line 285
+[14-Sep-2026 11:21:48 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_app\src\Common\cl_session.php on line 286
+[25-Sep-2026 10:03:55 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_app\src\Common\cl_session.php on line 281
+[25-Sep-2026 10:03:55 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_app\src\Common\cl_session.php on line 282
+[25-Sep-2026 10:03:55 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_app\src\Common\cl_session.php on line 283
+[25-Sep-2026 10:03:55 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_app\src\Common\cl_session.php on line 284
+[25-Sep-2026 10:03:55 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_app\src\Common\cl_session.php on line 285
+[25-Sep-2026 10:03:55 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_app\src\Common\cl_session.php on line 286
+[25-Sep-2026 10:56:09 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_app\src\Common\cl_session.php on line 281
+[25-Sep-2026 10:56:09 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_app\src\Common\cl_session.php on line 282
+[25-Sep-2026 10:56:09 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_app\src\Common\cl_session.php on line 283
+[25-Sep-2026 10:56:09 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_app\src\Common\cl_session.php on line 284
+[25-Sep-2026 10:56:09 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_app\src\Common\cl_session.php on line 285
+[25-Sep-2026 10:56:09 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_app\src\Common\cl_session.php on line 286
+[25-Sep-2026 11:29:49 Asia/Manila] PHP Warning:  Use of undefined constant API_SYSTEM_CONNECT - assumed 'API_SYSTEM_CONNECT' (this will throw an Error in a future version of PHP) in C:\xampp\htdocs\dev_e_inventory\src\Handlers\Api\system_access.php on line 14
+[25-Sep-2026 11:29:49 Asia/Manila] PHP Warning:  require_once(API_SYSTEM_CONNECT): failed to open stream: No such file or directory in C:\xampp\htdocs\dev_e_inventory\src\Handlers\Api\system_access.php on line 14
+[25-Sep-2026 11:29:49 Asia/Manila] PHP Fatal error:  require_once(): Failed opening required 'API_SYSTEM_CONNECT' (include_path='C:\xampp\php\PEAR') in C:\xampp\htdocs\dev_e_inventory\src\Handlers\Api\system_access.php on line 14
+[25-Sep-2026 11:30:06 Asia/Manila] PHP Warning:  Use of undefined constant API_SYSTEM_CONNECT - assumed 'API_SYSTEM_CONNECT' (this will throw an Error in a future version of PHP) in C:\xampp\htdocs\dev_e_inventory\src\Handlers\Api\system_access.php on line 14
+[25-Sep-2026 11:30:06 Asia/Manila] PHP Warning:  require_once(API_SYSTEM_CONNECT): failed to open stream: No such file or directory in C:\xampp\htdocs\dev_e_inventory\src\Handlers\Api\system_access.php on line 14
+[25-Sep-2026 11:30:06 Asia/Manila] PHP Fatal error:  require_once(): Failed opening required 'API_SYSTEM_CONNECT' (include_path='C:\xampp\php\PEAR') in C:\xampp\htdocs\dev_e_inventory\src\Handlers\Api\system_access.php on line 14
+[25-Sep-2026 11:32:16 Asia/Manila] PHP Warning:  Use of undefined constant API_SYSTEM_CONNECT - assumed 'API_SYSTEM_CONNECT' (this will throw an Error in a future version of PHP) in C:\xampp\htdocs\dev_e_inventory\src\Handlers\Api\system_access.php on line 14
+[25-Sep-2026 11:32:16 Asia/Manila] PHP Warning:  require_once(API_SYSTEM_CONNECT): failed to open stream: No such file or directory in C:\xampp\htdocs\dev_e_inventory\src\Handlers\Api\system_access.php on line 14
+[25-Sep-2026 11:32:16 Asia/Manila] PHP Fatal error:  require_once(): Failed opening required 'API_SYSTEM_CONNECT' (include_path='C:\xampp\php\PEAR') in C:\xampp\htdocs\dev_e_inventory\src\Handlers\Api\system_access.php on line 14
+[25-Sep-2026 11:39:49 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_inventory\src\Common\cl_session.php on line 281
+[25-Sep-2026 11:39:49 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_inventory\src\Common\cl_session.php on line 282
+[25-Sep-2026 11:39:49 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_inventory\src\Common\cl_session.php on line 283
+[25-Sep-2026 11:39:49 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_inventory\src\Common\cl_session.php on line 284
+[25-Sep-2026 11:39:49 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_inventory\src\Common\cl_session.php on line 285
+[25-Sep-2026 11:39:49 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_inventory\src\Common\cl_session.php on line 286
+[25-Sep-2026 11:40:00 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_inventory\src\Common\cl_session.php on line 281
+[25-Sep-2026 11:40:00 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_inventory\src\Common\cl_session.php on line 282
+[25-Sep-2026 11:40:00 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_inventory\src\Common\cl_session.php on line 283
+[25-Sep-2026 11:40:00 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_inventory\src\Common\cl_session.php on line 284
+[25-Sep-2026 11:40:00 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_inventory\src\Common\cl_session.php on line 285
+[25-Sep-2026 11:40:00 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_inventory\src\Common\cl_session.php on line 286
+[25-Sep-2026 11:40:12 Asia/Manila] PHP Warning:  require_once(C:\xampp\htdocs\dev_e_inventory/src/Views/App/home.php): failed to open stream: No such file or directory in C:\xampp\htdocs\dev_e_inventory\public\index.php on line 50
+[25-Sep-2026 11:40:12 Asia/Manila] PHP Fatal error:  require_once(): Failed opening required 'C:\xampp\htdocs\dev_e_inventory/src/Views/App/home.php' (include_path='C:\xampp\php\PEAR') in C:\xampp\htdocs\dev_e_inventory\public\index.php on line 50
+[25-Sep-2026 13:23:48 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_inventory\src\Common\cl_session.php on line 281
+[25-Sep-2026 13:23:48 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_inventory\src\Common\cl_session.php on line 282
+[25-Sep-2026 13:23:48 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_inventory\src\Common\cl_session.php on line 283
+[25-Sep-2026 13:23:48 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_inventory\src\Common\cl_session.php on line 284
+[25-Sep-2026 13:23:48 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_inventory\src\Common\cl_session.php on line 285
+[25-Sep-2026 13:23:48 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_inventory\src\Common\cl_session.php on line 286
+[25-Sep-2026 13:23:48 Asia/Manila] PHP Fatal error:  Uncaught Error: Call to undefined function str_contains() in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php:126
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php on line 126
+[25-Sep-2026 13:24:38 Asia/Manila] PHP Fatal error:  Uncaught Error: Call to undefined function str_contains() in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php:126
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php on line 126
+[25-Sep-2026 13:24:39 Asia/Manila] PHP Fatal error:  Uncaught Error: Call to undefined function str_contains() in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php:126
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php on line 126
+[25-Sep-2026 13:24:39 Asia/Manila] PHP Fatal error:  Uncaught Error: Call to undefined function str_contains() in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php:126
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php on line 126
+[25-Sep-2026 13:24:39 Asia/Manila] PHP Fatal error:  Uncaught Error: Call to undefined function str_contains() in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php:126
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php on line 126
+[25-Sep-2026 13:24:39 Asia/Manila] PHP Fatal error:  Uncaught Error: Call to undefined function str_contains() in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php:126
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php on line 126
+[25-Sep-2026 13:24:40 Asia/Manila] PHP Fatal error:  Uncaught Error: Call to undefined function str_contains() in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php:126
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php on line 126
+[25-Sep-2026 13:24:40 Asia/Manila] PHP Fatal error:  Uncaught Error: Call to undefined function str_contains() in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php:126
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php on line 126
+[25-Sep-2026 13:24:40 Asia/Manila] PHP Fatal error:  Uncaught Error: Call to undefined function str_contains() in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php:126
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php on line 126
+[25-Sep-2026 13:24:40 Asia/Manila] PHP Fatal error:  Uncaught Error: Call to undefined function str_contains() in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php:126
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php on line 126
+[25-Sep-2026 13:24:40 Asia/Manila] PHP Fatal error:  Uncaught Error: Call to undefined function str_contains() in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php:126
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php on line 126
+[25-Sep-2026 13:24:40 Asia/Manila] PHP Fatal error:  Uncaught Error: Call to undefined function str_contains() in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php:126
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php on line 126
+[25-Sep-2026 13:24:41 Asia/Manila] PHP Fatal error:  Uncaught Error: Call to undefined function str_contains() in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php:126
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php on line 126
+[25-Sep-2026 13:28:56 Asia/Manila] PHP Fatal error:  Uncaught Error: Call to undefined function str_contains() in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php:126
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php on line 126
+[25-Sep-2026 13:28:57 Asia/Manila] PHP Fatal error:  Uncaught Error: Call to undefined function str_contains() in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php:126
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php on line 126
+[25-Sep-2026 13:28:57 Asia/Manila] PHP Fatal error:  Uncaught Error: Call to undefined function str_contains() in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php:126
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php on line 126
+[25-Sep-2026 13:28:57 Asia/Manila] PHP Fatal error:  Uncaught Error: Call to undefined function str_contains() in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php:126
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php on line 126
+[25-Sep-2026 13:28:57 Asia/Manila] PHP Fatal error:  Uncaught Error: Call to undefined function str_contains() in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php:126
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php on line 126
+[25-Sep-2026 13:29:42 Asia/Manila] PHP Fatal error:  Uncaught Error: Call to undefined function str_contains() in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php:126
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php on line 126
+[25-Sep-2026 13:29:43 Asia/Manila] PHP Fatal error:  Uncaught Error: Call to undefined function str_contains() in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php:126
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php on line 126
+[25-Sep-2026 13:29:43 Asia/Manila] PHP Fatal error:  Uncaught Error: Call to undefined function str_contains() in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php:126
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php on line 126
+[25-Sep-2026 13:29:44 Asia/Manila] PHP Fatal error:  Uncaught Error: Call to undefined function str_contains() in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php:126
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php on line 126
+[25-Sep-2026 13:29:44 Asia/Manila] PHP Fatal error:  Uncaught Error: Call to undefined function str_contains() in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php:126
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php on line 126
+[25-Sep-2026 13:29:44 Asia/Manila] PHP Fatal error:  Uncaught Error: Call to undefined function str_contains() in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php:126
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php on line 126
+[25-Sep-2026 13:29:44 Asia/Manila] PHP Fatal error:  Uncaught Error: Call to undefined function str_contains() in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php:126
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php on line 126
+[25-Sep-2026 13:29:44 Asia/Manila] PHP Fatal error:  Uncaught Error: Call to undefined function str_contains() in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php:126
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php on line 126
+[25-Sep-2026 13:29:44 Asia/Manila] PHP Fatal error:  Uncaught Error: Call to undefined function str_contains() in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php:126
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php on line 126
+[25-Sep-2026 13:29:44 Asia/Manila] PHP Fatal error:  Uncaught Error: Call to undefined function str_contains() in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php:126
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php on line 126
+[25-Sep-2026 13:29:45 Asia/Manila] PHP Fatal error:  Uncaught Error: Call to undefined function str_contains() in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php:126
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php on line 126
+[25-Sep-2026 13:29:45 Asia/Manila] PHP Fatal error:  Uncaught Error: Call to undefined function str_contains() in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php:126
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php on line 126
+[25-Sep-2026 13:29:45 Asia/Manila] PHP Fatal error:  Uncaught Error: Call to undefined function str_contains() in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php:126
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php on line 126
+[25-Sep-2026 13:29:45 Asia/Manila] PHP Fatal error:  Uncaught Error: Call to undefined function str_contains() in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php:126
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php on line 126
+[25-Sep-2026 13:29:46 Asia/Manila] PHP Fatal error:  Uncaught Error: Call to undefined function str_contains() in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php:126
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php on line 126
+[25-Sep-2026 13:29:46 Asia/Manila] PHP Fatal error:  Uncaught Error: Call to undefined function str_contains() in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php:126
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php on line 126
+[25-Sep-2026 13:29:46 Asia/Manila] PHP Fatal error:  Uncaught Error: Call to undefined function str_contains() in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php:126
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php on line 126
+[25-Sep-2026 13:29:46 Asia/Manila] PHP Fatal error:  Uncaught Error: Call to undefined function str_contains() in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php:126
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\dev_e_inventory\public\admin\index.php on line 126
+[25-Sep-2026 13:34:21 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_inventory\src\Common\cl_session.php on line 281
+[25-Sep-2026 13:34:21 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_inventory\src\Common\cl_session.php on line 282
+[25-Sep-2026 13:34:21 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_inventory\src\Common\cl_session.php on line 283
+[25-Sep-2026 13:34:21 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_inventory\src\Common\cl_session.php on line 284
+[25-Sep-2026 13:34:21 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_inventory\src\Common\cl_session.php on line 285
+[25-Sep-2026 13:34:21 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_inventory\src\Common\cl_session.php on line 286
+[25-Sep-2026 13:34:35 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_inventory\src\Common\cl_session.php on line 281
+[25-Sep-2026 13:34:35 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_inventory\src\Common\cl_session.php on line 282
+[25-Sep-2026 13:34:35 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_inventory\src\Common\cl_session.php on line 283
+[25-Sep-2026 13:34:35 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_inventory\src\Common\cl_session.php on line 284
+[25-Sep-2026 13:34:35 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_inventory\src\Common\cl_session.php on line 285
+[25-Sep-2026 13:34:35 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_inventory\src\Common\cl_session.php on line 286
+[25-Sep-2026 13:35:36 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_inventory\src\Common\cl_session.php on line 281
+[25-Sep-2026 13:35:36 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_inventory\src\Common\cl_session.php on line 282
+[25-Sep-2026 13:35:36 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_inventory\src\Common\cl_session.php on line 283
+[25-Sep-2026 13:35:36 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_inventory\src\Common\cl_session.php on line 284
+[25-Sep-2026 13:35:36 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_inventory\src\Common\cl_session.php on line 285
+[25-Sep-2026 13:35:36 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_inventory\src\Common\cl_session.php on line 286
+[25-Sep-2026 13:36:15 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_inventory\src\Common\cl_session.php on line 281
+[25-Sep-2026 13:36:15 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_inventory\src\Common\cl_session.php on line 282
+[25-Sep-2026 13:36:15 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_inventory\src\Common\cl_session.php on line 283
+[25-Sep-2026 13:36:15 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_inventory\src\Common\cl_session.php on line 284
+[25-Sep-2026 13:36:15 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_inventory\src\Common\cl_session.php on line 285
+[25-Sep-2026 13:36:15 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_inventory\src\Common\cl_session.php on line 286
+[25-Sep-2026 13:38:11 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_inventory\src\Common\cl_session.php on line 281
+[25-Sep-2026 13:38:11 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_inventory\src\Common\cl_session.php on line 282
+[25-Sep-2026 13:38:11 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_inventory\src\Common\cl_session.php on line 283
+[25-Sep-2026 13:38:11 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_inventory\src\Common\cl_session.php on line 284
+[25-Sep-2026 13:38:11 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_inventory\src\Common\cl_session.php on line 285
+[25-Sep-2026 13:38:11 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_inventory\src\Common\cl_session.php on line 286
+[25-Sep-2026 13:38:17 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_inventory\src\Common\cl_session.php on line 281
+[25-Sep-2026 13:38:17 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_inventory\src\Common\cl_session.php on line 282
+[25-Sep-2026 13:38:17 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_inventory\src\Common\cl_session.php on line 283
+[25-Sep-2026 13:38:17 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_inventory\src\Common\cl_session.php on line 284
+[25-Sep-2026 13:38:17 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_inventory\src\Common\cl_session.php on line 285
+[25-Sep-2026 13:38:17 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_inventory\src\Common\cl_session.php on line 286
+[25-Sep-2026 16:09:38 Asia/Manila] PHP Fatal error:  Uncaught Exception: Invalid or inactive system keys for system: E-ESKUELOG in C:\xampp\htdocs\dev_e_eskuelog\src\Api\ApiHelper.php:86
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Api\ApiHelper.php(19): Src\Api\ApiHelper->setKeys('E-ESKUELOG')
+#1 C:\xampp\htdocs\dev_e_eskuelog\src\Controllers\ApiConnect.php(8): Src\Api\ApiHelper->__construct(Object(mysqli), 'E-ESKUELOG')
+#2 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Api\system_access.php(13): require_once('C:\\xampp\\htdocs...')
+#3 C:\xampp\htdocs\dev_e_eskuelog\public\index.php(76): require_once('C:\\xampp\\htdocs...')
+#4 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Api\ApiHelper.php on line 86
+[25-Sep-2026 16:09:58 Asia/Manila] PHP Fatal error:  Uncaught Exception: Invalid or inactive system keys for system: E-ESKUELOG in C:\xampp\htdocs\dev_e_eskuelog\src\Api\ApiHelper.php:86
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Api\ApiHelper.php(19): Src\Api\ApiHelper->setKeys('E-ESKUELOG')
+#1 C:\xampp\htdocs\dev_e_eskuelog\src\Controllers\ApiConnect.php(8): Src\Api\ApiHelper->__construct(Object(mysqli), 'E-ESKUELOG')
+#2 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Api\system_access.php(13): require_once('C:\\xampp\\htdocs...')
+#3 C:\xampp\htdocs\dev_e_eskuelog\public\index.php(76): require_once('C:\\xampp\\htdocs...')
+#4 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Api\ApiHelper.php on line 86
+[25-Sep-2026 16:11:33 Asia/Manila] PHP Fatal error:  Uncaught Exception: Invalid or inactive system keys for system: E-ESKUELOG in C:\xampp\htdocs\dev_e_eskuelog\src\Api\ApiHelper.php:86
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Api\ApiHelper.php(19): Src\Api\ApiHelper->setKeys('E-ESKUELOG')
+#1 C:\xampp\htdocs\dev_e_eskuelog\src\Controllers\ApiConnect.php(8): Src\Api\ApiHelper->__construct(Object(mysqli), 'E-ESKUELOG')
+#2 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Api\system_access.php(13): require_once('C:\\xampp\\htdocs...')
+#3 C:\xampp\htdocs\dev_e_eskuelog\public\index.php(76): require_once('C:\\xampp\\htdocs...')
+#4 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Api\ApiHelper.php on line 86
+[25-Sep-2026 16:14:28 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[25-Sep-2026 16:14:28 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[25-Sep-2026 16:14:28 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[25-Sep-2026 16:14:28 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[25-Sep-2026 16:14:28 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[25-Sep-2026 16:14:28 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[25-Sep-2026 16:14:47 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[25-Sep-2026 16:14:47 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[25-Sep-2026 16:14:47 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[25-Sep-2026 16:14:47 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[25-Sep-2026 16:14:47 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[25-Sep-2026 16:14:47 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[25-Sep-2026 16:14:53 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[25-Sep-2026 16:14:53 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[25-Sep-2026 16:14:53 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[25-Sep-2026 16:14:53 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[25-Sep-2026 16:14:53 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[25-Sep-2026 16:14:53 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[25-Sep-2026 16:15:03 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[25-Sep-2026 16:15:03 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[25-Sep-2026 16:15:03 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[25-Sep-2026 16:15:03 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[25-Sep-2026 16:15:03 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[25-Sep-2026 16:15:03 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286

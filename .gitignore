@@ -1,0 +1,12 @@
+# .gitignore
+
+# Ignore local environment file
+# .env
+
+# Ignore all 'bin' and 'version' folders anywhere in the directory tree
+**/bin/
+**/version/
+
+# Ignore contents of storage subdirectories, but keep the folder structure
+# /storage/*/*
+# !/storage/*/.gitkeep

@@ -1,0 +1,204 @@
+# ======================================================================
+# e-GURO++ SYSTEM ROOT CONTROLLER & ARCHITECTURAL FIREWALL
+# Location: /.htaccess
+# ======================================================================
+
+# ----------------------------------------------------------------------
+# PHP 8 ENFORCEMENT HANDLER (cPanel / FastCGI / LSAPI compatible)
+# ----------------------------------------------------------------------
+<IfModule mime_module>
+    # Change 'ea-php82' to your preferred exact minor version if needed (e.g., ea-php80, ea-php81, ea-php82, ea-php83)
+    AddHandler application/x-httpd-ea-php82 .php .php8 .phtml
+</IfModule>
+
+# CORE SERVER HARDENING PARAMETERS
+Options -Indexes +FollowSymLinks
+ServerSignature Off
+
+DirectoryIndex index.php index.html
+
+# ----------------------------------------------------------------------
+# METADATA & SENSITIVE FILE PROTECTION
+# ----------------------------------------------------------------------
+<FilesMatch "^\.ht|\.env|\.git|\.ini|\.sh|\.bak|\.log|composer\.(json|lock)$">
+    Require all denied
+</FilesMatch>
+
+# ----------------------------------------------------------------------
+# GLOBAL SECURITY HEADERS
+# ----------------------------------------------------------------------
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set X-XSS-Protection "1; mode=block"
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+    Header set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+</IfModule>
+
+# ----------------------------------------------------------------------
+# COMPRESSION & PERFORMANCE ENGINE (mod_deflate)
+# ----------------------------------------------------------------------
+<IfModule mod_deflate.c>
+    <IfModule mod_setenvif.c>
+        <IfModule mod_headers.c>
+            SetEnvIfNoCase ^(Accept-EncodXng|X-cept-Encoding|X{15}|~{15}|-{15})$ ^((gzip|deflate)\s*,?\s*)+|[X~-]{4,13}$ HAVE_Accept-Encoding
+            RequestHeader append Accept-Encoding "gzip,deflate" env=HAVE_Accept-Encoding
+        </IfModule>
+    </IfModule>
+
+    <IfModule mod_filter.c>
+        AddOutputFilterByType DEFLATE application/atom+xml \
+                                    application/javascript \
+                                    application/json \
+                                    application/rss+xml \
+                                    application/vnd.ms-fontobject \
+                                    application/x-font-ttf \
+                                    application/x-web-app-manifest+json \
+                                    application/xhtml+xml \
+                                    application/xml \
+                                    font/opentype \
+                                    image/svg+xml \
+                                    image/x-icon \
+                                    text/css \
+                                    text/html \
+                                    text/plain \
+                                    text/x-component \
+                                    text/xml
+    </IfModule>
+</IfModule>
+
+# ----------------------------------------------------------------------
+# LEVERAGE BROWSER CACHING
+# ----------------------------------------------------------------------
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresDefault "access 1 month"
+    
+    ExpiresByType image/jpg "access 1 year"
+    ExpiresByType image/jpeg "access 1 year"
+    ExpiresByType image/gif "access 1 year"
+    ExpiresByType image/png "access 1 year"
+    ExpiresByType image/x-icon "access 1 year"
+    ExpiresByType image/svg+xml "access 1 year"
+    
+    ExpiresByType text/css "access 1 month"
+    ExpiresByType text/javascript "access 1 month"
+    ExpiresByType application/javascript "access 1 month"
+    
+    ExpiresByType text/html "access 2 hours"
+</IfModule>
+
+<IfModule mod_headers.c>
+    <FilesMatch "\.(ico|flv|jpg|jpeg|png|gif|css|swf|svg)$">
+        Header set Cache-Control "max-age=2678400, public"
+    </FilesMatch>
+    <FilesMatch "\.(html|htm)$">
+        Header set Cache-Control "max-age=7200, private, must-revalidate"
+    </FilesMatch>
+    <FilesMatch "\.(js)$">
+        Header set Cache-Control "max-age=2678400, private"
+    </FilesMatch>
+</IfModule>
+
+# ----------------------------------------------------------------------
+# ADVANCED BAD BOT & SCRAPER BLOCKER
+# ----------------------------------------------------------------------
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    
+    RewriteCond %{HTTP_USER_AGENT} (Acunetix|FHscan|Baiduspider|360Spider|80legs|Aboundex|Alexibot|asterias|BackDoorBot|BackWeb|Bandit|BatchFTP|BlackWidow|BlowFish|BotALot|BuiltBotTough|Bullseye|CherryPicker|ChinaClaw|Collector|Copier|CopyRightCheck|Crescent|Custo|EmailCollector|EmailSiphon|EmailWolf|EroCrawler|Express\ WebPictures|Extractor|EyeNetIE|Foobot|FrontPage|Go-Ahead-Got-It|GrabNet|Grafula|Harvest|HMView|HTTrack|Image\ Stripper|Image\ Sucker|Indy\ Library|InfoNaviRobot|InterGET|Internet\ Ninja|Iria|JennyBot|JetCar|JOC|JustView|Keyword.Density|larbin|LexiBot|lftp|LinkextractorPro|LNSpiderguy|LinkWalker|lwp-trivial|Magnet|Mag-Net|Mass\ Downloader|Mata.Hari|Microsoft.URL|MIDown\ tool|Mirror|Mister\ PiX|NetAnts|Netcraft|NetMechanic|NetSpider|Net\ Vampire|NetZIP|NICErsPRO|nikto|Ninja|NPbot|Offline\ Explorer|Offline\ Navigator|Openfind|PageGrabber|Papa\ Foto|pavuk|pcBrowser|Pockey|ProWebWalker|QueryN.Metasearch|RealDownload|ReGet|RepoMonkey|RMA|SiteSnagger|SmartDownload|Snake|Snapbot|Snoopy|SpankBot|SuperBot|SuperHTTP|Surfbot|Teleport|TurnitinBot|URLy.Warning|VoidEYE|Web\ Image\ Collector|Web\ Sucker|WebAuto|WebBandit|WebCopier|WebEMailExtrac|WebEnhancer|WebFetch|WebGo\ IS|WebLeacher|WebReaper|WebSauger|Website\ eXtractor|Website\ Quester|WebStripper|WebWhacker|WebZIP|Widow|WWWOFFLE|Xaldon|Xenu|Zeus|ZmEu) [NC]
+    RewriteRule ^ - [F,L]
+</IfModule>
+
+<IfModule mod_authz_core.c>
+    <RequireAll>
+        Require all granted
+        Require not ip 38.100.19.8/29
+        Require not ip 38.100.21.0/24
+        Require not ip 38.100.41.64/26
+        Require not ip 38.105.71.0/25
+        Require not ip 38.105.83.0/27
+        Require not ip 38.112.21.140/30
+        Require not ip 38.118.42.32/29
+        Require not ip 65.213.208.128/27
+        Require not ip 65.222.176.96/27
+        Require not ip 65.222.185.72/29
+    </RequireAll>
+</IfModule>
+
+# ----------------------------------------------------------------------
+# HIGH-PERFORMANCE DYNAMIC TRANSPARENT PROXY ENGINE (PORTABLE)
+# ----------------------------------------------------------------------
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # ==================================================================
+    # MAINTENANCE MODE SWITCH (WITH ADMIN BYPASS)
+    # ==================================================================
+    # 1. To ENABLE Maintenance Mode: Un-comment the RewriteCond / RewriteRule lines below.
+    # 2. To DISABLE: Add '#' back to the start of those lines.
+
+    # Bypass 1: Developer / Admin IP Address (Replace with actual IP)
+    # RewriteCond %{REMOTE_ADDR} !^127\.0\.0\.1$
+
+    # Bypass 2: Allow access if logged in as Admin
+    # RewriteCond %{HTTP_COOKIE} !admin_access=true [NC]
+
+    # Bypass 3: Allow access to admin URLs
+    # RewriteCond %{REQUEST_URI} !admin [NC]
+
+    # Bypass 4: Prevent loop on maintenance page & allow static assets
+    # RewriteCond %{REQUEST_URI} !maintenance\.html$ [NC]
+    # RewriteCond %{REQUEST_URI} !\.(css|js|jpg|jpeg|png|gif|svg|ico|woff|woff2)$ [NC]
+
+    # Redirect everyone else to maintenance page with HTTP 307
+    # RewriteRule ^(.*)$ maintenance.html [R=307,L]
+    # ==================================================================
+
+    # A. BLOCK SENSITIVE CORE DIRECTORIES FROM DIRECT WEB ACCESS
+    RewriteCond %{ENV:REDIRECT_STATUS} ^$
+    RewriteCond %{REQUEST_URI} (config|db|src|env|storage|global)(/|$) [NC]
+    RewriteRule ^ - [F,L]
+
+    # B. SERVE DIRECT FILES ONLY (e.g., assets in root if any exist)
+    RewriteCond %{REQUEST_FILENAME} -f
+    RewriteRule ^ - [L]
+
+    # C. DYNAMIC TRANSPARENT PROXY TO PUBLIC FOLDER
+    # Proxies requests into /public/ while preserving GET query parameters
+    RewriteCond %{REQUEST_URI} !/public/ [NC]
+    RewriteRule ^(.*)$ public/$1 [QSA,L]
+</IfModule>
+
+# ----------------------------------------------------------------------
+# PHP MULTI-GIGABYTE & RESOURCE CONFIGURATION
+# ----------------------------------------------------------------------
+<IfModule mod_php8.c>
+    php_value post_max_size 2048M
+    php_value upload_max_filesize 2048M
+    php_value max_file_uploads 50
+    php_value max_execution_time 0
+    php_value max_input_time -1
+    php_value memory_limit 1024M
+</IfModule>
+
+<IfModule mod_php7.c>
+    php_value post_max_size 2048M
+    php_value upload_max_filesize 2048M
+    php_value max_file_uploads 50
+    php_value max_execution_time 0
+    php_value max_input_time -1
+    php_value memory_limit 1024M
+</IfModule>
+
+# Fallback for generic PHP handlers
+<IfModule mod_php.c>
+    php_value post_max_size 2048M
+    php_value upload_max_filesize 2048M
+    php_value max_file_uploads 50
+    php_value max_execution_time 0
+    php_value max_input_time -1
+    php_value memory_limit 1024M
+</IfModule>
+
+LimitRequestBody 2147483647

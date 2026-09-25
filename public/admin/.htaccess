@@ -1,0 +1,25 @@
+# ======================================================================
+# ADMIN PORTAL SECURE GATEWAY & ACCESS CONTROL
+# Location: /public/Admin/.htaccess
+# ======================================================================
+
+# CORE SERVER HARDENING PARAMETERS
+Options -Indexes +FollowSymLinks
+ServerSignature Off
+
+# OPTIONAL: Uncomment and add your staff IP addresses to restrict access
+# <RequireAll>
+#     Require ip 127.0.0.1
+#     Require ip 192.168.1.0/24
+# </RequireAll>
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Stop rewriting if the request points to an actual physical file or folder
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+
+    # Route everything else straight into your admin front controller router
+    RewriteRule ^ index.php [L,QSA]
+</IfModule>

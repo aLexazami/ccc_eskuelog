@@ -1,0 +1,6 @@
+ErrorDocument 401 /src/Views/Errors/401.php
+ErrorDocument 403 /src/Views/Errors/404.php
+ErrorDocument 404 /src/Views/Errors/404.php
+ErrorDocument 500 /src/Views/Errors/404.php
+
+Deny from all

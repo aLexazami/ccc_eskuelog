@@ -1,0 +1,73 @@
+/**
+* Custom SweetAlert2 Styles
+*/
+
+/* High z-index to stay in front of Bootstrap modals */
+.swal2-container {
+    z-index: 10050 !important;
+}
+
+/* Card Container */
+.swal2-popup.custom-confirm-popup {
+    border-radius: 16px !important;
+    padding: 1.75rem !important;
+    background: #ffffff !important;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+    border: 1px solid #e2e8f0 !important;
+    max-width: 420px !important;
+}
+
+/* Modal Title */
+.swal2-popup.custom-confirm-popup .swal2-title {
+    font-size: 1.15rem !important;
+    font-weight: 600 !important;
+    color: #0f172a !important;
+    padding: 0 !important;
+    margin-top: 1rem !important;
+}
+
+/* Modal Text */
+.swal2-popup.custom-confirm-popup .swal2-html-container {
+    font-size: 0.875rem !important;
+    color: #64748b !important;
+    margin: 0.5rem 0 1.5rem 0 !important;
+    line-height: 1.5 !important;
+}
+
+/* Clean Icon Badge */
+.swal2-popup.custom-confirm-popup .custom-confirm-icon {
+    border: none !important;
+    /* width: 3.25rem !important; */
+    /* height: 3.25rem !important; */
+    margin: 0 auto !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    /* align-items: center !important; */
+    justify-content: center !important;
+}
+
+/* Icon Variations (Filament Subtle Backgrounds) */
+.swal2-popup.custom-confirm-popup .custom-confirm-icon.swal2-question,
+.swal2-popup.custom-confirm-popup .custom-confirm-icon.swal2-info {
+    background-color: #eff6ff !important;
+    color: #2563eb !important;
+}
+
+.swal2-popup.custom-confirm-popup .custom-confirm-icon.swal2-warning {
+    background-color: #fffbeb !important;
+    color: #d97706 !important;
+}
+
+.swal2-popup.custom-confirm-popup .custom-confirm-icon.swal2-danger,
+.swal2-popup.custom-confirm-popup .custom-confirm-icon.swal2-error {
+    background-color: #fef2f2 !important;
+    color: #dc2626 !important;
+}
+
+/* Button Container Spacing */
+.swal2-popup.custom-confirm-popup .swal2-actions {
+    margin-top: 0 !important;
+    width: 100% !important;
+    display: flex !important;
+    justify-content: flex-end !important;
+}

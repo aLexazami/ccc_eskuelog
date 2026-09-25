@@ -1,0 +1,507 @@
+/**
+* Custom Additional Styles
+*/
+
+[data-notify="container"] {
+    z-index: 10000 !important;
+}
+
+.drag-handle,
+.parent-drag-handle,
+.child-drag-handle,
+.drag-handle-parent,
+.drag-handle-child {
+    cursor: grab !important;
+    color: #6c757d;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+    padding: 4px;
+    border-radius: 4px;
+    transition: background 0.15s ease;
+}
+
+.drag-handle:hover,
+.parent-drag-handle:hover,
+.child-drag-handle:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.drag-handle:active,
+.parent-drag-handle:active,
+.child-drag-handle:active,
+.drag-handle-parent:active,
+.drag-handle-child:active {
+    cursor: grabbing !important;
+}
+
+/* Drag Placeholders & Chosen States */
+.sortable-ghost {
+    opacity: 0.45 !important;
+    background-color: #f8fafc !important;
+    border: 1.5px dashed #475569 !important;
+}
+
+.sortable-chosen {
+    background-color: #ffffff !important;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* ==========================================================================
+       2. NAVIGATION ITEM CARDS & CONTAINER STYLING
+       ========================================================================== */
+.nav-item-card {
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+}
+
+.nav-item-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important;
+    border-color: rgba(0, 0, 0, 0.15) !important;
+}
+
+.child-item-card {
+    border-left: 3px solid #0d6efd !important;
+    background: #f8fbff;
+}
+
+.child-list {
+    min-height: 10px;
+    padding-left: 1.5rem;
+}
+
+.item-header-title-area {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.add-nav-form {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+/* Accordion / Collapse Toggle */
+.nav-children-collapse {
+    display: none;
+}
+
+.nav-children-collapse.show {
+    display: block;
+}
+
+.nav-parent-toggle {
+    cursor: pointer;
+    user-select: none;
+}
+
+.nav-parent-toggle .toggle-icon {
+    transition: transform 0.2s ease;
+    display: inline-block;
+}
+
+.nav-parent-toggle.open .toggle-icon,
+.nav-parent-toggle[aria-expanded="true"] .toggle-icon {
+    transform: rotate(90deg);
+}
+
+/* Action Buttons Base */
+.btn-white {
+    background-color: #ffffff;
+    border-color: transparent;
+    transition: background-color 0.15s ease;
+}
+
+.btn-white:hover {
+    background-color: #f8fafc;
+}
+
+.btn-sm:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn-action {
+    background-color: #ffffff;
+    border: 1px solid #cbd5e1;
+    color: #334155;
+    font-weight: 500;
+    font-size: 0.8rem;
+    padding: 5px 12px;
+    border-radius: 6px;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    transition: all 0.15s ease;
+    white-space: nowrap;
+}
+
+.btn-action:hover {
+    background-color: #f8fafc;
+    border-color: #94a3b8;
+    color: #0f172a;
+}
+
+/* ==========================================================================
+       3. BADGES, TAGS & ACCENT COLORS (FILAMENT STYLED)
+       ========================================================================== */
+.badge-pill-custom {
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    line-height: 1;
+}
+
+.badge-subtle-primary {
+    background-color: #e0e7ff;
+    color: #4338ca;
+    border: 1px solid #c7d2fe;
+}
+
+.badge-subtle-success {
+    background-color: #dcfce7;
+    color: #15803d;
+    border: 1px solid #bbf7d0;
+}
+
+.badge-subtle-warning {
+    background-color: #fef3c7;
+    color: #b45309;
+    border: 1px solid #fde68a;
+}
+
+.badge-subtle-info {
+    background-color: #e0f2fe;
+    color: #0369a1;
+    border: 1px solid #bae6fd;
+}
+
+.badge-subtle-secondary {
+    background-color: #f1f5f9;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+}
+
+.badge-subtle-purple,
+.bg-purple-subtle {
+    background-color: #f3e8ff !important;
+    color: #6b21a8;
+    border: 1px solid #e9d5ff;
+}
+
+.text-purple {
+    color: #7e22ce !important;
+}
+
+.status-badge {
+    font-size: 0.75rem;
+}
+
+.badge-role {
+    display: inline-block;
+    background-color: #f1f5f9;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-size: 0.68rem;
+    font-weight: 600;
+    margin-left: 2px;
+}
+
+/* Access Tags */
+.user-access-tag,
+.user-access-pill {
+    font-size: 0.73rem;
+    padding: 2px 8px;
+    border-radius: 20px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    color: #64748b;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* ==========================================================================
+       4. MODALS & SELECT OVERRIDES (SELECTIZE & SELECT2)
+       ========================================================================== */
+#userAccessModal .modal-dialog {
+    z-index: 1055;
+}
+
+/* Prevents dropdown from clipping inside the modal */
+#userAccessModal .modal-content,
+#userAccessModal .modal-body {
+    overflow: visible !important;
+}
+
+.selectize-dropdown {
+    z-index: 1065 !important;
+    margin-top: 2px !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border: 1px solid #ced4da;
+}
+
+.selectize-dropdown .option {
+    padding: 8px 12px !important;
+    cursor: pointer;
+}
+
+.selectize-dropdown .option:hover,
+.selectize-dropdown .active {
+    background-color: #f8f9fa !important;
+    color: #0d6efd !important;
+}
+
+.selectize-dropdown .option.parent-option,
+.selectize-control .item.parent-item {
+    font-weight: 700;
+}
+
+.select-label {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #475569;
+}
+
+.select2-container {
+    z-index: 10050 !important;
+}
+
+/* ==========================================================================
+       5. CARDS & SEARCH UI
+       ========================================================================== */
+.card-custom {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+}
+
+.card-custom .card-header {
+    background-color: #ffffff;
+    border-bottom: 1px solid #f1f5f9;
+    padding: 1.25rem 1.5rem;
+}
+
+.card-custom .card-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.search-input-group {
+    max-width: 360px;
+    position: relative;
+}
+
+.search-input-group .form-control {
+    padding-left: 38px;
+    border-radius: 8px;
+    border: 1px solid #cbd5e1;
+    font-size: 0.875rem;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+}
+
+.search-input-group .form-control:focus {
+    border-color: #002366;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+.search-input-group .search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    z-index: 5;
+}
+
+/* ==========================================================================
+       6. TABULATOR STYLES
+       ========================================================================== */
+.tabulator {
+    border: none !important;
+    background: #ffffff;
+    font-size: 0.875rem;
+}
+
+.tabulator .tabulator-header {
+    background-color: #f8fafc !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    color: #475569;
+    font-weight: 600;
+}
+
+.tabulator .tabulator-header .tabulator-col {
+    background-color: transparent !important;
+    border-right: 1px solid #f1f5f9 !important;
+}
+
+.tabulator .tabulator-header .tabulator-col-content {
+    padding: 12px 14px !important;
+}
+
+.tabulator .tabulator-row {
+    border-bottom: 1px solid #f1f5f9 !important;
+    background-color: #ffffff;
+    transition: background-color 0.15s ease;
+    height: auto !important;
+}
+
+.tabulator .tabulator-row:hover {
+    background-color: #f8fafc !important;
+}
+
+.tabulator .tabulator-cell {
+    padding: 12px 14px !important;
+    vertical-align: top !important;
+    border: 0;
+    white-space: normal !important;
+    word-break: break-word !important;
+    line-height: 1.6;
+}
+
+.tabulator-header-filter input {
+    margin-top: 5px !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 6px !important;
+    padding: 5px 10px !important;
+    font-size: 0.8rem !important;
+    width: 100% !important;
+    background-color: #ffffff !important;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.tabulator-header-filter input:focus {
+    outline: none !important;
+    border-color: #002366 !important;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15) !important;
+}
+
+/* --- TABULATOR FOOTER ALIGNMENT FIX --- */
+.tabulator .tabulator-footer {
+    background-color: #ffffff !important;
+    border-top: 1px solid #e2e8f0 !important;
+    padding: 10px 14px !important;
+}
+
+.tabulator .tabulator-footer .tabulator-page-counter {
+    font-size: 0.925rem !important;
+    color: #64748b !important;
+    font-weight: 500 !important;
+    margin-right: auto !important;
+    white-space: nowrap !important;
+}
+
+.tabulator .tabulator-footer .tabulator-paginator {
+    align-items: center !important;
+    gap: 10px !important;
+    margin-left: auto !important;
+}
+
+.tabulator .tabulator-footer .tabulator-page-size {
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 6px !important;
+    padding: 4px 8px !important;
+    font-size: 0.8rem !important;
+    color: #334155 !important;
+    outline: none !important;
+    margin-right: 8px !important;
+}
+
+.tabulator .tabulator-page {
+    border-radius: 6px !important;
+    border: 1px solid #cbd5e1 !important;
+    padding: 4px 10px !important;
+    margin: 0 2px !important;
+    font-size: 0.8rem !important;
+    background-color: #ffffff !important;
+    color: #334155 !important;
+}
+
+.tabulator .tabulator-page.active {
+    background-color: #063cd4 !important;
+    border-color: #063cd4 !important;
+    color: #ffffff !important;
+}
+
+/* Base style for required label */
+.control-label-required {
+    font-weight: 600;
+}
+
+/* Adds a red asterisk after the label text */
+.control-label-required::after {
+    content: " *";
+    color: red;
+    /* Red color */
+    font-weight: bold;
+    margin-left: 2px;
+}
+
+
+.selectize-dropdown {
+    z-index: 9999 !important;
+}
+
+.selectize-input {
+    z-index: 1000;
+}
+
+/* ==========================================================================
+       7. RESPONSIVE BREAKPOINTS & PRINT
+       ========================================================================== */
+@media (max-width: 768px) {
+    .nav-card-inner {
+        flex-direction: column;
+        align-items: flex-start !important;
+    }
+
+    .nav-actions-wrapper {
+        width: 100%;
+        justify-content: space-between;
+        border-top: 1px solid #f1f5f9;
+        padding-top: 0.75rem;
+        margin-top: 0.5rem;
+    }
+}
+
+/* Ensure the Tabulator print container is visible during browser print */
+@media print {
+    body * {
+        visibility: hidden;
+    }
+
+    .tabulator-print-frame,
+    .tabulator-print-frame * {
+        visibility: visible !important;
+    }
+
+    .tabulator-print-frame {
+        position: absolute !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 100% !important;
+        height: auto !important;
+        overflow: visible !important;
+    }
+
+    /* Prevent column clipping */
+    .tabulator-print-table {
+        width: 100% !important;
+        table-layout: auto !important;
+    }
+
+    .tabulator-group button,
+    .tabulator-group span {
+        display: none !important;
+    }
+}

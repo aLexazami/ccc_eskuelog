@@ -1,0 +1,31 @@
+# ======================================================================
+# PUBLIC GATEWAY REWRITE ENGINE & UPLOAD DIRECTORY HARDENING
+# Location: /public/.htaccess
+# ======================================================================
+
+# CORE SERVER HARDENING PARAMETERS
+Options -Indexes +FollowSymLinks
+ServerSignature Off
+
+# Prevent execution of any scripts inside upload directories
+<FilesMatch "\.(php|php3|php4|php5|phtml|pl|py|jsp|asp|sh|cgi)$">
+    <If "%{REQUEST_URI} =~ m#(upload|uploads)/#i">
+        Require all denied
+    </If>
+</FilesMatch>
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Ensure directories get trailing slashes
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^(.*[^/])$ $1/ [R=301,L]
+
+    # Pass existing static files directly (CSS, JS, Images)
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # Route all custom endpoints into Front Controller Router
+    RewriteRule ^ index.php [L,QSA]
+</IfModule>
