@@ -102,6 +102,6 @@ SMTP_PASS =
   1. Open your database management tool (phpMyAdmin, DBeaver, MySQL Workbench)[cite: 3].
   2. Create the target schema:
     ```sql
-    CREATE DATABASE e_inventory CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+    CREATE DATABASE e_eskuelog CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
     ```
   3. Import your database SQL seed directly into `e_inventory`[cite: 3].
