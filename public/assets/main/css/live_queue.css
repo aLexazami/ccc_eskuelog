@@ -1,0 +1,231 @@
+/* =====================================================
+   1. GLOBAL & FLUID TYPOGRAPHY SETUP
+   ===================================================== */
+:root {
+  /* Reduced by 30%: Font scales between 0.9rem and 1.55rem max */
+  --fluid-header-clock: clamp(0.9rem, 1.4vw, 1.55rem);
+  
+  /* Rest of your variables... */
+  --fluid-ticket-number: clamp(3.5rem, 8vw, 8.5rem);
+  --fluid-office-name: clamp(1.25rem, 3.2vw, 3.25rem);
+  --fluid-building-text: clamp(0.9rem, 1.8vw, 1.6rem);
+  --fluid-footer-text: clamp(0.75rem, 1.1vw, 1.15rem);
+}
+
+/* Identical font size, weight, and line-height for both Date and Time */
+.header-date-text,
+.header-clock-text {
+  font-size: var(--fluid-header-clock) !important;
+  line-height: 1 !important;
+}
+
+/* Matching vertical divider height */
+.header-v-divider {
+  width: 2px;
+  height: clamp(0.9rem, 1.4vw, 1.4rem);
+  background-color: rgba(255, 255, 255, 0.35);
+  display: inline-block;
+}
+/* =====================================================
+   2. LIVE-QUEUE DESKTOP / TV DISPLAY STYLES (992px and up)
+   ===================================================== */
+@media (min-width: 992px) {
+  html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden !important;
+  }
+
+  .portal-bg {
+    height: 100vh !important;
+    max-height: 100vh !important;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .live-queue-wrapper {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .queue-main-content {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .queue-main-content .row {
+    height: 100%;
+    margin-right: -0.5rem;
+    margin-left: -0.5rem;
+  }
+
+  .queue-main-content .col-12 {
+    padding-right: 0.5rem;
+    padding-left: 0.5rem;
+    height: 100%;
+    min-height: 0;
+  }
+
+  .hero-calling-card {
+    height: 100% !important;
+    max-width: 100% !important;
+    min-height: 0 !important;
+    overflow: hidden;
+    z-index: 1;
+  }
+
+  .queue-card {
+    height: 100% !important;
+    min-height: 0 !important;
+    overflow: hidden;
+  }
+
+  .office-status-grid-container {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(6, 1fr) !important;
+    gap: 0.4rem !important;
+    padding: 0.6rem !important;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+    box-sizing: border-box;
+  }
+
+  .queue-footer-strip {
+    height: clamp(48px, 5vh, 60px);
+    min-height: 48px;
+    z-index: 10;
+    position: relative;
+    flex-shrink: 0 !important;
+  }
+}
+
+/* =====================================================
+   3. FLUID TARGET CLASSES (APPLIED TO HTML)
+   ===================================================== */
+/* Fluid Ticket Number */
+.hero-ticket-text {
+  font-size: var(--fluid-ticket-number) !important;
+  line-height: 1.05;
+}
+
+/* Fluid Office Title */
+.hero-office-text {
+  font-size: var(--fluid-office-name) !important;
+  line-height: 1.2;
+}
+
+/* Fluid Building Tag Text */
+.hero-building-tag {
+  font-size: var(--fluid-building-text) !important;
+}
+
+/* Fluid Footer Announcements */
+.footer-ticker-text {
+  font-size: var(--fluid-footer-text) !important;
+}
+
+/* Fluid Clock Display */
+.header-clock-text {
+  font-size: var(--fluid-header-clock) !important;
+}
+
+/* =====================================================
+   4. MOBILE / SHRINK SCREEN STYLES (Below 992px)
+   ===================================================== */
+@media (max-width: 991.98px) {
+  html, body {
+    height: auto !important;
+    overflow-y: auto !important;
+  }
+
+  .portal-bg {
+    min-height: 100vh;
+    height: auto !important;
+    overflow-y: auto !important;
+  }
+
+  .live-queue-wrapper {
+    height: auto !important;
+    min-height: 0;
+    display: block;
+  }
+
+  .queue-main-content {
+    overflow: visible !important;
+  }
+
+  .queue-main-content .row {
+    height: auto !important;
+  }
+
+  .hero-calling-card {
+    min-height: 380px !important;
+    height: auto !important;
+    margin-bottom: 1rem;
+  }
+
+  .queue-card {
+    min-height: 350px !important;
+    height: auto !important;
+    margin-bottom: 1rem;
+  }
+
+  .office-status-grid-container {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem !important;
+    padding: 0.5rem !important;
+    height: auto !important;
+  }
+
+  .queue-footer-strip {
+    position: sticky;
+    bottom: 0;
+    width: 100%;
+    min-height: 50px;
+    z-index: 1000;
+  }
+}
+
+/* Compact Office Card Sizing */
+.office-compact-card {
+  min-height: 0 !important;
+  height: 100% !important;
+  padding: 0.35rem 0.5rem !important;
+  box-sizing: border-box;
+}
+
+.office-compact-card .icon-circle {
+  width: 26px !important;
+  height: 26px !important;
+  min-width: 26px !important;
+  font-size: 0.75rem !important;
+}
+
+.office-compact-card .office-title {
+  font-size: clamp(0.65rem, 0.9vw, 0.85rem) !important;
+  line-height: 1.1 !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.office-compact-card .office-ticket {
+  font-size: clamp(0.75rem, 1vw, 1rem) !important;
+  line-height: 1.1 !important;
+}
+
+.office-compact-card .status-indicator {
+  font-size: clamp(0.55rem, 0.75vw, 0.75rem) !important;
+  line-height: 1 !important;
+  white-space: nowrap;
+}

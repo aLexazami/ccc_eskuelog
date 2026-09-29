@@ -1,0 +1,832 @@
+/* ==========================================================================
+   1. DESIGN TOKENS & SYSTEM VARIABLES
+   ========================================================================== */
+:root {
+    /* Luminous Ice & Diamond Background Base */
+    --color-bg-base: #eaf3fd;
+    --color-bg-radial: radial-gradient(circle at 50% 15%, #ffffff 0%, #e1effe 45%, #c8e0fe 100%);
+
+    /* Diamond Frosted Glass Surfaces */
+    --diamond-glass-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.65) 0%, rgba(255, 255, 255, 0.35) 100%);
+    --diamond-glass-hover: linear-gradient(135deg, rgba(255, 255, 255, 0.85) 0%, rgba(224, 242, 254, 0.6) 100%);
+    
+    /* Crystalline Edge Refraction & Glow */
+    --diamond-border: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(56, 189, 248, 0.45) 50%, rgba(255, 255, 255, 0.9) 100%);
+    --diamond-glow: 0 15px 35px 0 rgba(14, 165, 233, 0.12), inset 0 0 20px rgba(255, 255, 255, 0.8);
+    --diamond-glow-hover: 0 22px 45px 0 rgba(14, 165, 233, 0.25), inset 0 0 30px rgba(255, 255, 255, 1);
+
+    /* Text & Legibility (Optimized for Kiosks / Display Screens) */
+    --color-text-primary: #020d1c;    /* High-contrast dark navy text */
+    --color-text-secondary: #0369a1;  /* Sky blue accent text */
+    --color-text-muted: #334155;      /* Slate footer text */
+
+    /* Action Buttons (High-Visibility Cyan-Blue) */
+    --btn-diamond-bg: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+    --btn-diamond-hover: linear-gradient(135deg, #0369a1 0%, #075985 100%);
+
+    /* Form Specific Colors */
+    --form-input-bg: rgba(255, 255, 255, 0.75);
+    --form-input-border: #bae6fd;
+    --form-input-focus: #0284c7;
+
+    /* Spacing & Transitions */
+    --radius-card: 1.5rem;
+    --transition-fast: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ==========================================================================
+   2. GLOBAL RESETS & BASE STYLES
+   ========================================================================== */
+html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background-color: var(--color-bg-base) !important;
+    color: var(--color-text-primary);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Bright Radial Background */
+.portal-bg {
+    background: var(--color-bg-radial);
+    min-height: 100vh;
+}
+
+/* ==========================================================================
+   3. BANNER COMPONENT
+   ========================================================================== */
+/* ==========================================================================
+   ROYAL BLUE CONTAINER WITH CLEAN/WHITE UNTINTED IMAGE
+   ========================================================================== */
+.banner-crop-container {
+    width: 100%;
+    height: 130px;
+    overflow: hidden;
+    position: relative;
+    
+    /* Solid/Frosted Royal Blue Glass Frame */
+    background: var(--color-royal-blue, #0052CC) !important;
+    border-bottom: 2px solid var(--color-royal-blue, #0052CC) !important;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    
+    /* Royal Blue Ambient Glow Shadow */
+    box-shadow: 
+        0 6px 24px rgba(0, 82, 204, 0.35),
+        inset 0 -1px 0 rgba(255, 255, 255, 0.3) !important;
+}
+
+.banner-zoom-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center center;
+    display: block;
+    
+    /* Clean & Original Color Display */
+    mix-blend-mode: normal !important;
+    opacity: 1 !important;
+    filter: none !important;
+    
+    transform: scale(1.05);
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: transform;
+}
+
+@media (max-width: 768px) {
+    .banner-crop-container {
+        height: 110px;
+    }
+}
+
+/* ==========================================================================
+   4. REUSABLE UI COMPONENTS
+   ========================================================================== */
+
+/* Diamond Frosted Glass Surface */
+.custom-card {
+    position: relative;
+    background: var(--diamond-glass-bg) !important;
+    backdrop-filter: blur(25px) saturate(180%);
+    -webkit-backdrop-filter: blur(25px) saturate(180%);
+    border-radius: var(--radius-card) !important;
+    border: 1px solid transparent !important;
+    box-shadow: var(--diamond-glow);
+    transition: all var(--transition-fast);
+}
+
+/* Prism border outline edge */
+.custom-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radius-card);
+    padding: 1.5px;
+    background: var(--diamond-border);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+}
+
+.custom-card:hover {
+    transform: translateY(-6px);
+    background: var(--diamond-glass-hover) !important;
+    box-shadow: var(--diamond-glow-hover);
+}
+
+/* Faceted Diamond Rhombus Icon Badges */
+.icon-badge-wrapper {
+    padding: 10px;
+}
+
+.icon-badge {
+    width: 76px;
+    height: 76px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(224, 242, 254, 0.6) 100%);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 2px solid #bae6fd;
+    border-radius: 1.25rem;
+    transform: rotate(45deg); /* Diamond geometric cut */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 6px 18px rgba(14, 165, 233, 0.18);
+    transition: all var(--transition-fast);
+}
+
+.icon-badge i {
+    transform: rotate(-45deg); /* Keeps icon upright */
+    color: #0284c7 !important;
+    filter: drop-shadow(0 2px 4px rgba(2, 132, 199, 0.2));
+}
+
+.custom-card:hover .icon-badge {
+    transform: rotate(45deg) scale(1.08);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 1) 0%, rgba(186, 230, 253, 0.8) 100%);
+    border-color: #38bdf8;
+    box-shadow: 0 8px 25px rgba(14, 165, 233, 0.3);
+}
+
+/* ==========================================================================
+   5. BUTTONS (ROYAL BLUE THEME)
+   ========================================================================== */
+
+.btn-portal {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--color-royal-blue, #0052CC) 0%, #0D6EFD 100%) !important;
+    color: #ffffff !important;
+    font-weight: 800 !important;
+    font-size: 1.1rem;
+    letter-spacing: 0.8px;
+    border: 1.5px solid rgba(255, 255, 255, 0.4) !important;
+    padding: 0.85rem 1.5rem;
+    box-shadow: 0 6px 20px rgba(0, 82, 204, 0.35) !important;
+    transition: all var(--transition-fast, 0.2s ease);
+    text-decoration: none;
+    text-transform: uppercase;
+    overflow: hidden;
+}
+
+/* Oval / Pill Geometry */
+.btn-oval {
+    border-radius: 50rem !important;
+}
+
+/* Centered Button Label */
+.btn-portal .btn-label {
+    letter-spacing: 0.8px;
+    text-align: center;
+}
+
+/* Hover & Active States for Portal Buttons */
+.btn-portal:hover,
+.btn-portal:focus {
+    background: linear-gradient(135deg, #003D99 0%, var(--color-royal-blue, #0052CC) 100%) !important;
+    color: #ffffff !important;
+    border-color: rgba(255, 255, 255, 0.8) !important;
+    box-shadow: 0 8px 28px rgba(0, 82, 204, 0.5) !important;
+    transform: translateY(-2px);
+}
+
+.btn-portal:active {
+    transform: translateY(0);
+    box-shadow: 0 4px 12px rgba(0, 82, 204, 0.3) !important;
+}
+
+/* ==========================================================================
+   6. LOGBOOK FORM & NAVIGATION STYLES
+   ========================================================================== */
+
+/* Glassmorphic Form Inputs & Floating Labels (Bright Theme Adjusted) */
+.glass-input, 
+.glass-select {
+    background-color: var(--form-input-bg) !important;
+    border: 1.5px solid var(--form-input-border) !important;
+    color: var(--color-text-primary) !important;
+    border-radius: 12px !important;
+    font-weight: 600;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: all var(--transition-fast);
+}
+
+/* Styling native options dropdown menu */
+.glass-select option {
+    background-color: #ffffff;
+    color: var(--color-text-primary);
+}
+
+/* Placeholder & Floating Label States */
+.form-floating > label {
+    color: var(--color-text-muted) !important;
+    font-weight: 600;
+}
+
+.form-floating > .form-control:focus ~ label,
+.form-floating > .form-control:not(:placeholder-shown) ~ label,
+.form-floating > .form-select ~ label {
+    color: var(--color-text-secondary) !important;
+    font-weight: 700;
+}
+
+/* Input Focus Glow */
+.glass-input:focus, 
+.glass-select:focus {
+    border-color: var(--form-input-focus) !important;
+    box-shadow: 0 0 15px rgba(14, 165, 233, 0.3) !important;
+}
+
+/* Form Action Button Overrides */
+.btn-submit {
+    background: var(--btn-diamond-bg);
+    color: #ffffff !important;
+    border: 1.5px solid rgba(255, 255, 255, 0.8);
+    border-radius: 12px;
+    padding: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    box-shadow: 0 6px 20px rgba(2, 132, 199, 0.25);
+    transition: all var(--transition-fast);
+}
+
+.btn-submit:hover {
+    background: var(--btn-diamond-hover);
+    color: #ffffff !important;
+    box-shadow: 0 8px 25px rgba(2, 132, 199, 0.4);
+    transform: translateY(-1px);
+}
+
+/* ==========================================================================
+   7. APP TITLE & GLASSMOPHIC CLOCK WIDGET
+   ========================================================================== */
+
+.app-title {
+    font-size: clamp(2.75rem, 5vw, 4rem);
+    font-weight: 900 !important;
+    color: #020d1c !important;
+    letter-spacing: -1.5px;
+    text-shadow: 0 4px 20px rgba(255, 255, 255, 0.9);
+}
+
+.modern-clock-card {
+    max-width: 460px;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.65);
+    border: 2px solid #ffffff;
+    backdrop-filter: blur(25px) saturate(180%);
+    -webkit-backdrop-filter: blur(25px) saturate(180%);
+    box-shadow: 0 12px 35px rgba(14, 165, 233, 0.15);
+}
+
+.clock-time {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: clamp(3rem, 8vw, 4rem);
+    font-weight: 900;
+    line-height: 1;
+    color: #020d1c;
+}
+
+.clock-period {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: clamp(1.2rem, 3vw, 1.5rem);
+    color: #0284c7;
+    font-weight: 900;
+}
+
+.clock-date {
+    font-size: clamp(1rem, 2vw, 1.15rem);
+    color: var(--color-text-secondary);
+    font-weight: 700;
+}
+
+/* ==========================================================================
+   8. FORM COMPONENTS & GLASS INPUTS (BRIGHT DIAMOND GLASS)
+   ========================================================================== */
+
+/* Type Category Badge */
+.category-badge {
+    display: inline-block;
+    background: rgba(0, 82, 204, 0.1);
+    color: var(--color-royal-blue, #0052CC);
+    border: 1px solid rgba(0, 82, 204, 0.25);
+    border-radius: 8px;
+    padding: 0.35rem 0.85rem;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+}
+
+/* Custom Form Labels */
+.form-label-custom {
+    color: var(--color-text-primary, #0A192F);
+    font-weight: 700;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.form-label-custom .text-danger {
+    color: #D32F2F !important;
+}
+
+/* Bright Glass Input Controls */
+.custom-glass-control {
+    background: rgba(255, 255, 255, 0.75) !important;
+    border: 1.5px solid rgba(0, 82, 204, 0.18) !important;
+    color: var(--color-text-primary, #0A192F) !important;
+    border-radius: 12px !important;
+    padding: 0.75rem 1rem !important;
+    font-size: 0.95rem;
+    font-weight: 600;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    transition: all var(--transition-fast, 0.2s ease);
+}
+
+.custom-glass-control::placeholder {
+    color: var(--color-text-muted, #64748B);
+    opacity: 0.8;
+}
+
+.custom-glass-control:focus {
+    border-color: var(--color-royal-blue, #0052CC) !important;
+    box-shadow: 0 0 0 4px rgba(0, 82, 204, 0.15) !important;
+    background: rgba(255, 255, 255, 0.95) !important;
+    outline: none;
+}
+
+/* Custom Select Dropdown Options (High Contrast Fix) */
+select.custom-glass-control option {
+    background-color: #FFFFFF !important;
+    color: var(--color-text-primary, #0A192F) !important;
+}
+
+/* Consent Box Surface */
+.consent-card-box {
+    background: rgba(255, 255, 255, 0.65);
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    border-radius: 14px;
+    padding: 1.25rem;
+    box-shadow: inset 0 0 12px rgba(255, 255, 255, 0.5);
+}
+
+.consent-card-box .form-check-input {
+    background-color: rgba(255, 255, 255, 0.9);
+    border: 1.5px solid rgba(0, 82, 204, 0.3);
+    cursor: pointer;
+    width: 1.2em;
+    height: 1.2em;
+    margin-top: 0.15em;
+    border-radius: 4px;
+}
+
+.consent-card-box .form-check-input:checked {
+    background-color: var(--color-royal-blue, #0052CC);
+    border-color: var(--color-royal-blue, #0052CC);
+}
+
+.consent-card-box .form-check-label {
+    color: var(--color-text-secondary, #334155);
+    font-size: 0.875rem;
+    line-height: 1.5;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+/* Primary Form Action Button */
+.btn-submit-action {
+    background: linear-gradient(135deg, #0052CC 0%, #003999 100%);
+    color: #FFFFFF;
+    border: none;
+    border-radius: 12px;
+    padding: 0.9rem 1.5rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 14px rgba(0, 82, 204, 0.35);
+    transition: all var(--transition-fast, 0.2s ease);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-submit-action:hover {
+    background: linear-gradient(135deg, #0066FF 0%, #0044CC 100%);
+    color: #FFFFFF;
+    box-shadow: 0 6px 20px rgba(0, 82, 204, 0.45);
+    transform: translateY(-2px);
+}
+
+/* ==========================================================================
+   9. DEPARTMENT SELECTION GRID & FILTERS (BRIGHT DIAMOND GLASS)
+   ========================================================================== */
+
+/* Department Selection Cards */
+.dept-card {
+    background: rgba(255, 255, 255, 0.75);
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    border-radius: 16px;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: 0 8px 24px rgba(0, 82, 204, 0.06);
+    transition: all var(--transition-fast, 0.2s ease);
+}
+
+.dept-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(0, 82, 204, 0.3);
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: 0 12px 30px rgba(0, 82, 204, 0.15);
+}
+
+/* Circle Icon Container Inside Cards */
+.dept-icon-box {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: rgba(0, 82, 204, 0.08);
+    border: 1px solid rgba(0, 82, 204, 0.15);
+    color: var(--color-royal-blue, #0052CC);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-fast, 0.2s ease);
+}
+
+.dept-card:hover .dept-icon-box {
+    background: var(--color-royal-blue, #0052CC);
+    color: #FFFFFF;
+    transform: scale(1.08);
+    box-shadow: 0 4px 12px rgba(0, 82, 204, 0.3);
+}
+
+/* Small Code Badge (REG, AC, etc.) */
+.dept-code-badge {
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: var(--color-royal-blue, #0052CC);
+    background-color: rgba(0, 82, 204, 0.1);
+    padding: 3px 10px;
+    border-radius: 6px;
+    border: 1px solid rgba(0, 82, 204, 0.2);
+}
+
+/* Category Filter Pills */
+.btn-filter {
+    background: rgba(255, 255, 255, 0.65);
+    border: 1px solid rgba(0, 82, 204, 0.15);
+    color: var(--color-text-secondary, #334155);
+    border-radius: 30px;
+    padding: 0.45rem 1.25rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    white-space: nowrap;
+    backdrop-filter: blur(8px);
+    transition: all var(--transition-fast, 0.2s ease);
+}
+
+.btn-filter:hover {
+    color: var(--color-royal-blue, #0052CC);
+    background: rgba(255, 255, 255, 0.9);
+    border-color: rgba(0, 82, 204, 0.3);
+}
+
+.btn-filter.active {
+    background: var(--color-royal-blue, #0052CC);
+    color: #FFFFFF;
+    border-color: var(--color-royal-blue, #0052CC);
+    box-shadow: 0 4px 14px rgba(0, 82, 204, 0.35);
+}
+
+/* ==========================================================================
+   10. TRANSACTION & INQUIRY SELECTION STYLES (BRIGHT DIAMOND GLASS)
+   ========================================================================== */
+
+/* Department Header Banner Card */
+.selected-dept-header-card {
+    background: rgba(255, 255, 255, 0.75);
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    border-left: 5px solid var(--color-royal-blue, #0052CC);
+    border-radius: 18px;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 10px 30px rgba(0, 82, 204, 0.08);
+}
+
+/* Transaction Option Action Cards */
+.transaction-card {
+    background: rgba(255, 255, 255, 0.72);
+    border: 1px solid rgba(255, 255, 255, 0.9) !important;
+    border-radius: 16px;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    box-shadow: 0 6px 20px rgba(0, 82, 204, 0.05);
+    transition: all var(--transition-fast, 0.2s ease);
+    cursor: pointer;
+}
+
+.transaction-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(0, 82, 204, 0.3) !important;
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: 0 12px 28px rgba(0, 82, 204, 0.15);
+}
+
+.transaction-card .text-muted-custom {
+    color: var(--color-text-muted, #64748B);
+    font-weight: 500;
+}
+
+.transaction-card .arrow-icon {
+    color: var(--color-royal-blue, #0052CC);
+    font-size: 1.25rem;
+    transition: transform var(--transition-fast, 0.2s ease);
+}
+
+.transaction-card:hover .arrow-icon {
+    transform: translateX(6px);
+}
+
+/* ==========================================================================
+   11. LIVE QUEUE TV DISPLAY THEME REPLICATE
+   ========================================================================== */
+
+   body.live-queue-page {
+    background-color: #EBF3FC !important;
+    overflow: hidden !important;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+.live-queue-wrapper {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    background: #EBF3FC;
+}
+
+/* --- TOP HEADER --- */
+.queue-nav-header {
+    background: linear-gradient(135deg, #0052CC 0%, #003399 100%);
+    padding: 0.75rem 2rem;
+    box-shadow: 0 4px 20px rgba(0, 40, 120, 0.15);
+    flex: 0 0 auto;
+}
+
+.queue-logo {
+    height: 40px;
+    width: auto;
+}
+
+.header-v-divider {
+    width: 1px;
+    height: 24px;
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* --- MAIN BODY CONTAINER --- */
+.queue-main-content {
+    flex: 1 1 auto;
+    padding: 1rem 1.5rem;
+    min-height: 0;
+}
+
+/* Glass & Card Containers */
+.queue-card {
+    background: #FFFFFF;
+    border-radius: 20px;
+    border: 1px solid rgba(0, 82, 204, 0.08);
+    box-shadow: 0 10px 30px rgba(0, 50, 130, 0.04);
+    overflow: hidden;
+}
+
+.card-blue-header {
+    background: #0052CC;
+    color: #FFFFFF;
+    padding: 0.75rem 1.25rem;
+    border-radius: 16px;
+}
+
+/* Token Pills */
+.token-pill {
+    background: #EBF3FF;
+    color: #0052CC;
+    border-radius: 12px;
+    padding: 0.4rem 0.85rem;
+    font-weight: 900;
+    font-size: 1rem;
+    letter-spacing: 0.5px;
+    display: inline-block;
+}
+
+/* Left Sidebar Waiting Queue */
+.waiting-list-scroll {
+    overflow-y: auto;
+    scrollbar-width: thin;
+}
+
+.waiting-item {
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    transition: background 0.2s ease;
+}
+
+/* --- CENTER HERO CALLING SCREEN --- */
+.hero-calling-card {
+    background: linear-gradient(145deg, #0047B3 0%, #001A4D 100%);
+    border-radius: 20px;
+    padding: 1.5rem;
+    box-shadow: 0 12px 36px rgba(0, 40, 120, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.now-calling-pill {
+    background: linear-gradient(90deg, #0099FF, #0066FF);
+    box-shadow: 0 0 20px rgba(0, 153, 255, 0.6);
+    font-size: 1.5rem;
+    letter-spacing: 1.5px;
+}
+
+.hero-ticket-text {
+    font-size: 9rem;
+    font-weight: 900;
+    letter-spacing: -1px;
+    line-height: 1;
+    margin: 0;
+    color: #FFFFFF;
+    text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.hero-office-text {
+    font-size: 2.25rem;
+    font-weight: 800;
+    margin-top: 0.5rem;
+    color: #FFFFFF;
+}
+
+.divider-line {
+    width: 60px;
+    height: 3px;
+    background: #0099FF;
+    border-radius: 2px;
+}
+
+.proceed-notice {
+    font-size: 1rem; /* ~20px for TV readability */
+    color: #FFFFFF !important;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5); /* Prevents washing out against light gradients */
+    opacity: 0.95;
+    margin-top: 1rem;
+}
+
+/* --- RIGHT COLUMN: OFFICE STATUS CARDS --- */
+.office-status-card {
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    border-radius: 14px;
+    padding: 0.65rem 0.85rem;
+    transition: all 0.2s ease;
+}
+
+.office-status-card.active-calling {
+    border-color: #0052CC;
+    background: #FFFFFF;
+    box-shadow: 0 4px 15px rgba(0, 82, 204, 0.12);
+}
+
+.icon-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.status-indicator {
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    display: block;
+}
+
+/* ==========================================================================
+   11.1 QUEUE FOOTER WITH BACKGROUND IMAGE
+   ========================================================================== */
+
+.queue-footer-strip {
+    height: 60px;
+    flex: 0 0 auto;
+    background-color: #002878;
+    border-top: 2px solid #0052CC;
+    box-shadow: 0 -4px 20px rgba(0, 40, 120, 0.2);
+}
+
+/* Background image styling */
+.footer-bg-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center 35%; /* Adjusts focus to the building entrance */
+    filter: brightness(0.85) contrast(1.1);
+    z-index: 0;
+}
+
+/* Dark gradient overlay for high text contrast */
+.footer-bg-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg, 
+        rgba(0, 32, 96, 0.92) 0%, 
+        rgba(0, 40, 120, 0.75) 50%, 
+        rgba(0, 32, 96, 0.92) 100%
+    );
+    z-index: 0;
+}
+
+/* Typography & Token adjustments */
+.motto-script {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-style: italic;
+    font-weight: 700;
+    font-size: 1.35rem;
+    margin-right: 0.4rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.motto-sub {
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.queue-footer-strip .token-pill {
+    background: #FFFFFF;
+    color: #0047B3;
+    font-weight: 900;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+#tickerContainer {
+  position: relative;
+}
+
+.ticker-item {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  opacity: 0;
+  transform: translateY(100%);
+  transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+  pointer-events: none;
+}
+
+.ticker-item.active {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.ticker-item.exit {
+  opacity: 0;
+  transform: translateY(-100%);
+}
+
