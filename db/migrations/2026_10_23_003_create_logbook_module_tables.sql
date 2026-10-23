@@ -10,7 +10,6 @@ CREATE TABLE IF NOT EXISTS `transaction_types` (
     `office_id` INT NOT NULL,                          -- References office.office_id
     `transaction_name` VARCHAR(150) NOT NULL,          -- e.g., 'Transcript Request', 'ID Validation'
     `estimated_minutes` INT DEFAULT 5,                 -- For queue wait time estimation
-    `requires_custom_input` TINYINT(1) DEFAULT 0,      -- 1 = prompt visitor for specific details
     `flag_status` INT NOT NULL DEFAULT 0,              -- 0 = active, 1 = disabled
     `date_modify` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     
