@@ -51,7 +51,6 @@ CREATE TABLE IF NOT EXISTS `logbooks` (
     `program_code` VARCHAR(20) DEFAULT NULL,          -- Student specific
     `year_level` INT DEFAULT NULL,                    -- Student specific
     `department_id` INT DEFAULT 0,                    -- Employee / Student specific
-    `position` VARCHAR(100) DEFAULT NULL,              -- Employee specific
     
     -- Service Selection & Consent
     `office_id` INT NOT NULL,                          -- References office.office_id
