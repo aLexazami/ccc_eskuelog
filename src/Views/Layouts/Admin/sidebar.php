@@ -183,6 +183,33 @@ function render_action_links($links = [])
 
 
                 <?php if (SYSTEM_FLAG === "DEV"): ?>
+                    <li class="nav-item <?php echo navigation_active("student-logbook, employee-logbook, guest-logbook", "active submenu"); ?>">
+                        <a class="collapsed" aria-expanded="false" data-bs-toggle="collapse" href="#digital_logbook_nav">
+                            <i class="bi bi-journal-check"></i>
+                            <p>Digital Logbook</p>
+                            <span class="caret"></span>
+                        </a>
+                        <div class="collapse <?php echo navigation_active("student-logbook, employee-logbook, guest-logbook", "show"); ?>" id="digital_logbook_nav">
+                            <ul class="nav nav-collapse">
+                                <li class="<?php echo navigation_active("student-logbook"); ?>">
+                                    <a href="<?php echo BASE_URL . "admin/student-logbook"; ?>">
+                                        <span class="sub-item">Student</span>
+                                    </a>
+                                </li>
+                                <li class="<?php echo navigation_active("employee-logbook"); ?>">
+                                    <a href="<?php echo BASE_URL . "admin/employee-logbook"; ?>">
+                                        <span class="sub-item">Employee</span>
+                                    </a>
+                                </li>
+                                <li class="<?php echo navigation_active("guest-logbook"); ?>">
+                                    <a href="<?php echo BASE_URL . "admin/guest-logbook"; ?>">
+                                        <span class="sub-item">Guest</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+
                     <li class="nav-item <?php echo navigation_active("activity_log", "active submenu", ["user" => ["admin", "admin_staff"]]); ?>">
                         <a class="collapsed" aria-expanded="false" data-bs-toggle="collapse" href="#activity_log_nav">
                             <i class="fas fa-list"></i>
