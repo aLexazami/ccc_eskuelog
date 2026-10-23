@@ -94,8 +94,8 @@ switch ($action) {
         $query = "
             SELECT 
                 e.employee_id,
-                e.position,
-                d.department_code,
+                e.department_id,
+                e.office_id,
                 u.id AS user_id,
                 u.first_name,
                 u.middle_name,
@@ -106,7 +106,6 @@ switch ($action) {
                 u.contact_no
             FROM employee e
             INNER JOIN users u ON e.user_id = u.id
-            LEFT JOIN departments d ON e.department_id = d.department_id
             WHERE e.employee_id = ?
             LIMIT 1
         ";
@@ -120,17 +119,16 @@ switch ($action) {
                 echo json_encode([
                     'success' => true,
                     'data'    => [
-                        'user_id'         => $row['user_id'],
-                        'employee_id'     => $row['employee_id'],
-                        'first_name'      => $row['first_name'] ?? '',
-                        'middle_name'     => $row['middle_name'] ?? '',
-                        'last_name'       => $row['last_name'] ?? '',
-                        'suffix'          => $row['suffix'] ?? '',
-                        'post_nominal'    => $row['post_nominal'] ?? '',
-                        'position'        => $row['position'] ?? '',
-                        'department_code' => $row['department_code'] ?? '',
-                        'sex'             => !empty($row['sex']) ? ucfirst(strtolower($row['sex'])) : '',
-                        'contact_no'      => $row['contact_no'] ?? ''
+                        'user_id'       => $row['user_id'],
+                        'employee_id'   => $row['employee_id'],
+                        'first_name'    => $row['first_name'] ?? '',
+                        'middle_name'   => $row['middle_name'] ?? '',
+                        'last_name'     => $row['last_name'] ?? '',
+                        'suffix'        => $row['suffix'] ?? '',
+                        'post_nominal'  => $row['post_nominal'] ?? '',
+                        'department_id' => (int)($row['department_id'] ?? 0),
+                        'sex'           => !empty($row['sex']) ? ucfirst(strtolower($row['sex'])) : '',
+                        'contact_no'    => $row['contact_no'] ?? ''
                     ]
                 ]);
                 exit();
@@ -148,7 +146,7 @@ switch ($action) {
         $reference_id        = trim($_POST['reference_id'] ?? '') ?: null;          // student_id/employee_id or null
         $user_id             = filter_var($_POST['user_id'] ?? null, FILTER_VALIDATE_INT) ?: null;
         
-        // Form Inputs (For Guests, these come directly from manual typing)
+        // Form Inputs
         $first_name          = trim($_POST['first_name'] ?? '');
         $middle_name         = trim($_POST['middle_name'] ?? '') ?: null;
         $last_name           = trim($_POST['last_name'] ?? '');
@@ -160,13 +158,17 @@ switch ($action) {
         // Type-Specific Attributes
         $program_code        = trim($_POST['program_code'] ?? '') ?: null;
         $year_level          = filter_var($_POST['year_level'] ?? null, FILTER_VALIDATE_INT) ?: null;
-        $position            = trim($_POST['position'] ?? '') ?: null;
+        $department_id       = filter_var($_POST['department_id'] ?? 0, FILTER_VALIDATE_INT) ?: 0;
 
-        // Service Choice & Consent
+        // Service Choice, Consent & Priority
         $office_id           = (int)($_POST['office_id'] ?? 0);
         $transaction_type_id = (int)($_POST['transaction_type_id'] ?? 0);
         $purpose_details     = trim($_POST['purpose_details'] ?? '') ?: null;
         $data_consent        = isset($_POST['data_consent']) && $_POST['data_consent'] === '1' ? 1 : 0;
+
+        // Priority Feature Capture
+        $is_priority         = isset($_POST['is_priority']) && $_POST['is_priority'] === '1' ? 1 : 0;
+        $priority_type       = $is_priority ? (trim($_POST['priority_type'] ?? '') ?: 'OTHER') : null;
 
         // Validation
         if (empty($first_name) || empty($last_name) || $office_id === 0 || $transaction_type_id === 0) {
@@ -183,20 +185,22 @@ switch ($action) {
         $db_connect->begin_transaction();
 
         try {
-            // Step A: Insert into logbooks
+            // Step A: Insert into logbooks table with priority fields
             $stmtLog = $db_connect->prepare("
                 INSERT INTO logbooks (
                     visitor_type, reference_id, user_id, first_name, middle_name, last_name,
                     suffix, post_nominal, sex, contact_no, program_code, year_level,
-                    position, office_id, transaction_type_id, purpose_details, data_consent
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    department_id, office_id, transaction_type_id, purpose_details, 
+                    is_priority, priority_type, data_consent
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ");
 
             $stmtLog->bind_param(
-                "ssissssssssisiisi",
+                "ssissssssssiiiisisi",
                 $visitor_type, $reference_id, $user_id, $first_name, $middle_name, $last_name,
                 $suffix, $post_nominal, $sex, $contact_no, $program_code, $year_level,
-                $position, $office_id, $transaction_type_id, $purpose_details, $data_consent
+                $department_id, $office_id, $transaction_type_id, $purpose_details, 
+                $is_priority, $priority_type, $data_consent
             );
             $stmtLog->execute();
             $logbook_id = $db_connect->insert_id;
@@ -215,18 +219,20 @@ switch ($action) {
             $stmtSeq->execute();
             $resSeq = $stmtSeq->get_result()->fetch_assoc();
 
-            $prefix        = $resSeq['prefix'] ?? 'Q';
+            // Priority Ticket Prefixing Logic
+            $base_prefix   = $resSeq['prefix'] ?? 'Q';
+            $prefix        = $is_priority ? "P-" . $base_prefix : $base_prefix;
             $sequence      = (int)($resSeq['next_seq'] ?? 1);
             $ticket_number = sprintf("%s-%03d", $prefix, $sequence);
             $today         = date('Y-m-d');
 
-            // Step C: Insert into queue_tickets
+            // Step C: Insert into queue_tickets with priority flag
             $stmtQueue = $db_connect->prepare("
                 INSERT INTO queue_tickets (
-                    logbook_id, ticket_number, queue_sequence, queue_date, office_id, status
-                ) VALUES (?, ?, ?, ?, ?, 'WAITING')
+                    logbook_id, ticket_number, queue_sequence, queue_date, office_id, status, is_priority
+                ) VALUES (?, ?, ?, ?, ?, 'WAITING', ?)
             ");
-            $stmtQueue->bind_param("isisi", $logbook_id, $ticket_number, $sequence, $today, $office_id);
+            $stmtQueue->bind_param("isisii", $logbook_id, $ticket_number, $sequence, $today, $office_id, $is_priority);
             $stmtQueue->execute();
 
             $db_connect->commit();
@@ -235,7 +241,8 @@ switch ($action) {
                 'success'       => true,
                 'message'       => 'Check-in successful!',
                 'ticket_number' => $ticket_number,
-                'sequence'      => $sequence
+                'sequence'      => $sequence,
+                'is_priority'   => $is_priority
             ]);
             exit();
 
