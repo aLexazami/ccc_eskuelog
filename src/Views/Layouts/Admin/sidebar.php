@@ -181,8 +181,7 @@ function render_action_links($links = [])
 
                 <?php endif; ?>
 
-
-                <?php if (SYSTEM_FLAG === "DEV"): ?>
+                <?php if ($g_user_role == 'STATION_ADMIN'): ?>
                     <li class="nav-item <?php echo navigation_active("student-logbook, employee-logbook, guest-logbook", "active submenu"); ?>">
                         <a class="collapsed" aria-expanded="false" data-bs-toggle="collapse" href="#digital_logbook_nav">
                             <i class="bi bi-journal-check"></i>
@@ -209,6 +208,11 @@ function render_action_links($links = [])
                             </ul>
                         </div>
                     </li>
+
+                <?php endif; ?>
+
+
+                <?php if (SYSTEM_FLAG === "DEV"): ?>
 
                     <li class="nav-item <?php echo navigation_active("activity_log", "active submenu", ["user" => ["admin", "admin_staff"]]); ?>">
                         <a class="collapsed" aria-expanded="false" data-bs-toggle="collapse" href="#activity_log_nav">

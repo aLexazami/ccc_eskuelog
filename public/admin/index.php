@@ -58,7 +58,7 @@ switch ($route) {
             header("Location: " . BASE_URL . "admin/user-information");
             exit();
         } else if ($g_user_role_upper === "STATION_ADMIN") {
-            header("Location: " . BASE_URL . "admin/user-information");
+            header("Location: " . BASE_URL . "admin/student-logbook");
             exit();
         } else if ($g_user_role_upper === "USER") {
             header("Location: " . BASE_URL . "admin/user-information");
@@ -76,7 +76,7 @@ switch ($route) {
         # Role-based routes table
         $custom_routes = [
             # Sign Out
-            '/admin/sign-out' => ['file'  => SRC_PATH . '/Handlers/Admin/sign_out.php', 'roles' => ["ADMIN", "ADMIN_STAFF"]],
+            '/admin/sign-out' => ['file'  => SRC_PATH . '/Handlers/Admin/sign_out.php', 'roles' => ["ADMIN", "ADMIN_STAFF", "STATION_ADMIN", "USER"]],
 
             # ADMIN Views
             '/admin/user-information' => ['file' => SRC_PATH . '/Views/Admin/user_information.php', 'roles' => ["ADMIN", "ADMIN_STAFF", "STATION_ADMIN", "USER"]],
