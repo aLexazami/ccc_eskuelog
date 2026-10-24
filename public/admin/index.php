@@ -83,6 +83,7 @@ switch ($route) {
             '/admin/student-logbook'  => ['file' => SRC_PATH . '/Views/Admin/student_logbook.php', 'roles' => ["ADMIN", "ADMIN_STAFF", "STATION_ADMIN", "USER"]],
             '/admin/employee-logbook' => ['file' => SRC_PATH . '/Views/Admin/employee_logbook.php', 'roles' => ["ADMIN", "ADMIN_STAFF", "STATION_ADMIN", "USER"]],
             '/admin/guest-logbook'    => ['file' => SRC_PATH . '/Views/Admin/guest_logbook.php', 'roles' => ["ADMIN", "ADMIN_STAFF", "STATION_ADMIN", "USER"]],
+            '/admin/live-queue'       => ['file' => SRC_PATH . '/Views/Admin/live_queue.php', 'roles' => ["ADMIN", "ADMIN_STAFF", "STATION_ADMIN", "USER"]],
 
             # TABLE Handlers
             '/admin/table/user-information' => ['file' => SRC_PATH . '/Handlers/Admin/table/user_information_table.php', 'roles' => ["ADMIN", "ADMIN_STAFF", "STATION_ADMIN", "USER"]],
@@ -92,9 +93,6 @@ switch ($route) {
             '/admin/ajax/queue'   => ['file' => SRC_PATH . '/Handlers/Admin/ajax/queue_handler.php', 'roles' => ["ADMIN", "ADMIN_STAFF", "STATION_ADMIN", "USER"]],
             '/admin/ajax/office'  => ['file' => SRC_PATH . '/Handlers/Admin/ajax/office_handler.php', 'roles' => ["ADMIN", "ADMIN_STAFF", "STATION_ADMIN", "USER"]],
             '/admin/ajax/counter' => ['file' => SRC_PATH . '/Handlers/Admin/ajax/counter_handler.php', 'roles' => ["ADMIN", "ADMIN_STAFF", "STATION_ADMIN", "USER"]],
-
-            # Legacy Endpoint (Remove once all frontend JS references are updated to /admin/ajax/logbook)
-            '/admin/ajax/process' => ['file' => SRC_PATH . '/Handlers/Admin/ajax/process.php', 'roles' => ["ADMIN", "ADMIN_STAFF", "STATION_ADMIN", "USER"]],
         ];
 
         # Dynamic Route Matching Engine

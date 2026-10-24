@@ -182,6 +182,7 @@ function render_action_links($links = [])
                 <?php endif; ?>
 
                 <?php if ($g_user_role == 'STATION_ADMIN'): ?>
+                    <!-- DIGITAL LOGBOOK NAVIGATION -->
                     <li class="nav-item <?php echo navigation_active("student-logbook, employee-logbook, guest-logbook", "active submenu"); ?>">
                         <a class="collapsed" aria-expanded="false" data-bs-toggle="collapse" href="#digital_logbook_nav">
                             <i class="bi bi-journal-check"></i>
@@ -207,6 +208,14 @@ function render_action_links($links = [])
                                 </li>
                             </ul>
                         </div>
+                    </li>
+
+                    <!-- LIVE QUEUE MONITOR NAVIGATION -->
+                    <li class="nav-item <?php echo navigation_active("live-queue", "active"); ?>">
+                        <a href="<?php echo BASE_URL . "admin/live-queue"; ?>" target="_blank">
+                            <i class="bi bi-display"></i>
+                            <p>Live Queue Monitor</p>
+                        </a>
                     </li>
                 <?php endif; ?>
 
