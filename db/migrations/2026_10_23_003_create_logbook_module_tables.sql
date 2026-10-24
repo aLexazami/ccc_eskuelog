@@ -55,7 +55,6 @@ CREATE TABLE IF NOT EXISTS `logbooks` (
     -- Service Selection & Consent
     `office_id` INT NOT NULL,                          -- References office.office_id
     `transaction_type_id` INT NOT NULL,                -- References transaction_types.id
-    `purpose_details` VARCHAR(255) DEFAULT NULL,
     `data_consent` TINYINT(1) NOT NULL DEFAULT 0,
     
     `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
