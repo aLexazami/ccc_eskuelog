@@ -353,6 +353,15 @@ if ($db_connect) {
                 min-width: 4px;
             }
         }
+
+        .header-action-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+        }
+
+        .header-action-btn:active {
+            transform: translateY(0);
+        }
     </style>
 </head>
 
@@ -375,24 +384,23 @@ if ($db_connect) {
                         <div class="col-12 px-0">
                             <div class="card kiosk-main-card border-0">
 
-                                <!-- KIOSK HEADER BANNER WITH SVG ICON & FULLSCREEN TOGGLE -->
-                                <div class="kiosk-header-banner d-flex align-items-center justify-content-between gap-2">
-                                    <div class="d-flex align-items-center gap-2 gap-sm-3 min-w-0">
-                                        <div class="p-2 rounded-3 text-white d-flex align-items-center justify-content-center flex-shrink-0" style="background-color: rgba(255, 255, 255, 0.2); width: 38px; height: 38px;">
-                                            <i class="bi bi-person-vcard fs-4"></i>
-                                        </div>
-                                        <div class="min-w-0">
-                                            <h4 class="fw-bold text-white mb-0 tracking-wide text-truncate fs-6 fs-sm-5">GUEST DIGITAL LOGBOOK</h4>
-                                        </div>
-                                    </div>
+                               <!-- KIOSK HEADER BANNER WITH SVG ICON & FULLSCREEN TOGGLE -->
+                              <div class="kiosk-header-banner d-flex align-items-center justify-content-between gap-2">
+                                  <div class="d-flex align-items-center gap-2 gap-sm-3 min-w-0">
+                                      <div class="p-2 rounded-3 text-white d-flex align-items-center justify-content-center flex-shrink-0" style="background-color: rgba(255, 255, 255, 0.2); width: 38px; height: 38px;">
+                                          <i class="bi bi-person-vcard fs-4"></i>
+                                      </div>
+                                      <div class="min-w-0">
+                                          <h4 class="fw-bold text-white mb-0 tracking-wide text-truncate fs-6 fs-sm-5">GUEST DIGITAL LOGBOOK</h4>
+                                      </div>
+                                  </div>
 
-                                    <div class="d-flex align-items-center flex-shrink-0 ms-auto">
-                                        <button type="button" class="btn btn-sm btn-light text-primary fw-bold shadow-sm d-flex align-items-center gap-1 py-1.5 px-2 px-sm-2.5" id="btnToggleFullscreen">
-                                            <i class="bi bi-fullscreen" id="fullscreenIcon"></i>
-                                            <span class="d-none d-sm-inline" id="fullscreenText">Kiosk Mode</span>
-                                        </button>
-                                    </div>
-                                </div>
+                                  <div class="d-flex align-items-center flex-shrink-0 ms-auto">
+                                      <button type="button" class="btn btn-light text-primary border-0 rounded-3 p-0 d-flex align-items-center justify-content-center shadow-sm flex-shrink-0 header-action-btn" id="btnToggleFullscreen" style="width: 38px; height: 38px; transition: all 0.2s ease-in-out;" title="Toggle Fullscreen">
+                                          <i class="bi bi-fullscreen fs-5" id="fullscreenIcon"></i>
+                                      </button>
+                                  </div>
+                              </div>
 
                                 <!-- VISUAL STEP WIZARD -->
                                 <div class="step-progress-bar">

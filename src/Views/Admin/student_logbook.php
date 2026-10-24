@@ -367,6 +367,15 @@ if ($db_connect) {
                 width: 100% !important;
             }
         }
+
+        .header-action-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+        }
+
+        .header-action-btn:active {
+            transform: translateY(0);
+        }
     </style>
 </head>
 
@@ -393,10 +402,7 @@ if ($db_connect) {
                                 <div class="kiosk-header-banner d-flex align-items-center justify-content-between gap-2">
                                     <div class="d-flex align-items-center gap-2 gap-sm-3 min-w-0">
                                         <div class="p-2 rounded-3 text-white d-flex align-items-center justify-content-center flex-shrink-0" style="background-color: rgba(255, 255, 255, 0.2); width: 38px; height: 38px;">
-                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                <path fill-rule="evenodd" clip-rule="evenodd" d="M4.72718 2.71244C5.03258 2.41324 5.46135 2.21816 6.27103 2.11151C7.10452 2.00172 8.2092 2 9.7931 2H14.2069C15.7908 2 16.8955 2.00172 17.729 2.11151C18.5387 2.21816 18.9674 2.41324 19.2728 2.71244ZM7.58621 5.78378C7.12914 5.78378 6.75862 6.1468 6.75862 6.59459C6.75862 7.04239 7.12914 7.40541 7.58621 7.40541H16.4138C16.8709 7.40541 17.2414 7.04239 17.2414 6.59459C17.2414 6.1468 16.8709 5.78378 16.4138 5.78378H7.58621ZM6.75862 10.3784C6.75862 9.93058 7.12914 9.56757 7.58621 9.56757H13.1034C13.5605 9.56757 13.931 9.93058 13.931 10.3784C13.931 10.8262 13.5605 11.1892 13.1034 11.1892H7.58621C7.12914 11.1892 6.75862 10.8262 6.75862 10.3784Z" fill="#ffffff"></path>
-                                                <path d="M7.47341 17.1351C6.39395 17.1351 6.01657 17.1421 5.72738 17.218C4.93365 17.4264 4.30088 18.0044 4.02952 18.7558C4.0463 19.1382 4.07259 19.4746 4.11382 19.775C4.22268 20.5683 4.42179 20.9884 4.72718 21.2876C5.03258 21.5868 5.46135 21.7818 6.27103 21.8885C7.10452 21.9983 8.2092 22 9.7931 22H14.2069C15.7908 22 16.8955 21.9983 17.729 21.8885C18.5387 21.7818 18.9674 21.5868 19.2728 21.2876C19.4894 21.0753 19.6526 20.8023 19.768 20.3784H7.58621C7.12914 20.3784 6.75862 20.0154 6.75862 19.5676C6.75862 19.1198 7.12914 18.7568 7.58621 18.7568H19.9704C19.9909 18.2908 19.9972 17.7564 19.9991 17.1351H7.47341Z" fill="#ffffff"></path>
-                                            </svg>
+                                            <i class="bi bi-person-vcard fs-4"></i>
                                         </div>
                                         <div class="min-w-0">
                                             <h4 class="fw-bold text-white mb-0 tracking-wide text-truncate fs-6 fs-sm-5">STUDENT DIGITAL LOGBOOK</h4>
@@ -404,9 +410,8 @@ if ($db_connect) {
                                     </div>
 
                                     <div class="d-flex align-items-center flex-shrink-0 ms-auto">
-                                        <button type="button" class="btn btn-sm btn-light text-primary fw-bold shadow-sm d-flex align-items-center gap-1 py-1.5 px-2 px-sm-2.5" id="btnToggleFullscreen">
-                                            <i class="bi bi-fullscreen" id="fullscreenIcon"></i>
-                                            <span class="d-none d-sm-inline" id="fullscreenText">Kiosk Mode</span>
+                                        <button type="button" class="btn btn-light text-primary border-0 rounded-3 p-0 d-flex align-items-center justify-content-center shadow-sm flex-shrink-0 header-action-btn" id="btnToggleFullscreen" style="width: 38px; height: 38px; transition: all 0.2s ease-in-out;" title="Toggle Fullscreen">
+                                            <i class="bi bi-fullscreen fs-5" id="fullscreenIcon"></i>
                                         </button>
                                     </div>
                                 </div>
