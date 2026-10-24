@@ -198,9 +198,6 @@ switch ($action) {
 
         try {
             // Step A: Insert into logbooks table
-            // Types: s (visitor_type), s (reference_id), i (user_id), s (first_name), s (middle_name), s (last_name),
-            //        s (suffix), s (post_nominal), s (sex), s (contact_no), s (program_code), i (year_level),
-            //        i (department_id), i (office_id), i (transaction_type_id), i (is_priority), s (priority_type), i (data_consent)
             $stmtLog = $db_connect->prepare("
                 INSERT INTO logbooks (
                     visitor_type, reference_id, user_id, first_name, middle_name, last_name,
@@ -220,15 +217,15 @@ switch ($action) {
             $stmtLog->execute();
             $logbook_id = $db_connect->insert_id;
 
-            // Step B: Resolve office_code & Daily Sequence Number
+            // Step B: Resolve prefix_code (fallback to office_code) & Daily Sequence Number
             $stmtSeq = $db_connect->prepare("
                 SELECT 
-                    o.office_code AS prefix,
+                    COALESCE(NULLIF(o.prefix_code, ''), o.office_code) AS prefix,
                     COALESCE(MAX(q.queue_sequence), 0) + 1 AS next_seq
                 FROM office o
                 LEFT JOIN queue_tickets q ON o.office_id = q.office_id AND q.queue_date = CURDATE()
                 WHERE o.office_id = ?
-                GROUP BY o.office_id, o.office_code
+                GROUP BY o.office_id, o.prefix_code, o.office_code
             ");
             $stmtSeq->bind_param("i", $office_id);
             $stmtSeq->execute();
