@@ -208,7 +208,6 @@ function render_action_links($links = [])
                             </ul>
                         </div>
                     </li>
-
                 <?php endif; ?>
 
 
