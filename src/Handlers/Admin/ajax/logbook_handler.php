@@ -160,10 +160,9 @@ switch ($action) {
         $year_level          = filter_var($_POST['year_level'] ?? null, FILTER_VALIDATE_INT) ?: null;
         $department_id       = filter_var($_POST['department_id'] ?? 0, FILTER_VALIDATE_INT) ?: 0;
 
-        // Service Choice, Consent & Priority
+        // Service Choice & Consent
         $office_id           = (int)($_POST['office_id'] ?? 0);
         $transaction_type_id = (int)($_POST['transaction_type_id'] ?? 0);
-        $purpose_details     = trim($_POST['purpose_details'] ?? '') ?: null;
         $data_consent        = isset($_POST['data_consent']) && $_POST['data_consent'] === '1' ? 1 : 0;
 
         // Priority Feature Capture
@@ -190,16 +189,16 @@ switch ($action) {
                 INSERT INTO logbooks (
                     visitor_type, reference_id, user_id, first_name, middle_name, last_name,
                     suffix, post_nominal, sex, contact_no, program_code, year_level,
-                    department_id, office_id, transaction_type_id, purpose_details, 
+                    department_id, office_id, transaction_type_id,
                     is_priority, priority_type, data_consent
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ");
 
             $stmtLog->bind_param(
-                "ssissssssssiiiisisi",
+                "ssissssssssiiiiiisi",
                 $visitor_type, $reference_id, $user_id, $first_name, $middle_name, $last_name,
                 $suffix, $post_nominal, $sex, $contact_no, $program_code, $year_level,
-                $department_id, $office_id, $transaction_type_id, $purpose_details, 
+                $department_id, $office_id, $transaction_type_id,
                 $is_priority, $priority_type, $data_consent
             );
             $stmtLog->execute();
