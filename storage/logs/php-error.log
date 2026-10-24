@@ -578,3 +578,45 @@ Stack trace:
 [24-Oct-2026 12:38:58 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
 [24-Oct-2026 12:38:58 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
 [24-Oct-2026 12:38:58 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[24-Oct-2026 15:13:57 Asia/Manila] PHP Fatal error:  Uncaught ArgumentCountError: The number of elements in the type definition string must match the number of bind variables in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\logbook_handler.php:197
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\logbook_handler.php(197): mysqli_stmt->bind_param('ssissssssssiiii...', 'STUDENT', '2023-10544', 2, 'ALEX', 'CARBELLIDO', 'FLORES', NULL, NULL, 'Male', '09750920427', 'BSIT', 4, 0, 8, 36, 0, NULL, 1)
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(149): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\logbook_handler.php on line 197
+[24-Oct-2026 15:14:04 Asia/Manila] PHP Fatal error:  Uncaught ArgumentCountError: The number of elements in the type definition string must match the number of bind variables in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\logbook_handler.php:197
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\logbook_handler.php(197): mysqli_stmt->bind_param('ssissssssssiiii...', 'STUDENT', '2023-10544', 2, 'ALEX', 'CARBELLIDO', 'FLORES', NULL, NULL, 'Male', '09750920427', 'BSIT', 4, 0, 8, 36, 0, NULL, 1)
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(149): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\logbook_handler.php on line 197
+[24-Oct-2026 15:14:50 Asia/Manila] PHP Fatal error:  Uncaught ArgumentCountError: The number of elements in the type definition string must match the number of bind variables in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\logbook_handler.php:197
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\logbook_handler.php(197): mysqli_stmt->bind_param('ssissssssssiiii...', 'STUDENT', '2023-10544', 2, 'ALEX', 'CARBELLIDO', 'FLORES', NULL, NULL, 'Male', '09750920427', 'BSIT', 4, 0, 8, 36, 0, NULL, 1)
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(149): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\logbook_handler.php on line 197
+[24-Oct-2026 15:19:17 Asia/Manila] PHP Fatal error:  Uncaught ArgumentCountError: The number of elements in the type definition string must match the number of bind variables in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\logbook_handler.php:210
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\logbook_handler.php(210): mysqli_stmt->bind_param('ssissssssssiiii...', 'STUDENT', '2023-10544', 2, 'ALEX', 'CARBELLIDO', 'FLORES', NULL, NULL, 'Male', '09750920427', 'BSIT', 4, 0, 8, 36, 0, NULL, 1)
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(149): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\logbook_handler.php on line 210
+[24-Oct-2026 15:19:48 Asia/Manila] PHP Fatal error:  Uncaught ArgumentCountError: The number of elements in the type definition string must match the number of bind variables in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\logbook_handler.php:210
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\logbook_handler.php(210): mysqli_stmt->bind_param('ssissssssssiiii...', 'STUDENT', '2023-10544', 2, 'ALEX', 'CARBELLIDO', 'FLORES', NULL, NULL, 'Male', '09750920427', 'BSIT', 4, 0, 8, 38, 0, NULL, 1)
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(149): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\logbook_handler.php on line 210
+[24-Oct-2026 15:20:39 Asia/Manila] PHP Fatal error:  Uncaught ArgumentCountError: The number of elements in the type definition string must match the number of bind variables in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\logbook_handler.php:210
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\logbook_handler.php(210): mysqli_stmt->bind_param('ssissssssssiiii...', 'STUDENT', '2023-10544', 2, 'ALEX', 'CARBELLIDO', 'FLORES', NULL, NULL, 'Male', '09750920427', 'BSIT', 4, 0, 8, 36, 0, NULL, 1)
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(149): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\logbook_handler.php on line 210
+[24-Oct-2026 15:24:06 Asia/Manila] PHP Fatal error:  Uncaught ArgumentCountError: The number of elements in the type definition string must match the number of bind variables in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\logbook_handler.php:210
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\logbook_handler.php(210): mysqli_stmt->bind_param('ssissssssssiiii...', 'STUDENT', '2023-10544', 2, 'ALEX', 'CARBELLIDO', 'FLORES', NULL, NULL, 'Male', '09750920427', 'BSIT', 4, 0, 8, 36, 0, NULL, 1)
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(149): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\logbook_handler.php on line 210
