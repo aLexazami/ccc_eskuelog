@@ -28,7 +28,6 @@ CREATE TABLE IF NOT EXISTS `queue_tickets` (
     CONSTRAINT `fk_queue_office_ref` FOREIGN KEY (`office_id`) REFERENCES `office`(`office_id`),
     CONSTRAINT `fk_queue_counter_ref` FOREIGN KEY (`counter_id`) REFERENCES `counters`(`id`),
     
-    INDEX `idx_queue_daily` (`office_id`, `queue_date`, `status`),
     INDEX `idx_queue_ticket` (`ticket_number`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
