@@ -20,7 +20,16 @@ switch ($action) {
     // 1. FETCH MASTER LIVE QUEUE (For live_queue.php monitor screen)
     // -------------------------------------------------------------------------
     case 'fetch_master_queue':
-        $today = date('Y-m-d');
+        $today      = date('Y-m-d');
+        $queue_mode = $_POST['queue_mode'] ?? 'all';
+
+        // Dynamic SQL filter based on logbooks.visitor_type
+        $visitor_filter = "";
+        if ($queue_mode === 'student_guest') {
+            $visitor_filter = " AND l.visitor_type IN ('STUDENT', 'GUEST') ";
+        } elseif ($queue_mode === 'employee') {
+            $visitor_filter = " AND l.visitor_type = 'EMPLOYEE' ";
+        }
 
         // Fetch all active offices
         $offices_query = "SELECT office_id, office_code, office_name, office_logo FROM office WHERE flag_status = 0 ORDER BY office_name ASC";
@@ -33,19 +42,22 @@ switch ($action) {
             while ($off = $offices_res->fetch_assoc()) {
                 $office_id = (int)$off['office_id'];
 
-                // 1. Fetch current 'CALLED' or 'SERVING' ticket joining counters table
+                // 1. Fetch current 'CALLED' or 'SERVING' ticket joined with logbooks (includes q.called_at)
                 $stmtServing = $db_connect->prepare("
                     SELECT 
                         q.ticket_number, 
                         q.status, 
                         q.is_priority, 
                         q.counter_id,
+                        q.called_at,
                         COALESCE(c.counter_name, CONCAT('Counter ', q.counter_id)) AS counter_label
                     FROM queue_tickets q
+                    INNER JOIN logbooks l ON q.logbook_id = l.id
                     LEFT JOIN counters c ON q.counter_id = c.id
                     WHERE q.office_id = ? 
                       AND q.queue_date = ? 
                       AND q.status IN ('CALLED', 'SERVING')
+                      {$visitor_filter}
                     ORDER BY q.called_at DESC, q.id DESC
                     LIMIT 1
                 ");
@@ -53,13 +65,15 @@ switch ($action) {
                 $stmtServing->execute();
                 $servingTicket = $stmtServing->get_result()->fetch_assoc();
 
-                // 2. Fetch top 4 'WAITING' tickets for this office ordered by priority and queue sequence
+                // 2. Fetch top 4 'WAITING' tickets joined with logbooks
                 $stmtNext = $db_connect->prepare("
                     SELECT q.ticket_number, q.is_priority
                     FROM queue_tickets q
+                    INNER JOIN logbooks l ON q.logbook_id = l.id
                     WHERE q.office_id = ? 
                       AND q.queue_date = ? 
                       AND q.status = 'WAITING'
+                      {$visitor_filter}
                     ORDER BY q.is_priority DESC, q.queue_sequence ASC
                     LIMIT 4
                 ");
@@ -72,11 +86,15 @@ switch ($action) {
                     $upNextList[] = $nextRow;
                 }
 
-                // 3. Count total 'WAITING' tickets for this office
+                // 3. Count total 'WAITING' tickets joined with logbooks
                 $stmtCount = $db_connect->prepare("
                     SELECT COUNT(*) as total_waiting 
-                    FROM queue_tickets 
-                    WHERE office_id = ? AND queue_date = ? AND status = 'WAITING'
+                    FROM queue_tickets q
+                    INNER JOIN logbooks l ON q.logbook_id = l.id
+                    WHERE q.office_id = ? 
+                      AND q.queue_date = ? 
+                      AND q.status = 'WAITING'
+                      {$visitor_filter}
                 ");
                 $stmtCount->bind_param("is", $office_id, $today);
                 $stmtCount->execute();

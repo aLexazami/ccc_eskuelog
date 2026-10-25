@@ -211,11 +211,31 @@ function render_action_links($links = [])
                     </li>
 
                     <!-- LIVE QUEUE MONITOR NAVIGATION -->
-                    <li class="nav-item <?php echo navigation_active("live-queue", "active"); ?>">
-                        <a href="<?php echo BASE_URL . "admin/live-queue"; ?>" target="_blank">
+                    <li class="nav-item <?php echo navigation_active("live-queue", "active submenu"); ?>">
+                        <a class="collapsed" aria-expanded="false" data-bs-toggle="collapse" href="#live_queue_nav">
                             <i class="bi bi-display"></i>
-                            <p>Live Queue Monitor</p>
+                            <p>Live Queue Monitors</p>
+                            <span class="caret"></span>
                         </a>
+                        <div class="collapse <?php echo navigation_active("live-queue", "show"); ?>" id="live_queue_nav">
+                            <ul class="nav nav-collapse">
+                                <li>
+                                    <a href="<?php echo BASE_URL . "admin/live-queue?mode=all"; ?>" target="_blank">
+                                        <span class="sub-item">Master Queue (All)</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="<?php echo BASE_URL . "admin/live-queue?mode=student_guest"; ?>" target="_blank">
+                                        <span class="sub-item">Students & Guests</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="<?php echo BASE_URL . "admin/live-queue?mode=employee"; ?>" target="_blank">
+                                        <span class="sub-item">Employees</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
                     </li>
                 <?php endif; ?>
 

@@ -3,6 +3,17 @@
 $db_connect  = $db_connect ?? null;
 $g_user_role = $g_user_role ?? '';
 
+# Mode Parameter Parsing
+$queue_mode = $_GET['mode'] ?? 'all';
+
+$mode_titles = [
+    'all'           => 'Master Queue Monitor',
+    'student_guest' => 'Students & Guests Monitor',
+    'employee'      => 'Employee Queue Monitor'
+];
+
+$page_title_text = $mode_titles[$queue_mode] ?? $mode_titles['all'];
+
 # Fetch All Offices for Initial State
 $all_offices = [];
 if ($db_connect) {
@@ -21,7 +32,7 @@ if ($db_connect) {
     <?php include_once ADMIN_META_DATA_PATH; ?>
     <?php include_once ADMIN_LINK_PATH; ?>
     
-    <title>E-Eskuelog — Live Queue Master Monitor</title>
+    <title>E-Eskuelog — <?= htmlspecialchars($page_title_text); ?></title>
 
     <style>
         /* LIGHT THEME (DEFAULT) */
@@ -72,8 +83,9 @@ if ($db_connect) {
             --page-badge-color: #ffffff;
             --page-badge-shadow: 0 3px 10px rgba(30, 58, 138, 0.2);
             
-            --datetime-bg: #f8fafc;
-            --datetime-border: 1px solid #cbd5e1;
+            /* CLEAN TRANSPARENT DATETIME FOOTER */
+            --datetime-bg: transparent;
+            --datetime-border: none;
             --datetime-icon-color: #2563eb;
             --datetime-text-color: #334155;
             --datetime-clock-color: #1e3a8a;
@@ -140,8 +152,8 @@ if ($db_connect) {
             --page-badge-color: #ffffff;
             --page-badge-shadow: 0 3px 12px rgba(245, 158, 11, 0.35);
             
-            --datetime-bg: rgba(30, 41, 59, 0.65);
-            --datetime-border: 1px solid rgba(255, 255, 255, 0.15);
+            --datetime-bg: transparent;
+            --datetime-border: none;
             --datetime-icon-color: #f59e0b;
             --datetime-text-color: #94a3b8;
             --datetime-clock-color: #ffffff;
@@ -533,16 +545,15 @@ if ($db_connect) {
             transition: all 0.3s ease;
         }
 
-        /* BOTTOM RIGHT DATETIME CAPSULE BLOCK */
+        /* CLEANED DATETIME CAPSULE BLOCK (NO BOX BORDER / CONTAINER SHADOW) */
         .footer-datetime-block {
             display: flex;
             align-items: center;
             gap: 0.5rem;
             background: var(--datetime-bg);
             border: var(--datetime-border);
-            padding: 0.35rem 0.85rem;
-            border-radius: 0.65rem;
-            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.03);
+            padding: 0.35rem 0.5rem;
+            box-shadow: none;
             transition: all 0.3s ease;
         }
 
@@ -608,13 +619,13 @@ if ($db_connect) {
 
     <div class="master-screen-wrapper">
 
-        <!-- HEADER BAR WITH RESTYLED MODERN ACTION BUTTONS -->
+        <!-- HEADER BAR WITH DYNAMIC TITLE AND MODERN ACTION BUTTONS -->
         <header class="master-header">
             <h1 class="master-title">
                 <span class="title-icon-badge">
                     <i class="bi bi-display-fill text-white fs-4"></i>
                 </span>
-                <span>E-ESKUELOG QUEUE</span>
+                <span>E-ESKUELOG — <?= strtoupper(htmlspecialchars($page_title_text)); ?></span>
             </h1>
 
             <div class="d-flex align-items-center gap-2">
@@ -641,13 +652,13 @@ if ($db_connect) {
                 </div>
             </main>
 
-            <!-- PAGE BADGE INSIDE MAIN CONTAINER WITH SPACING -->
-            <div class="page-badge-wrapper">
+            <!-- PAGE BADGE INSIDE MAIN CONTAINER WITH SPACING (HIDDEN WHEN <= 1 PAGE) -->
+            <div class="page-badge-wrapper d-none" id="pageBadgeWrapper">
                 <span class="page-badge-pill" id="pageRotationBadge">PAGE 1 / 1</span>
             </div>
         </div>
 
-        <!-- BOTTOM FOOTER BAR WITH BOTTOM-RIGHT DATETIME -->
+        <!-- BOTTOM FOOTER BAR WITH CLEAN DATETIME -->
         <footer class="bottom-pagination-bar">
             <div class="footer-datetime-block">
                 <i class="bi bi-calendar3 footer-datetime-icon"></i>
@@ -663,14 +674,16 @@ if ($db_connect) {
 
 <script>
     (function() {
-        // Configuration
+        // Dynamic Monitor Mode Configuration
+        const QUEUE_MODE           = <?= json_encode($queue_mode); ?>;
         const ITEMS_PER_PAGE       = 5; // Display max 5 offices per page
-        const ROTATION_INTERVAL_MS = 8000; // Rotate page every 8 seconds
+        const ROTATION_INTERVAL_MS = 5000; // Rotate page every 8 seconds
 
         // DOM Handles
         const digitalDate         = document.getElementById('digitalDate');
         const digitalClock        = document.getElementById('digitalClock');
         const pageRotationBadge   = document.getElementById('pageRotationBadge');
+        const pageBadgeWrapper    = document.getElementById('pageBadgeWrapper');
         const pillarGridContainer = document.getElementById('pillarGridContainer');
         const emptyStateDisplay   = document.getElementById('emptyStateDisplay');
         const btnToggleFullscreen = document.getElementById('btnToggleFullscreen');
@@ -804,10 +817,11 @@ if ($db_connect) {
             });
         }
 
-        // 5. FETCH LIVE QUEUE DATA & CHECK FOR NEW CALLS
+        // 5. FETCH LIVE QUEUE DATA & CHECK FOR NEW CALLS / RECALLS
         function fetchLiveQueueData() {
             const formData = new FormData();
             formData.append('action', 'fetch_master_queue');
+            formData.append('queue_mode', QUEUE_MODE); // Forward mode filter to backend
 
             fetch('<?= BASE_URL; ?>admin/ajax/queue', {
                 method: 'POST',
@@ -825,12 +839,18 @@ if ($db_connect) {
 
                         cachedActiveOffices.forEach((office, index) => {
                             const isCalling = office.now_serving && office.now_serving.status === 'CALLED';
-                            if (isCalling && office.now_serving.ticket_number && !calledTicketsHistory.has(office.now_serving.ticket_number)) {
-                                calledTicketsHistory.add(office.now_serving.ticket_number);
-                                
-                                queueVoiceCallout(office.now_serving.ticket_number);
+                            
+                            if (isCalling && office.now_serving.ticket_number) {
+                                // Create unique call key combining ticket number & call timestamp
+                                const callKey = `${office.now_serving.ticket_number}_${office.now_serving.called_at || ''}`;
 
-                                targetPageIndex = Math.floor(index / ITEMS_PER_PAGE);
+                                if (!calledTicketsHistory.has(callKey)) {
+                                    calledTicketsHistory.add(callKey);
+                                    
+                                    queueVoiceCallout(office.now_serving.ticket_number);
+
+                                    targetPageIndex = Math.floor(index / ITEMS_PER_PAGE);
+                                }
                             }
                         });
 
@@ -854,7 +874,13 @@ if ($db_connect) {
             const totalPages = Math.ceil(cachedActiveOffices.length / ITEMS_PER_PAGE);
             if (currentPageIndex >= totalPages) currentPageIndex = 0;
 
-            pageRotationBadge.textContent = `PAGE ${currentPageIndex + 1} / ${totalPages}`;
+            // Activate and display page badge ONLY when totalPages > 1
+            if (totalPages > 1) {
+                pageRotationBadge.textContent = `PAGE ${currentPageIndex + 1} / ${totalPages}`;
+                if (pageBadgeWrapper) pageBadgeWrapper.classList.remove('d-none');
+            } else {
+                if (pageBadgeWrapper) pageBadgeWrapper.classList.add('d-none');
+            }
 
             const start = currentPageIndex * ITEMS_PER_PAGE;
             const end   = start + ITEMS_PER_PAGE;
@@ -927,7 +953,7 @@ if ($db_connect) {
 
         // 7. RENDER EMPTY STATE
         function renderEmptyState() {
-            pageRotationBadge.textContent = `PAGE 1 / 1`;
+            if (pageBadgeWrapper) pageBadgeWrapper.classList.add('d-none');
             pillarGridContainer.innerHTML = '';
             pillarGridContainer.appendChild(emptyStateDisplay);
             emptyStateDisplay.classList.remove('d-none');
