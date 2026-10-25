@@ -35,55 +35,55 @@ if ($db_connect) {
     <title>E-Eskuelog — <?= htmlspecialchars($page_title_text); ?></title>
 
     <style>
-        /* LIGHT THEME (DEFAULT) - ADAPTED GLASSMORPHISM PILLAR CARDS */
+        /* LIGHT THEME (DEFAULT) - HIGH CONTRAST FROSTED GLASS */
         :root {
             /* CAMPUS TEMPLATE BACKGROUND WITH BLUE GRADIENT OVERLAY */
-            --bg-wrapper: linear-gradient(135deg, rgba(11, 32, 117, 0.10) 0%, rgba(0, 10, 76, 0.25) 100%), url('<?= BASE_URL; ?>public/assets/main/css/bg-template.png');
-            --bg-header: rgba(0, 16, 77, 0.4);
-            --border-header: 1px solid rgba(255, 255, 255, 0.1);
+            --bg-wrapper: linear-gradient(135deg, rgba(11, 32, 117, 0.15) 0%, rgba(0, 10, 76, 0.35) 100%), url('<?= BASE_URL; ?>public/assets/main/css/bg-template.png');
+            --bg-header: rgba(0, 16, 77, 0.55);
+            --border-header: 1px solid rgba(255, 255, 255, 0.15);
             --header-title-color: #ffffff;
             
-            /* ADAPTED GLASSMORPHISM PILLAR CARD STYLING */
-            --bg-card: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.03) 100%);
-            --border-card: 1px solid rgba(255, 255, 255, 0.5);
+            /* HIGH CONTRAST FROSTED DEEP-BLUE GLASS CARD */
+            --bg-card: linear-gradient(135deg, rgba(15, 23, 42, 0.78) 0%, rgba(30, 58, 138, 0.72) 100%);
+            --border-card: 1px solid rgba(255, 255, 255, 0.25);
             --card-text-color: #ffffff;
-            --card-shadow: 0 8px 32px 0 rgba(0, 16, 77, 0.2);
+            --card-shadow: 0 16px 36px rgba(0, 10, 50, 0.4);
             
-            --pillar-header-border: rgba(255, 255, 255, 0.2);
+            --pillar-header-border: rgba(255, 255, 255, 0.18);
             --office-name-color: #ffffff;
-            --office-meta-color: #cbd5e1;
+            --office-meta-color: #93c5fd;
             
-            --serving-bg: rgba(0, 16, 77, 0.35);
-            --serving-border: 1px solid rgba(255, 255, 255, 0.2);
+            --serving-bg: rgba(15, 23, 42, 0.65);
+            --serving-border: 1px solid rgba(59, 130, 246, 0.4);
             --serving-label-color: #60a5fa;
             --serving-ticket-color: #ffffff;
             
             /* SOLID GREEN HIGHLIGHT & SHADOW GLOW */
             --calling-border: #22c55e;
-            --calling-shadow: 0 0 30px rgba(34, 197, 94, 0.55);
+            --calling-shadow: 0 0 35px rgba(34, 197, 94, 0.6);
             
-            --priority-tag-bg: linear-gradient(135deg, rgba(217, 119, 6, 0.85) 0%, rgba(245, 158, 11, 0.95) 100%);
+            --priority-tag-bg: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
             --priority-tag-color: #ffffff;
-            --priority-tag-border: 1px solid rgba(255, 255, 255, 0.3);
+            --priority-tag-border: none;
             --priority-tag-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
             
-            --lineup-border-top: rgba(255, 255, 255, 0.2);
-            --lineup-label-color: #cbd5e1;
-            --lineup-pill-bg: rgba(255, 255, 255, 0.1);
-            --lineup-pill-border: 1px solid rgba(255, 255, 255, 0.2);
+            --lineup-border-top: rgba(255, 255, 255, 0.18);
+            --lineup-label-color: #93c5fd;
+            --lineup-pill-bg: rgba(255, 255, 255, 0.12);
+            --lineup-pill-border: 1px solid rgba(255, 255, 255, 0.22);
             --lineup-pill-color: #ffffff;
             
-            --lineup-pill-priority-bg: linear-gradient(135deg, rgba(217, 119, 6, 0.35) 0%, rgba(245, 158, 11, 0.45) 100%);
+            --lineup-pill-priority-bg: linear-gradient(135deg, rgba(217, 119, 6, 0.4) 0%, rgba(245, 158, 11, 0.5) 100%);
             --lineup-pill-priority-border: 1.5px solid #f59e0b;
             --lineup-pill-priority-color: #fef08a;
             
-            --lineup-pill-empty-bg: transparent;
+            --lineup-pill-empty-bg: rgba(15, 23, 42, 0.3);
             --lineup-pill-empty-border: 1px dashed rgba(255, 255, 255, 0.25);
-            --lineup-pill-empty-color: rgba(255, 255, 255, 0.4);
+            --lineup-pill-empty-color: #94a3b8;
             
-            --page-badge-bg: linear-gradient(135deg, rgba(30, 58, 138, 0.8) 0%, rgba(37, 99, 235, 0.9) 100%);
+            --page-badge-bg: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
             --page-badge-color: #ffffff;
-            --page-badge-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            --page-badge-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
             
             /* DATETIME FOOTER COLORS */
             --datetime-bg: transparent;
@@ -92,12 +92,12 @@ if ($db_connect) {
             --datetime-text-color: #cbd5e1;
             --datetime-clock-color: #ffffff;
             
-            --footer-bg: rgba(0, 16, 77, 0.4);
-            --footer-border: 1px solid rgba(255, 255, 255, 0.1);
+            --footer-bg: rgba(0, 16, 77, 0.5);
+            --footer-border: 1px solid rgba(255, 255, 255, 0.15);
 
             /* MODERN SQUIRCLE ACTION BUTTONS */
-            --btn-action-bg: rgba(255, 255, 255, 0.12);
-            --btn-action-border: 1px solid rgba(255, 255, 255, 0.2);
+            --btn-action-bg: rgba(255, 255, 255, 0.14);
+            --btn-action-border: 1px solid rgba(255, 255, 255, 0.22);
             --btn-action-color: #ffffff;
             --btn-action-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
             --btn-action-hover-bg: #2563eb;
@@ -106,72 +106,71 @@ if ($db_connect) {
             --btn-action-hover-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
         }
 
-        /* DARK THEME OVERRIDES */
+        /* DARK THEME OVERRIDES - EXACT MIRRORED GLASSMORPHISM STYLE */
         body.dark-mode {
-            --bg-wrapper: linear-gradient(135deg, rgba(15, 23, 42, 0.75) 0%, rgba(15, 23, 42, 0.92) 100%), url('<?= BASE_URL; ?>public/assets/main/css/bg-template.png');
-            --bg-header: rgba(0, 16, 77, 0.4);
-            --border-header: 1px solid rgba(255, 255, 255, 0.1);
+            --bg-wrapper: linear-gradient(135deg, rgba(10, 15, 28, 0.88) 0%, rgba(15, 23, 42, 0.96) 100%), url('<?= BASE_URL; ?>public/assets/main/css/bg-template.png');
+            --bg-header: rgba(10, 15, 30, 0.65);
+            --border-header: 1px solid rgba(255, 255, 255, 0.15);
             --header-title-color: #ffffff;
             
-            --bg-card: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.04) 100%);
-            --border-card: 1px solid rgba(255, 255, 255, 0.4);
-            --card-text-color: #f8fafc;
-            --card-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+            /* DARK OBSIDIAN SLATE FROSTED GLASS CARD */
+            --bg-card: linear-gradient(135deg, rgba(30, 41, 59, 0.85) 0%, rgba(15, 23, 42, 0.88) 100%);
+            --border-card: 1px solid rgba(255, 255, 255, 0.25);
+            --card-text-color: #ffffff;
+            --card-shadow: 0 16px 36px rgba(0, 0, 0, 0.6);
             
-            --pillar-header-border: rgba(255, 255, 255, 0.15);
+            --pillar-header-border: rgba(255, 255, 255, 0.18);
             --office-name-color: #ffffff;
-            --office-meta-color: #94a3b8;
+            --office-meta-color: #93c5fd;
             
-            --serving-bg: rgba(15, 23, 42, 0.65);
-            --serving-border: 1px solid rgba(255, 255, 255, 0.15);
-            --serving-label-color: #f59e0b;
+            --serving-bg: rgba(15, 23, 42, 0.75);
+            --serving-border: 1px solid rgba(59, 130, 246, 0.4);
+            --serving-label-color: #60a5fa;
             --serving-ticket-color: #ffffff;
             
-            /* SOLID GREEN HIGHLIGHT & SHADOW GLOW FOR DARK THEME */
             --calling-border: #22c55e;
-            --calling-shadow: 0 0 35px rgba(34, 197, 94, 0.6);
+            --calling-shadow: 0 0 35px rgba(34, 197, 94, 0.65);
             
             --priority-tag-bg: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
             --priority-tag-color: #ffffff;
-            --priority-tag-border: 1px solid rgba(255, 255, 255, 0.2);
-            --priority-tag-shadow: 0 2px 6px rgba(245, 158, 11, 0.4);
+            --priority-tag-border: none;
+            --priority-tag-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
             
-            --lineup-border-top: rgba(255, 255, 255, 0.15);
-            --lineup-label-color: #94a3b8;
-            --lineup-pill-bg: rgba(255, 255, 255, 0.08);
-            --lineup-pill-border: 1px solid rgba(255, 255, 255, 0.15);
-            --lineup-pill-color: #f1f5f9;
+            --lineup-border-top: rgba(255, 255, 255, 0.18);
+            --lineup-label-color: #93c5fd;
+            --lineup-pill-bg: rgba(255, 255, 255, 0.12);
+            --lineup-pill-border: 1px solid rgba(255, 255, 255, 0.22);
+            --lineup-pill-color: #ffffff;
             
-            --lineup-pill-priority-bg: linear-gradient(135deg, rgba(217, 119, 6, 0.25) 0%, rgba(245, 158, 11, 0.35) 100%);
+            --lineup-pill-priority-bg: linear-gradient(135deg, rgba(217, 119, 6, 0.4) 0%, rgba(245, 158, 11, 0.5) 100%);
             --lineup-pill-priority-border: 1.5px solid #f59e0b;
             --lineup-pill-priority-color: #fef08a;
             
-            --lineup-pill-empty-bg: transparent;
-            --lineup-pill-empty-border: 1px dashed rgba(255, 255, 255, 0.2);
-            --lineup-pill-empty-color: #64748b;
+            --lineup-pill-empty-bg: rgba(15, 23, 42, 0.4);
+            --lineup-pill-empty-border: 1px dashed rgba(255, 255, 255, 0.25);
+            --lineup-pill-empty-color: #94a3b8;
             
-            --page-badge-bg: linear-gradient(135deg, rgba(217, 119, 6, 0.8) 0%, rgba(245, 158, 11, 0.9) 100%);
+            --page-badge-bg: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
             --page-badge-color: #ffffff;
-            --page-badge-shadow: 0 3px 12px rgba(245, 158, 11, 0.35);
+            --page-badge-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
             
             --datetime-bg: transparent;
             --datetime-border: none;
-            --datetime-icon-color: #f59e0b;
-            --datetime-text-color: #94a3b8;
+            --datetime-icon-color: #60a5fa;
+            --datetime-text-color: #cbd5e1;
             --datetime-clock-color: #ffffff;
             
-            --footer-bg: rgba(0, 16, 77, 0.4);
-            --footer-border: 1px solid rgba(255, 255, 255, 0.1);
+            --footer-bg: rgba(10, 15, 30, 0.65);
+            --footer-border: 1px solid rgba(255, 255, 255, 0.15);
 
-            /* MODERN SQUIRCLE ACTION BUTTONS - DARK MODE */
-            --btn-action-bg: rgba(30, 41, 59, 0.8);
-            --btn-action-border: 1px solid rgba(255, 255, 255, 0.15);
-            --btn-action-color: #f8fafc;
-            --btn-action-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            --btn-action-bg: rgba(255, 255, 255, 0.14);
+            --btn-action-border: 1px solid rgba(255, 255, 255, 0.22);
+            --btn-action-color: #ffffff;
+            --btn-action-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
             --btn-action-hover-bg: #2563eb;
             --btn-action-hover-color: #ffffff;
             --btn-action-hover-border: 1px solid #3b82f6;
-            --btn-action-hover-shadow: 0 4px 16px rgba(37, 99, 235, 0.4);
+            --btn-action-hover-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
         }
 
         body, html {
@@ -184,7 +183,7 @@ if ($db_connect) {
             transition: background-color 0.3s ease;
         }
 
-        /* FULLSCREEN MASTER WRAPPER WITH COVER BACKGROUND TEMPLATE */
+        /* FULLSCREEN MASTER WRAPPER */
         .master-screen-wrapper {
             position: relative;
             display: flex;
@@ -202,13 +201,13 @@ if ($db_connect) {
             transition: background 0.3s ease;
         }
 
-        /* HEADER BAR (REFERENCE STYLING) */
+        /* HEADER BAR */
         .master-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background-color: rgba(0, 16, 77, 0.4) !important;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            background-color: var(--bg-header) !important;
+            border-bottom: var(--border-header);
             padding: 0.75rem 1.75rem;
             margin: 0;
             width: 100%;
@@ -244,7 +243,7 @@ if ($db_connect) {
             box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
         }
 
-        /* RESTYLED MODERN SQUIRCLE ACTION BUTTONS */
+        /* ACTION BUTTONS */
         .header-action-btn {
             display: inline-flex;
             align-items: center;
@@ -269,21 +268,17 @@ if ($db_connect) {
             box-shadow: var(--btn-action-hover-shadow);
         }
 
-        .header-action-btn:active {
-            transform: translateY(0);
-        }
-
-        /* MAIN CONTENT AREA WITH INTEGRATED PAGE BADGE */
+        /* MAIN DISPLAY AREA */
         .main-display-area {
             display: flex;
             flex-direction: column;
             flex-grow: 1;
             overflow: hidden;
-            padding: 0.85rem 1.25rem 3.5rem 1.25rem;
+            padding: 0.85rem 1.25rem 3.8rem 1.25rem;
             box-sizing: border-box;
         }
 
-        /* DYNAMICALLY CENTERED HORIZONTAL PILLAR GRID */
+        /* HORIZONTAL PILLAR GRID WITH SMOOTH GPU ROTATION */
         .pillar-grid-container {
             display: flex;
             flex-direction: row;
@@ -293,25 +288,27 @@ if ($db_connect) {
             justify-content: center;
             overflow: hidden;
             box-sizing: border-box;
-            transition: opacity 0.3s ease-in-out;
+            transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1), transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            will-change: opacity, transform;
         }
 
         .pillar-grid-container.fade-out {
             opacity: 0;
+            transform: scale(0.97) translateY(4px);
         }
 
-        /* PILLAR BANNER CARD - DIRECTLY ADAPTED GLASSMORPHISM STYLING */
+        /* FROSTED GLASS PILLAR CARD */
         .office-pillar-card {
             flex: 1 1 280px;
             min-width: 240px;
             max-width: 340px;
             min-height: 240px;
             background: var(--bg-card) !important;
-            -webkit-backdrop-filter: blur(16px) saturate(120%);
-            backdrop-filter: blur(16px) saturate(120%);
+            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(12px);
             border: var(--border-card) !important;
             box-shadow: var(--card-shadow) !important;
-            border-radius: 2rem;
+            border-radius: 1.75rem;
             overflow: hidden;
             display: flex;
             flex-direction: column;
@@ -320,17 +317,18 @@ if ($db_connect) {
             height: 100%;
             box-sizing: border-box;
             position: relative;
-            transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), border-color 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+            transform: translateZ(0);
+            will-change: transform, backdrop-filter;
+            transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), border-color 0.3s ease, box-shadow 0.3s ease;
         }
 
-        /* ACTIVE CALLING HIGHLIGHT (GREEN BORDER WITH INTENSE SHADOW GLOW) */
         .office-pillar-card.is-calling {
             border: 3px solid var(--calling-border) !important;
             box-shadow: var(--calling-shadow) !important;
             animation: none !important;
         }
 
-        /* PILLAR HEADER SECTION - FIXED HEIGHT LOCK FOR UNIFORM ALIGNMENT */
+        /* PILLAR HEADER */
         .pillar-header {
             text-align: center;
             border-bottom: var(--pillar-header-border);
@@ -375,7 +373,7 @@ if ($db_connect) {
             overflow: hidden;
             height: 2.5em;
             width: 100%;
-            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
         }
 
         .pillar-office-meta {
@@ -387,7 +385,7 @@ if ($db_connect) {
             line-height: 1;
         }
 
-        /* NOW SERVING FOCUS BLOCK */
+        /* NOW SERVING BLOCK */
         .pillar-serving-block {
             text-align: center;
             padding: 0.85rem 0.5rem;
@@ -406,7 +404,7 @@ if ($db_connect) {
             z-index: 2;
             backdrop-filter: blur(8px);
             -webkit-backdrop-filter: blur(8px);
-            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.15), 0 4px 15px rgba(0, 0, 0, 0.1);
+            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.15), 0 4px 15px rgba(0, 0, 0, 0.15);
         }
 
         .serving-label {
@@ -429,7 +427,7 @@ if ($db_connect) {
             overflow: visible;
             display: block;
             width: 100%;
-            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
         }
 
         .priority-badge-container {
@@ -514,7 +512,7 @@ if ($db_connect) {
             border: var(--lineup-pill-empty-border);
             color: var(--lineup-pill-empty-color);
             font-weight: 600;
-            opacity: 0.4;
+            opacity: 0.6;
         }
 
         .waiting-count-footer {
@@ -526,7 +524,7 @@ if ($db_connect) {
             line-height: 18px;
         }
 
-        /* PAGE ROTATION BADGE CONTAINER INSIDE MAIN AREA */
+        /* PAGE ROTATION BADGE */
         .page-badge-wrapper {
             display: flex;
             justify-content: center;
@@ -551,7 +549,7 @@ if ($db_connect) {
             transition: all 0.3s ease;
         }
 
-        /* BOTTOM FOOTER BAR (STRICT REFERENCE STYLE POSITIONING) */
+        /* BOTTOM FOOTER BAR */
         .bottom-pagination-bar {
             position: absolute;
             bottom: 0;
@@ -561,10 +559,10 @@ if ($db_connect) {
             align-items: center;
             justify-content: flex-end;
             padding: 0.45rem 1.5rem;
-            background-color: rgba(0, 16, 77, 0.4) !important;
+            background-color: var(--footer-bg) !important;
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            border-top: var(--footer-border);
             flex-shrink: 0;
             width: 100%;
             box-sizing: border-box;
@@ -572,7 +570,6 @@ if ($db_connect) {
             transition: all 0.3s ease;
         }
 
-        /* CLEANED DATETIME CAPSULE BLOCK */
         .footer-datetime-block {
             display: flex;
             align-items: center;
@@ -623,7 +620,6 @@ if ($db_connect) {
             text-align: center;
         }
 
-        /* Responsive adjustments for mobile/portrait screens */
         @media (max-width: 768px) {
             .pillar-grid-container {
                 flex-direction: column;
@@ -646,7 +642,7 @@ if ($db_connect) {
 
     <div class="master-screen-wrapper">
 
-        <!-- HEADER BAR WITH DYNAMIC TITLE AND MODERN ACTION BUTTONS -->
+        <!-- HEADER BAR WITH DYNAMIC TITLE AND ACTION BUTTONS -->
         <header class="master-header">
             <h1 class="master-title">
                 <span class="title-icon-badge">
@@ -656,21 +652,18 @@ if ($db_connect) {
             </h1>
 
             <div class="d-flex align-items-center gap-2">
-                <!-- DARK / LIGHT MODE TOGGLE BUTTON -->
                 <button type="button" class="header-action-btn" id="btnToggleTheme" title="Toggle Dark/Light Theme">
                     <i class="bi bi-moon-stars-fill fs-5" id="themeIcon"></i>
                 </button>
 
-                <!-- FULLSCREEN TOGGLE BUTTON -->
                 <button type="button" class="header-action-btn" id="btnToggleFullscreen" title="Toggle Fullscreen">
                     <i class="bi bi-fullscreen fs-5"></i>
                 </button>
             </div>
         </header>
 
-        <!-- MAIN CONTENT AREA CONTAINING PILLAR GRID & PAGE BADGE -->
+        <!-- MAIN CONTENT AREA -->
         <div class="main-display-area">
-            <!-- MAIN HORIZONTAL PILLAR GRID -->
             <main class="pillar-grid-container" id="pillarGridContainer">
                 <div class="empty-active-state" id="emptyStateDisplay">
                     <i class="bi bi-clock-history display-1 mb-3 opacity-50"></i>
@@ -679,13 +672,12 @@ if ($db_connect) {
                 </div>
             </main>
 
-            <!-- PAGE BADGE INSIDE MAIN CONTAINER WITH SPACING (HIDDEN WHEN <= 1 PAGE) -->
             <div class="page-badge-wrapper d-none" id="pageBadgeWrapper">
                 <span class="page-badge-pill" id="pageRotationBadge">PAGE 1 / 1</span>
             </div>
         </div>
 
-        <!-- BOTTOM FOOTER BAR WITH ABSOLUTE POSITIONING AND REFERENCE TRANSLUCENT OVERLAY -->
+        <!-- BOTTOM FOOTER BAR -->
         <footer class="bottom-pagination-bar">
             <div class="footer-datetime-block">
                 <i class="bi bi-calendar3 footer-datetime-icon"></i>
@@ -701,12 +693,10 @@ if ($db_connect) {
 
 <script>
     (function() {
-        // Dynamic Monitor Mode Configuration
         const QUEUE_MODE           = <?= json_encode($queue_mode); ?>;
-        const ITEMS_PER_PAGE       = 5; // Display max 5 offices per page
-        const ROTATION_INTERVAL_MS = 5000; // Rotate page every 5 seconds
+        const ITEMS_PER_PAGE       = 5; 
+        const ROTATION_INTERVAL_MS = 5000; 
 
-        // DOM Handles
         const digitalDate         = document.getElementById('digitalDate');
         const digitalClock        = document.getElementById('digitalClock');
         const pageRotationBadge   = document.getElementById('pageRotationBadge');
@@ -723,7 +713,6 @@ if ($db_connect) {
         let currentPageIndex      = 0;
         let rotationTimer         = null;
 
-        // Theme Toggle Handler (Light vs Dark Mode with LocalStorage Persistence)
         function applyTheme(isDark) {
             if (isDark) {
                 document.body.classList.add('dark-mode');
@@ -734,7 +723,6 @@ if ($db_connect) {
             }
         }
 
-        // Initialize saved theme (default to Light mode)
         const savedTheme = localStorage.getItem('queue_monitor_theme');
         applyTheme(savedTheme === 'dark');
 
@@ -747,12 +735,10 @@ if ($db_connect) {
             });
         }
 
-        // Audio Queue & Voice Setup
         let audioQueue            = [];
         let isSpeaking            = false;
         let singleFemaleVoice     = null;
 
-        // 1. FEMALE VOICE DETECTION SELECTION
         function getBestFemaleVoice() {
             if (!('speechSynthesis' in window)) return null;
             const voices = window.speechSynthesis.getVoices();
@@ -777,7 +763,6 @@ if ($db_connect) {
             loadVoices();
         }
 
-        // 2. BELL DING CHIME
         function playBellDing(callback) {
             try {
                 const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -787,7 +772,6 @@ if ($db_connect) {
                 }
                 const ctx = new AudioContext();
 
-                // Tone 1: E5 (659.25 Hz)
                 const osc1 = ctx.createOscillator();
                 const gain1 = ctx.createGain();
                 osc1.type = 'sine';
@@ -800,7 +784,6 @@ if ($db_connect) {
                 osc1.start(ctx.currentTime);
                 osc1.stop(ctx.currentTime + 1.2);
 
-                // Tone 2: G5 (783.99 Hz) at +0.25s
                 const osc2 = ctx.createOscillator();
                 const gain2 = ctx.createGain();
                 osc2.type = 'sine';
@@ -823,7 +806,6 @@ if ($db_connect) {
             }
         }
 
-        // 3. DYNAMIC DATE & DIGITAL CLOCK UPDATER
         function updateDateTime() {
             const now = new Date();
             const options = { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' };
@@ -833,7 +815,6 @@ if ($db_connect) {
         setInterval(updateDateTime, 1000);
         updateDateTime();
 
-        // 4. FULLSCREEN TOGGLE
         if (btnToggleFullscreen) {
             btnToggleFullscreen.addEventListener('click', function() {
                 if (!document.fullscreenElement) {
@@ -844,11 +825,10 @@ if ($db_connect) {
             });
         }
 
-        // 5. FETCH LIVE QUEUE DATA & CHECK FOR NEW CALLS / RECALLS
         function fetchLiveQueueData() {
             const formData = new FormData();
             formData.append('action', 'fetch_master_queue');
-            formData.append('queue_mode', QUEUE_MODE); // Forward mode filter to backend
+            formData.append('queue_mode', QUEUE_MODE);
 
             fetch('<?= BASE_URL; ?>admin/ajax/queue', {
                 method: 'POST',
@@ -868,7 +848,6 @@ if ($db_connect) {
                             const isCalling = office.now_serving && office.now_serving.status === 'CALLED';
                             
                             if (isCalling && office.now_serving.ticket_number) {
-                                // Create unique call key combining ticket number & call timestamp
                                 const callKey = `${office.now_serving.ticket_number}_${office.now_serving.called_at || ''}`;
 
                                 if (!calledTicketsHistory.has(callKey)) {
@@ -894,14 +873,12 @@ if ($db_connect) {
             .catch(err => console.error("Live Queue Fetch Error:", err));
         }
 
-        // 6. RENDER CURRENT PAGE
         function renderCurrentPage(animate = false) {
             if (cachedActiveOffices.length === 0) return;
 
             const totalPages = Math.ceil(cachedActiveOffices.length / ITEMS_PER_PAGE);
             if (currentPageIndex >= totalPages) currentPageIndex = 0;
 
-            // Activate and display page badge ONLY when totalPages > 1
             if (totalPages > 1) {
                 pageRotationBadge.textContent = `PAGE ${currentPageIndex + 1} / ${totalPages}`;
                 if (pageBadgeWrapper) pageBadgeWrapper.classList.remove('d-none');
@@ -969,16 +946,19 @@ if ($db_connect) {
 
             if (animate) {
                 pillarGridContainer.classList.add('fade-out');
+
                 setTimeout(() => {
                     buildPillars();
-                    pillarGridContainer.classList.remove('fade-out');
-                }, 150);
+
+                    requestAnimationFrame(() => {
+                        pillarGridContainer.classList.remove('fade-out');
+                    });
+                }, 350);
             } else {
                 buildPillars();
             }
         }
 
-        // 7. RENDER EMPTY STATE
         function renderEmptyState() {
             if (pageBadgeWrapper) pageBadgeWrapper.classList.add('d-none');
             pillarGridContainer.innerHTML = '';
@@ -986,12 +966,11 @@ if ($db_connect) {
             emptyStateDisplay.classList.remove('d-none');
         }
 
-        // 8. AUTO-PAGE ROTATION TIMER (PAUSES WHILE SPEAKING)
         function startPageRotation() {
             if (rotationTimer) clearInterval(rotationTimer);
             rotationTimer = setInterval(() => {
                 if (isSpeaking || audioQueue.length > 0) {
-                    return; // Pause rotation while announcements are playing
+                    return; 
                 }
 
                 if (cachedActiveOffices.length > ITEMS_PER_PAGE) {
@@ -1002,15 +981,12 @@ if ($db_connect) {
             }, ROTATION_INTERVAL_MS);
         }
 
-        // 9. VOICE CALLOUT QUEUE PROCESSOR WITH PAUSES
         function queueVoiceCallout(rawTicketNumber) {
-            // Converts ticket number into letter/digit units separated by commas
             const spokenTicket = rawTicketNumber
                 .split('')
                 .map(char => (char === '-' ? ' ' : char))
                 .join(', ');
 
-            // Added ellipses (...) for explicit breathing/cadence pauses
             const phrase = `Now calling... ${spokenTicket}... you may now proceed to the office.`;
             
             audioQueue.push(phrase);
@@ -1023,9 +999,7 @@ if ($db_connect) {
             isSpeaking = true;
             const nextText = audioQueue.shift();
 
-            // Step A: Play Bell Chime
             playBellDing(() => {
-                // Step B: Speak Announcement
                 if (!singleFemaleVoice) loadVoices();
 
                 const utterance = new SpeechSynthesisUtterance(nextText);
@@ -1036,7 +1010,7 @@ if ($db_connect) {
 
                 utterance.onend = function() {
                     isSpeaking = false;
-                    processAudioQueue(); // Process next queued ticket callout
+                    processAudioQueue(); 
                 };
 
                 utterance.onerror = function() {
@@ -1048,7 +1022,6 @@ if ($db_connect) {
             });
         }
 
-        // 10. INITIALIZE LOOPS
         setInterval(fetchLiveQueueData, 3000);
         fetchLiveQueueData();
         startPageRotation();
