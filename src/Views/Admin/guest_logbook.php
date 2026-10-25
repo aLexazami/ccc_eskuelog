@@ -1086,7 +1086,7 @@ if ($db_connect) {
                             : 'Priority Service';
 
                         if (modalPriorityLabel) {
-                            modalPriorityLabel.textContent = `PRIORITY PASS — ${priorityText.toUpperCase()}`;
+                            modalPriorityLabel.textContent = `PRIORITY — ${priorityText.toUpperCase()}`;
                         }
                         if (modalPriorityBadge) {
                             modalPriorityBadge.classList.remove('d-none');
