@@ -35,7 +35,7 @@ if ($db_connect) {
     <title>E-Eskuelog — <?= htmlspecialchars($page_title_text); ?></title>
 
     <style>
-        /* LIGHT THEME (DEFAULT) - MODERN FROSTED GLASSMORPHISM */
+        /* LIGHT THEME (DEFAULT) - ADAPTED GLASSMORPHISM PILLAR CARDS */
         :root {
             /* CAMPUS TEMPLATE BACKGROUND WITH BLUE GRADIENT OVERLAY */
             --bg-wrapper: linear-gradient(135deg, rgba(11, 32, 117, 0.10) 0%, rgba(0, 10, 76, 0.25) 100%), url('<?= BASE_URL; ?>public/assets/main/css/bg-template.png');
@@ -43,24 +43,24 @@ if ($db_connect) {
             --border-header: 1px solid rgba(255, 255, 255, 0.1);
             --header-title-color: #ffffff;
             
-            /* GLASSMORPHISM PILLAR CARD STYLING (LIGHT FROSTED GLASS) */
-            --bg-card: linear-gradient(135deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.08) 100%);
-            --border-card: 1px solid rgba(255, 255, 255, 0.35);
+            /* ADAPTED GLASSMORPHISM PILLAR CARD STYLING */
+            --bg-card: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.03) 100%);
+            --border-card: 1px solid rgba(255, 255, 255, 0.5);
             --card-text-color: #ffffff;
-            --card-shadow: 0 20px 40px 0 rgba(0, 16, 77, 0.25), inset 0 1px 2px 0 rgba(255, 255, 255, 0.4);
+            --card-shadow: 0 8px 32px 0 rgba(0, 16, 77, 0.2);
             
             --pillar-header-border: rgba(255, 255, 255, 0.2);
             --office-name-color: #ffffff;
-            --office-meta-color: #e2e8f0;
+            --office-meta-color: #cbd5e1;
             
             --serving-bg: rgba(0, 16, 77, 0.35);
-            --serving-border: 1px solid rgba(255, 255, 255, 0.22);
+            --serving-border: 1px solid rgba(255, 255, 255, 0.2);
             --serving-label-color: #60a5fa;
             --serving-ticket-color: #ffffff;
             
             /* SOLID GREEN HIGHLIGHT & SHADOW GLOW */
             --calling-border: #22c55e;
-            --calling-shadow: 0 0 35px rgba(34, 197, 94, 0.55), inset 0 0 15px rgba(34, 197, 94, 0.25);
+            --calling-shadow: 0 0 30px rgba(34, 197, 94, 0.55);
             
             --priority-tag-bg: linear-gradient(135deg, rgba(217, 119, 6, 0.85) 0%, rgba(245, 158, 11, 0.95) 100%);
             --priority-tag-color: #ffffff;
@@ -69,7 +69,7 @@ if ($db_connect) {
             
             --lineup-border-top: rgba(255, 255, 255, 0.2);
             --lineup-label-color: #cbd5e1;
-            --lineup-pill-bg: rgba(255, 255, 255, 0.12);
+            --lineup-pill-bg: rgba(255, 255, 255, 0.1);
             --lineup-pill-border: 1px solid rgba(255, 255, 255, 0.2);
             --lineup-pill-color: #ffffff;
             
@@ -106,41 +106,40 @@ if ($db_connect) {
             --btn-action-hover-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
         }
 
-        /* DARK THEME OVERRIDES - DARK GLASSMORPHISM */
+        /* DARK THEME OVERRIDES */
         body.dark-mode {
             --bg-wrapper: linear-gradient(135deg, rgba(15, 23, 42, 0.75) 0%, rgba(15, 23, 42, 0.92) 100%), url('<?= BASE_URL; ?>public/assets/main/css/bg-template.png');
             --bg-header: rgba(0, 16, 77, 0.4);
             --border-header: 1px solid rgba(255, 255, 255, 0.1);
             --header-title-color: #ffffff;
             
-            /* DARK GLASS PILLAR CARD STYLING */
-            --bg-card: linear-gradient(135deg, rgba(30, 41, 59, 0.65) 0%, rgba(15, 23, 42, 0.8) 100%);
-            --border-card: 1px solid rgba(255, 255, 255, 0.15);
+            --bg-card: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.04) 100%);
+            --border-card: 1px solid rgba(255, 255, 255, 0.4);
             --card-text-color: #f8fafc;
-            --card-shadow: 0 20px 40px 0 rgba(0, 0, 0, 0.45), inset 0 1px 1px 0 rgba(255, 255, 255, 0.2);
+            --card-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
             
-            --pillar-header-border: rgba(255, 255, 255, 0.1);
+            --pillar-header-border: rgba(255, 255, 255, 0.15);
             --office-name-color: #ffffff;
             --office-meta-color: #94a3b8;
             
-            --serving-bg: rgba(15, 23, 42, 0.75);
-            --serving-border: 1px solid rgba(255, 255, 255, 0.12);
+            --serving-bg: rgba(15, 23, 42, 0.65);
+            --serving-border: 1px solid rgba(255, 255, 255, 0.15);
             --serving-label-color: #f59e0b;
             --serving-ticket-color: #ffffff;
             
-            /* SOLID GREEN HIGHLIGHT & SHADOW GLOW */
+            /* SOLID GREEN HIGHLIGHT & SHADOW GLOW FOR DARK THEME */
             --calling-border: #22c55e;
-            --calling-shadow: 0 0 35px rgba(34, 197, 94, 0.6), inset 0 0 15px rgba(34, 197, 94, 0.25);
+            --calling-shadow: 0 0 35px rgba(34, 197, 94, 0.6);
             
             --priority-tag-bg: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
             --priority-tag-color: #ffffff;
             --priority-tag-border: 1px solid rgba(255, 255, 255, 0.2);
             --priority-tag-shadow: 0 2px 6px rgba(245, 158, 11, 0.4);
             
-            --lineup-border-top: rgba(255, 255, 255, 0.1);
+            --lineup-border-top: rgba(255, 255, 255, 0.15);
             --lineup-label-color: #94a3b8;
-            --lineup-pill-bg: rgba(255, 255, 255, 0.06);
-            --lineup-pill-border: 1px solid rgba(255, 255, 255, 0.12);
+            --lineup-pill-bg: rgba(255, 255, 255, 0.08);
+            --lineup-pill-border: 1px solid rgba(255, 255, 255, 0.15);
             --lineup-pill-color: #f1f5f9;
             
             --lineup-pill-priority-bg: linear-gradient(135deg, rgba(217, 119, 6, 0.25) 0%, rgba(245, 158, 11, 0.35) 100%);
@@ -148,7 +147,7 @@ if ($db_connect) {
             --lineup-pill-priority-color: #fef08a;
             
             --lineup-pill-empty-bg: transparent;
-            --lineup-pill-empty-border: 1px dashed rgba(255, 255, 255, 0.15);
+            --lineup-pill-empty-border: 1px dashed rgba(255, 255, 255, 0.2);
             --lineup-pill-empty-color: #64748b;
             
             --page-badge-bg: linear-gradient(135deg, rgba(217, 119, 6, 0.8) 0%, rgba(245, 158, 11, 0.9) 100%);
@@ -203,7 +202,7 @@ if ($db_connect) {
             transition: background 0.3s ease;
         }
 
-        /* HEADER BAR */
+        /* HEADER BAR (REFERENCE STYLING) */
         .master-header {
             display: flex;
             align-items: center;
@@ -301,44 +300,32 @@ if ($db_connect) {
             opacity: 0;
         }
 
-        /* PILLAR BANNER CARD - HIGH-END GLASSMORPHISM CARD STRUCTURE */
+        /* PILLAR BANNER CARD - DIRECTLY ADAPTED GLASSMORPHISM STYLING */
         .office-pillar-card {
             flex: 1 1 280px;
             min-width: 240px;
             max-width: 340px;
-            background: var(--bg-card);
-            border: var(--border-card);
-            border-radius: 1.25rem;
+            min-height: 240px;
+            background: var(--bg-card) !important;
+            -webkit-backdrop-filter: blur(16px) saturate(120%);
+            backdrop-filter: blur(16px) saturate(120%);
+            border: var(--border-card) !important;
+            box-shadow: var(--card-shadow) !important;
+            border-radius: 2rem;
+            overflow: hidden;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
             padding: 1.15rem;
-            box-shadow: var(--card-shadow);
-            backdrop-filter: blur(16px) saturate(160%);
-            -webkit-backdrop-filter: blur(16px) saturate(160%);
-            transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-            position: relative;
-            overflow: hidden;
             height: 100%;
             box-sizing: border-box;
+            position: relative;
+            transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), border-color 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
         }
 
-        .office-pillar-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 40%;
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0) 100%);
-            pointer-events: none;
-            border-top-left-radius: 1.25rem;
-            border-top-right-radius: 1.25rem;
-        }
-
-        /* ACTIVE CALLING HIGHLIGHT (GREEN BORDER WITH INTENSE GLASS GLOW) */
+        /* ACTIVE CALLING HIGHLIGHT (GREEN BORDER WITH INTENSE SHADOW GLOW) */
         .office-pillar-card.is-calling {
-            border: 2.5px solid var(--calling-border) !important;
+            border: 3px solid var(--calling-border) !important;
             box-shadow: var(--calling-shadow) !important;
             animation: none !important;
         }
@@ -400,12 +387,12 @@ if ($db_connect) {
             line-height: 1;
         }
 
-        /* NOW SERVING FOCUS BLOCK - FROSTED GLASS INNER CAPSULE */
+        /* NOW SERVING FOCUS BLOCK */
         .pillar-serving-block {
             text-align: center;
             padding: 0.85rem 0.5rem;
             background: var(--serving-bg);
-            border-radius: 0.95rem;
+            border-radius: 1.25rem;
             border: var(--serving-border);
             margin: 0.55rem 0;
             display: flex;
@@ -503,7 +490,7 @@ if ($db_connect) {
             font-weight: 800;
             font-size: 0.92rem;
             padding: 0.35rem 0.65rem;
-            border-radius: 0.55rem;
+            border-radius: 0.75rem;
             letter-spacing: 0.05em;
             height: 36px;
             display: flex;
@@ -564,7 +551,7 @@ if ($db_connect) {
             transition: all 0.3s ease;
         }
 
-        /* BOTTOM FOOTER BAR WITH ABSOLUTE POSITIONING */
+        /* BOTTOM FOOTER BAR (STRICT REFERENCE STYLE POSITIONING) */
         .bottom-pagination-bar {
             position: absolute;
             bottom: 0;
@@ -698,7 +685,7 @@ if ($db_connect) {
             </div>
         </div>
 
-        <!-- BOTTOM FOOTER BAR WITH ABSOLUTE POSITIONING -->
+        <!-- BOTTOM FOOTER BAR WITH ABSOLUTE POSITIONING AND REFERENCE TRANSLUCENT OVERLAY -->
         <footer class="bottom-pagination-bar">
             <div class="footer-datetime-block">
                 <i class="bi bi-calendar3 footer-datetime-icon"></i>
