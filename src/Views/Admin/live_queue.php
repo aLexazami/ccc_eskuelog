@@ -35,18 +35,19 @@ if ($db_connect) {
     <title>E-Eskuelog — <?= htmlspecialchars($page_title_text); ?></title>
 
     <style>
-        /* LIGHT THEME (DEFAULT) - ACADEMIC BLUE PILLAR CARDS */
+        /* LIGHT THEME (DEFAULT) - TEMPLATE BACKGROUND & ACADEMIC BLUE PILLAR CARDS */
         :root {
-            --bg-wrapper: radial-gradient(circle at top center, #f8fafc 0%, #e2e8f0 100%);
-            --bg-header: #ffffff;
-            --border-header: 2px solid #cbd5e1;
-            --header-title-color: #1e3a8a;
+            /* CAMPUS TEMPLATE BACKGROUND WITH BLUE GRADIENT OVERLAY */
+            --bg-wrapper: linear-gradient(135deg, rgba(11, 32, 117, 0.10) 0%, rgba(0, 10, 76, 0.25) 100%), url('<?= BASE_URL; ?>public/assets/main/css/bg-template.png');
+            --bg-header: rgba(0, 16, 77, 0.4);
+            --border-header: 1px solid rgba(255, 255, 255, 0.1);
+            --header-title-color: #ffffff;
             
             /* DEEP ACADEMIC BLUE PILLAR CARD STYLING */
             --bg-card: linear-gradient(180deg, #1e3a8a 0%, #0f172a 100%);
             --border-card: 2px solid rgba(255, 255, 255, 0.15);
             --card-text-color: #ffffff;
-            --card-shadow: 0 12px 28px -5px rgba(30, 58, 138, 0.25);
+            --card-shadow: 0 12px 28px -5px rgba(30, 58, 138, 0.35);
             
             --pillar-header-border: rgba(255, 255, 255, 0.15);
             --office-name-color: #ffffff;
@@ -84,46 +85,47 @@ if ($db_connect) {
             --page-badge-color: #ffffff;
             --page-badge-shadow: 0 3px 10px rgba(37, 99, 235, 0.3);
             
-            /* CLEAN TRANSPARENT DATETIME FOOTER */
+            /* DATETIME FOOTER COLORS */
             --datetime-bg: transparent;
             --datetime-border: none;
-            --datetime-icon-color: #2563eb;
-            --datetime-text-color: #334155;
-            --datetime-clock-color: #1e3a8a;
+            --datetime-icon-color: #60a5fa;
+            --datetime-text-color: #cbd5e1;
+            --datetime-clock-color: #ffffff;
             
-            --footer-bg: #ffffff;
-            --footer-border: 1px solid #cbd5e1;
+            --footer-bg: rgba(0, 16, 77, 0.4);
+            --footer-border: 1px solid rgba(255, 255, 255, 0.1);
 
-            /* MODERN SQUIRCLE ACTION BUTTONS - LIGHT MODE */
-            --btn-action-bg: #f8fafc;
-            --btn-action-border: 1px solid #cbd5e1;
-            --btn-action-color: #1e3a8a;
-            --btn-action-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
-            --btn-action-hover-bg: #1e3a8a;
+            /* MODERN SQUIRCLE ACTION BUTTONS */
+            --btn-action-bg: rgba(255, 255, 255, 0.12);
+            --btn-action-border: 1px solid rgba(255, 255, 255, 0.2);
+            --btn-action-color: #ffffff;
+            --btn-action-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            --btn-action-hover-bg: #2563eb;
             --btn-action-hover-color: #ffffff;
-            --btn-action-hover-border: 1px solid #1e3a8a;
-            --btn-action-hover-shadow: 0 4px 12px rgba(30, 58, 138, 0.25);
+            --btn-action-hover-border: 1px solid #3b82f6;
+            --btn-action-hover-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
         }
 
-        /* DARK THEME OVERRIDES */
+        /* DARK THEME OVERRIDES - PILLAR BANNERS MATCH LIGHT THEME ACADEMIC BLUE STYLE */
         body.dark-mode {
-            --bg-wrapper: radial-gradient(circle at top center, #1e3a8a 0%, #0f172a 70%);
-            --bg-header: rgba(15, 23, 42, 0.88);
+            --bg-wrapper: linear-gradient(135deg, rgba(15, 23, 42, 0.70) 0%, rgba(15, 23, 42, 0.88) 100%), url('<?= BASE_URL; ?>public/assets/main/css/bg-template.png');
+            --bg-header: rgba(0, 16, 77, 0.4);
             --border-header: 1px solid rgba(255, 255, 255, 0.1);
             --header-title-color: #ffffff;
             
-            --bg-card: rgba(30, 41, 59, 0.85);
-            --border-card: 2px solid #334155;
-            --card-text-color: #f8fafc;
-            --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            /* PILLAR CARD STYLING COPIED FROM LIGHT THEME */
+            --bg-card: linear-gradient(180deg, #1e3a8a 0%, #0f172a 100%);
+            --border-card: 2px solid rgba(255, 255, 255, 0.15);
+            --card-text-color: #ffffff;
+            --card-shadow: 0 12px 28px -5px rgba(30, 58, 138, 0.35);
             
-            --pillar-header-border: rgba(255, 255, 255, 0.1);
+            --pillar-header-border: rgba(255, 255, 255, 0.15);
             --office-name-color: #ffffff;
-            --office-meta-color: #94a3b8;
+            --office-meta-color: #93c5fd;
             
-            --serving-bg: rgba(15, 23, 42, 0.65);
-            --serving-border: 1px solid rgba(255, 255, 255, 0.08);
-            --serving-label-color: #f59e0b;
+            --serving-bg: rgba(15, 23, 42, 0.6);
+            --serving-border: 1.5px solid rgba(59, 130, 246, 0.4);
+            --serving-label-color: #60a5fa;
             --serving-ticket-color: #ffffff;
             
             /* SOLID GREEN HIGHLIGHT & SHADOW GLOW FOR DARK THEME */
@@ -135,19 +137,19 @@ if ($db_connect) {
             --priority-tag-border: none;
             --priority-tag-shadow: 0 2px 6px rgba(245, 158, 11, 0.4);
             
-            --lineup-border-top: rgba(255, 255, 255, 0.1);
-            --lineup-label-color: #94a3b8;
+            --lineup-border-top: rgba(255, 255, 255, 0.15);
+            --lineup-label-color: #93c5fd;
             --lineup-pill-bg: rgba(255, 255, 255, 0.08);
-            --lineup-pill-border: 1px solid rgba(255, 255, 255, 0.1);
-            --lineup-pill-color: #f1f5f9;
+            --lineup-pill-border: 1px solid rgba(255, 255, 255, 0.15);
+            --lineup-pill-color: #f8fafc;
             
             --lineup-pill-priority-bg: linear-gradient(135deg, rgba(217, 119, 6, 0.25) 0%, rgba(245, 158, 11, 0.35) 100%);
             --lineup-pill-priority-border: 1.5px solid #f59e0b;
             --lineup-pill-priority-color: #fef08a;
             
             --lineup-pill-empty-bg: transparent;
-            --lineup-pill-empty-border: 1px dashed rgba(255, 255, 255, 0.2);
-            --lineup-pill-empty-color: #94a3b8;
+            --lineup-pill-empty-border: 1px dashed rgba(255, 255, 255, 0.25);
+            --lineup-pill-empty-color: #93c5fd;
             
             --page-badge-bg: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
             --page-badge-color: #ffffff;
@@ -159,13 +161,13 @@ if ($db_connect) {
             --datetime-text-color: #94a3b8;
             --datetime-clock-color: #ffffff;
             
-            --footer-bg: rgba(15, 23, 42, 0.7);
-            --footer-border: 1px solid rgba(255, 255, 255, 0.08);
+            --footer-bg: rgba(0, 16, 77, 0.4);
+            --footer-border: 1px solid rgba(255, 255, 255, 0.1);
 
             /* MODERN SQUIRCLE ACTION BUTTONS - DARK MODE */
-            --btn-action-bg: rgba(30, 41, 59, 0.8);
-            --btn-action-border: 1px solid rgba(255, 255, 255, 0.15);
-            --btn-action-color: #f8fafc;
+            --btn-action-bg: rgba(255, 255, 255, 0.12);
+            --btn-action-border: 1px solid rgba(255, 255, 255, 0.2);
+            --btn-action-color: #ffffff;
             --btn-action-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
             --btn-action-hover-bg: #2563eb;
             --btn-action-hover-color: #ffffff;
@@ -183,8 +185,9 @@ if ($db_connect) {
             transition: background-color 0.3s ease;
         }
 
-        /* FULLSCREEN MASTER WRAPPER */
+        /* FULLSCREEN MASTER WRAPPER WITH COVER BACKGROUND TEMPLATE */
         .master-screen-wrapper {
+            position: relative;
             display: flex;
             flex-direction: column;
             height: 100vh;
@@ -193,17 +196,20 @@ if ($db_connect) {
             margin: 0;
             box-sizing: border-box;
             background: var(--bg-wrapper);
+            background-size: cover;
+            background-position: center center;
+            background-attachment: fixed;
             overflow: hidden;
             transition: background 0.3s ease;
         }
 
-        /* HEADER BAR */
+        /* HEADER BAR (MATCHING REFERENCE OVERLAY STYLING) */
         .master-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background: var(--bg-header);
-            border-bottom: var(--border-header);
+            background-color: rgba(0, 16, 77, 0.4) !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             padding: 0.75rem 1.75rem;
             margin: 0;
             width: 100%;
@@ -211,7 +217,8 @@ if ($db_connect) {
             box-sizing: border-box;
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            z-index: 10;
             transition: all 0.3s ease;
         }
 
@@ -273,7 +280,7 @@ if ($db_connect) {
             flex-direction: column;
             flex-grow: 1;
             overflow: hidden;
-            padding: 0.85rem 1.25rem 0.2rem 1.25rem;
+            padding: 0.85rem 1.25rem 3.5rem 1.25rem;
             box-sizing: border-box;
         }
 
@@ -307,6 +314,8 @@ if ($db_connect) {
             justify-content: space-between;
             padding: 1rem;
             box-shadow: var(--card-shadow);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
             transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
             position: relative;
             overflow: hidden;
@@ -314,7 +323,7 @@ if ($db_connect) {
             box-sizing: border-box;
         }
 
-        /* ACTIVE CALLING HIGHLIGHT (GREEN BORDER WITH GREEN SHADOW GLOW, NO PULSE ANIMATION) */
+        /* ACTIVE CALLING HIGHLIGHT (GREEN BORDER WITH GREEN SHADOW GLOW) */
         .office-pillar-card.is-calling {
             border: 3px solid var(--calling-border) !important;
             box-shadow: var(--calling-shadow) !important;
@@ -526,21 +535,28 @@ if ($db_connect) {
             transition: all 0.3s ease;
         }
 
-        /* BOTTOM FOOTER BAR WITH BOTTOM-RIGHT DATETIME */
+        /* BOTTOM FOOTER BAR (STRICT REFERENCE STYLE POSITIONING) */
         .bottom-pagination-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
             display: flex;
             align-items: center;
             justify-content: flex-end;
             padding: 0.45rem 1.5rem;
-            background: var(--footer-bg);
-            border-top: var(--footer-border);
+            background-color: rgba(0, 16, 77, 0.4) !important;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
             flex-shrink: 0;
             width: 100%;
             box-sizing: border-box;
+            z-index: 100;
             transition: all 0.3s ease;
         }
 
-        /* CLEANED DATETIME CAPSULE BLOCK (NO BOX BORDER / CONTAINER SHADOW) */
+        /* CLEANED DATETIME CAPSULE BLOCK */
         .footer-datetime-block {
             display: flex;
             align-items: center;
@@ -566,7 +582,7 @@ if ($db_connect) {
         }
 
         .datetime-divider {
-            color: #94a3b8;
+            color: rgba(255, 255, 255, 0.4);
             font-weight: 400;
             font-size: 0.85rem;
             margin: 0 0.1rem;
@@ -653,7 +669,7 @@ if ($db_connect) {
             </div>
         </div>
 
-        <!-- BOTTOM FOOTER BAR WITH CLEAN DATETIME -->
+        <!-- BOTTOM FOOTER BAR WITH ABSOLUTE POSITIONING AND REFERENCE TRANSLUCENT OVERLAY -->
         <footer class="bottom-pagination-bar">
             <div class="footer-datetime-block">
                 <i class="bi bi-calendar3 footer-datetime-icon"></i>
