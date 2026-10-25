@@ -35,53 +35,54 @@ if ($db_connect) {
     <title>E-Eskuelog — <?= htmlspecialchars($page_title_text); ?></title>
 
     <style>
-        /* LIGHT THEME (DEFAULT) */
+        /* LIGHT THEME (DEFAULT) - ACADEMIC BLUE PILLAR CARDS */
         :root {
-            --bg-wrapper: radial-gradient(circle at top center, #ffffff 0%, #f1f5f9 100%);
+            --bg-wrapper: radial-gradient(circle at top center, #f8fafc 0%, #e2e8f0 100%);
             --bg-header: #ffffff;
-            --border-header: 2px solid #e2e8f0;
+            --border-header: 2px solid #cbd5e1;
             --header-title-color: #1e3a8a;
             
-            --bg-card: #ffffff;
-            --border-card: 1px solid #cbd5e1;
-            --card-text-color: #0f172a;
-            --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+            /* DEEP ACADEMIC BLUE PILLAR CARD STYLING */
+            --bg-card: linear-gradient(180deg, #1e3a8a 0%, #0f172a 100%);
+            --border-card: 2px solid rgba(255, 255, 255, 0.15);
+            --card-text-color: #ffffff;
+            --card-shadow: 0 12px 28px -5px rgba(30, 58, 138, 0.25);
             
-            --pillar-header-border: #e2e8f0;
-            --office-name-color: #1e3a8a;
-            --office-meta-color: #64748b;
+            --pillar-header-border: rgba(255, 255, 255, 0.15);
+            --office-name-color: #ffffff;
+            --office-meta-color: #93c5fd;
             
-            --serving-bg: #eff6ff;
-            --serving-border: 1.5px solid #bfdbfe;
-            --serving-label-color: #1e3a8a;
-            --serving-ticket-color: #0f172a;
+            --serving-bg: rgba(15, 23, 42, 0.6);
+            --serving-border: 1.5px solid rgba(59, 130, 246, 0.4);
+            --serving-label-color: #60a5fa;
+            --serving-ticket-color: #ffffff;
             
-            /* HIGH-CONTRAST ACADEMIC BLUE HIGHLIGHTS & PRIORITY TAGS FOR LIGHT THEME */
-            --calling-border: #2563eb;
-            --calling-glow: rgba(37, 99, 235, 0.22);
+            /* SOLID GREEN HIGHLIGHT & SHADOW GLOW */
+            --calling-border: #22c55e;
+            --calling-shadow: 0 0 25px rgba(34, 197, 94, 0.45);
             
-            --priority-tag-bg: #dbeafe;
-            --priority-tag-color: #1e40af;
-            --priority-tag-border: 1px solid #93c5fd;
-            --priority-tag-shadow: 0 2px 4px rgba(37, 99, 235, 0.12);
+            --priority-tag-bg: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
+            --priority-tag-color: #ffffff;
+            --priority-tag-border: none;
+            --priority-tag-shadow: 0 2px 6px rgba(245, 158, 11, 0.4);
             
-            --lineup-border-top: #e2e8f0;
-            --lineup-label-color: #64748b;
-            --lineup-pill-bg: #f8fafc;
-            --lineup-pill-border: 1px solid #e2e8f0;
-            --lineup-pill-color: #334155;
+            --lineup-border-top: rgba(255, 255, 255, 0.15);
+            --lineup-label-color: #93c5fd;
+            --lineup-pill-bg: rgba(255, 255, 255, 0.08);
+            --lineup-pill-border: 1px solid rgba(255, 255, 255, 0.15);
+            --lineup-pill-color: #f8fafc;
             
-            --lineup-pill-priority-bg: #dbeafe;
-            --lineup-pill-priority-border: 1.5px solid #93c5fd;
-            --lineup-pill-priority-color: #1e40af;
+            --lineup-pill-priority-bg: linear-gradient(135deg, rgba(217, 119, 6, 0.25) 0%, rgba(245, 158, 11, 0.35) 100%);
+            --lineup-pill-priority-border: 1.5px solid #f59e0b;
+            --lineup-pill-priority-color: #fef08a;
             
-            --lineup-pill-empty-bg: #ffffff;
-            --lineup-pill-empty-border: 1px dashed #cbd5e1;
-            --lineup-pill-empty-color: #cbd5e1;
+            --lineup-pill-empty-bg: transparent;
+            --lineup-pill-empty-border: 1px dashed rgba(255, 255, 255, 0.25);
+            --lineup-pill-empty-color: #93c5fd;
             
-            --page-badge-bg: #1e3a8a;
+            --page-badge-bg: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
             --page-badge-color: #ffffff;
-            --page-badge-shadow: 0 3px 10px rgba(30, 58, 138, 0.2);
+            --page-badge-shadow: 0 3px 10px rgba(37, 99, 235, 0.3);
             
             /* CLEAN TRANSPARENT DATETIME FOOTER */
             --datetime-bg: transparent;
@@ -91,7 +92,7 @@ if ($db_connect) {
             --datetime-clock-color: #1e3a8a;
             
             --footer-bg: #ffffff;
-            --footer-border: 1px solid #e2e8f0;
+            --footer-border: 1px solid #cbd5e1;
 
             /* MODERN SQUIRCLE ACTION BUTTONS - LIGHT MODE */
             --btn-action-bg: #f8fafc;
@@ -125,9 +126,9 @@ if ($db_connect) {
             --serving-label-color: #f59e0b;
             --serving-ticket-color: #ffffff;
             
-            /* GOLD HIGHLIGHT & PRIORITY TAGS FOR DARK THEME */
-            --calling-border: #f59e0b;
-            --calling-glow: rgba(245, 158, 11, 0.45);
+            /* SOLID GREEN HIGHLIGHT & SHADOW GLOW FOR DARK THEME */
+            --calling-border: #22c55e;
+            --calling-shadow: 0 0 30px rgba(34, 197, 94, 0.55);
             
             --priority-tag-bg: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
             --priority-tag-color: #ffffff;
@@ -313,17 +314,11 @@ if ($db_connect) {
             box-sizing: border-box;
         }
 
-        /* ACTIVE CALLING HIGHLIGHT ANIMATION */
+        /* ACTIVE CALLING HIGHLIGHT (GREEN BORDER WITH GREEN SHADOW GLOW, NO PULSE ANIMATION) */
         .office-pillar-card.is-calling {
-            border-color: var(--calling-border) !important;
-            box-shadow: 0 0 25px var(--calling-glow) !important;
-            animation: pulseGlow 1.5s infinite ease-in-out;
-        }
-
-        @keyframes pulseGlow {
-            0% { box-shadow: 0 0 15px var(--calling-glow); }
-            50% { box-shadow: 0 0 35px var(--calling-glow); }
-            100% { box-shadow: 0 0 15px var(--calling-glow); }
+            border: 3px solid var(--calling-border) !important;
+            box-shadow: var(--calling-shadow) !important;
+            animation: none !important;
         }
 
         /* PILLAR HEADER SECTION - FIXED HEIGHT LOCK FOR UNIFORM ALIGNMENT */
@@ -677,7 +672,7 @@ if ($db_connect) {
         // Dynamic Monitor Mode Configuration
         const QUEUE_MODE           = <?= json_encode($queue_mode); ?>;
         const ITEMS_PER_PAGE       = 5; // Display max 5 offices per page
-        const ROTATION_INTERVAL_MS = 5000; // Rotate page every 8 seconds
+        const ROTATION_INTERVAL_MS = 5000; // Rotate page every 5 seconds
 
         // DOM Handles
         const digitalDate         = document.getElementById('digitalDate');
