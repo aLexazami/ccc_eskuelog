@@ -620,3 +620,9 @@ Stack trace:
 #1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(149): require_once('C:\\xampp\\htdocs...')
 #2 {main}
   thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\logbook_handler.php on line 210
+[25-Oct-2026 09:38:16 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[25-Oct-2026 09:38:16 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[25-Oct-2026 09:38:16 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[25-Oct-2026 09:38:16 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[25-Oct-2026 09:38:16 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[25-Oct-2026 09:38:16 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
