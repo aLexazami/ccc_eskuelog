@@ -35,7 +35,7 @@ if ($db_connect) {
     <title>E-Eskuelog — <?= htmlspecialchars($page_title_text); ?></title>
 
     <style>
-        /* LIGHT THEME (DEFAULT) - HIGH CONTRAST FROSTED GLASS */
+        /* LIGHT THEME (DEFAULT) - HIGH CONTRAST FROSTED SLATE BLUE GLASS */
         :root {
             /* CAMPUS TEMPLATE BACKGROUND WITH BLUE GRADIENT OVERLAY */
             --bg-wrapper: linear-gradient(135deg, rgba(11, 32, 117, 0.15) 0%, rgba(0, 10, 76, 0.35) 100%), url('<?= BASE_URL; ?>public/assets/main/css/bg-template.png');
@@ -106,15 +106,16 @@ if ($db_connect) {
             --btn-action-hover-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
         }
 
-        /* DARK THEME OVERRIDES - EXACT MIRRORED GLASSMORPHISM STYLE */
+        /* DARK THEME OVERRIDES - EXACT IDENTICAL FROSTED SLATE BLUE GLASS STYLE */
         body.dark-mode {
+            /* DEEPER DARK BLUE WRAPPER OVERLAY */
             --bg-wrapper: linear-gradient(135deg, rgba(10, 15, 28, 0.88) 0%, rgba(15, 23, 42, 0.96) 100%), url('<?= BASE_URL; ?>public/assets/main/css/bg-template.png');
-            --bg-header: rgba(10, 15, 30, 0.65);
+            --bg-header: rgba(0, 16, 77, 0.55);
             --border-header: 1px solid rgba(255, 255, 255, 0.15);
             --header-title-color: #ffffff;
             
-            /* DARK OBSIDIAN SLATE FROSTED GLASS CARD */
-            --bg-card: linear-gradient(135deg, rgba(30, 41, 59, 0.85) 0%, rgba(15, 23, 42, 0.88) 100%);
+            /* MATCHES LIGHT THEME HIGH-CONTRAST FROSTED SLATE BLUE GLASS CARD */
+            --bg-card: linear-gradient(135deg, rgba(15, 23, 42, 0.78) 0%, rgba(30, 58, 138, 0.72) 100%);
             --border-card: 1px solid rgba(255, 255, 255, 0.25);
             --card-text-color: #ffffff;
             --card-shadow: 0 16px 36px rgba(0, 0, 0, 0.6);
@@ -123,7 +124,7 @@ if ($db_connect) {
             --office-name-color: #ffffff;
             --office-meta-color: #93c5fd;
             
-            --serving-bg: rgba(15, 23, 42, 0.75);
+            --serving-bg: rgba(15, 23, 42, 0.65);
             --serving-border: 1px solid rgba(59, 130, 246, 0.4);
             --serving-label-color: #60a5fa;
             --serving-ticket-color: #ffffff;
@@ -146,7 +147,7 @@ if ($db_connect) {
             --lineup-pill-priority-border: 1.5px solid #f59e0b;
             --lineup-pill-priority-color: #fef08a;
             
-            --lineup-pill-empty-bg: rgba(15, 23, 42, 0.4);
+            --lineup-pill-empty-bg: rgba(15, 23, 42, 0.3);
             --lineup-pill-empty-border: 1px dashed rgba(255, 255, 255, 0.25);
             --lineup-pill-empty-color: #94a3b8;
             
@@ -160,7 +161,7 @@ if ($db_connect) {
             --datetime-text-color: #cbd5e1;
             --datetime-clock-color: #ffffff;
             
-            --footer-bg: rgba(10, 15, 30, 0.65);
+            --footer-bg: rgba(0, 16, 77, 0.5);
             --footer-border: 1px solid rgba(255, 255, 255, 0.15);
 
             --btn-action-bg: rgba(255, 255, 255, 0.14);
