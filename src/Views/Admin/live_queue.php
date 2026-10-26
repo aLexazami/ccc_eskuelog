@@ -38,13 +38,13 @@ if ($db_connect) {
         /* LIGHT THEME (DEFAULT) - HIGH CONTRAST FROSTED SLATE BLUE GLASS */
         :root {
             /* CAMPUS TEMPLATE BACKGROUND WITH BLUE GRADIENT OVERLAY */
-            --bg-wrapper: linear-gradient(135deg, rgba(11, 32, 117, 0.15) 0%, rgba(0, 10, 76, 0.35) 100%), url('<?= BASE_URL; ?>public/assets/main/css/bg-template.png');
-            --bg-header: rgba(0, 16, 77, 0.55);
+            --bg-wrapper: linear-gradient(135deg, rgba(11, 32, 117, 0.25) 0%, rgba(0, 10, 76, 0.45) 100%), url('<?= BASE_URL; ?>public/assets/main/css/bg-template.png');
+            --bg-header: rgba(0, 16, 77, 0.88);
             --border-header: 1px solid rgba(255, 255, 255, 0.15);
             --header-title-color: #ffffff;
             
             /* HIGH CONTRAST FROSTED DEEP-BLUE GLASS CARD */
-            --bg-card: linear-gradient(135deg, rgba(15, 23, 42, 0.78) 0%, rgba(30, 58, 138, 0.72) 100%);
+            --bg-card: linear-gradient(135deg, rgba(15, 23, 42, 0.86) 0%, rgba(30, 58, 138, 0.80) 100%);
             --border-card: 1px solid rgba(255, 255, 255, 0.25);
             --card-text-color: #ffffff;
             --card-shadow: 0 16px 36px rgba(0, 10, 50, 0.4);
@@ -53,7 +53,7 @@ if ($db_connect) {
             --office-name-color: #ffffff;
             --office-meta-color: #93c5fd;
             
-            --serving-bg: rgba(15, 23, 42, 0.65);
+            --serving-bg: rgba(15, 23, 42, 0.75);
             --serving-border: 1px solid rgba(59, 130, 246, 0.4);
             --serving-label-color: #60a5fa;
             --serving-ticket-color: #ffffff;
@@ -92,7 +92,7 @@ if ($db_connect) {
             --datetime-text-color: #cbd5e1;
             --datetime-clock-color: #ffffff;
             
-            --footer-bg: rgba(0, 16, 77, 0.5);
+            --footer-bg: rgba(0, 16, 77, 0.85);
             --footer-border: 1px solid rgba(255, 255, 255, 0.15);
 
             /* MODERN SQUIRCLE ACTION BUTTONS */
@@ -106,16 +106,14 @@ if ($db_connect) {
             --btn-action-hover-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
         }
 
-        /* DARK THEME OVERRIDES - EXACT IDENTICAL FROSTED SLATE BLUE GLASS STYLE */
+        /* DARK THEME OVERRIDES */
         body.dark-mode {
-            /* DEEPER DARK BLUE WRAPPER OVERLAY */
-            --bg-wrapper: linear-gradient(135deg, rgba(10, 15, 28, 0.88) 0%, rgba(15, 23, 42, 0.96) 100%), url('<?= BASE_URL; ?>public/assets/main/css/bg-template.png');
-            --bg-header: rgba(0, 16, 77, 0.55);
+            --bg-wrapper: linear-gradient(135deg, rgba(10, 15, 28, 0.92) 0%, rgba(15, 23, 42, 0.98) 100%), url('<?= BASE_URL; ?>public/assets/main/css/bg-template.png');
+            --bg-header: rgba(0, 16, 77, 0.90);
             --border-header: 1px solid rgba(255, 255, 255, 0.15);
             --header-title-color: #ffffff;
             
-            /* MATCHES LIGHT THEME HIGH-CONTRAST FROSTED SLATE BLUE GLASS CARD */
-            --bg-card: linear-gradient(135deg, rgba(15, 23, 42, 0.78) 0%, rgba(30, 58, 138, 0.72) 100%);
+            --bg-card: linear-gradient(135deg, rgba(15, 23, 42, 0.88) 0%, rgba(30, 58, 138, 0.82) 100%);
             --border-card: 1px solid rgba(255, 255, 255, 0.25);
             --card-text-color: #ffffff;
             --card-shadow: 0 16px 36px rgba(0, 0, 0, 0.6);
@@ -124,7 +122,7 @@ if ($db_connect) {
             --office-name-color: #ffffff;
             --office-meta-color: #93c5fd;
             
-            --serving-bg: rgba(15, 23, 42, 0.65);
+            --serving-bg: rgba(15, 23, 42, 0.75);
             --serving-border: 1px solid rgba(59, 130, 246, 0.4);
             --serving-label-color: #60a5fa;
             --serving-ticket-color: #ffffff;
@@ -161,7 +159,7 @@ if ($db_connect) {
             --datetime-text-color: #cbd5e1;
             --datetime-clock-color: #ffffff;
             
-            --footer-bg: rgba(0, 16, 77, 0.5);
+            --footer-bg: rgba(0, 16, 77, 0.90);
             --footer-border: 1px solid rgba(255, 255, 255, 0.15);
 
             --btn-action-bg: rgba(255, 255, 255, 0.14);
@@ -202,7 +200,7 @@ if ($db_connect) {
             transition: background 0.3s ease;
         }
 
-        /* HEADER BAR */
+        /* HEADER BAR (SOLID TRANSLUCENT FILL TO PREVENT BLUR INVALIDATION) */
         .master-header {
             display: flex;
             align-items: center;
@@ -214,11 +212,10 @@ if ($db_connect) {
             width: 100%;
             flex-shrink: 0;
             box-sizing: border-box;
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
             z-index: 10;
-            transition: all 0.3s ease;
+            transition: background-color 0.3s ease;
+            isolation: isolate;
         }
 
         .master-title {
@@ -244,7 +241,7 @@ if ($db_connect) {
             box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
         }
 
-        /* ACTION BUTTONS */
+        /* ACTION BUTTONS (NO TRANSFORM TO PREVENT GPU REPAINT PASSES) */
         .header-action-btn {
             display: inline-flex;
             align-items: center;
@@ -256,7 +253,7 @@ if ($db_connect) {
             background: var(--btn-action-bg);
             color: var(--btn-action-color);
             box-shadow: var(--btn-action-shadow);
-            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
             cursor: pointer;
             outline: none;
         }
@@ -265,11 +262,10 @@ if ($db_connect) {
             background: var(--btn-action-hover-bg);
             color: var(--btn-action-hover-color);
             border: var(--btn-action-hover-border);
-            transform: translateY(-2px);
             box-shadow: var(--btn-action-hover-shadow);
         }
 
-        /* MAIN DISPLAY AREA */
+        /* MAIN DISPLAY AREA (PAINT ISOLATION) */
         .main-display-area {
             display: flex;
             flex-direction: column;
@@ -277,9 +273,10 @@ if ($db_connect) {
             overflow: hidden;
             padding: 0.85rem 1.25rem 3.8rem 1.25rem;
             box-sizing: border-box;
+            contain: paint;
         }
 
-        /* HORIZONTAL PILLAR GRID WITH SMOOTH GPU ROTATION */
+        /* HORIZONTAL PILLAR GRID */
         .pillar-grid-container {
             display: flex;
             flex-direction: row;
@@ -298,15 +295,13 @@ if ($db_connect) {
             transform: scale(0.97) translateY(4px);
         }
 
-        /* FROSTED GLASS PILLAR CARD */
+        /* FROSTED GLASS PILLAR CARD (ISOLATED CONTAINMENT) */
         .office-pillar-card {
             flex: 1 1 280px;
             min-width: 240px;
             max-width: 340px;
             min-height: 240px;
             background: var(--bg-card) !important;
-            -webkit-backdrop-filter: blur(12px);
-            backdrop-filter: blur(12px);
             border: var(--border-card) !important;
             box-shadow: var(--card-shadow) !important;
             border-radius: 1.75rem;
@@ -318,13 +313,26 @@ if ($db_connect) {
             height: 100%;
             box-sizing: border-box;
             position: relative;
-            transform: translateZ(0);
-            will-change: transform, backdrop-filter;
-            transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), border-color 0.3s ease, box-shadow 0.3s ease;
+            contain: paint;
+            isolation: isolate;
+            transition: box-shadow 0.3s ease, outline-color 0.3s ease;
+        }
+
+        /* SINGLE BACKDROP BLUR PASS */
+        .office-pillar-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(12px);
+            z-index: -1;
+            pointer-events: none;
         }
 
         .office-pillar-card.is-calling {
-            border: 3px solid var(--calling-border) !important;
+            outline: 3px solid var(--calling-border) !important;
+            outline-offset: -3px;
             box-shadow: var(--calling-shadow) !important;
             animation: none !important;
         }
@@ -339,7 +347,8 @@ if ($db_connect) {
             align-items: center;
             justify-content: flex-start;
             flex-shrink: 0;
-            height: 124px;
+            min-height: 120px;
+            height: auto;
             box-sizing: border-box;
             position: relative;
             z-index: 2;
@@ -355,7 +364,9 @@ if ($db_connect) {
             padding: 2px;
             margin: 0 auto 0.35rem auto;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-            display: block;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             flex-shrink: 0;
         }
 
@@ -372,7 +383,7 @@ if ($db_connect) {
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
-            height: 2.5em;
+            max-height: 2.5em;
             width: 100%;
             text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
         }
@@ -403,8 +414,6 @@ if ($db_connect) {
             box-sizing: border-box;
             position: relative;
             z-index: 2;
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
             box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.15), 0 4px 15px rgba(0, 0, 0, 0.15);
         }
 
@@ -497,8 +506,6 @@ if ($db_connect) {
             justify-content: center;
             box-sizing: border-box;
             white-space: nowrap;
-            backdrop-filter: blur(4px);
-            -webkit-backdrop-filter: blur(4px);
         }
 
         .lineup-pill.is-priority {
@@ -544,8 +551,6 @@ if ($db_connect) {
             letter-spacing: 0.08em;
             text-transform: uppercase;
             box-shadow: var(--page-badge-shadow);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
             border: 1px solid rgba(255, 255, 255, 0.25);
             transition: all 0.3s ease;
         }
@@ -561,14 +566,12 @@ if ($db_connect) {
             justify-content: flex-end;
             padding: 0.45rem 1.5rem;
             background-color: var(--footer-bg) !important;
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
             border-top: var(--footer-border);
             flex-shrink: 0;
             width: 100%;
             box-sizing: border-box;
             z-index: 100;
-            transition: all 0.3s ease;
+            transition: background-color 0.3s ease;
         }
 
         .footer-datetime-block {
@@ -713,6 +716,7 @@ if ($db_connect) {
         let cachedActiveOffices   = [];
         let currentPageIndex      = 0;
         let rotationTimer         = null;
+        let lastRenderedJson      = '';
 
         function applyTheme(isDark) {
             if (isDark) {
@@ -841,33 +845,39 @@ if ($db_connect) {
                     cachedActiveOffices = result.data.active_offices || [];
                     
                     if (cachedActiveOffices.length === 0) {
-                        renderEmptyState();
-                    } else {
-                        let targetPageIndex = -1;
-
-                        cachedActiveOffices.forEach((office, index) => {
-                            const isCalling = office.now_serving && office.now_serving.status === 'CALLED';
-                            
-                            if (isCalling && office.now_serving.ticket_number) {
-                                const callKey = `${office.now_serving.ticket_number}_${office.now_serving.called_at || ''}`;
-
-                                if (!calledTicketsHistory.has(callKey)) {
-                                    calledTicketsHistory.add(callKey);
-                                    
-                                    queueVoiceCallout(office.now_serving.ticket_number);
-
-                                    targetPageIndex = Math.floor(index / ITEMS_PER_PAGE);
-                                }
-                            }
-                        });
-
-                        if (targetPageIndex !== -1 && targetPageIndex !== currentPageIndex) {
-                            currentPageIndex = targetPageIndex;
-                            renderCurrentPage(true);
-                            startPageRotation();
-                        } else {
-                            renderCurrentPage(false);
+                        if (lastRenderedJson !== 'EMPTY_STATE') {
+                            renderEmptyState();
+                            lastRenderedJson = 'EMPTY_STATE';
                         }
+                        return;
+                    }
+
+                    let targetPageIndex = -1;
+
+                    cachedActiveOffices.forEach((office, index) => {
+                        const isCalling = office.now_serving && office.now_serving.status === 'CALLED';
+                        
+                        if (isCalling && office.now_serving.ticket_number) {
+                            const callKey = `${office.now_serving.ticket_number}_${office.now_serving.called_at || ''}`;
+
+                            if (!calledTicketsHistory.has(callKey)) {
+                                calledTicketsHistory.add(callKey);
+                                queueVoiceCallout(office.now_serving.ticket_number);
+                                targetPageIndex = Math.floor(index / ITEMS_PER_PAGE);
+                            }
+                        }
+                    });
+
+                    const currentDataFingerprint = JSON.stringify(cachedActiveOffices);
+
+                    if (targetPageIndex !== -1 && targetPageIndex !== currentPageIndex) {
+                        currentPageIndex = targetPageIndex;
+                        renderCurrentPage(true);
+                        startPageRotation();
+                        lastRenderedJson = currentDataFingerprint;
+                    } else if (currentDataFingerprint !== lastRenderedJson) {
+                        renderCurrentPage(false);
+                        lastRenderedJson = currentDataFingerprint;
                     }
                 }
             })
@@ -914,8 +924,8 @@ if ($db_connect) {
                     }
 
                     const logoHtml = office.office_logo 
-                        ? `<img src="<?= BASE_URL; ?>${office.office_logo}" class="pillar-logo-img" alt="Logo">`
-                        : `<div class="pillar-logo-img d-flex align-items-center justify-content-center text-primary fw-bold fs-4"><i class="bi bi-building"></i></div>`;
+                        ? `<img src="<?= BASE_URL; ?>${office.office_logo}" class="pillar-logo-img" alt="Logo" width="46" height="46">`
+                        : `<div class="pillar-logo-img text-primary fw-bold fs-4"><i class="bi bi-building"></i></div>`;
 
                     pillar.innerHTML = `
                         <div class="pillar-header">
