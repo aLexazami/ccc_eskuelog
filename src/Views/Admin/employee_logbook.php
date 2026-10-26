@@ -46,6 +46,12 @@ if ($db_connect) {
     <!-- MODERN KIOSK CUSTOM STYLES -->
     <style>
         :root {
+            /* CAMPUS TEMPLATE BACKGROUND WITH BLUE GRADIENT OVERLAY */
+            --bg-wrapper: linear-gradient(135deg, rgba(11, 32, 117, 0.25) 0%, rgba(0, 10, 76, 0.45) 100%), url('<?= BASE_URL; ?>public/assets/main/css/bg-template.png');
+            --bg-header: rgba(0, 16, 77, 0.88);
+            --border-header: 1px solid rgba(255, 255, 255, 0.15);
+            --header-title-color: #ffffff;
+
             --kiosk-primary: #1d4ed8;
             --kiosk-primary-hover: #1e40af;
             --kiosk-primary-light: #eff6ff;
@@ -277,10 +283,15 @@ if ($db_connect) {
             padding: 1.25rem;
         }
 
-        /* FULLSCREEN KIOSK OVERRIDES (Deep Blue Theme) */
+        /* FULLSCREEN KIOSK OVERRIDES */
         :fullscreen,
         :-webkit-full-screen {
-            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%) !important;
+            background-color: #000a4c !important;
+            background-image: var(--bg-wrapper) !important;
+            background-position: center center !important;
+            background-repeat: no-repeat !important;
+            background-size: cover !important;
+            background-attachment: fixed !important;
         }
 
         :fullscreen .sidebar,
@@ -302,7 +313,12 @@ if ($db_connect) {
             margin: 0 !important;
             float: none !important;
             overflow-y: auto !important;
-            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%) !important; 
+            background-color: #000a4c !important;
+            background-image: var(--bg-wrapper) !important;
+            background-position: center center !important;
+            background-repeat: no-repeat !important;
+            background-size: cover !important;
+            background-attachment: fixed !important;
         }
 
         :fullscreen .container,
@@ -316,7 +332,7 @@ if ($db_connect) {
         :fullscreen .kiosk-main-card,
         :-webkit-full-screen .kiosk-main-card {
             max-width: 1100px;
-            margin: 0.5rem auto !important;
+            margin: 0.5rem auto 18em auto !important;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4) !important;
             border-radius: 1rem !important;
         }
@@ -396,6 +412,7 @@ if ($db_connect) {
             transform: translateY(-1px);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
         }
+
         .header-action-btn:active {
             transform: translateY(0);
         }
