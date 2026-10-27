@@ -1076,9 +1076,9 @@ if ($db_connect) {
                 const spokenTicket = rawTicketNumber
                     .split('')
                     .map(char => (char === '-' ? ' ' : char))
-                    .join(', ');
+                    .join(' ');
 
-                const phrase = `Now calling... ${spokenTicket}... you may now proceed to the office.`;
+                const phrase = `Now calling ${spokenTicket}. Please proceed to the office.`;
 
                 audioQueue.push({ phrase, pageIndex });
                 processAudioQueue();
@@ -1113,7 +1113,7 @@ if ($db_connect) {
                     if (!singleFemaleVoice) loadVoices();
 
                     const utterance = new SpeechSynthesisUtterance(nextItem.phrase);
-                    utterance.rate = 0.88;
+                    utterance.rate = 1.0;
                     utterance.pitch = 1.1;
                     utterance.lang = 'en-US';
                     if (singleFemaleVoice) utterance.voice = singleFemaleVoice;
