@@ -122,6 +122,15 @@ switch ($action) {
             }
         }
 
+        // ---------------------------------------------------------------------
+        // SORT ACTIVE OFFICES BY CALLED_AT (OLD-TO-NEW TRUE FIFO ORDER)
+        // ---------------------------------------------------------------------
+        usort($active_offices, function ($a, $b) {
+            $timeA = $a['now_serving']['called_at'] ?? '9999-12-31 23:59:59';
+            $timeB = $b['now_serving']['called_at'] ?? '9999-12-31 23:59:59';
+            return strcmp($timeA, $timeB); // Earliest called_at timestamp comes first
+        });
+
         echo json_encode([
             'success' => true,
             'data'    => [
