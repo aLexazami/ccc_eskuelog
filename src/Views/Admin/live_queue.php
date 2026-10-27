@@ -31,7 +31,7 @@ if ($db_connect) {
 <head>
     <?php include_once ADMIN_META_DATA_PATH; ?>
     <?php include_once ADMIN_LINK_PATH; ?>
-    
+
     <title>E-Eskuelog — <?= htmlspecialchars($page_title_text); ?></title>
 
     <style>
@@ -42,56 +42,56 @@ if ($db_connect) {
             --bg-header: rgba(0, 16, 77, 0.88);
             --border-header: 1px solid rgba(255, 255, 255, 0.15);
             --header-title-color: #ffffff;
-            
+
             /* HIGH CONTRAST FROSTED DEEP-BLUE GLASS CARD */
             --bg-card: linear-gradient(135deg, rgba(15, 23, 42, 0.86) 0%, rgba(30, 58, 138, 0.80) 100%);
             --border-card: 1px solid rgba(255, 255, 255, 0.25);
             --card-text-color: #ffffff;
             --card-shadow: 0 16px 36px rgba(0, 10, 50, 0.4);
-            
+
             --pillar-header-border: rgba(255, 255, 255, 0.18);
             --office-name-color: #ffffff;
             --office-meta-color: #93c5fd;
-            
+
             --serving-bg: rgba(15, 23, 42, 0.75);
             --serving-border: 1px solid rgba(59, 130, 246, 0.4);
             --serving-label-color: #60a5fa;
             --serving-ticket-color: #ffffff;
-            
+
             /* SOLID GREEN HIGHLIGHT & SHADOW GLOW */
             --calling-border: #22c55e;
             --calling-shadow: 0 0 35px rgba(34, 197, 94, 0.6);
-            
+
             --priority-tag-bg: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
             --priority-tag-color: #ffffff;
             --priority-tag-border: none;
             --priority-tag-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
-            
+
             --lineup-border-top: rgba(255, 255, 255, 0.18);
             --lineup-label-color: #93c5fd;
             --lineup-pill-bg: rgba(255, 255, 255, 0.12);
             --lineup-pill-border: 1px solid rgba(255, 255, 255, 0.22);
             --lineup-pill-color: #ffffff;
-            
+
             --lineup-pill-priority-bg: linear-gradient(135deg, rgba(217, 119, 6, 0.4) 0%, rgba(245, 158, 11, 0.5) 100%);
             --lineup-pill-priority-border: 1.5px solid #f59e0b;
             --lineup-pill-priority-color: #fef08a;
-            
+
             --lineup-pill-empty-bg: rgba(15, 23, 42, 0.3);
             --lineup-pill-empty-border: 1px dashed rgba(255, 255, 255, 0.25);
             --lineup-pill-empty-color: #94a3b8;
-            
+
             --page-badge-bg: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
             --page-badge-color: #ffffff;
             --page-badge-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-            
+
             /* DATETIME FOOTER COLORS */
             --datetime-bg: transparent;
             --datetime-border: none;
             --datetime-icon-color: #60a5fa;
             --datetime-text-color: #cbd5e1;
             --datetime-clock-color: #ffffff;
-            
+
             --footer-bg: rgba(0, 16, 77, 0.85);
             --footer-border: 1px solid rgba(255, 255, 255, 0.15);
 
@@ -112,53 +112,53 @@ if ($db_connect) {
             --bg-header: rgba(0, 16, 77, 0.90);
             --border-header: 1px solid rgba(255, 255, 255, 0.15);
             --header-title-color: #ffffff;
-            
+
             --bg-card: linear-gradient(135deg, rgba(15, 23, 42, 0.88) 0%, rgba(30, 58, 138, 0.82) 100%);
             --border-card: 1px solid rgba(255, 255, 255, 0.25);
             --card-text-color: #ffffff;
             --card-shadow: 0 16px 36px rgba(0, 0, 0, 0.6);
-            
+
             --pillar-header-border: rgba(255, 255, 255, 0.18);
             --office-name-color: #ffffff;
             --office-meta-color: #93c5fd;
-            
+
             --serving-bg: rgba(15, 23, 42, 0.75);
             --serving-border: 1px solid rgba(59, 130, 246, 0.4);
             --serving-label-color: #60a5fa;
             --serving-ticket-color: #ffffff;
-            
+
             --calling-border: #22c55e;
             --calling-shadow: 0 0 35px rgba(34, 197, 94, 0.65);
-            
+
             --priority-tag-bg: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
             --priority-tag-color: #ffffff;
             --priority-tag-border: none;
             --priority-tag-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
-            
+
             --lineup-border-top: rgba(255, 255, 255, 0.18);
             --lineup-label-color: #93c5fd;
             --lineup-pill-bg: rgba(255, 255, 255, 0.12);
             --lineup-pill-border: 1px solid rgba(255, 255, 255, 0.22);
             --lineup-pill-color: #ffffff;
-            
+
             --lineup-pill-priority-bg: linear-gradient(135deg, rgba(217, 119, 6, 0.4) 0%, rgba(245, 158, 11, 0.5) 100%);
             --lineup-pill-priority-border: 1.5px solid #f59e0b;
             --lineup-pill-priority-color: #fef08a;
-            
+
             --lineup-pill-empty-bg: rgba(15, 23, 42, 0.3);
             --lineup-pill-empty-border: 1px dashed rgba(255, 255, 255, 0.25);
             --lineup-pill-empty-color: #94a3b8;
-            
+
             --page-badge-bg: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
             --page-badge-color: #ffffff;
             --page-badge-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
-            
+
             --datetime-bg: transparent;
             --datetime-border: none;
             --datetime-icon-color: #60a5fa;
             --datetime-text-color: #cbd5e1;
             --datetime-clock-color: #ffffff;
-            
+
             --footer-bg: rgba(0, 16, 77, 0.90);
             --footer-border: 1px solid rgba(255, 255, 255, 0.15);
 
@@ -172,7 +172,8 @@ if ($db_connect) {
             --btn-action-hover-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
         }
 
-        body, html {
+        body,
+        html {
             height: 100%;
             margin: 0;
             padding: 0;
@@ -231,14 +232,18 @@ if ($db_connect) {
         }
 
         .title-icon-badge {
-            background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
-            width: 42px;
-            height: 42px;
-            border-radius: 0.65rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
+            background: transparent !important;
+            box-shadow: none !important;
+            border: none !important;
+            width: auto !important;
+            height: auto !important;
+            padding: 0 !important;
+        }
+
+        .title-logo-img {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
         }
 
         /* ACTION BUTTONS (NO TRANSFORM TO PREVENT GPU REPAINT PASSES) */
@@ -649,9 +654,7 @@ if ($db_connect) {
         <!-- HEADER BAR WITH DYNAMIC TITLE AND ACTION BUTTONS -->
         <header class="master-header">
             <h1 class="master-title">
-                <span class="title-icon-badge">
-                    <i class="bi bi-display-fill text-white fs-4"></i>
-                </span>
+                <img src="<?= BASE_URL; ?>public/upload/images/logo/ccc-logo.webp" alt="CCC Logo" class="title-logo-img">
                 <span>E-ESKUELOG — <?= strtoupper(htmlspecialchars($page_title_text)); ?></span>
             </h1>
 
@@ -695,239 +698,249 @@ if ($db_connect) {
 
     <?php include_once ADMIN_SCRIPT_PATH; ?>
 
-<script>
-    (function() {
-        const QUEUE_MODE           = <?= json_encode($queue_mode); ?>;
-        const ITEMS_PER_PAGE       = 5; 
-        const ROTATION_INTERVAL_MS = 5000; 
+    <script>
+        (function() {
+            const QUEUE_MODE = <?= json_encode($queue_mode); ?>;
+            const ITEMS_PER_PAGE = 5;
+            const ROTATION_INTERVAL_MS = 5000;
 
-        const digitalDate         = document.getElementById('digitalDate');
-        const digitalClock        = document.getElementById('digitalClock');
-        const pageRotationBadge   = document.getElementById('pageRotationBadge');
-        const pageBadgeWrapper    = document.getElementById('pageBadgeWrapper');
-        const pillarGridContainer = document.getElementById('pillarGridContainer');
-        const emptyStateDisplay   = document.getElementById('emptyStateDisplay');
-        const btnToggleFullscreen = document.getElementById('btnToggleFullscreen');
-        const btnToggleTheme      = document.getElementById('btnToggleTheme');
-        const themeIcon           = document.getElementById('themeIcon');
+            const digitalDate = document.getElementById('digitalDate');
+            const digitalClock = document.getElementById('digitalClock');
+            const pageRotationBadge = document.getElementById('pageRotationBadge');
+            const pageBadgeWrapper = document.getElementById('pageBadgeWrapper');
+            const pillarGridContainer = document.getElementById('pillarGridContainer');
+            const emptyStateDisplay = document.getElementById('emptyStateDisplay');
+            const btnToggleFullscreen = document.getElementById('btnToggleFullscreen');
+            const btnToggleTheme = document.getElementById('btnToggleTheme');
+            const themeIcon = document.getElementById('themeIcon');
 
-        const totalOfficesCount   = <?= count($all_offices); ?>;
-        let calledTicketsHistory  = new Set();
-        let cachedActiveOffices   = [];
-        let currentPageIndex      = 0;
-        let rotationTimer         = null;
-        let lastRenderedJson      = '';
+            const totalOfficesCount = <?= count($all_offices); ?>;
+            let calledTicketsHistory = new Set();
+            let cachedActiveOffices = [];
+            let currentPageIndex = 0;
+            let rotationTimer = null;
+            let lastRenderedJson = '';
 
-        function applyTheme(isDark) {
-            if (isDark) {
-                document.body.classList.add('dark-mode');
-                themeIcon.className = 'bi bi-sun-fill fs-5 text-warning';
-            } else {
-                document.body.classList.remove('dark-mode');
-                themeIcon.className = 'bi bi-moon-stars-fill fs-5';
-            }
-        }
-
-        const savedTheme = localStorage.getItem('queue_monitor_theme');
-        applyTheme(savedTheme === 'dark');
-
-        if (btnToggleTheme) {
-            btnToggleTheme.addEventListener('click', function() {
-                const isCurrentlyDark = document.body.classList.contains('dark-mode');
-                const newDarkState = !isCurrentlyDark;
-                applyTheme(newDarkState);
-                localStorage.setItem('queue_monitor_theme', newDarkState ? 'dark' : 'light');
-            });
-        }
-
-        let audioQueue            = [];
-        let isSpeaking            = false;
-        let singleFemaleVoice     = null;
-
-        function getBestFemaleVoice() {
-            if (!('speechSynthesis' in window)) return null;
-            const voices = window.speechSynthesis.getVoices();
-            if (!voices || voices.length === 0) return null;
-
-            const femaleNames = ["zira", "janny", "jenny", "samantha", "siri", "victoria", "karen", "aria", "ava", "emma", "hazel", "susan", "female", "google us english"];
-            const maleNames   = ["david", "mark", "george", "james", "richard", "male", "guy", "stefan"];
-
-            let selected = voices.find(v => v.lang.startsWith('en') && femaleNames.some(fn => v.name.toLowerCase().includes(fn)));
-            if (!selected) {
-                selected = voices.find(v => v.lang.startsWith('en') && !maleNames.some(mn => v.name.toLowerCase().includes(mn)));
-            }
-            return selected || voices.find(v => v.lang.startsWith('en')) || voices[0];
-        }
-
-        function loadVoices() { 
-            singleFemaleVoice = getBestFemaleVoice(); 
-        }
-
-        if ('speechSynthesis' in window) {
-            window.speechSynthesis.onvoiceschanged = loadVoices;
-            loadVoices();
-        }
-
-        function playBellDing(callback) {
-            try {
-                const AudioContext = window.AudioContext || window.webkitAudioContext;
-                if (!AudioContext) {
-                    if (callback) callback();
-                    return;
-                }
-                const ctx = new AudioContext();
-
-                const osc1 = ctx.createOscillator();
-                const gain1 = ctx.createGain();
-                osc1.type = 'sine';
-                osc1.frequency.setValueAtTime(659.25, ctx.currentTime);
-                gain1.gain.setValueAtTime(0.3, ctx.currentTime);
-                gain1.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 1.2);
-
-                osc1.connect(gain1);
-                gain1.connect(ctx.destination);
-                osc1.start(ctx.currentTime);
-                osc1.stop(ctx.currentTime + 1.2);
-
-                const osc2 = ctx.createOscillator();
-                const gain2 = ctx.createGain();
-                osc2.type = 'sine';
-                osc2.frequency.setValueAtTime(783.99, ctx.currentTime + 0.25);
-                gain2.gain.setValueAtTime(0.35, ctx.currentTime + 0.25);
-                gain2.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 1.6);
-
-                osc2.connect(gain2);
-                gain2.connect(ctx.destination);
-                osc2.start(ctx.currentTime + 0.25);
-                osc2.stop(ctx.currentTime + 1.6);
-
-                setTimeout(() => {
-                    if (callback) callback();
-                }, 500);
-
-            } catch (e) {
-                console.warn("Audio Context blocked until page interaction.", e);
-                if (callback) callback();
-            }
-        }
-
-        function updateDateTime() {
-            const now = new Date();
-            const options = { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' };
-            digitalDate.textContent = now.toLocaleDateString('en-US', options);
-            digitalClock.textContent = now.toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit' });
-        }
-        setInterval(updateDateTime, 1000);
-        updateDateTime();
-
-        if (btnToggleFullscreen) {
-            btnToggleFullscreen.addEventListener('click', function() {
-                if (!document.fullscreenElement) {
-                    document.documentElement.requestFullscreen();
+            function applyTheme(isDark) {
+                if (isDark) {
+                    document.body.classList.add('dark-mode');
+                    themeIcon.className = 'bi bi-sun-fill fs-5 text-warning';
                 } else {
-                    document.exitFullscreen();
+                    document.body.classList.remove('dark-mode');
+                    themeIcon.className = 'bi bi-moon-stars-fill fs-5';
                 }
-            });
-        }
+            }
 
-        function fetchLiveQueueData() {
-            const formData = new FormData();
-            formData.append('action', 'fetch_master_queue');
-            formData.append('queue_mode', QUEUE_MODE);
+            const savedTheme = localStorage.getItem('queue_monitor_theme');
+            applyTheme(savedTheme === 'dark');
 
-            fetch('<?= BASE_URL; ?>admin/ajax/queue', {
-                method: 'POST',
-                body: formData
-            })
-            .then(res => res.json())
-            .then(result => {
-                if (result.success && result.data) {
-                    cachedActiveOffices = result.data.active_offices || [];
-                    
-                    if (cachedActiveOffices.length === 0) {
-                        if (lastRenderedJson !== 'EMPTY_STATE') {
-                            renderEmptyState();
-                            lastRenderedJson = 'EMPTY_STATE';
-                        }
+            if (btnToggleTheme) {
+                btnToggleTheme.addEventListener('click', function() {
+                    const isCurrentlyDark = document.body.classList.contains('dark-mode');
+                    const newDarkState = !isCurrentlyDark;
+                    applyTheme(newDarkState);
+                    localStorage.setItem('queue_monitor_theme', newDarkState ? 'dark' : 'light');
+                });
+            }
+
+            let audioQueue = [];
+            let isSpeaking = false;
+            let singleFemaleVoice = null;
+
+            function getBestFemaleVoice() {
+                if (!('speechSynthesis' in window)) return null;
+                const voices = window.speechSynthesis.getVoices();
+                if (!voices || voices.length === 0) return null;
+
+                const femaleNames = ["zira", "janny", "jenny", "samantha", "siri", "victoria", "karen", "aria", "ava", "emma", "hazel", "susan", "female", "google us english"];
+                const maleNames = ["david", "mark", "george", "james", "richard", "male", "guy", "stefan"];
+
+                let selected = voices.find(v => v.lang.startsWith('en') && femaleNames.some(fn => v.name.toLowerCase().includes(fn)));
+                if (!selected) {
+                    selected = voices.find(v => v.lang.startsWith('en') && !maleNames.some(mn => v.name.toLowerCase().includes(mn)));
+                }
+                return selected || voices.find(v => v.lang.startsWith('en')) || voices[0];
+            }
+
+            function loadVoices() {
+                singleFemaleVoice = getBestFemaleVoice();
+            }
+
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.onvoiceschanged = loadVoices;
+                loadVoices();
+            }
+
+            function playBellDing(callback) {
+                try {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    if (!AudioContext) {
+                        if (callback) callback();
                         return;
                     }
+                    const ctx = new AudioContext();
 
-                    let targetPageIndex = -1;
+                    const osc1 = ctx.createOscillator();
+                    const gain1 = ctx.createGain();
+                    osc1.type = 'sine';
+                    osc1.frequency.setValueAtTime(659.25, ctx.currentTime);
+                    gain1.gain.setValueAtTime(0.3, ctx.currentTime);
+                    gain1.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 1.2);
 
-                    cachedActiveOffices.forEach((office, index) => {
-                        const isCalling = office.now_serving && office.now_serving.status === 'CALLED';
-                        
-                        if (isCalling && office.now_serving.ticket_number) {
-                            const callKey = `${office.now_serving.ticket_number}_${office.now_serving.called_at || ''}`;
+                    osc1.connect(gain1);
+                    gain1.connect(ctx.destination);
+                    osc1.start(ctx.currentTime);
+                    osc1.stop(ctx.currentTime + 1.2);
 
-                            if (!calledTicketsHistory.has(callKey)) {
-                                calledTicketsHistory.add(callKey);
-                                queueVoiceCallout(office.now_serving.ticket_number);
-                                targetPageIndex = Math.floor(index / ITEMS_PER_PAGE);
-                            }
-                        }
-                    });
+                    const osc2 = ctx.createOscillator();
+                    const gain2 = ctx.createGain();
+                    osc2.type = 'sine';
+                    osc2.frequency.setValueAtTime(783.99, ctx.currentTime + 0.25);
+                    gain2.gain.setValueAtTime(0.35, ctx.currentTime + 0.25);
+                    gain2.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 1.6);
 
-                    const currentDataFingerprint = JSON.stringify(cachedActiveOffices);
+                    osc2.connect(gain2);
+                    gain2.connect(ctx.destination);
+                    osc2.start(ctx.currentTime + 0.25);
+                    osc2.stop(ctx.currentTime + 1.6);
 
-                    if (targetPageIndex !== -1 && targetPageIndex !== currentPageIndex) {
-                        currentPageIndex = targetPageIndex;
-                        renderCurrentPage(true);
-                        startPageRotation();
-                        lastRenderedJson = currentDataFingerprint;
-                    } else if (currentDataFingerprint !== lastRenderedJson) {
-                        renderCurrentPage(false);
-                        lastRenderedJson = currentDataFingerprint;
-                    }
+                    setTimeout(() => {
+                        if (callback) callback();
+                    }, 500);
+
+                } catch (e) {
+                    console.warn("Audio Context blocked until page interaction.", e);
+                    if (callback) callback();
                 }
-            })
-            .catch(err => console.error("Live Queue Fetch Error:", err));
-        }
-
-        function renderCurrentPage(animate = false) {
-            if (cachedActiveOffices.length === 0) return;
-
-            const totalPages = Math.ceil(cachedActiveOffices.length / ITEMS_PER_PAGE);
-            if (currentPageIndex >= totalPages) currentPageIndex = 0;
-
-            if (totalPages > 1) {
-                pageRotationBadge.textContent = `PAGE ${currentPageIndex + 1} / ${totalPages}`;
-                if (pageBadgeWrapper) pageBadgeWrapper.classList.remove('d-none');
-            } else {
-                if (pageBadgeWrapper) pageBadgeWrapper.classList.add('d-none');
             }
 
-            const start = currentPageIndex * ITEMS_PER_PAGE;
-            const end   = start + ITEMS_PER_PAGE;
-            const pageItems = cachedActiveOffices.slice(start, end);
+            function updateDateTime() {
+                const now = new Date();
+                const options = {
+                    weekday: 'short',
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric'
+                };
+                digitalDate.textContent = now.toLocaleDateString('en-US', options);
+                digitalClock.textContent = now.toLocaleTimeString('en-US', {
+                    hour12: true,
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                });
+            }
+            setInterval(updateDateTime, 1000);
+            updateDateTime();
 
-            const buildPillars = () => {
-                pillarGridContainer.innerHTML = '';
-
-                pageItems.forEach(office => {
-                    const pillar = document.createElement('div');
-                    const isCalling = office.now_serving && office.now_serving.status === 'CALLED';
-                    
-                    pillar.className = `office-pillar-card ${isCalling ? 'is-calling' : ''}`;
-
-                    let lineupHtml = '';
-                    const upcoming = office.up_next || [];
-                    for (let i = 0; i < 4; i++) {
-                        if (upcoming[i]) {
-                            const isPri = upcoming[i].is_priority == 1;
-                            const priClass = isPri ? 'is-priority' : '';
-                            const priTag = isPri ? '★ ' : '';
-                            lineupHtml += `<div class="lineup-pill ${priClass}">${priTag}${upcoming[i].ticket_number}</div>`;
-                        } else {
-                            lineupHtml += `<div class="lineup-pill empty-pill">---</div>`;
-                        }
+            if (btnToggleFullscreen) {
+                btnToggleFullscreen.addEventListener('click', function() {
+                    if (!document.fullscreenElement) {
+                        document.documentElement.requestFullscreen();
+                    } else {
+                        document.exitFullscreen();
                     }
+                });
+            }
 
-                    const logoHtml = office.office_logo 
-                        ? `<img src="<?= BASE_URL; ?>${office.office_logo}" class="pillar-logo-img" alt="Logo" width="46" height="46">`
-                        : `<div class="pillar-logo-img text-primary fw-bold fs-4"><i class="bi bi-building"></i></div>`;
+            function fetchLiveQueueData() {
+                const formData = new FormData();
+                formData.append('action', 'fetch_master_queue');
+                formData.append('queue_mode', QUEUE_MODE);
 
-                    pillar.innerHTML = `
+                fetch('<?= BASE_URL; ?>admin/ajax/queue', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(res => res.json())
+                    .then(result => {
+                        if (result.success && result.data) {
+                            cachedActiveOffices = result.data.active_offices || [];
+
+                            if (cachedActiveOffices.length === 0) {
+                                if (lastRenderedJson !== 'EMPTY_STATE') {
+                                    renderEmptyState();
+                                    lastRenderedJson = 'EMPTY_STATE';
+                                }
+                                return;
+                            }
+
+                            let targetPageIndex = -1;
+
+                            cachedActiveOffices.forEach((office, index) => {
+                                const isCalling = office.now_serving && office.now_serving.status === 'CALLED';
+
+                                if (isCalling && office.now_serving.ticket_number) {
+                                    const callKey = `${office.now_serving.ticket_number}_${office.now_serving.called_at || ''}`;
+
+                                    if (!calledTicketsHistory.has(callKey)) {
+                                        calledTicketsHistory.add(callKey);
+                                        queueVoiceCallout(office.now_serving.ticket_number);
+                                        targetPageIndex = Math.floor(index / ITEMS_PER_PAGE);
+                                    }
+                                }
+                            });
+
+                            const currentDataFingerprint = JSON.stringify(cachedActiveOffices);
+
+                            if (targetPageIndex !== -1 && targetPageIndex !== currentPageIndex) {
+                                currentPageIndex = targetPageIndex;
+                                renderCurrentPage(true);
+                                startPageRotation();
+                                lastRenderedJson = currentDataFingerprint;
+                            } else if (currentDataFingerprint !== lastRenderedJson) {
+                                renderCurrentPage(false);
+                                lastRenderedJson = currentDataFingerprint;
+                            }
+                        }
+                    })
+                    .catch(err => console.error("Live Queue Fetch Error:", err));
+            }
+
+            function renderCurrentPage(animate = false) {
+                if (cachedActiveOffices.length === 0) return;
+
+                const totalPages = Math.ceil(cachedActiveOffices.length / ITEMS_PER_PAGE);
+                if (currentPageIndex >= totalPages) currentPageIndex = 0;
+
+                if (totalPages > 1) {
+                    pageRotationBadge.textContent = `PAGE ${currentPageIndex + 1} / ${totalPages}`;
+                    if (pageBadgeWrapper) pageBadgeWrapper.classList.remove('d-none');
+                } else {
+                    if (pageBadgeWrapper) pageBadgeWrapper.classList.add('d-none');
+                }
+
+                const start = currentPageIndex * ITEMS_PER_PAGE;
+                const end = start + ITEMS_PER_PAGE;
+                const pageItems = cachedActiveOffices.slice(start, end);
+
+                const buildPillars = () => {
+                    pillarGridContainer.innerHTML = '';
+
+                    pageItems.forEach(office => {
+                        const pillar = document.createElement('div');
+                        const isCalling = office.now_serving && office.now_serving.status === 'CALLED';
+
+                        pillar.className = `office-pillar-card ${isCalling ? 'is-calling' : ''}`;
+
+                        let lineupHtml = '';
+                        const upcoming = office.up_next || [];
+                        for (let i = 0; i < 4; i++) {
+                            if (upcoming[i]) {
+                                const isPri = upcoming[i].is_priority == 1;
+                                const priClass = isPri ? 'is-priority' : '';
+                                const priTag = isPri ? '★ ' : '';
+                                lineupHtml += `<div class="lineup-pill ${priClass}">${priTag}${upcoming[i].ticket_number}</div>`;
+                            } else {
+                                lineupHtml += `<div class="lineup-pill empty-pill">---</div>`;
+                            }
+                        }
+
+                        const logoHtml = office.office_logo ?
+                            `<img src="<?= BASE_URL; ?>${office.office_logo}" class="pillar-logo-img" alt="Logo" width="46" height="46">` :
+                            `<div class="pillar-logo-img text-primary fw-bold fs-4"><i class="bi bi-building"></i></div>`;
+
+                        pillar.innerHTML = `
                         <div class="pillar-header">
                             ${logoHtml}
                             <h2 class="pillar-office-name">${office.office_name}</h2>
@@ -943,7 +956,7 @@ if ($db_connect) {
                         </div>
 
                         <div class="pillar-lineup-block">
-                            <span class="lineup-label">NEXT SERVING</span>
+                            <span class="lineup-label">NEXT IN LINE</span>
                             <div class="lineup-pills-stack">
                                 ${lineupHtml}
                             </div>
@@ -951,93 +964,94 @@ if ($db_connect) {
                         </div>
                     `;
 
-                    pillarGridContainer.appendChild(pillar);
-                });
-            };
-
-            if (animate) {
-                pillarGridContainer.classList.add('fade-out');
-
-                setTimeout(() => {
-                    buildPillars();
-
-                    requestAnimationFrame(() => {
-                        pillarGridContainer.classList.remove('fade-out');
+                        pillarGridContainer.appendChild(pillar);
                     });
-                }, 350);
-            } else {
-                buildPillars();
+                };
+
+                if (animate) {
+                    pillarGridContainer.classList.add('fade-out');
+
+                    setTimeout(() => {
+                        buildPillars();
+
+                        requestAnimationFrame(() => {
+                            pillarGridContainer.classList.remove('fade-out');
+                        });
+                    }, 350);
+                } else {
+                    buildPillars();
+                }
             }
-        }
 
-        function renderEmptyState() {
-            if (pageBadgeWrapper) pageBadgeWrapper.classList.add('d-none');
-            pillarGridContainer.innerHTML = '';
-            pillarGridContainer.appendChild(emptyStateDisplay);
-            emptyStateDisplay.classList.remove('d-none');
-        }
+            function renderEmptyState() {
+                if (pageBadgeWrapper) pageBadgeWrapper.classList.add('d-none');
+                pillarGridContainer.innerHTML = '';
+                pillarGridContainer.appendChild(emptyStateDisplay);
+                emptyStateDisplay.classList.remove('d-none');
+            }
 
-        function startPageRotation() {
-            if (rotationTimer) clearInterval(rotationTimer);
-            rotationTimer = setInterval(() => {
-                if (isSpeaking || audioQueue.length > 0) {
-                    return; 
-                }
+            function startPageRotation() {
+                if (rotationTimer) clearInterval(rotationTimer);
+                rotationTimer = setInterval(() => {
+                    if (isSpeaking || audioQueue.length > 0) {
+                        return;
+                    }
 
-                if (cachedActiveOffices.length > ITEMS_PER_PAGE) {
-                    const totalPages = Math.ceil(cachedActiveOffices.length / ITEMS_PER_PAGE);
-                    currentPageIndex = (currentPageIndex + 1) % totalPages;
-                    renderCurrentPage(true);
-                }
-            }, ROTATION_INTERVAL_MS);
-        }
+                    if (cachedActiveOffices.length > ITEMS_PER_PAGE) {
+                        const totalPages = Math.ceil(cachedActiveOffices.length / ITEMS_PER_PAGE);
+                        currentPageIndex = (currentPageIndex + 1) % totalPages;
+                        renderCurrentPage(true);
+                    }
+                }, ROTATION_INTERVAL_MS);
+            }
 
-        function queueVoiceCallout(rawTicketNumber) {
-            const spokenTicket = rawTicketNumber
-                .split('')
-                .map(char => (char === '-' ? ' ' : char))
-                .join(', ');
+            function queueVoiceCallout(rawTicketNumber) {
+                const spokenTicket = rawTicketNumber
+                    .split('')
+                    .map(char => (char === '-' ? ' ' : char))
+                    .join(', ');
 
-            const phrase = `Now calling... ${spokenTicket}... you may now proceed to the office.`;
-            
-            audioQueue.push(phrase);
-            processAudioQueue();
-        }
+                const phrase = `Now calling... ${spokenTicket}... you may now proceed to the office.`;
 
-        function processAudioQueue() {
-            if (isSpeaking || audioQueue.length === 0 || !('speechSynthesis' in window)) return;
+                audioQueue.push(phrase);
+                processAudioQueue();
+            }
 
-            isSpeaking = true;
-            const nextText = audioQueue.shift();
+            function processAudioQueue() {
+                if (isSpeaking || audioQueue.length === 0 || !('speechSynthesis' in window)) return;
 
-            playBellDing(() => {
-                if (!singleFemaleVoice) loadVoices();
+                isSpeaking = true;
+                const nextText = audioQueue.shift();
 
-                const utterance = new SpeechSynthesisUtterance(nextText);
-                utterance.rate = 0.88;
-                utterance.pitch = 1.1;
-                utterance.lang = 'en-US';
-                if (singleFemaleVoice) utterance.voice = singleFemaleVoice;
+                playBellDing(() => {
+                    if (!singleFemaleVoice) loadVoices();
 
-                utterance.onend = function() {
-                    isSpeaking = false;
-                    processAudioQueue(); 
-                };
+                    const utterance = new SpeechSynthesisUtterance(nextText);
+                    utterance.rate = 0.88;
+                    utterance.pitch = 1.1;
+                    utterance.lang = 'en-US';
+                    if (singleFemaleVoice) utterance.voice = singleFemaleVoice;
 
-                utterance.onerror = function() {
-                    isSpeaking = false;
-                    processAudioQueue();
-                };
+                    utterance.onend = function() {
+                        isSpeaking = false;
+                        processAudioQueue();
+                    };
 
-                window.speechSynthesis.speak(utterance);
-            });
-        }
+                    utterance.onerror = function() {
+                        isSpeaking = false;
+                        processAudioQueue();
+                    };
 
-        setInterval(fetchLiveQueueData, 3000);
-        fetchLiveQueueData();
-        startPageRotation();
+                    window.speechSynthesis.speak(utterance);
+                });
+            }
 
-    })();
-</script>
+            setInterval(fetchLiveQueueData, 3000);
+            fetchLiveQueueData();
+            startPageRotation();
+
+        })();
+    </script>
 </body>
+
 </html>
