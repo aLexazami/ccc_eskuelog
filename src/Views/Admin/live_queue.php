@@ -943,7 +943,7 @@ if ($db_connect) {
                         </div>
 
                         <div class="pillar-lineup-block">
-                            <span class="lineup-label">UP NEXT</span>
+                            <span class="lineup-label">NEXT SERVING</span>
                             <div class="lineup-pills-stack">
                                 ${lineupHtml}
                             </div>
