@@ -44,10 +44,10 @@ if ($db_connect) {
             --header-title-color: #ffffff;
 
             /* HIGH CONTRAST FROSTED DEEP-BLUE GLASS CARD */
-            --bg-card: linear-gradient(135deg, rgba(15, 23, 42, 0.86) 0%, rgba(30, 58, 138, 0.80) 100%);
-            --border-card: 1px solid rgba(255, 255, 255, 0.25);
+            --bg-card: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+            --border-card: 1px solid rgba(255, 255, 255, 0.22);
             --card-text-color: #ffffff;
-            --card-shadow: 0 16px 36px rgba(0, 10, 50, 0.4);
+            --card-shadow: 0 16px 36px rgba(0, 10, 50, 0.45);
 
             --pillar-header-border: rgba(255, 255, 255, 0.18);
             --office-name-color: #ffffff;
@@ -113,10 +113,10 @@ if ($db_connect) {
             --border-header: 1px solid rgba(255, 255, 255, 0.15);
             --header-title-color: #ffffff;
 
-            --bg-card: linear-gradient(135deg, rgba(15, 23, 42, 0.88) 0%, rgba(30, 58, 138, 0.82) 100%);
-            --border-card: 1px solid rgba(255, 255, 255, 0.25);
+            --bg-card: linear-gradient(135deg, #0a0f1d 0%, #172554 100%);
+            --border-card: 1px solid rgba(255, 255, 255, 0.20);
             --card-text-color: #ffffff;
-            --card-shadow: 0 16px 36px rgba(0, 0, 0, 0.6);
+            --card-shadow: 0 16px 36px rgba(0, 0, 0, 0.65);
 
             --pillar-header-border: rgba(255, 255, 255, 0.18);
             --office-name-color: #ffffff;
@@ -325,14 +325,7 @@ if ($db_connect) {
 
         /* SINGLE BACKDROP BLUR PASS */
         .office-pillar-card::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border-radius: inherit;
-            -webkit-backdrop-filter: blur(12px);
-            backdrop-filter: blur(12px);
-            z-index: -1;
-            pointer-events: none;
+            display: none !important;
         }
 
         .office-pillar-card.is-calling {
