@@ -287,154 +287,451 @@ Stack trace:
 [25-Sep-2026 16:15:03 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
 [25-Sep-2026 16:15:03 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
 [25-Sep-2026 16:15:03 Asia/Manila] PHP Warning:  ini_set(): A session is active. You cannot change the session module's ini settings at this time in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
-[29-Sep-2026 14:36:32 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown database 'e_eskuelog' in C:\xampp\htdocs\dev_e_eskuelog\src\Database\connect.php:11
+[20-Oct-2026 08:02:53 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[20-Oct-2026 08:02:53 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[20-Oct-2026 08:02:53 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[20-Oct-2026 08:02:53 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[20-Oct-2026 08:02:53 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[20-Oct-2026 08:02:53 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[20-Oct-2026 08:03:19 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[20-Oct-2026 08:03:19 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[20-Oct-2026 08:03:19 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[20-Oct-2026 08:03:19 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[20-Oct-2026 08:03:19 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[20-Oct-2026 08:03:19 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[20-Oct-2026 08:03:56 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[20-Oct-2026 08:03:56 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[20-Oct-2026 08:03:56 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[20-Oct-2026 08:03:56 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[20-Oct-2026 08:03:56 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[20-Oct-2026 08:03:56 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[20-Oct-2026 08:37:57 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[20-Oct-2026 08:37:57 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[20-Oct-2026 08:37:57 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[20-Oct-2026 08:37:57 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[20-Oct-2026 08:37:57 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[20-Oct-2026 08:37:57 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[20-Oct-2026 13:19:05 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[20-Oct-2026 13:19:05 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[20-Oct-2026 13:19:05 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[20-Oct-2026 13:19:05 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[20-Oct-2026 13:19:05 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[20-Oct-2026 13:19:05 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[20-Oct-2026 13:24:38 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[20-Oct-2026 13:24:38 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[20-Oct-2026 13:24:38 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[20-Oct-2026 13:24:38 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[20-Oct-2026 13:24:38 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[20-Oct-2026 13:24:38 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[20-Oct-2026 13:25:08 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[20-Oct-2026 13:25:08 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[20-Oct-2026 13:25:08 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[20-Oct-2026 13:25:08 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[20-Oct-2026 13:25:08 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[20-Oct-2026 13:25:08 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[20-Oct-2026 13:25:38 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[20-Oct-2026 13:25:38 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[20-Oct-2026 13:25:38 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[20-Oct-2026 13:25:38 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[20-Oct-2026 13:25:38 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[20-Oct-2026 13:25:38 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[20-Oct-2026 13:26:33 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[20-Oct-2026 13:26:33 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[20-Oct-2026 13:26:33 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[20-Oct-2026 13:26:33 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[20-Oct-2026 13:26:33 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[20-Oct-2026 13:26:33 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[20-Oct-2026 13:46:22 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[20-Oct-2026 13:46:22 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[20-Oct-2026 13:46:22 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[20-Oct-2026 13:46:22 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[20-Oct-2026 13:46:22 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[20-Oct-2026 13:46:22 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[20-Oct-2026 15:12:40 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[20-Oct-2026 15:12:40 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[20-Oct-2026 15:12:40 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[20-Oct-2026 15:12:40 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[20-Oct-2026 15:12:40 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[20-Oct-2026 15:12:40 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[20-Oct-2026 16:18:10 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[20-Oct-2026 16:18:10 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[20-Oct-2026 16:18:10 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[20-Oct-2026 16:18:10 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[20-Oct-2026 16:18:10 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[20-Oct-2026 16:18:10 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[20-Oct-2026 16:18:31 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[20-Oct-2026 16:18:31 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[20-Oct-2026 16:18:31 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[20-Oct-2026 16:18:31 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[20-Oct-2026 16:18:31 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[20-Oct-2026 16:18:31 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[20-Oct-2026 16:18:43 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[20-Oct-2026 16:18:43 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[20-Oct-2026 16:18:43 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[20-Oct-2026 16:18:43 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[20-Oct-2026 16:18:43 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[20-Oct-2026 16:18:43 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[20-Oct-2026 16:18:53 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[20-Oct-2026 16:18:53 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[20-Oct-2026 16:18:53 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[20-Oct-2026 16:18:53 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[20-Oct-2026 16:18:53 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[20-Oct-2026 16:18:53 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[21-Oct-2026 17:58:02 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[21-Oct-2026 17:58:02 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[21-Oct-2026 17:58:02 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[21-Oct-2026 17:58:02 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[21-Oct-2026 17:58:02 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[21-Oct-2026 17:58:02 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[21-Oct-2026 17:58:10 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[21-Oct-2026 17:58:10 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[21-Oct-2026 17:58:10 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[21-Oct-2026 17:58:10 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[21-Oct-2026 17:58:10 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[21-Oct-2026 17:58:10 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[22-Oct-2026 09:05:25 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[22-Oct-2026 09:05:25 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[22-Oct-2026 09:05:25 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[22-Oct-2026 09:05:25 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[22-Oct-2026 09:05:25 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[22-Oct-2026 09:05:25 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[22-Oct-2026 09:32:51 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[22-Oct-2026 09:32:51 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[22-Oct-2026 09:32:51 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[22-Oct-2026 09:32:51 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[22-Oct-2026 09:32:51 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[22-Oct-2026 09:32:51 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[22-Oct-2026 09:39:08 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[22-Oct-2026 09:39:08 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[22-Oct-2026 09:39:08 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[22-Oct-2026 09:39:08 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[22-Oct-2026 09:39:08 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[22-Oct-2026 09:39:08 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[22-Oct-2026 10:00:19 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[22-Oct-2026 10:00:19 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[22-Oct-2026 10:00:19 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[22-Oct-2026 10:00:19 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[22-Oct-2026 10:00:19 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[22-Oct-2026 10:00:19 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[22-Oct-2026 18:01:34 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[22-Oct-2026 18:01:34 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[22-Oct-2026 18:01:34 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[22-Oct-2026 18:01:34 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[22-Oct-2026 18:01:34 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[22-Oct-2026 18:01:34 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[22-Oct-2026 20:22:31 Asia/Manila] PHP Fatal error:  Uncaught Error: Call to undefined method mysqli_result::fetchAll() in C:\xampp\htdocs\dev_e_eskuelog\src\Views\Admin\student_logbook.php:22
 Stack trace:
-#0 C:\xampp\htdocs\dev_e_eskuelog\src\Database\connect.php(11): mysqli_connect('localhost', 'root', Object(SensitiveParameterValue), 'e_eskuelog')
-#1 C:\xampp\htdocs\dev_e_eskuelog\public\index.php(10): require_once('C:\\xampp\\htdocs...')
-#2 {main}
-  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Database\connect.php on line 11
-[29-Sep-2026 16:43:15 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
-[29-Sep-2026 16:43:15 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
-[29-Sep-2026 16:43:15 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
-[29-Sep-2026 16:43:15 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
-[29-Sep-2026 16:43:15 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
-[29-Sep-2026 16:43:15 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
-[29-Sep-2026 16:43:37 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
-[29-Sep-2026 16:43:37 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
-[29-Sep-2026 16:43:37 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
-[29-Sep-2026 16:43:37 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
-[29-Sep-2026 16:43:37 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
-[29-Sep-2026 16:43:37 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
-[29-Sep-2026 16:43:46 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
-[29-Sep-2026 16:43:46 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
-[29-Sep-2026 16:43:46 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
-[29-Sep-2026 16:43:46 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
-[29-Sep-2026 16:43:46 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
-[29-Sep-2026 16:43:46 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
-[29-Sep-2026 16:43:55 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
-[29-Sep-2026 16:43:55 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
-[29-Sep-2026 16:43:55 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
-[29-Sep-2026 16:43:55 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
-[29-Sep-2026 16:43:55 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
-[29-Sep-2026 16:43:55 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
-[29-Sep-2026 16:51:44 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
-[29-Sep-2026 16:51:44 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
-[29-Sep-2026 16:51:44 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
-[29-Sep-2026 16:51:44 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
-[29-Sep-2026 16:51:44 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
-[29-Sep-2026 16:51:44 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
-[29-Sep-2026 17:05:52 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
-[29-Sep-2026 17:05:52 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
-[29-Sep-2026 17:05:52 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
-[29-Sep-2026 17:05:52 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
-[29-Sep-2026 17:05:52 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
-[29-Sep-2026 17:05:52 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
-[29-Sep-2026 17:08:19 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
-[29-Sep-2026 17:08:19 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
-[29-Sep-2026 17:08:19 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
-[29-Sep-2026 17:08:19 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
-[29-Sep-2026 17:08:19 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
-[29-Sep-2026 17:08:19 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
-[29-Sep-2026 17:09:18 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
-[29-Sep-2026 17:09:18 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
-[29-Sep-2026 17:09:18 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
-[29-Sep-2026 17:09:18 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
-[29-Sep-2026 17:09:18 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
-[29-Sep-2026 17:09:18 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
-[29-Sep-2026 17:12:04 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
-[29-Sep-2026 17:12:04 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
-[29-Sep-2026 17:12:04 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
-[29-Sep-2026 17:12:04 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
-[29-Sep-2026 17:12:04 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
-[29-Sep-2026 17:12:04 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
-[29-Sep-2026 17:13:18 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
-[29-Sep-2026 17:13:18 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
-[29-Sep-2026 17:13:18 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
-[29-Sep-2026 17:13:18 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
-[29-Sep-2026 17:13:18 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
-[29-Sep-2026 17:13:18 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
-[29-Sep-2026 17:13:57 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
-[29-Sep-2026 17:13:57 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
-[29-Sep-2026 17:13:57 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
-[29-Sep-2026 17:13:57 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
-[29-Sep-2026 17:13:57 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
-[29-Sep-2026 17:13:57 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
-[29-Sep-2026 17:18:04 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
-[29-Sep-2026 17:18:04 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
-[29-Sep-2026 17:18:04 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
-[29-Sep-2026 17:18:04 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
-[29-Sep-2026 17:18:04 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
-[29-Sep-2026 17:18:04 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
-[29-Sep-2026 17:18:04 Asia/Manila] PHP Warning:  require_once(C:\xampp\htdocs\dev_e_eskuelog/public/includes/header.php): Failed to open stream: No such file or directory in C:\xampp\htdocs\dev_e_eskuelog\src\Views\App\landing.php on line 6
-[29-Sep-2026 17:18:04 Asia/Manila] PHP Fatal error:  Uncaught Error: Failed opening required 'C:\xampp\htdocs\dev_e_eskuelog/public/includes/header.php' (include_path='C:\xampp\php\PEAR') in C:\xampp\htdocs\dev_e_eskuelog\src\Views\App\landing.php:6
-Stack trace:
-#0 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(150): require_once()
+#0 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(144): require_once()
 #1 {main}
-  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Views\App\landing.php on line 6
-[29-Sep-2026 17:19:24 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
-[29-Sep-2026 17:19:24 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
-[29-Sep-2026 17:19:24 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
-[29-Sep-2026 17:19:24 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
-[29-Sep-2026 17:19:24 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
-[29-Sep-2026 17:19:24 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
-[30-Sep-2026 07:44:22 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
-[30-Sep-2026 07:44:22 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
-[30-Sep-2026 07:44:22 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
-[30-Sep-2026 07:44:22 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
-[30-Sep-2026 07:44:22 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
-[30-Sep-2026 07:44:22 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
-[30-Sep-2026 07:44:37 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
-[30-Sep-2026 07:44:37 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
-[30-Sep-2026 07:44:37 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
-[30-Sep-2026 07:44:37 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
-[30-Sep-2026 07:44:37 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
-[30-Sep-2026 07:44:37 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
-[30-Sep-2026 08:27:32 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
-[30-Sep-2026 08:27:32 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
-[30-Sep-2026 08:27:32 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
-[30-Sep-2026 08:27:32 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
-[30-Sep-2026 08:27:32 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
-[30-Sep-2026 08:27:32 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
-[30-Sep-2026 08:50:20 Asia/Manila] Session Fingerprint Mismatch! Stored: 88118530493d162ba3ed5600ba2b1d063abfd1c1a4b0ded11a1d3ed4a801d264 | Current: d9a0bb87610127054a534b1ebbefeb7b81e8d4741dfb6102d60fb8c7a198f087 | UA: Mozilla/5.0 (X11; Linux aarch64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36 CrKey/1.54.250320
-[30-Sep-2026 08:50:20 Asia/Manila] Session Fingerprint Mismatch! Stored: 88118530493d162ba3ed5600ba2b1d063abfd1c1a4b0ded11a1d3ed4a801d264 | Current: d9a0bb87610127054a534b1ebbefeb7b81e8d4741dfb6102d60fb8c7a198f087 | UA: Mozilla/5.0 (X11; Linux aarch64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36 CrKey/1.54.250320
-[30-Sep-2026 08:50:20 Asia/Manila] Session Fingerprint Mismatch! Stored: 88118530493d162ba3ed5600ba2b1d063abfd1c1a4b0ded11a1d3ed4a801d264 | Current: d9a0bb87610127054a534b1ebbefeb7b81e8d4741dfb6102d60fb8c7a198f087 | UA: Mozilla/5.0 (X11; Linux aarch64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36 CrKey/1.54.250320
-[30-Sep-2026 08:50:21 Asia/Manila] Session Fingerprint Mismatch! Stored: 88118530493d162ba3ed5600ba2b1d063abfd1c1a4b0ded11a1d3ed4a801d264 | Current: d9a0bb87610127054a534b1ebbefeb7b81e8d4741dfb6102d60fb8c7a198f087 | UA: Mozilla/5.0 (X11; Linux aarch64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36 CrKey/1.54.250320
-[30-Sep-2026 08:50:21 Asia/Manila] Session Fingerprint Mismatch! Stored: 88118530493d162ba3ed5600ba2b1d063abfd1c1a4b0ded11a1d3ed4a801d264 | Current: d9a0bb87610127054a534b1ebbefeb7b81e8d4741dfb6102d60fb8c7a198f087 | UA: Mozilla/5.0 (X11; Linux aarch64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36 CrKey/1.54.250320
-[30-Sep-2026 08:50:21 Asia/Manila] Session Fingerprint Mismatch! Stored: 88118530493d162ba3ed5600ba2b1d063abfd1c1a4b0ded11a1d3ed4a801d264 | Current: d9a0bb87610127054a534b1ebbefeb7b81e8d4741dfb6102d60fb8c7a198f087 | UA: Mozilla/5.0 (X11; Linux aarch64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36 CrKey/1.54.250320
-[30-Sep-2026 08:50:22 Asia/Manila] Session Fingerprint Mismatch! Stored: 88118530493d162ba3ed5600ba2b1d063abfd1c1a4b0ded11a1d3ed4a801d264 | Current: d9a0bb87610127054a534b1ebbefeb7b81e8d4741dfb6102d60fb8c7a198f087 | UA: Mozilla/5.0 (X11; Linux aarch64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36 CrKey/1.54.250320
-[30-Sep-2026 09:19:08 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
-[30-Sep-2026 09:19:08 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
-[30-Sep-2026 09:19:08 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
-[30-Sep-2026 09:19:08 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
-[30-Sep-2026 09:19:08 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
-[30-Sep-2026 09:19:08 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
-[30-Sep-2026 14:36:49 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
-[30-Sep-2026 14:36:49 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
-[30-Sep-2026 14:36:49 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
-[30-Sep-2026 14:36:49 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
-[30-Sep-2026 14:36:49 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
-[30-Sep-2026 14:36:49 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
-[30-Sep-2026 15:24:43 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
-[30-Sep-2026 15:24:43 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
-[30-Sep-2026 15:24:43 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
-[30-Sep-2026 15:24:43 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
-[30-Sep-2026 15:24:43 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
-[30-Sep-2026 15:24:43 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
-[30-Sep-2026 15:31:16 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
-[30-Sep-2026 15:31:16 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
-[30-Sep-2026 15:31:16 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
-[30-Sep-2026 15:31:16 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
-[30-Sep-2026 15:31:16 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
-[30-Sep-2026 15:31:16 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
-[01-Oct-2026 15:33:37 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
-[01-Oct-2026 15:33:37 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
-[01-Oct-2026 15:33:37 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
-[01-Oct-2026 15:33:37 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
-[01-Oct-2026 15:33:37 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
-[01-Oct-2026 15:33:37 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
-[01-Oct-2026 15:38:28 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
-[01-Oct-2026 15:38:28 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
-[01-Oct-2026 15:38:28 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
-[01-Oct-2026 15:38:28 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
-[01-Oct-2026 15:38:28 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
-[01-Oct-2026 15:38:28 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Views\Admin\student_logbook.php on line 22
+[22-Oct-2026 21:35:07 Asia/Manila] Session Fingerprint Mismatch! Stored: c5d926cb623f9a059c112630f1f1d13c6623c11b93f54669c40ff0c615881e00 | Current: 51f070700e79e0ba0ea4032ef7ed70037440556ce8f3c560378a135b53056048 | UA: Mozilla/5.0 (Linux; Android 16; Pixel 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Mobile Safari/537.36
+[22-Oct-2026 21:35:13 Asia/Manila] Session Fingerprint Mismatch! Stored: c5d926cb623f9a059c112630f1f1d13c6623c11b93f54669c40ff0c615881e00 | Current: 51f070700e79e0ba0ea4032ef7ed70037440556ce8f3c560378a135b53056048 | UA: Mozilla/5.0 (Linux; Android 16; Pixel 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Mobile Safari/537.36
+[22-Oct-2026 21:35:14 Asia/Manila] Session Fingerprint Mismatch! Stored: c5d926cb623f9a059c112630f1f1d13c6623c11b93f54669c40ff0c615881e00 | Current: 51f070700e79e0ba0ea4032ef7ed70037440556ce8f3c560378a135b53056048 | UA: Mozilla/5.0 (Linux; Android 16; Pixel 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Mobile Safari/537.36
+[23-Oct-2026 10:00:55 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[23-Oct-2026 10:00:55 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[23-Oct-2026 10:00:55 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[23-Oct-2026 10:00:55 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[23-Oct-2026 10:00:55 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[23-Oct-2026 10:00:55 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[23-Oct-2026 16:29:31 Asia/Manila] Session Fingerprint Mismatch! Stored: c5d926cb623f9a059c112630f1f1d13c6623c11b93f54669c40ff0c615881e00 | Current: 51f070700e79e0ba0ea4032ef7ed70037440556ce8f3c560378a135b53056048 | UA: Mozilla/5.0 (Linux; Android 16; Pixel 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Mobile Safari/537.36
+[23-Oct-2026 16:29:31 Asia/Manila] Session Fingerprint Mismatch! Stored: c5d926cb623f9a059c112630f1f1d13c6623c11b93f54669c40ff0c615881e00 | Current: 51f070700e79e0ba0ea4032ef7ed70037440556ce8f3c560378a135b53056048 | UA: Mozilla/5.0 (Linux; Android 16; Pixel 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Mobile Safari/537.36
+[23-Oct-2026 16:29:38 Asia/Manila] Session Fingerprint Mismatch! Stored: c5d926cb623f9a059c112630f1f1d13c6623c11b93f54669c40ff0c615881e00 | Current: 51f070700e79e0ba0ea4032ef7ed70037440556ce8f3c560378a135b53056048 | UA: Mozilla/5.0 (Linux; Android 16; Pixel 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Mobile Safari/537.36
+[23-Oct-2026 16:29:40 Asia/Manila] Session Fingerprint Mismatch! Stored: c5d926cb623f9a059c112630f1f1d13c6623c11b93f54669c40ff0c615881e00 | Current: 51f070700e79e0ba0ea4032ef7ed70037440556ce8f3c560378a135b53056048 | UA: Mozilla/5.0 (Linux; Android 16; Pixel 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Mobile Safari/537.36
+[23-Oct-2026 16:30:28 Asia/Manila] Session Fingerprint Mismatch! Stored: c5d926cb623f9a059c112630f1f1d13c6623c11b93f54669c40ff0c615881e00 | Current: 51f070700e79e0ba0ea4032ef7ed70037440556ce8f3c560378a135b53056048 | UA: Mozilla/5.0 (Linux; Android 16; Pixel 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Mobile Safari/537.36
+[23-Oct-2026 16:30:28 Asia/Manila] Session Fingerprint Mismatch! Stored: c5d926cb623f9a059c112630f1f1d13c6623c11b93f54669c40ff0c615881e00 | Current: 51f070700e79e0ba0ea4032ef7ed70037440556ce8f3c560378a135b53056048 | UA: Mozilla/5.0 (Linux; Android 16; Pixel 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Mobile Safari/537.36
+[23-Oct-2026 16:30:37 Asia/Manila] Session Fingerprint Mismatch! Stored: c5d926cb623f9a059c112630f1f1d13c6623c11b93f54669c40ff0c615881e00 | Current: 51f070700e79e0ba0ea4032ef7ed70037440556ce8f3c560378a135b53056048 | UA: Mozilla/5.0 (Linux; Android 16; Pixel 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Mobile Safari/537.36
+[23-Oct-2026 16:30:38 Asia/Manila] Session Fingerprint Mismatch! Stored: c5d926cb623f9a059c112630f1f1d13c6623c11b93f54669c40ff0c615881e00 | Current: 51f070700e79e0ba0ea4032ef7ed70037440556ce8f3c560378a135b53056048 | UA: Mozilla/5.0 (Linux; Android 16; Pixel 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Mobile Safari/537.36
+[23-Oct-2026 16:31:26 Asia/Manila] Session Fingerprint Mismatch! Stored: c5d926cb623f9a059c112630f1f1d13c6623c11b93f54669c40ff0c615881e00 | Current: 51f070700e79e0ba0ea4032ef7ed70037440556ce8f3c560378a135b53056048 | UA: Mozilla/5.0 (Linux; Android 16; Pixel 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Mobile Safari/537.36
+[23-Oct-2026 16:31:26 Asia/Manila] Session Fingerprint Mismatch! Stored: c5d926cb623f9a059c112630f1f1d13c6623c11b93f54669c40ff0c615881e00 | Current: 51f070700e79e0ba0ea4032ef7ed70037440556ce8f3c560378a135b53056048 | UA: Mozilla/5.0 (Linux; Android 16; Pixel 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Mobile Safari/537.36
+[23-Oct-2026 16:33:09 Asia/Manila] Session Fingerprint Mismatch! Stored: c5d926cb623f9a059c112630f1f1d13c6623c11b93f54669c40ff0c615881e00 | Current: 51f070700e79e0ba0ea4032ef7ed70037440556ce8f3c560378a135b53056048 | UA: Mozilla/5.0 (Linux; Android 16; Pixel 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Mobile Safari/537.36
+[23-Oct-2026 16:33:09 Asia/Manila] Session Fingerprint Mismatch! Stored: c5d926cb623f9a059c112630f1f1d13c6623c11b93f54669c40ff0c615881e00 | Current: 51f070700e79e0ba0ea4032ef7ed70037440556ce8f3c560378a135b53056048 | UA: Mozilla/5.0 (Linux; Android 16; Pixel 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Mobile Safari/537.36
+[23-Oct-2026 16:33:12 Asia/Manila] Session Fingerprint Mismatch! Stored: c5d926cb623f9a059c112630f1f1d13c6623c11b93f54669c40ff0c615881e00 | Current: 51f070700e79e0ba0ea4032ef7ed70037440556ce8f3c560378a135b53056048 | UA: Mozilla/5.0 (Linux; Android 16; Pixel 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Mobile Safari/537.36
+[23-Oct-2026 16:33:13 Asia/Manila] Session Fingerprint Mismatch! Stored: c5d926cb623f9a059c112630f1f1d13c6623c11b93f54669c40ff0c615881e00 | Current: 51f070700e79e0ba0ea4032ef7ed70037440556ce8f3c560378a135b53056048 | UA: Mozilla/5.0 (Linux; Android 16; Pixel 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Mobile Safari/537.36
+[23-Oct-2026 16:33:14 Asia/Manila] Session Fingerprint Mismatch! Stored: c5d926cb623f9a059c112630f1f1d13c6623c11b93f54669c40ff0c615881e00 | Current: 51f070700e79e0ba0ea4032ef7ed70037440556ce8f3c560378a135b53056048 | UA: Mozilla/5.0 (Linux; Android 16; Pixel 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Mobile Safari/537.36
+[23-Oct-2026 16:33:15 Asia/Manila] Session Fingerprint Mismatch! Stored: c5d926cb623f9a059c112630f1f1d13c6623c11b93f54669c40ff0c615881e00 | Current: 51f070700e79e0ba0ea4032ef7ed70037440556ce8f3c560378a135b53056048 | UA: Mozilla/5.0 (Linux; Android 16; Pixel 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Mobile Safari/537.36
+[23-Oct-2026 21:03:15 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.users' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Common\AppContext.php:170
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Common\AppContext.php(170): mysqli_prepare(Object(mysqli), 'SELECT tbl_user...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\src\Common\AppContext.php(84): Src\Common\AppContext->fetchAllUserData(1)
+#2 C:\xampp\htdocs\dev_e_eskuelog\src\Controllers\IsLogin.php(8): Src\Common\AppContext->__construct(Object(mysqli), Object(Session))
+#3 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(13): require_once('C:\\xampp\\htdocs...')
+#4 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Common\AppContext.php on line 170
+[23-Oct-2026 21:03:17 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.users' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Common\AppContext.php:170
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Common\AppContext.php(170): mysqli_prepare(Object(mysqli), 'SELECT tbl_user...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\src\Common\AppContext.php(84): Src\Common\AppContext->fetchAllUserData(1)
+#2 C:\xampp\htdocs\dev_e_eskuelog\src\Controllers\IsLogin.php(8): Src\Common\AppContext->__construct(Object(mysqli), Object(Session))
+#3 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(13): require_once('C:\\xampp\\htdocs...')
+#4 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Common\AppContext.php on line 170
+[23-Oct-2026 21:40:58 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'requires_custom_input' in 'field list' in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\office_handler.php:34
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\office_handler.php(34): mysqli->prepare('\n            SE...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\office_handler.php on line 34
+[23-Oct-2026 22:51:30 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[23-Oct-2026 22:51:30 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[23-Oct-2026 22:51:30 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[23-Oct-2026 22:51:30 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[23-Oct-2026 22:51:30 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[23-Oct-2026 22:51:30 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[23-Oct-2026 22:51:36 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[23-Oct-2026 22:51:36 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[23-Oct-2026 22:51:36 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[23-Oct-2026 22:51:36 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[23-Oct-2026 22:51:36 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[23-Oct-2026 22:51:36 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[23-Oct-2026 22:52:21 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[23-Oct-2026 22:52:21 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[23-Oct-2026 22:52:21 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[23-Oct-2026 22:52:21 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[23-Oct-2026 22:52:21 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[23-Oct-2026 22:52:21 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[24-Oct-2026 01:37:55 Asia/Manila] Session Fingerprint Mismatch! Stored: c5d926cb623f9a059c112630f1f1d13c6623c11b93f54669c40ff0c615881e00 | Current: 51f070700e79e0ba0ea4032ef7ed70037440556ce8f3c560378a135b53056048 | UA: Mozilla/5.0 (Linux; Android 16; Pixel 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Mobile Safari/537.36
+[24-Oct-2026 01:37:56 Asia/Manila] Session Fingerprint Mismatch! Stored: c5d926cb623f9a059c112630f1f1d13c6623c11b93f54669c40ff0c615881e00 | Current: 51f070700e79e0ba0ea4032ef7ed70037440556ce8f3c560378a135b53056048 | UA: Mozilla/5.0 (Linux; Android 16; Pixel 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Mobile Safari/537.36
+[24-Oct-2026 01:38:58 Asia/Manila] Session Fingerprint Mismatch! Stored: c5d926cb623f9a059c112630f1f1d13c6623c11b93f54669c40ff0c615881e00 | Current: 51f070700e79e0ba0ea4032ef7ed70037440556ce8f3c560378a135b53056048 | UA: Mozilla/5.0 (Linux; Android 16; Pixel 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Mobile Safari/537.36
+[24-Oct-2026 02:08:58 Asia/Manila] Session Fingerprint Mismatch! Stored: c5d926cb623f9a059c112630f1f1d13c6623c11b93f54669c40ff0c615881e00 | Current: 51f070700e79e0ba0ea4032ef7ed70037440556ce8f3c560378a135b53056048 | UA: Mozilla/5.0 (Linux; Android 16; Pixel 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Mobile Safari/537.36
+[24-Oct-2026 02:09:05 Asia/Manila] Session Fingerprint Mismatch! Stored: c5d926cb623f9a059c112630f1f1d13c6623c11b93f54669c40ff0c615881e00 | Current: 51f070700e79e0ba0ea4032ef7ed70037440556ce8f3c560378a135b53056048 | UA: Mozilla/5.0 (Linux; Android 16; Pixel 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Mobile Safari/537.36
+[24-Oct-2026 11:17:02 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[24-Oct-2026 11:17:02 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[24-Oct-2026 11:17:02 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[24-Oct-2026 11:17:02 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[24-Oct-2026 11:17:02 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[24-Oct-2026 11:17:02 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[24-Oct-2026 11:17:06 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[24-Oct-2026 11:17:06 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[24-Oct-2026 11:17:06 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[24-Oct-2026 11:17:06 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[24-Oct-2026 11:17:06 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[24-Oct-2026 11:17:06 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[24-Oct-2026 11:18:32 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[24-Oct-2026 11:18:32 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[24-Oct-2026 11:18:32 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[24-Oct-2026 11:18:32 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[24-Oct-2026 11:18:32 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[24-Oct-2026 11:18:32 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[24-Oct-2026 11:18:59 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[24-Oct-2026 11:18:59 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[24-Oct-2026 11:18:59 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[24-Oct-2026 11:18:59 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[24-Oct-2026 11:18:59 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[24-Oct-2026 11:18:59 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[24-Oct-2026 11:19:03 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[24-Oct-2026 11:19:03 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[24-Oct-2026 11:19:03 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[24-Oct-2026 11:19:03 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[24-Oct-2026 11:19:03 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[24-Oct-2026 11:19:03 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[24-Oct-2026 11:19:22 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[24-Oct-2026 11:19:22 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[24-Oct-2026 11:19:22 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[24-Oct-2026 11:19:22 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[24-Oct-2026 11:19:22 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[24-Oct-2026 11:19:22 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[24-Oct-2026 11:21:11 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[24-Oct-2026 11:21:11 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[24-Oct-2026 11:21:11 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[24-Oct-2026 11:21:11 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[24-Oct-2026 11:21:11 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[24-Oct-2026 11:21:11 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[24-Oct-2026 12:24:18 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[24-Oct-2026 12:24:18 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[24-Oct-2026 12:24:18 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[24-Oct-2026 12:24:18 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[24-Oct-2026 12:24:18 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[24-Oct-2026 12:24:18 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[24-Oct-2026 12:26:57 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[24-Oct-2026 12:26:57 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[24-Oct-2026 12:26:57 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[24-Oct-2026 12:26:57 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[24-Oct-2026 12:26:57 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[24-Oct-2026 12:26:57 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[24-Oct-2026 12:37:15 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[24-Oct-2026 12:37:15 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[24-Oct-2026 12:37:15 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[24-Oct-2026 12:37:15 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[24-Oct-2026 12:37:15 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[24-Oct-2026 12:37:15 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[24-Oct-2026 12:38:08 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[24-Oct-2026 12:38:08 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[24-Oct-2026 12:38:08 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[24-Oct-2026 12:38:08 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[24-Oct-2026 12:38:08 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[24-Oct-2026 12:38:08 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[24-Oct-2026 12:38:40 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[24-Oct-2026 12:38:40 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[24-Oct-2026 12:38:40 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[24-Oct-2026 12:38:40 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[24-Oct-2026 12:38:40 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[24-Oct-2026 12:38:40 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[24-Oct-2026 12:38:51 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[24-Oct-2026 12:38:51 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[24-Oct-2026 12:38:51 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[24-Oct-2026 12:38:51 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[24-Oct-2026 12:38:51 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[24-Oct-2026 12:38:51 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[24-Oct-2026 12:38:58 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[24-Oct-2026 12:38:58 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[24-Oct-2026 12:38:58 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[24-Oct-2026 12:38:58 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[24-Oct-2026 12:38:58 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[24-Oct-2026 12:38:58 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[24-Oct-2026 15:13:57 Asia/Manila] PHP Fatal error:  Uncaught ArgumentCountError: The number of elements in the type definition string must match the number of bind variables in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\logbook_handler.php:197
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\logbook_handler.php(197): mysqli_stmt->bind_param('ssissssssssiiii...', 'STUDENT', '2023-10544', 2, 'ALEX', 'CARBELLIDO', 'FLORES', NULL, NULL, 'Male', '09750920427', 'BSIT', 4, 0, 8, 36, 0, NULL, 1)
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(149): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\logbook_handler.php on line 197
+[24-Oct-2026 15:14:04 Asia/Manila] PHP Fatal error:  Uncaught ArgumentCountError: The number of elements in the type definition string must match the number of bind variables in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\logbook_handler.php:197
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\logbook_handler.php(197): mysqli_stmt->bind_param('ssissssssssiiii...', 'STUDENT', '2023-10544', 2, 'ALEX', 'CARBELLIDO', 'FLORES', NULL, NULL, 'Male', '09750920427', 'BSIT', 4, 0, 8, 36, 0, NULL, 1)
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(149): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\logbook_handler.php on line 197
+[24-Oct-2026 15:14:50 Asia/Manila] PHP Fatal error:  Uncaught ArgumentCountError: The number of elements in the type definition string must match the number of bind variables in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\logbook_handler.php:197
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\logbook_handler.php(197): mysqli_stmt->bind_param('ssissssssssiiii...', 'STUDENT', '2023-10544', 2, 'ALEX', 'CARBELLIDO', 'FLORES', NULL, NULL, 'Male', '09750920427', 'BSIT', 4, 0, 8, 36, 0, NULL, 1)
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(149): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\logbook_handler.php on line 197
+[24-Oct-2026 15:19:17 Asia/Manila] PHP Fatal error:  Uncaught ArgumentCountError: The number of elements in the type definition string must match the number of bind variables in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\logbook_handler.php:210
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\logbook_handler.php(210): mysqli_stmt->bind_param('ssissssssssiiii...', 'STUDENT', '2023-10544', 2, 'ALEX', 'CARBELLIDO', 'FLORES', NULL, NULL, 'Male', '09750920427', 'BSIT', 4, 0, 8, 36, 0, NULL, 1)
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(149): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\logbook_handler.php on line 210
+[24-Oct-2026 15:19:48 Asia/Manila] PHP Fatal error:  Uncaught ArgumentCountError: The number of elements in the type definition string must match the number of bind variables in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\logbook_handler.php:210
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\logbook_handler.php(210): mysqli_stmt->bind_param('ssissssssssiiii...', 'STUDENT', '2023-10544', 2, 'ALEX', 'CARBELLIDO', 'FLORES', NULL, NULL, 'Male', '09750920427', 'BSIT', 4, 0, 8, 38, 0, NULL, 1)
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(149): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\logbook_handler.php on line 210
+[24-Oct-2026 15:20:39 Asia/Manila] PHP Fatal error:  Uncaught ArgumentCountError: The number of elements in the type definition string must match the number of bind variables in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\logbook_handler.php:210
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\logbook_handler.php(210): mysqli_stmt->bind_param('ssissssssssiiii...', 'STUDENT', '2023-10544', 2, 'ALEX', 'CARBELLIDO', 'FLORES', NULL, NULL, 'Male', '09750920427', 'BSIT', 4, 0, 8, 36, 0, NULL, 1)
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(149): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\logbook_handler.php on line 210
+[24-Oct-2026 15:24:06 Asia/Manila] PHP Fatal error:  Uncaught ArgumentCountError: The number of elements in the type definition string must match the number of bind variables in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\logbook_handler.php:210
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\logbook_handler.php(210): mysqli_stmt->bind_param('ssissssssssiiii...', 'STUDENT', '2023-10544', 2, 'ALEX', 'CARBELLIDO', 'FLORES', NULL, NULL, 'Male', '09750920427', 'BSIT', 4, 0, 8, 36, 0, NULL, 1)
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(149): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\logbook_handler.php on line 210
+[25-Oct-2026 09:38:16 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[25-Oct-2026 09:38:16 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[25-Oct-2026 09:38:16 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[25-Oct-2026 09:38:16 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[25-Oct-2026 09:38:16 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[25-Oct-2026 09:38:16 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[25-Oct-2026 13:06:24 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[25-Oct-2026 13:06:24 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[25-Oct-2026 13:06:24 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[25-Oct-2026 13:06:24 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[25-Oct-2026 13:06:24 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[25-Oct-2026 13:06:24 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[25-Oct-2026 16:24:04 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[25-Oct-2026 16:24:04 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[25-Oct-2026 16:24:04 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[25-Oct-2026 16:24:04 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[25-Oct-2026 16:24:04 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[25-Oct-2026 16:24:04 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[25-Oct-2026 16:41:09 Asia/Manila] PHP Warning:  require_once(C:\xampp\htdocs\dev_e_eskuelog/src/Handlers/App/logout_process.php): Failed to open stream: No such file or directory in C:\xampp\htdocs\dev_e_eskuelog\public\index.php on line 58
+[25-Oct-2026 16:41:09 Asia/Manila] PHP Fatal error:  Uncaught Error: Failed opening required 'C:\xampp\htdocs\dev_e_eskuelog/src/Handlers/App/logout_process.php' (include_path='C:\xampp\php\PEAR') in C:\xampp\htdocs\dev_e_eskuelog\public\index.php:58
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\public\index.php on line 58
+[25-Oct-2026 18:31:04 Asia/Manila] PHP Warning:  require_once(C:\xampp\htdocs\dev_e_eskuelog/src/Handlers/App/logout_process.php): Failed to open stream: No such file or directory in C:\xampp\htdocs\dev_e_eskuelog\public\index.php on line 58
+[25-Oct-2026 18:31:04 Asia/Manila] PHP Fatal error:  Uncaught Error: Failed opening required 'C:\xampp\htdocs\dev_e_eskuelog/src/Handlers/App/logout_process.php' (include_path='C:\xampp\php\PEAR') in C:\xampp\htdocs\dev_e_eskuelog\public\index.php:58
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\public\index.php on line 58
+[26-Oct-2026 06:36:49 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[26-Oct-2026 06:36:49 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[26-Oct-2026 06:36:49 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[26-Oct-2026 06:36:49 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[26-Oct-2026 06:36:49 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[26-Oct-2026 06:36:49 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[26-Oct-2026 07:14:26 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[26-Oct-2026 07:14:26 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[26-Oct-2026 07:14:26 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[26-Oct-2026 07:14:26 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[26-Oct-2026 07:14:26 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[26-Oct-2026 07:14:26 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[26-Oct-2026 07:14:46 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[26-Oct-2026 07:14:46 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[26-Oct-2026 07:14:46 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[26-Oct-2026 07:14:46 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[26-Oct-2026 07:14:46 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[26-Oct-2026 07:14:46 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[26-Oct-2026 08:13:25 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[26-Oct-2026 08:13:25 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[26-Oct-2026 08:13:25 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[26-Oct-2026 08:13:25 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[26-Oct-2026 08:13:25 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[26-Oct-2026 08:13:25 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[26-Oct-2026 08:13:47 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[26-Oct-2026 08:13:47 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[26-Oct-2026 08:13:47 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[26-Oct-2026 08:13:47 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[26-Oct-2026 08:13:47 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[26-Oct-2026 08:13:47 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[27-Oct-2026 07:17:06 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[27-Oct-2026 07:17:06 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[27-Oct-2026 07:17:06 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[27-Oct-2026 07:17:06 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[27-Oct-2026 07:17:06 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[27-Oct-2026 07:17:06 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[27-Oct-2026 07:32:04 Asia/Manila] PHP Warning:  require_once(C:\xampp\htdocs\dev_e_eskuelog/src/Handlers/App/logout_process.php): Failed to open stream: No such file or directory in C:\xampp\htdocs\dev_e_eskuelog\public\index.php on line 58
+[27-Oct-2026 07:32:04 Asia/Manila] PHP Fatal error:  Uncaught Error: Failed opening required 'C:\xampp\htdocs\dev_e_eskuelog/src/Handlers/App/logout_process.php' (include_path='C:\xampp\php\PEAR') in C:\xampp\htdocs\dev_e_eskuelog\public\index.php:58
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\public\index.php on line 58
+[27-Oct-2026 08:39:25 Asia/Manila] PHP Warning:  require_once(C:\xampp\htdocs\dev_e_eskuelog/src/Handlers/App/logout_process.php): Failed to open stream: No such file or directory in C:\xampp\htdocs\dev_e_eskuelog\public\index.php on line 58
+[27-Oct-2026 08:39:25 Asia/Manila] PHP Fatal error:  Uncaught Error: Failed opening required 'C:\xampp\htdocs\dev_e_eskuelog/src/Handlers/App/logout_process.php' (include_path='C:\xampp\php\PEAR') in C:\xampp\htdocs\dev_e_eskuelog\public\index.php:58
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\public\index.php on line 58
+[27-Oct-2026 09:09:15 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[27-Oct-2026 09:09:15 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[27-Oct-2026 09:09:15 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[27-Oct-2026 09:09:15 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[27-Oct-2026 09:09:15 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[27-Oct-2026 09:09:15 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[27-Oct-2026 09:17:02 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[27-Oct-2026 09:17:02 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[27-Oct-2026 09:17:02 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[27-Oct-2026 09:17:02 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[27-Oct-2026 09:17:02 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[27-Oct-2026 09:17:02 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[27-Oct-2026 09:19:02 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[27-Oct-2026 09:19:02 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[27-Oct-2026 09:19:02 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[27-Oct-2026 09:19:02 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[27-Oct-2026 09:19:02 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[27-Oct-2026 09:19:02 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[27-Oct-2026 09:19:28 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[27-Oct-2026 09:19:28 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[27-Oct-2026 09:19:28 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[27-Oct-2026 09:19:28 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[27-Oct-2026 09:19:28 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[27-Oct-2026 09:19:28 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[27-Oct-2026 09:27:36 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[27-Oct-2026 09:27:36 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[27-Oct-2026 09:27:36 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[27-Oct-2026 09:27:36 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[27-Oct-2026 09:27:36 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[27-Oct-2026 09:27:36 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[27-Oct-2026 09:29:18 Asia/Manila] PHP Warning:  require_once(C:\xampp\htdocs\dev_e_eskuelog/src/Handlers/App/logout_process.php): Failed to open stream: No such file or directory in C:\xampp\htdocs\dev_e_eskuelog\public\index.php on line 58
+[27-Oct-2026 09:29:18 Asia/Manila] PHP Fatal error:  Uncaught Error: Failed opening required 'C:\xampp\htdocs\dev_e_eskuelog/src/Handlers/App/logout_process.php' (include_path='C:\xampp\php\PEAR') in C:\xampp\htdocs\dev_e_eskuelog\public\index.php:58
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\public\index.php on line 58
+[27-Oct-2026 09:29:29 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[27-Oct-2026 09:29:29 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[27-Oct-2026 09:29:29 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[27-Oct-2026 09:29:29 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[27-Oct-2026 09:29:29 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[27-Oct-2026 09:29:29 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
