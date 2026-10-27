@@ -644,12 +644,80 @@ if ($db_connect) {
                 justify-content: center;
             }
         }
+
+        /* FLOATING AUDIO ACTIVATION NOTICE */
+        .audio-notice-banner {
+            position: fixed;
+            top: 4.8rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1050;
+            background: rgba(15, 23, 42, 0.92) !important;
+            border: 1px solid rgba(59, 130, 246, 0.5) !important;
+            box-shadow: 0 12px 32px rgba(0, 10, 50, 0.5), 0 0 20px rgba(59, 130, 246, 0.3);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 1rem;
+            padding: 0.75rem 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            max-width: 90vw;
+            width: 480px;
+            cursor: pointer;
+            transition: opacity 0.4s ease, transform 0.4s ease;
+            animation: pulseNotice 2.5s infinite ease-in-out;
+        }
+
+        .audio-notice-banner.dismissed {
+            opacity: 0;
+            transform: translate(-50%, -15px) scale(0.96);
+            pointer-events: none;
+        }
+
+        @keyframes pulseNotice {
+            0%, 100% { box-shadow: 0 12px 32px rgba(0, 10, 50, 0.5), 0 0 15px rgba(59, 130, 246, 0.25); }
+            50% { box-shadow: 0 12px 32px rgba(0, 10, 50, 0.5), 0 0 30px rgba(59, 130, 246, 0.6); }
+        }
+
+        .audio-notice-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+        }
     </style>
 </head>
 
 <body>
 
     <div class="master-screen-wrapper">
+
+        <!-- FLOATING AUDIO UNLOCK REMINDER -->
+        <div class="audio-notice-banner" id="audioNoticeBanner" title="Click anywhere to enable voice announcements">
+            <div class="audio-notice-icon">
+                <i class="bi bi-volume-up-fill"></i>
+            </div>
+            <div class="flex-grow-1 min-w-0">
+                <div class="d-flex align-items-center gap-2 mb-0.5">
+                    <h6 class="fw-bold text-white mb-0 fs-6">Enable Live Audio</h6>
+                    <span class="badge bg-primary text-white px-2 py-0.5 rounded-pill" style="font-size: 0.68rem; letter-spacing: 0.05em;">ACTION REQUIRED</span>
+                </div>
+                <p class="text-white-50 mb-0 small" style="font-size: 0.78rem; line-height: 1.3;">
+                    Click anywhere on the screen to activate live voice announcements.
+                </p>
+            </div>
+            <button type="button" class="btn btn-sm btn-primary rounded-3 px-3 fw-bold flex-shrink-0 shadow-sm">
+                Enable <i class="bi bi-check-lg ms-1"></i>
+            </button>
+        </div>
 
         <!-- HEADER BAR WITH DYNAMIC TITLE AND ACTION BUTTONS -->
         <header class="master-header">
@@ -865,6 +933,12 @@ if ($db_connect) {
                                 return;
                             }
 
+                            // AUTO-CLAMP PAGE INDEX IF TOTAL PAGES DECREASED
+                            const totalPages = Math.ceil(cachedActiveOffices.length / ITEMS_PER_PAGE);
+                            if (currentPageIndex >= totalPages) {
+                                currentPageIndex = 0;
+                            }
+
                             let targetPageIndex = -1;
 
                             cachedActiveOffices.forEach((office, index) => {
@@ -997,9 +1071,13 @@ if ($db_connect) {
                         return;
                     }
 
-                    if (cachedActiveOffices.length > ITEMS_PER_PAGE) {
-                        const totalPages = Math.ceil(cachedActiveOffices.length / ITEMS_PER_PAGE);
+                    const totalPages = Math.ceil(cachedActiveOffices.length / ITEMS_PER_PAGE);
+
+                    if (totalPages > 1) {
                         currentPageIndex = (currentPageIndex + 1) % totalPages;
+                        renderCurrentPage(true);
+                    } else if (currentPageIndex !== 0) {
+                        currentPageIndex = 0;
                         renderCurrentPage(true);
                     }
                 }, ROTATION_INTERVAL_MS);
@@ -1049,6 +1127,46 @@ if ($db_connect) {
             setInterval(fetchLiveQueueData, 3000);
             fetchLiveQueueData();
             startPageRotation();
+
+            // -----------------------------------------------------------------
+            // BROWSER AUDIO UNLOCK & REMINDER BANNER DISMISSAL
+            // -----------------------------------------------------------------
+            const audioNoticeBanner = document.getElementById('audioNoticeBanner');
+
+            function unlockAudioContext() {
+                // 1. Resume Web Speech Synthesis API
+                if ('speechSynthesis' in window) {
+                    window.speechSynthesis.resume();
+                    loadVoices();
+                }
+
+                // 2. Warm up Web Audio API Context for Chime Bell
+                try {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    if (AudioContext) {
+                        const tempCtx = new AudioContext();
+                        tempCtx.resume().then(() => tempCtx.close());
+                    }
+                } catch (e) {
+                    console.warn("Audio Context unlock attempt:", e);
+                }
+
+                // 3. Smoothly animate and remove reminder banner
+                if (audioNoticeBanner) {
+                    audioNoticeBanner.classList.add('dismissed');
+                    setTimeout(() => {
+                        audioNoticeBanner.remove();
+                    }, 400);
+                }
+
+                // 4. Detach global document unlock listeners
+                document.removeEventListener('click', unlockAudioContext);
+                document.removeEventListener('keydown', unlockAudioContext);
+            }
+
+            // Listen for any user click or keypress to unlock audio
+            document.addEventListener('click', unlockAudioContext);
+            document.addEventListener('keydown', unlockAudioContext);
 
         })();
     </script>
