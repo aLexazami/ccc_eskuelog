@@ -764,6 +764,7 @@ if ($db_connect) {
             const QUEUE_MODE = <?= json_encode($queue_mode); ?>;
             const ITEMS_PER_PAGE = 5;
             const ROTATION_INTERVAL_MS = 5000;
+            const POST_CALL_HOLD_MS = 6000; // Freeze page during voice callouts
 
             const digitalDate = document.getElementById('digitalDate');
             const digitalClock = document.getElementById('digitalClock');
@@ -780,6 +781,8 @@ if ($db_connect) {
             let cachedActiveOffices = [];
             let currentPageIndex = 0;
             let rotationTimer = null;
+            let postCallHoldTimer = null;
+            let isHoldingCall = false;
             let lastRenderedJson = '';
 
             function applyTheme(isDark) {
@@ -804,7 +807,7 @@ if ($db_connect) {
                 });
             }
 
-            let audioQueue = [];
+            let audioQueue = []; // Holds objects: { phrase: string, pageIndex: number }
             let isSpeaking = false;
             let singleFemaleVoice = null;
 
@@ -932,8 +935,6 @@ if ($db_connect) {
                                 currentPageIndex = 0;
                             }
 
-                            let targetPageIndex = -1;
-
                             cachedActiveOffices.forEach((office, index) => {
                                 const isCalling = office.now_serving && office.now_serving.status === 'CALLED';
 
@@ -942,20 +943,15 @@ if ($db_connect) {
 
                                     if (!calledTicketsHistory.has(callKey)) {
                                         calledTicketsHistory.add(callKey);
-                                        queueVoiceCallout(office.now_serving.ticket_number);
-                                        targetPageIndex = Math.floor(index / ITEMS_PER_PAGE);
+                                        const officePageIndex = Math.floor(index / ITEMS_PER_PAGE);
+                                        queueVoiceCallout(office.now_serving.ticket_number, officePageIndex);
                                     }
                                 }
                             });
 
                             const currentDataFingerprint = JSON.stringify(cachedActiveOffices);
 
-                            if (targetPageIndex !== -1 && targetPageIndex !== currentPageIndex) {
-                                currentPageIndex = targetPageIndex;
-                                renderCurrentPage(true);
-                                startPageRotation();
-                                lastRenderedJson = currentDataFingerprint;
-                            } else if (currentDataFingerprint !== lastRenderedJson) {
+                            if (currentDataFingerprint !== lastRenderedJson) {
                                 renderCurrentPage(false);
                                 lastRenderedJson = currentDataFingerprint;
                             }
@@ -1060,7 +1056,7 @@ if ($db_connect) {
             function startPageRotation() {
                 if (rotationTimer) clearInterval(rotationTimer);
                 rotationTimer = setInterval(() => {
-                    if (isSpeaking || audioQueue.length > 0) {
+                    if (isSpeaking || isHoldingCall || audioQueue.length > 0) {
                         return;
                     }
 
@@ -1076,7 +1072,7 @@ if ($db_connect) {
                 }, ROTATION_INTERVAL_MS);
             }
 
-            function queueVoiceCallout(rawTicketNumber) {
+            function queueVoiceCallout(rawTicketNumber, pageIndex) {
                 const spokenTicket = rawTicketNumber
                     .split('')
                     .map(char => (char === '-' ? ' ' : char))
@@ -1084,7 +1080,20 @@ if ($db_connect) {
 
                 const phrase = `Now calling... ${spokenTicket}... you may now proceed to the office.`;
 
-                audioQueue.push(phrase);
+                audioQueue.push({ phrase, pageIndex });
+                processAudioQueue();
+            }
+
+            function finishSpeechAndHold() {
+                isSpeaking = false;
+                isHoldingCall = true;
+
+                if (postCallHoldTimer) clearTimeout(postCallHoldTimer);
+                postCallHoldTimer = setTimeout(() => {
+                    isHoldingCall = false;
+                    startPageRotation();
+                }, POST_CALL_HOLD_MS);
+
                 processAudioQueue();
             }
 
@@ -1092,26 +1101,25 @@ if ($db_connect) {
                 if (isSpeaking || audioQueue.length === 0 || !('speechSynthesis' in window)) return;
 
                 isSpeaking = true;
-                const nextText = audioQueue.shift();
+                const nextItem = audioQueue.shift();
+
+                // DYNAMICALLY SYNC SCREEN PAGE TO MATCH SPONKEN TICKET
+                if (currentPageIndex !== nextItem.pageIndex) {
+                    currentPageIndex = nextItem.pageIndex;
+                    renderCurrentPage(true);
+                }
 
                 playBellDing(() => {
                     if (!singleFemaleVoice) loadVoices();
 
-                    const utterance = new SpeechSynthesisUtterance(nextText);
+                    const utterance = new SpeechSynthesisUtterance(nextItem.phrase);
                     utterance.rate = 0.88;
                     utterance.pitch = 1.1;
                     utterance.lang = 'en-US';
                     if (singleFemaleVoice) utterance.voice = singleFemaleVoice;
 
-                    utterance.onend = function() {
-                        isSpeaking = false;
-                        processAudioQueue();
-                    };
-
-                    utterance.onerror = function() {
-                        isSpeaking = false;
-                        processAudioQueue();
-                    };
+                    utterance.onend = finishSpeechAndHold;
+                    utterance.onerror = finishSpeechAndHold;
 
                     window.speechSynthesis.speak(utterance);
                 });
@@ -1127,13 +1135,11 @@ if ($db_connect) {
             const audioNoticeBanner = document.getElementById('audioNoticeBanner');
 
             function unlockAudioContext() {
-                // 1. Resume Web Speech Synthesis API
                 if ('speechSynthesis' in window) {
                     window.speechSynthesis.resume();
                     loadVoices();
                 }
 
-                // 2. Warm up Web Audio API Context for Chime Bell
                 try {
                     const AudioContext = window.AudioContext || window.webkitAudioContext;
                     if (AudioContext) {
@@ -1144,7 +1150,6 @@ if ($db_connect) {
                     console.warn("Audio Context unlock attempt:", e);
                 }
 
-                // 3. Smoothly animate and remove reminder banner
                 if (audioNoticeBanner) {
                     audioNoticeBanner.classList.add('dismissed');
                     setTimeout(() => {
@@ -1152,12 +1157,10 @@ if ($db_connect) {
                     }, 400);
                 }
 
-                // 4. Detach global document unlock listeners
                 document.removeEventListener('click', unlockAudioContext);
                 document.removeEventListener('keydown', unlockAudioContext);
             }
 
-            // Listen for any user click or keypress to unlock audio
             document.addEventListener('click', unlockAudioContext);
             document.addEventListener('keydown', unlockAudioContext);
 
