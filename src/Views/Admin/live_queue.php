@@ -201,14 +201,14 @@ if ($db_connect) {
             transition: background 0.3s ease;
         }
 
-        /* HEADER BAR (SOLID TRANSLUCENT FILL TO PREVENT BLUR INVALIDATION) */
+        /* DYNAMIC RESPONSIVE HEADER BAR */
         .master-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
             background-color: var(--bg-header) !important;
             border-bottom: var(--border-header);
-            padding: 0.75rem 1.75rem;
+            padding: clamp(0.4rem, 1vh, 0.9rem) 1.75rem;
             margin: 0;
             width: 100%;
             flex-shrink: 0;
@@ -219,40 +219,22 @@ if ($db_connect) {
             isolation: isolate;
         }
 
-        .master-title {
-            font-size: 1.35rem;
-            font-weight: 800;
-            letter-spacing: 0.04em;
-            color: var(--header-title-color);
-            margin: 0;
-            display: flex;
-            align-items: center;
-            gap: 0.85rem;
-            transition: color 0.3s ease;
-        }
-
-        .title-icon-badge {
-            background: transparent !important;
-            box-shadow: none !important;
-            border: none !important;
-            width: auto !important;
-            height: auto !important;
-            padding: 0 !important;
-        }
-
-        .title-logo-img {
-            width: 60px;
-            height: 60px;
+        /* DYNAMIC SCALING HEADER BANNER IMAGE */
+        .header-banner-img {
+            height: clamp(44px, 6.5vh, 85px);
+            width: auto;
+            max-width: calc(100vw - 140px);
             object-fit: contain;
+            display: block;
         }
 
-        /* ACTION BUTTONS (NO TRANSFORM TO PREVENT GPU REPAINT PASSES) */
+        /* ACTION BUTTONS */
         .header-action-btn {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 42px;
-            height: 42px;
+            width: clamp(38px, 4.5vh, 52px);
+            height: clamp(38px, 4.5vh, 52px);
             border-radius: 0.65rem;
             border: var(--btn-action-border);
             background: var(--btn-action-bg);
@@ -270,13 +252,13 @@ if ($db_connect) {
             box-shadow: var(--btn-action-hover-shadow);
         }
 
-        /* MAIN DISPLAY AREA (PAINT ISOLATION) */
+        /* MAIN DISPLAY AREA */
         .main-display-area {
             display: flex;
             flex-direction: column;
             flex-grow: 1;
             overflow: hidden;
-            padding: 0.85rem 1.25rem 3.8rem 1.25rem;
+            padding: clamp(0.5rem, 1.2vh, 1.25rem) clamp(0.75rem, 1.5vw, 1.75rem) clamp(3.2rem, 5vh, 4.5rem) clamp(0.75rem, 1.5vw, 1.75rem);
             box-sizing: border-box;
             contain: paint;
         }
@@ -285,7 +267,7 @@ if ($db_connect) {
         .pillar-grid-container {
             display: flex;
             flex-direction: row;
-            gap: 1.15rem;
+            gap: clamp(0.75rem, 1.2vw, 1.5rem);
             flex-grow: 1;
             align-items: stretch;
             justify-content: center;
@@ -300,21 +282,21 @@ if ($db_connect) {
             transform: scale(0.97) translateY(4px);
         }
 
-        /* FROSTED GLASS PILLAR CARD (ISOLATED CONTAINMENT) */
+        /* DYNAMICALLY FLUID PILLAR CARD */
         .office-pillar-card {
-            flex: 1 1 280px;
-            min-width: 240px;
-            max-width: 340px;
-            min-height: 240px;
+            flex: 1 1 240px;
+            min-width: 200px;
+            max-width: 420px;
+            min-height: 200px;
             background: var(--bg-card) !important;
             border: var(--border-card) !important;
             box-shadow: var(--card-shadow) !important;
-            border-radius: 1.75rem;
+            border-radius: clamp(1.25rem, 2vh, 2rem);
             overflow: hidden;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            padding: 1.15rem;
+            padding: clamp(0.75rem, 1.5vh, 1.4rem);
             height: 100%;
             box-sizing: border-box;
             position: relative;
@@ -323,7 +305,6 @@ if ($db_connect) {
             transition: box-shadow 0.3s ease, outline-color 0.3s ease;
         }
 
-        /* SINGLE BACKDROP BLUR PASS */
         .office-pillar-card::before {
             display: none !important;
         }
@@ -339,13 +320,13 @@ if ($db_connect) {
         .pillar-header {
             text-align: center;
             border-bottom: var(--pillar-header-border);
-            padding-bottom: 0.65rem;
+            padding-bottom: clamp(0.35rem, 0.8vh, 0.65rem);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: flex-start;
             flex-shrink: 0;
-            min-height: 120px;
+            min-height: clamp(90px, 14vh, 140px);
             height: auto;
             box-sizing: border-box;
             position: relative;
@@ -353,14 +334,14 @@ if ($db_connect) {
         }
 
         .pillar-logo-img {
-            width: 46px;
-            height: 46px;
+            width: clamp(38px, 5vh, 58px);
+            height: clamp(38px, 5vh, 58px);
             object-fit: contain;
             border-radius: 50%;
             background: rgba(255, 255, 255, 0.95);
             border: 2px solid rgba(255, 255, 255, 0.4);
             padding: 2px;
-            margin: 0 auto 0.35rem auto;
+            margin: 0 auto clamp(0.2rem, 0.4vh, 0.4rem) auto;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
             display: flex;
             align-items: center;
@@ -369,11 +350,11 @@ if ($db_connect) {
         }
 
         .pillar-office-name {
-            font-size: 0.95rem;
+            font-size: clamp(0.88rem, 1.1vw, 1.25rem);
             font-weight: 800;
             color: var(--office-name-color);
             margin: 0;
-            line-height: 1.25;
+            line-height: 1.2;
             text-transform: uppercase;
             word-break: break-word;
             text-align: center;
@@ -387,28 +368,28 @@ if ($db_connect) {
         }
 
         .pillar-office-meta {
-            font-size: 0.75rem;
+            font-size: clamp(0.7rem, 0.85vw, 0.9rem);
             color: var(--office-meta-color);
-            margin-top: 0.25rem;
+            margin-top: 0.2rem;
             font-weight: 700;
             letter-spacing: 0.06em;
             line-height: 1;
         }
 
-        /* NOW SERVING BLOCK */
+        /* DYNAMIC NOW SERVING BLOCK */
         .pillar-serving-block {
             text-align: center;
-            padding: 0.85rem 0.5rem;
+            padding: clamp(0.5rem, 1.2vh, 1rem) 0.5rem;
             background: var(--serving-bg);
-            border-radius: 1.25rem;
+            border-radius: clamp(1rem, 1.5vh, 1.5rem);
             border: var(--serving-border);
-            margin: 0.55rem 0;
+            margin: clamp(0.35rem, 0.8vh, 0.75rem) 0;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             flex-grow: 1;
-            min-height: 165px;
+            min-height: clamp(130px, 20vh, 240px);
             box-sizing: border-box;
             position: relative;
             z-index: 2;
@@ -416,7 +397,7 @@ if ($db_connect) {
         }
 
         .serving-label {
-            font-size: 0.82rem;
+            font-size: clamp(0.75rem, 0.9vw, 1rem);
             font-weight: 800;
             letter-spacing: 0.14em;
             color: var(--serving-label-color);
@@ -425,12 +406,12 @@ if ($db_connect) {
         }
 
         .serving-ticket-number {
-            font-size: clamp(1.85rem, 2.7vw, 2.75rem);
+            font-size: clamp(2rem, 3.8vw, 4.2rem);
             font-weight: 900;
             color: var(--serving-ticket-color);
             line-height: 1;
             letter-spacing: 0.02em;
-            margin: 0.35rem 0;
+            margin: clamp(0.2rem, 0.5vh, 0.5rem) 0;
             white-space: nowrap;
             overflow: visible;
             display: block;
@@ -439,8 +420,8 @@ if ($db_connect) {
         }
 
         .priority-badge-container {
-            height: 26px;
-            min-height: 26px;
+            height: clamp(22px, 3vh, 32px);
+            min-height: clamp(22px, 3vh, 32px);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -453,8 +434,8 @@ if ($db_connect) {
             border: var(--priority-tag-border);
             box-shadow: var(--priority-tag-shadow);
             font-weight: 800;
-            font-size: 0.72rem;
-            padding: 0.28rem 0.65rem;
+            font-size: clamp(0.65rem, 0.75vw, 0.85rem);
+            padding: 0.25rem 0.65rem;
             border-radius: 9999px;
             letter-spacing: 0.05em;
             text-transform: uppercase;
@@ -463,7 +444,7 @@ if ($db_connect) {
         /* UP NEXT WAITING LINEUP BLOCK */
         .pillar-lineup-block {
             border-top: var(--lineup-border-top);
-            padding-top: 0.55rem;
+            padding-top: clamp(0.35rem, 0.8vh, 0.65rem);
             padding-bottom: 0.1rem;
             text-align: center;
             display: flex;
@@ -474,19 +455,19 @@ if ($db_connect) {
         }
 
         .lineup-label {
-            font-size: 0.75rem;
+            font-size: clamp(0.7rem, 0.8vw, 0.9rem);
             font-weight: 800;
             color: var(--lineup-label-color);
             letter-spacing: 0.08em;
             text-transform: uppercase;
-            margin-bottom: 0.4rem;
+            margin-bottom: clamp(0.25rem, 0.5vh, 0.45rem);
             display: block;
         }
 
         .lineup-pills-stack {
             display: flex;
             flex-direction: column;
-            gap: 0.4rem;
+            gap: clamp(0.25rem, 0.5vh, 0.45rem);
         }
 
         .lineup-pill {
@@ -494,11 +475,11 @@ if ($db_connect) {
             border: var(--lineup-pill-border);
             color: var(--lineup-pill-color);
             font-weight: 800;
-            font-size: 0.92rem;
+            font-size: clamp(0.85rem, 1vw, 1.15rem);
             padding: 0.35rem 0.65rem;
             border-radius: 0.75rem;
             letter-spacing: 0.05em;
-            height: 36px;
+            height: clamp(30px, 4.2vh, 44px);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -522,9 +503,9 @@ if ($db_connect) {
         }
 
         .waiting-count-footer {
-            font-size: 0.75rem;
+            font-size: clamp(0.7rem, 0.8vw, 0.9rem);
             color: var(--office-meta-color);
-            margin-top: 0.45rem;
+            margin-top: clamp(0.25rem, 0.5vh, 0.5rem);
             font-weight: 700;
             height: 18px;
             line-height: 18px;
@@ -535,16 +516,16 @@ if ($db_connect) {
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 0.5rem 0 0.2rem 0;
+            padding: 0.4rem 0 0.1rem 0;
             flex-shrink: 0;
         }
 
         .page-badge-pill {
             background: var(--page-badge-bg);
             color: var(--page-badge-color);
-            font-size: 0.85rem;
+            font-size: clamp(0.78rem, 0.9vw, 1rem);
             font-weight: 800;
-            padding: 0.4rem 1.25rem;
+            padding: 0.35rem 1.25rem;
             border-radius: 9999px;
             letter-spacing: 0.08em;
             text-transform: uppercase;
@@ -562,7 +543,7 @@ if ($db_connect) {
             display: flex;
             align-items: center;
             justify-content: flex-end;
-            padding: 0.45rem 1.5rem;
+            padding: clamp(0.35rem, 0.8vh, 0.6rem) 1.5rem;
             background-color: var(--footer-bg) !important;
             border-top: var(--footer-border);
             flex-shrink: 0;
@@ -578,18 +559,18 @@ if ($db_connect) {
             gap: 0.5rem;
             background: var(--datetime-bg);
             border: var(--datetime-border);
-            padding: 0.35rem 0.5rem;
+            padding: 0.25rem 0.5rem;
             box-shadow: none;
             transition: all 0.3s ease;
         }
 
         .footer-datetime-icon {
             color: var(--datetime-icon-color);
-            font-size: 1rem;
+            font-size: clamp(0.9rem, 1vw, 1.2rem);
         }
 
         .digital-date-text {
-            font-size: 0.82rem;
+            font-size: clamp(0.78rem, 0.9vw, 1.05rem);
             font-weight: 700;
             color: var(--datetime-text-color);
             text-transform: uppercase;
@@ -604,7 +585,7 @@ if ($db_connect) {
         }
 
         .digital-clock-text {
-            font-size: 0.9rem;
+            font-size: clamp(0.85rem, 1vw, 1.15rem);
             font-weight: 800;
             color: var(--datetime-clock-color);
             letter-spacing: 0.04em;
@@ -712,12 +693,9 @@ if ($db_connect) {
             </button>
         </div>
 
-        <!-- HEADER BAR WITH DYNAMIC TITLE AND ACTION BUTTONS -->
+        <!-- HEADER BAR WITH BANNER IMAGE AND ACTION BUTTONS -->
         <header class="master-header">
-            <h1 class="master-title">
-                <img src="<?= BASE_URL; ?>public/upload/images/logo/ccc-logo.webp" alt="CCC Logo" class="title-logo-img">
-                <span>E-ESKUELOG — <?= strtoupper(htmlspecialchars($page_title_text)); ?></span>
-            </h1>
+            <img src="<?= BASE_URL; ?>public/upload/images/logo/ccc-banner.webp" alt="CCC Banner" class="header-banner-img">
 
             <div class="d-flex align-items-center gap-2">
                 <button type="button" class="header-action-btn" id="btnToggleTheme" title="Toggle Dark/Light Theme">
@@ -1078,7 +1056,7 @@ if ($db_connect) {
                     .map(char => (char === '-' ? ' ' : char))
                     .join(' ');
 
-                const phrase = `Now calling ${spokenTicket}. Please proceed to the office.`;
+                const phrase = `Now calling ${spokenTicket}, please proceed to the office. I repeat, ${spokenTicket}, please proceed to the office.`;
 
                 audioQueue.push({ phrase, pageIndex });
                 processAudioQueue();
