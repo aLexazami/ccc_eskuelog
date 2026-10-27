@@ -436,7 +436,7 @@ if ($db_connect) {
                                 <div class="step-progress-bar">
                                     <div class="step-item active" id="wizardStep1">
                                         <span class="step-number">1</span>
-                                        <span class="d-none d-sm-inline">Student Info</span>
+                                        <span class="d-none d-sm-inline">Info</span>
                                     </div>
                                     <div class="step-divider"></div>
                                     <div class="step-item" id="wizardStep2">
