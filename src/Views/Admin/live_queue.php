@@ -890,7 +890,7 @@ if ($db_connect) {
                 formData.append('action', 'fetch_master_queue');
                 formData.append('queue_mode', QUEUE_MODE);
 
-                fetch('<?= BASE_URL; ?>admin/ajax/queue', {
+                fetch('<?= BASE_URL; ?>admin/ajax/live-queue', {
                         method: 'POST',
                         body: formData
                     })
