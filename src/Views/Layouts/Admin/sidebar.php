@@ -160,7 +160,7 @@ function render_action_links($links = [])
                         <span class="sidebar-mini-icon">
                             <i class="fa fa-ellipsis-h"></i>
                         </span>
-                        <h4 class="text-section"><?php echo ACCESS_NAME[$g_user_role]; ?></h4> <!-- change based on role -->
+                        <h4 class="text-section"><?php echo ACCESS_NAME[$g_user_role]; ?></h4>
                     </li>
 
                     <?php if (SYSTEM_FLAG === 'DEV'): ?>
@@ -178,7 +178,22 @@ function render_action_links($links = [])
                             <p>User Information</p>
                         </a>
                     </li>
+                <?php endif; ?>
 
+                <?php if ($g_user_role == 'ADMIN_STAFF'): ?>
+                    <li class="nav-section">
+                        <span class="sidebar-mini-icon">
+                            <i class="fa fa-ellipsis-h"></i>
+                        </span>
+                        <h4 class="text-section"><?php echo ACCESS_NAME[$g_user_role] ?? 'Admin Staff'; ?></h4>
+                    </li>
+
+                    <li class="nav-item <?php echo navigation_active("queue-controller"); ?>">
+                        <a href="<?php echo BASE_URL . "admin/queue-controller"; ?>">
+                            <i class="bi bi-person-workspace"></i>
+                            <p>Service Counter</p>
+                        </a>
+                    </li>
                 <?php endif; ?>
 
                 <?php if ($g_user_role == 'STATION_ADMIN'): ?>
@@ -239,9 +254,7 @@ function render_action_links($links = [])
                     </li>
                 <?php endif; ?>
 
-
                 <?php if (SYSTEM_FLAG === "DEV"): ?>
-
                     <li class="nav-item <?php echo navigation_active("activity_log", "active submenu", ["user" => ["admin", "admin_staff"]]); ?>">
                         <a class="collapsed" aria-expanded="false" data-bs-toggle="collapse" href="#activity_log_nav">
                             <i class="fas fa-list"></i>
