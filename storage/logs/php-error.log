@@ -735,3 +735,743 @@ Stack trace:
 [27-Oct-2026 09:29:29 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
 [27-Oct-2026 09:29:29 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
 [27-Oct-2026 09:29:29 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[27-Oct-2026 13:35:15 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[27-Oct-2026 13:35:15 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[27-Oct-2026 13:35:15 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[27-Oct-2026 13:35:15 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[27-Oct-2026 13:35:15 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[27-Oct-2026 13:35:15 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[27-Oct-2026 13:46:27 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[27-Oct-2026 13:46:27 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[27-Oct-2026 13:46:27 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[27-Oct-2026 13:46:27 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[27-Oct-2026 13:46:27 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[27-Oct-2026 13:46:27 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[27-Oct-2026 14:22:16 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[27-Oct-2026 14:22:16 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[27-Oct-2026 14:22:16 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[27-Oct-2026 14:22:16 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[27-Oct-2026 14:22:16 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[27-Oct-2026 14:22:16 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[28-Oct-2026 07:34:28 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[28-Oct-2026 07:34:28 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[28-Oct-2026 07:34:28 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[28-Oct-2026 07:34:28 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[28-Oct-2026 07:34:28 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[28-Oct-2026 07:34:28 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[28-Oct-2026 07:34:59 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[28-Oct-2026 07:34:59 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[28-Oct-2026 07:34:59 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[28-Oct-2026 07:34:59 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[28-Oct-2026 07:34:59 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[28-Oct-2026 07:34:59 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[28-Oct-2026 09:31:14 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[28-Oct-2026 09:31:14 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[28-Oct-2026 09:31:14 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[28-Oct-2026 09:31:14 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[28-Oct-2026 09:31:14 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[28-Oct-2026 09:31:14 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[28-Oct-2026 09:41:08 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[28-Oct-2026 09:41:08 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[28-Oct-2026 09:41:08 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[28-Oct-2026 09:41:08 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[28-Oct-2026 09:41:08 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[28-Oct-2026 09:41:08 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[28-Oct-2026 09:42:31 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[28-Oct-2026 09:42:31 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[28-Oct-2026 09:42:31 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[28-Oct-2026 09:42:31 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[28-Oct-2026 09:42:31 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[28-Oct-2026 09:42:31 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[28-Oct-2026 09:57:01 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[28-Oct-2026 09:57:01 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[28-Oct-2026 09:57:01 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[28-Oct-2026 09:57:01 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[28-Oct-2026 09:57:01 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[28-Oct-2026 09:57:01 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[28-Oct-2026 10:16:29 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[28-Oct-2026 10:16:29 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[28-Oct-2026 10:16:29 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[28-Oct-2026 10:16:29 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[28-Oct-2026 10:16:29 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[28-Oct-2026 10:16:29 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[28-Oct-2026 10:29:42 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[28-Oct-2026 10:29:42 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[28-Oct-2026 10:29:42 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[28-Oct-2026 10:29:42 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[28-Oct-2026 10:29:42 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[28-Oct-2026 10:29:42 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[28-Oct-2026 11:20:20 Asia/Manila] PHP Parse error:  syntax error, unexpected string content "", expecting "-" or identifier or variable or number in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 432
+[28-Oct-2026 11:21:21 Asia/Manila] PHP Parse error:  syntax error, unexpected string content "", expecting "-" or identifier or variable or number in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 432
+[28-Oct-2026 11:22:24 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:22:28 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:22:28 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:22:31 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:22:31 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:22:32 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:22:32 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:22:32 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:22:33 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:22:33 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:22:33 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:22:34 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:22:34 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:22:34 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:22:35 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:22:35 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:22:35 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:22:39 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:22:43 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:22:47 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:22:51 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:22:55 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:22:59 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:23:03 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:23:07 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:23:11 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:23:15 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:23:19 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:23:23 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:23:27 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:23:31 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:23:35 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:23:39 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:23:43 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:23:47 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:23:51 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:23:55 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:23:59 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:24:03 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:24:07 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:24:11 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:24:15 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:24:19 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:24:20 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:24:21 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:24:21 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:24:21 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:24:22 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:24:22 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:24:23 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:24:23 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:24:27 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:24:31 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:24:35 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:24:39 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:24:43 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:24:47 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:24:51 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:24:55 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:24:59 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:25:03 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:25:07 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:25:11 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:25:15 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:25:19 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:25:23 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:25:27 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:25:31 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:25:35 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:25:39 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:25:43 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:25:47 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:25:51 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:25:55 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:25:59 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:26:03 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:26:07 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:26:11 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:26:15 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:26:19 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:26:23 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:26:27 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:26:31 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:26:35 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:26:39 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:26:43 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:26:47 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:26:51 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:26:55 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:26:59 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:27:03 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:27:07 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:27:11 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:27:15 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:27:19 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:27:23 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:27:27 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:27:31 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:27:35 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:27:39 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:27:43 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:27:47 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:27:51 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:27:55 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'e_eskuelog.department' doesn't exist in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php:202
+Stack trace:
+#0 C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php(202): mysqli->prepare('\r\n            S...')
+#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(151): require_once('C:\\xampp\\htdocs...')
+#2 {main}
+  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 202
+[28-Oct-2026 11:33:40 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[28-Oct-2026 11:33:40 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[28-Oct-2026 11:33:40 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[28-Oct-2026 11:33:40 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[28-Oct-2026 11:33:40 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[28-Oct-2026 11:33:40 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[28-Oct-2026 14:10:32 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[28-Oct-2026 14:10:32 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[28-Oct-2026 14:10:32 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[28-Oct-2026 14:10:32 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[28-Oct-2026 14:10:32 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[28-Oct-2026 14:10:32 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[28-Oct-2026 14:33:25 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[28-Oct-2026 14:33:25 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[28-Oct-2026 14:33:25 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[28-Oct-2026 14:33:25 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[28-Oct-2026 14:33:25 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[28-Oct-2026 14:33:25 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[28-Oct-2026 14:48:35 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[28-Oct-2026 14:48:35 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[28-Oct-2026 14:48:35 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[28-Oct-2026 14:48:35 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[28-Oct-2026 14:48:35 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[28-Oct-2026 14:48:35 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[03-Nov-2026 10:03:58 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[03-Nov-2026 10:03:58 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[03-Nov-2026 10:03:58 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[03-Nov-2026 10:03:58 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[03-Nov-2026 10:03:58 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[03-Nov-2026 10:03:58 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[03-Nov-2026 10:11:53 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[03-Nov-2026 10:11:53 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[03-Nov-2026 10:11:53 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[03-Nov-2026 10:11:53 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[03-Nov-2026 10:11:53 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[03-Nov-2026 10:11:53 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[03-Nov-2026 14:18:15 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[03-Nov-2026 14:18:15 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[03-Nov-2026 14:18:15 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[03-Nov-2026 14:18:15 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[03-Nov-2026 14:18:15 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[03-Nov-2026 14:18:15 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[03-Nov-2026 14:44:05 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 281
+[03-Nov-2026 14:44:05 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 282
+[03-Nov-2026 14:44:05 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 283
+[03-Nov-2026 14:44:05 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
+[03-Nov-2026 14:44:05 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
+[03-Nov-2026 14:44:05 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
