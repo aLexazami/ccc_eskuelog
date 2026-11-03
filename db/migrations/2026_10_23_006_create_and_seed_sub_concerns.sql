@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS `transaction_sub_concerns` (
     `flag_status` INT NOT NULL DEFAULT 0,
     CONSTRAINT `fk_sub_trans` FOREIGN KEY (`transaction_type_id`) REFERENCES `transaction_types`(`id`) ON DELETE CASCADE,
     INDEX `idx_trans_sub` (`transaction_type_id`, `flag_status`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- 2. Seed Data using Clean Scalar Subqueries
 INSERT INTO `transaction_sub_concerns` (`transaction_type_id`, `sub_concern_name`) VALUES

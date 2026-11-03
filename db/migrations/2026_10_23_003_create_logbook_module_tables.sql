@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS `transaction_types` (
     
     CONSTRAINT `fk_trans_office` FOREIGN KEY (`office_id`) REFERENCES `office`(`office_id`) ON DELETE CASCADE,
     INDEX `idx_office_trans` (`office_id`, `flag_status`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- 2. Service Counters / Windows per Office
 CREATE TABLE IF NOT EXISTS `counters` (
@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS `counters` (
     
     CONSTRAINT `fk_counter_office` FOREIGN KEY (`office_id`) REFERENCES `office`(`office_id`) ON DELETE CASCADE,
     INDEX `idx_office_counter` (`office_id`, `flag_status`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- 3. Digital Logbook Master Table
 CREATE TABLE IF NOT EXISTS `logbooks` (
@@ -64,6 +64,6 @@ CREATE TABLE IF NOT EXISTS `logbooks` (
     
     INDEX `idx_log_visitor` (`visitor_type`, `reference_id`),
     INDEX `idx_log_created` (`created_at`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 COMMIT;

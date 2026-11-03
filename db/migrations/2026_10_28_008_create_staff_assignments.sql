@@ -24,6 +24,6 @@ CREATE TABLE IF NOT EXISTS `staff_assignments` (
     -- Indexes for fast login and queue execution queries
     UNIQUE KEY `uk_active_staff` (`user_id`),
     INDEX `idx_sa_lookup` (`office_id`, `counter_id`, `shift_status`, `flag_status`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 COMMIT;
