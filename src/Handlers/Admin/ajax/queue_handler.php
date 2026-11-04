@@ -149,10 +149,10 @@ switch ($action) {
                 }
             }
 
-            // Waiting tickets lineup
+            // Waiting tickets lineup (includes q.id so employee call buttons can select specific tickets)
             $up_next = [];
             $stmtNext = $db_connect->prepare("
-                SELECT q.ticket_number, q.is_priority, l.visitor_type 
+                SELECT q.id, q.ticket_number, q.is_priority, l.visitor_type 
                 FROM queue_tickets q
                 INNER JOIN logbooks l ON q.logbook_id = l.id
                 WHERE q.office_id = ? AND q.queue_date = ? AND q.status = 'WAITING' 
@@ -198,6 +198,7 @@ switch ($action) {
         }
 
         try {
+            // Complete any current active ticket on this counter
             if ($counter_id > 0) {
                 $stmtCompletePrev = $db_connect->prepare("
                     UPDATE queue_tickets 
@@ -215,11 +216,13 @@ switch ($action) {
             }
             $stmtCompletePrev->execute();
 
+            // MAIN CALL NEXT STRICTLY CALLS STUDENTS & GUESTS (EXCLUDES EMPLOYEES)
             $stmtNextTicket = $db_connect->prepare("
-                SELECT id, ticket_number 
-                FROM queue_tickets 
-                WHERE office_id = ? AND queue_date = ? AND status = 'WAITING' 
-                ORDER BY is_priority DESC, queue_sequence ASC LIMIT 1
+                SELECT q.id, q.ticket_number 
+                FROM queue_tickets q
+                INNER JOIN logbooks l ON q.logbook_id = l.id
+                WHERE q.office_id = ? AND q.queue_date = ? AND q.status = 'WAITING' AND UPPER(TRIM(l.visitor_type)) != 'EMPLOYEE'
+                ORDER BY q.is_priority DESC, q.queue_sequence ASC LIMIT 1
             ");
             $stmtNextTicket->bind_param("is", $office_id, $today);
             $stmtNextTicket->execute();
@@ -254,12 +257,80 @@ switch ($action) {
 
                 echo json_encode(['success' => true, 'message' => "Ticket {$ticket['ticket_number']} called."]);
             } else {
-                echo json_encode(['success' => false, 'message' => 'No waiting tickets in queue.']);
+                echo json_encode(['success' => false, 'message' => 'No waiting students or guests in queue.']);
             }
             exit();
 
         } catch (Exception $e) {
             echo json_encode(['success' => false, 'message' => 'Call next failed: ' . $e->getMessage()]);
+            exit();
+        }
+
+    case 'call_specific_ticket':
+        if ($office_id <= 0) {
+            echo json_encode(['success' => false, 'message' => 'No active office assignment detected.']);
+            exit();
+        }
+
+        $target_ticket_id = (int)($_POST['ticket_id'] ?? 0);
+        if ($target_ticket_id <= 0) {
+            echo json_encode(['success' => false, 'message' => 'Invalid ticket selection.']);
+            exit();
+        }
+
+        try {
+            // Complete active ticket at current workstation
+            if ($counter_id > 0) {
+                $stmtCompletePrev = $db_connect->prepare("
+                    UPDATE queue_tickets 
+                    SET status = 'COMPLETED', completed_at = NOW() 
+                    WHERE office_id = ? AND counter_id = ? AND queue_date = ? AND status IN ('CALLED', 'SERVING')
+                ");
+                $stmtCompletePrev->bind_param("iis", $office_id, $counter_id, $today);
+            } else {
+                $stmtCompletePrev = $db_connect->prepare("
+                    UPDATE queue_tickets 
+                    SET status = 'COMPLETED', completed_at = NOW() 
+                    WHERE office_id = ? AND queue_date = ? AND status IN ('CALLED', 'SERVING')
+                ");
+                $stmtCompletePrev->bind_param("is", $office_id, $today);
+            }
+            $stmtCompletePrev->execute();
+
+            // Direct override call for selected ticket
+            $now = date('Y-m-d H:i:s');
+            if ($counter_id > 0) {
+                $stmtUpdate = $db_connect->prepare("
+                    UPDATE queue_tickets 
+                    SET status = 'CALLED', 
+                        called_at = ?, 
+                        counter_id = ?, 
+                        served_by_user_id = ? 
+                    WHERE id = ? AND office_id = ? AND status = 'WAITING'
+                ");
+                $stmtUpdate->bind_param("siiii", $now, $counter_id, $user_id, $target_ticket_id, $office_id);
+            } else {
+                $stmtUpdate = $db_connect->prepare("
+                    UPDATE queue_tickets 
+                    SET status = 'CALLED', 
+                        called_at = ?, 
+                        counter_id = NULL, 
+                        served_by_user_id = ? 
+                    WHERE id = ? AND office_id = ? AND status = 'WAITING'
+                ");
+                $stmtUpdate->bind_param("siii", $now, $user_id, $target_ticket_id, $office_id);
+            }
+            $stmtUpdate->execute();
+
+            if ($stmtUpdate->affected_rows > 0) {
+                echo json_encode(['success' => true, 'message' => 'Selected queue ticket called immediately.']);
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Selected ticket is no longer waiting or invalid.']);
+            }
+            exit();
+
+        } catch (Exception $e) {
+            echo json_encode(['success' => false, 'message' => 'Direct call failed: ' . $e->getMessage()]);
             exit();
         }
 

@@ -357,31 +357,105 @@ if ($db_connect && $user_id > 0) {
             margin-top: 2px;
         }
 
+        /* =========================================================================
+           MODERN REFINED LINEUP SECTION STYLES (MATCHED THEME FOR BOTH QUEUES)
+           ========================================================================= */
+        .controller-subcard {
+            border: 1.5px solid #e2e8f0;
+            border-radius: 1rem;
+            background: #ffffff;
+            box-shadow: var(--kiosk-shadow-sm);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .lineup-header-student,
+        .lineup-header-employee {
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            border-bottom: 1.5px solid #bfdbfe;
+            padding: 0.95rem 1.25rem;
+        }
+
+        .lineup-badge-student,
+        .lineup-badge-employee {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            color: #ffffff;
+            font-weight: 800;
+            font-size: 0.8rem;
+            padding: 0.4rem 1.1rem;
+            border-radius: 50rem;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.22);
+            letter-spacing: 0.02em;
+        }
+
+        /* MODERN TICKET PILL ITEM IN LINEUP */
         .ticket-pill-item {
             background: #f8fafc;
             border: 1.5px solid #e2e8f0;
-            border-radius: 0.75rem;
-            padding: 0.75rem 1rem;
-            font-size: 1.1rem;
-            font-weight: 800;
-            color: #1e293b;
+            border-radius: 0.85rem;
+            padding: 0.75rem 1.15rem;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            transition: all 0.2s ease;
         }
 
         .ticket-pill-item:hover {
-            border-color: var(--kiosk-primary);
-            background-color: var(--kiosk-primary-light);
-            color: var(--kiosk-primary);
+            border-color: #3b82f6;
+            background-color: #ffffff;
+            transform: translateX(4px);
+            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.08);
         }
 
-        .controller-subcard {
-            border: 1px solid var(--kiosk-border);
-            border-radius: 0.875rem;
-            background: #ffffff;
-            box-shadow: var(--kiosk-shadow-sm);
+        .ticket-pill-number {
+            font-family: 'Courier New', SFMono-Regular, Consolas, Monaco, monospace;
+            font-size: 1.25rem;
+            font-weight: 900;
+            letter-spacing: 0.05em;
+            color: #0f172a;
+        }
+
+        .ticket-pill-pos {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #e2e8f0;
+            color: #475569;
+            font-weight: 800;
+            font-size: 0.75rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 0.75rem;
+            flex-shrink: 0;
+            transition: all 0.2s ease;
+        }
+
+        .ticket-pill-item:hover .ticket-pill-pos {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        /* DIRECT CALL BUTTON IN EMPLOYEE QUEUE PILL */
+        .btn-call-employee-direct {
+            background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+            color: #ffffff;
+            border: none;
+            padding: 0.35rem 0.85rem;
+            border-radius: 0.5rem;
+            font-weight: 700;
+            font-size: 0.75rem;
+            letter-spacing: 0.02em;
+            box-shadow: 0 2px 6px rgba(22, 163, 74, 0.25);
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .btn-call-employee-direct:hover {
+            background: linear-gradient(135deg, #15803d 0%, #166534 100%);
+            color: #ffffff;
+            box-shadow: 0 4px 10px rgba(22, 163, 74, 0.38);
+            transform: translateY(-1px);
         }
 
         .form-select-kiosk {
@@ -697,32 +771,42 @@ if ($db_connect && $user_id > 0) {
                                             <!-- COLUMN 1: STUDENTS & GUESTS -->
                                             <div class="col-lg-6">
                                                 <div class="card controller-subcard h-100">
-                                                    <div class="card-header bg-transparent border-bottom py-3 d-flex align-items-center justify-content-between">
-                                                        <h6 class="fw-bold text-dark mb-0">
-                                                            <i class="bi bi-people-fill text-primary me-2"></i>Students & Guests Queue
+                                                    <div class="lineup-header-student d-flex align-items-center justify-content-between">
+                                                        <h6 class="fw-bold text-primary mb-0 d-flex align-items-center">
+                                                            <i class="bi bi-people-fill me-2 fs-5 text-primary"></i>Students & Guests Queue
                                                         </h6>
-                                                        <span class="badge bg-primary rounded-pill px-3 py-1.5" id="ctrlStudentBadge">0 Waiting</span>
+                                                        <span class="lineup-badge-student" id="ctrlStudentBadge">0 Waiting</span>
                                                     </div>
                                                     <div class="card-body p-3">
                                                         <div class="d-flex flex-column gap-2" id="ctrlStudentList">
-                                                            <div class="text-center py-4 text-muted small">No students currently waiting.</div>
+                                                            <div class="text-center py-4 my-2">
+                                                                <div class="mx-auto mb-2 d-flex align-items-center justify-content-center rounded-circle bg-light text-muted" style="width: 48px; height: 48px; border: 1.5px dashed #cbd5e1;">
+                                                                    <i class="bi bi-inbox fs-4 opacity-50"></i>
+                                                                </div>
+                                                                <span class="small fw-semibold text-muted">No students currently waiting.</span>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
 
-                                            <!-- COLUMN 2: EMPLOYEES -->
+                                            <!-- COLUMN 2: EMPLOYEES (EXACTLY MATCHED CSS STYLING) -->
                                             <div class="col-lg-6">
                                                 <div class="card controller-subcard h-100">
-                                                    <div class="card-header bg-transparent border-bottom py-3 d-flex align-items-center justify-content-between">
-                                                        <h6 class="fw-bold text-dark mb-0">
-                                                            <i class="bi bi-person-badge-fill text-info me-2"></i>Employees Queue
+                                                    <div class="lineup-header-employee d-flex align-items-center justify-content-between">
+                                                        <h6 class="fw-bold text-primary mb-0 d-flex align-items-center">
+                                                            <i class="bi bi-person-badge-fill me-2 fs-5 text-primary"></i>Employees Queue
                                                         </h6>
-                                                        <span class="badge bg-info text-dark rounded-pill px-3 py-1.5" id="ctrlEmployeeBadge">0 Waiting</span>
+                                                        <span class="lineup-badge-employee" id="ctrlEmployeeBadge">0 Waiting</span>
                                                     </div>
                                                     <div class="card-body p-3">
                                                         <div class="d-flex flex-column gap-2" id="ctrlEmployeeList">
-                                                            <div class="text-center py-4 text-muted small">No employees currently waiting.</div>
+                                                            <div class="text-center py-4 my-2">
+                                                                <div class="mx-auto mb-2 d-flex align-items-center justify-content-center rounded-circle bg-light text-muted" style="width: 48px; height: 48px; border: 1.5px dashed #cbd5e1;">
+                                                                    <i class="bi bi-inbox fs-4 opacity-50"></i>
+                                                                </div>
+                                                                <span class="small fw-semibold text-muted">No employees currently waiting.</span>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -950,8 +1034,8 @@ if ($db_connect && $user_id > 0) {
                         ctrlStudentBadge.textContent = `${students.length} Waiting`;
                         ctrlEmployeeBadge.textContent = `${employees.length} Waiting`;
 
-                        renderNumberOnlyPills(ctrlStudentList, students, 'No students currently waiting.');
-                        renderNumberOnlyPills(ctrlEmployeeList, employees, 'No employees currently waiting.');
+                        renderStudentPills(ctrlStudentList, students, 'No students currently waiting.');
+                        renderEmployeePills(ctrlEmployeeList, employees, 'No employees currently waiting.');
                     }
                 })
                 .catch(err => {
@@ -1080,16 +1164,53 @@ if ($db_connect && $user_id > 0) {
                 `;
             }
 
-            function renderNumberOnlyPills(container, list, emptyMsg) {
+            function renderStudentPills(container, list, emptyMsg) {
                 if (list.length === 0) {
-                    container.innerHTML = `<div class="text-center py-4 text-muted small">${emptyMsg}</div>`;
+                    container.innerHTML = `
+                        <div class="text-center py-4 my-2">
+                            <div class="mx-auto mb-2 d-flex align-items-center justify-content-center rounded-circle bg-light text-muted" style="width: 48px; height: 48px; border: 1.5px dashed #cbd5e1;">
+                                <i class="bi bi-inbox fs-4 opacity-50"></i>
+                            </div>
+                            <span class="small fw-semibold text-muted">${emptyMsg}</span>
+                        </div>
+                    `;
                     return;
                 }
 
-                container.innerHTML = list.map(item => `
+                container.innerHTML = list.map((item, index) => `
                     <div class="ticket-pill-item">
-                        <span>${item.ticket_number}</span>
-                        ${item.is_priority == 1 ? '<span class="badge bg-warning text-dark small fs-7">★ Priority</span>' : ''}
+                        <div class="d-flex align-items-center">
+                            <span class="ticket-pill-pos">${index + 1}</span>
+                            <span class="ticket-pill-number">${item.ticket_number}</span>
+                        </div>
+                        ${item.is_priority == 1 ? '<span class="badge bg-warning text-dark fw-bold px-2.5 py-1.5 rounded-pill"><i class="bi bi-star-fill text-danger me-1"></i>Priority</span>' : '<span class="badge bg-light text-secondary border fw-semibold px-2.5 py-1 rounded-pill small">Waiting</span>'}
+                    </div>
+                `).join('');
+            }
+
+            function renderEmployeePills(container, list, emptyMsg) {
+                if (list.length === 0) {
+                    container.innerHTML = `
+                        <div class="text-center py-4 my-2">
+                            <div class="mx-auto mb-2 d-flex align-items-center justify-content-center rounded-circle bg-light text-muted" style="width: 48px; height: 48px; border: 1.5px dashed #cbd5e1;">
+                                <i class="bi bi-inbox fs-4 opacity-50"></i>
+                            </div>
+                            <span class="small fw-semibold text-muted">${emptyMsg}</span>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = list.map((item, index) => `
+                    <div class="ticket-pill-item">
+                        <div class="d-flex align-items-center">
+                            <span class="ticket-pill-pos">${index + 1}</span>
+                            <span class="ticket-pill-number me-2">${item.ticket_number}</span>
+                            ${item.is_priority == 1 ? '<span class="badge bg-warning text-dark fw-bold px-2 py-1 rounded-pill small ms-1"><i class="bi bi-star-fill text-danger me-1"></i>Priority</span>' : ''}
+                        </div>
+                        <button type="button" class="btn-call-employee-direct" onclick="callSpecificTicket(${item.id})">
+                            <i class="bi bi-megaphone-fill me-1"></i> Call Next
+                        </button>
                     </div>
                 `).join('');
             }
@@ -1116,13 +1237,17 @@ if ($db_connect && $user_id > 0) {
                 }
             }
 
-            function sendQueueAction(actionName) {
+            function sendQueueAction(actionName, additionalParams = {}) {
                 if (!activeOfficeId) return;
 
                 const formData = new FormData();
                 formData.append('action', actionName);
                 formData.append('office_id', activeOfficeId);
                 formData.append('counter_id', activeCounterId);
+
+                for (const key in additionalParams) {
+                    formData.append(key, additionalParams[key]);
+                }
 
                 fetch(HANDLER_URL, {
                     method: 'POST',
@@ -1138,6 +1263,12 @@ if ($db_connect && $user_id > 0) {
                 })
                 .catch(err => console.error(`Queue Action (${actionName}) Error:`, err));
             }
+
+            // Global wrapper function so inline button clicks on employee items work cleanly
+            window.callSpecificTicket = function(ticketId) {
+                if (!ticketId) return;
+                sendQueueAction('call_specific_ticket', { ticket_id: ticketId });
+            };
 
             btnCallNext.addEventListener('click', () => sendQueueAction('call_next'));
             btnStartServe.addEventListener('click', () => sendQueueAction('serve_ticket'));
