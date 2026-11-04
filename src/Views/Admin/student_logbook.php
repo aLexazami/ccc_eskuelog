@@ -136,7 +136,7 @@ if ($db_connect) {
             min-width: 8px;
         }
 
-        /* Form Control Improvements */
+        /* Form Control Improvements & Responsive Safe Dropdowns */
         .form-control-kiosk, .form-select-kiosk {
             border: 1.5px solid #cbd5e1;
             border-radius: 0.75rem;
@@ -144,6 +144,14 @@ if ($db_connect) {
             font-size: 1rem;
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+
+        .form-select-kiosk {
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            overflow: hidden;
         }
 
         .form-control-kiosk:focus, .form-select-kiosk:focus {
@@ -515,9 +523,9 @@ if ($db_connect) {
                                                     </div>
                                                 </div>
 
-                                                <!-- SEX & CONTACT NUMBER ROW -->
+                                                <!-- SEX, CONTACT NUMBER & EMAIL ROW -->
                                                 <div class="row g-2 g-sm-3 mb-3">
-                                                    <div class="col-12 col-sm-6">
+                                                    <div class="col-12 col-md-4">
                                                         <label for="sex" class="form-label fw-bold text-dark small">Sex</label>
                                                         <select class="form-select form-select-kiosk" id="sex" name="sex" required>
                                                             <option value="" selected disabled>Select sex</option>
@@ -525,15 +533,19 @@ if ($db_connect) {
                                                             <option value="Female">Female</option>
                                                         </select>
                                                     </div>
-                                                    <div class="col-12 col-sm-6">
+                                                    <div class="col-12 col-sm-6 col-md-4">
                                                         <label for="contactNumber" class="form-label fw-bold text-dark small">Contact Number</label>
                                                         <input type="tel" class="form-control form-control-kiosk" id="contactNumber" name="contact_no" placeholder="09XXXXXXXXX" maxlength="11" required>
+                                                    </div>
+                                                    <div class="col-12 col-sm-6 col-md-4">
+                                                        <label for="email" class="form-label fw-bold text-dark small">Email Address</label>
+                                                        <input type="email" class="form-control form-control-kiosk" id="email" name="email" placeholder="student@ccc.edu.ph" required>
                                                     </div>
                                                 </div>
 
                                                 <!-- COURSE & YEAR LEVEL ROW -->
                                                 <div class="row g-2 g-sm-3 mb-3">
-                                                    <div class="col-12 col-sm-6">
+                                                    <div class="col-12 col-sm-6 min-w-0">
                                                         <label for="courseProgram" class="form-label fw-bold text-dark small">Course / Program</label>
                                                         <select class="form-select form-select-kiosk" id="courseProgram" name="program_code" required>
                                                             <option value="" selected disabled>Select course / program</option>
@@ -544,14 +556,14 @@ if ($db_connect) {
                                                                         $displayName .= ' (Major in ' . $prog['major'] . ')';
                                                                     }
                                                                 ?>
-                                                                <option value="<?= htmlspecialchars($prog['program_code']); ?>">
+                                                                <option value="<?= htmlspecialchars($prog['program_code']); ?>" title="<?= htmlspecialchars($displayName); ?>">
                                                                     <?= htmlspecialchars($displayName); ?>
                                                                 </option>
                                                             <?php endforeach; ?>
                                                         </select>
                                                     </div>
 
-                                                    <div class="col-12 col-sm-6">
+                                                    <div class="col-12 col-sm-6 min-w-0">
                                                         <label for="yearLevel" class="form-label fw-bold text-dark small">Year Level</label>
                                                         <select class="form-select form-select-kiosk" id="yearLevel" name="year_level" required>
                                                             <option value="" selected disabled>Select year level</option>
@@ -565,12 +577,12 @@ if ($db_connect) {
 
                                                 <!-- PRIORITY / SPECIAL ASSISTANCE TOGGLE CARD -->
                                                 <div class="priority-card-box mb-3">
-                                                    <div class="d-flex align-items-start justify-content-between gap-2">
-                                                        <label class="form-check-label fw-bold text-dark mb-0 fs-6" for="isPrioritySwitch" style="word-break: break-word;">
+                                                    <div class="d-flex align-items-center justify-content-between gap-3">
+                                                        <label class="form-check-label fw-bold text-dark mb-0 fs-6 cursor-pointer flex-grow-1" for="isPrioritySwitch" style="word-break: break-word; cursor: pointer;">
                                                             <i class="bi bi-person-wheelchair text-primary me-1 fs-5"></i> Priority / Special Assistance Needed?
                                                         </label>
-                                                        <div class="form-check form-switch ps-0 m-0 flex-shrink-0">
-                                                            <input class="form-check-input fs-4 ms-0" type="checkbox" id="isPrioritySwitch" name="is_priority" value="1">
+                                                        <div class="form-check form-switch p-0 m-0 flex-shrink-0 d-flex align-items-center">
+                                                            <input class="form-check-input fs-4 m-0 cursor-pointer" type="checkbox" id="isPrioritySwitch" name="is_priority" value="1" style="float: none; cursor: pointer;">
                                                         </div>
                                                     </div>
 
@@ -811,6 +823,7 @@ if ($db_connect) {
         const lastNameInput     = document.getElementById('lastName');
         const suffixSelect      = document.getElementById('suffix');
         const sexSelect         = document.getElementById('sex');
+        const emailInput        = document.getElementById('email');
 
         const courseSelect      = document.getElementById('courseProgram');
         const yearSelect        = document.getElementById('yearLevel');
@@ -910,6 +923,7 @@ if ($db_connect) {
                     lastNameInput.value   = student.last_name || '';
                     suffixSelect.value    = student.suffix || '';
                     sexSelect.value       = student.sex || '';
+                    emailInput.value      = student.email || '';
                     courseSelect.value    = student.program_code || '';
                     contactInput.value    = student.contact_no || '';
 
@@ -942,6 +956,7 @@ if ($db_connect) {
             lastNameInput.value     = '';
             suffixSelect.value      = '';
             sexSelect.value         = '';
+            emailInput.value        = '';
             courseSelect.value      = '';
             yearSelect.value        = '';
             contactInput.value      = '';
@@ -971,7 +986,7 @@ if ($db_connect) {
         // 2. STEP TRANSITIONS
         // ---------------------------------------------------------------------
         btnContinue.addEventListener('click', function() {
-            if (!firstNameInput.value.trim() || !lastNameInput.value.trim() || !sexSelect.value || !contactInput.value.trim() || !courseSelect.value || !yearSelect.value) {
+            if (!firstNameInput.value.trim() || !lastNameInput.value.trim() || !sexSelect.value || !contactInput.value.trim() || !emailInput.value.trim() || !courseSelect.value || !yearSelect.value) {
                 new swal({
                     title: "Incomplete Details",
                     text: "Please complete all required personal fields before proceeding.",

@@ -43,6 +43,7 @@ switch ($action) {
                     u.suffix,
                     u.post_nominal,
                     u.sex,
+                    u.email,
                     u.contact_no
                 FROM student s
                 INNER JOIN users u ON s.user_id = u.id
@@ -72,6 +73,7 @@ switch ($action) {
                         'suffix'       => $row['suffix'] ?? '',
                         'post_nominal' => $row['post_nominal'] ?? '',
                         'sex'          => !empty($row['sex']) ? ucfirst(strtolower($row['sex'])) : '',
+                        'email'        => $row['email'] ?? '',
                         'program_code' => $row['program_code'] ?? '',
                         'year_level'   => $year_level,
                         'contact_no'   => $row['contact_no'] ?? ''
@@ -112,6 +114,7 @@ switch ($action) {
                     u.suffix,
                     u.post_nominal,
                     u.sex,
+                    u.email,
                     u.contact_no
                 FROM employee e
                 INNER JOIN users u ON e.user_id = u.id
@@ -137,6 +140,7 @@ switch ($action) {
                         'post_nominal'  => $row['post_nominal'] ?? '',
                         'department_id' => (int)($row['department_id'] ?? 0),
                         'sex'           => !empty($row['sex']) ? ucfirst(strtolower($row['sex'])) : '',
+                        'email'         => $row['email'] ?? '',
                         'contact_no'    => $row['contact_no'] ?? ''
                     ]
                 ]);
