@@ -223,36 +223,58 @@ if ($db_connect && $user_id > 0) {
             border-color: #fca5a5;
         }
 
-        /* ENHANCED MODERN DIGITAL TIMER DISPLAY */
+        /* BLUE THEME FLIP-CLOCK TIMER BADGE STYLING */
         .digital-timer-card {
             display: inline-flex;
             align-items: center;
             gap: 0.65rem;
-            background: linear-gradient(145deg, #020617 0%, #0f172a 100%);
-            color: #38bdf8;
-            padding: 0.6rem 1.65rem;
-            border-radius: 50rem;
-            box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.7), 0 6px 20px rgba(14, 165, 233, 0.15);
-            border: 1.5px solid #1e293b;
+            background: linear-gradient(180deg, #1e3a8a 0%, #1d4ed8 100%);
+            padding: 0.5rem 1.25rem;
+            border-radius: 0.65rem;
+            box-shadow: none;
+            border: 1.5px solid #3b82f6;
+            position: relative;
+            overflow: hidden;
             transition: all 0.3s ease;
         }
 
-        .digital-timer-card .timer-label {
-            font-size: 0.8rem;
-            color: #94a3b8;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-            font-weight: 800;
+        /* Middle horizontal split crease simulating a flip-clock / calendar page */
+        .digital-timer-card::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: rgba(0, 0, 0, 0.35);
+            box-shadow: 0 1px 0 rgba(255, 255, 255, 0.25);
+            pointer-events: none;
         }
 
         .digital-timer-card #digitalElapsedTimer {
             font-family: 'Courier New', SFMono-Regular, Consolas, Monaco, monospace;
-            font-size: 1.5rem;
+            font-size: 1.55rem;
             font-weight: 900;
-            letter-spacing: 0.08em;
-            color: #38bdf8;
-            text-shadow: 0 0 12px rgba(56, 189, 248, 0.55);
+            letter-spacing: 0.12em;
+            color: #ffffff;
+            position: relative;
+            z-index: 1;
+        }
+
+        .digital-timer-card i {
+            color: #93c5fd !important;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* SLIGHTLY ENLARGED & DIAGONALLY TIPPED TICKET ICON */
+        .slant-ticket-icon {
+            font-size: 1.15rem;
+            display: inline-block;
+            transform: rotate(-18deg);
+            margin-right: 0.35rem;
+            vertical-align: -1px;
+            transition: transform 0.2s ease;
         }
 
         /* HIGHLIGHTED MODERN VISITOR TYPE BADGES */
@@ -323,6 +345,37 @@ if ($db_connect && $user_id > 0) {
             justify-content: center;
         }
 
+        /* MODERN RESPONSIVE DETAIL TILES FOR TICKET DETAILS CONTAINER */
+        .detail-tile {
+            background: #f8fafc;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 0.75rem;
+            padding: 0.75rem 1rem;
+            transition: all 0.2s ease;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .detail-tile:hover {
+            background: #ffffff;
+            border-color: #cbd5e1;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+        }
+
+        .detail-tile .tile-icon {
+            width: 42px;
+            height: 42px;
+            min-width: 42px;
+            border-radius: 0.65rem;
+            background: #eff6ff;
+            color: #2563eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 0.85rem;
+            margin-top: 2px;
+        }
+
         .btn-action-lg {
             font-weight: 700;
             padding: 0.85rem 1.25rem;
@@ -373,11 +426,11 @@ if ($db_connect && $user_id > 0) {
             font-size: 0.9rem;
         }
 
-        /* FULL-WIDTH DEDICATED TRANSACTION CONCERN BOX */
-        .full-width-concern-card {
-            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
-            border-top: 1.5px solid #93c5fd;
-            padding: 1.25rem 1.75rem;
+        /* FULL-WIDTH DEDICATED TRANSACTION CONCERN CONTAINER */
+        .full-width-concern-wrapper {
+            background: #ffffff;
+            border-top: 1px solid #e2e8f0;
+            padding: 1rem 1.5rem;
             width: 100%;
         }
     </style>
@@ -442,18 +495,24 @@ if ($db_connect && $user_id > 0) {
                                 <div class="card-body p-3 p-sm-4">
                                     <div class="d-none" id="controllerMainContent">
                                         
-                                        <!-- CENTERED MODERN HIGHLIGHTED STATUS BADGE & DIGITAL TIMER -->
-                                        <div class="w-100 d-flex flex-column align-items-center justify-content-center gap-2 mb-3">
-                                            <div id="counterStatusContainer" class="status-pill-modern status-on-duty">
-                                                <span id="counterStatusText">ON DUTY</span>
+                                        <!-- GRID TOP BAR: STATUS BADGE OVER LEFT HERO COLUMN & TIMER CENTERED OVER RIGHT DETAILS COLUMN -->
+                                        <div class="row g-0 align-items-center mb-3">
+                                            
+                                            <!-- LEFT COLUMN ALIGNED STATUS BADGE (OVER TICKET HERO LEFT) -->
+                                            <div class="col-lg-4 col-md-5 d-flex justify-content-center">
+                                                <div id="counterStatusContainer" class="status-pill-modern status-on-duty">
+                                                    <span id="counterStatusText">ON DUTY</span>
+                                                </div>
                                             </div>
 
-                                            <!-- DIGITAL ELAPSED TIMER BADGE -->
-                                            <div class="digital-timer-card">
-                                                <i class="bi bi-stopwatch fs-5 text-info"></i>
-                                                <span class="timer-label" id="digitalTimerLabel">DURATION:</span>
-                                                <span id="digitalElapsedTimer">00:00</span>
+                                            <!-- RIGHT COLUMN ALIGNED FLIP-STYLE TIMER (CENTERED OVER QUEUE DETAILS RIGHT) -->
+                                            <div class="col-lg-8 col-md-7 d-flex justify-content-center mt-2 mt-md-0">
+                                                <div class="digital-timer-card">
+                                                    <i class="bi bi-stopwatch fs-5"></i>
+                                                    <span id="digitalElapsedTimer">00:00</span>
+                                                </div>
                                             </div>
+
                                         </div>
 
                                         <!-- TOP SECTION: 2-COLUMN SERVING HERO BOX WITH FULL-WIDTH BOTTOM CONCERN CONTAINER -->
@@ -465,7 +524,7 @@ if ($db_connect && $user_id > 0) {
                                                     
                                                     <!-- 1. QUEUE NUMBER HEADER TITLE AT TOP -->
                                                     <div class="text-info text-uppercase fw-bold small tracking-wider mb-2 text-center">
-                                                        <i class="bi bi-ticket-perforated-fill me-1"></i>QUEUE NUMBER
+                                                        <i class="bi bi-ticket-perforated-fill slant-ticket-icon"></i>QUEUE NUMBER
                                                     </div>
 
                                                     <!-- 2. QUEUE NUMBER & PRIORITY TAG TIED CLOSELY TOGETHER -->
@@ -486,13 +545,18 @@ if ($db_connect && $user_id > 0) {
 
                                             </div>
 
-                                            <!-- FULL-WIDTH DEDICATED TRANSACTION CONCERN CONTAINER (SPANS ACROSS LEFT & RIGHT COLUMNS BELOW) -->
-                                            <div class="full-width-concern-card d-none" id="fullWidthConcernBox">
-                                                <span class="text-primary fw-bold text-uppercase small tracking-wider d-block mb-1">
-                                                    <i class="bi bi-clipboard-check-fill me-1"></i>Transaction Concern
-                                                </span>
-                                                <div class="fs-6 fw-bold text-dark mb-0" id="fullWidthConcernText">
-                                                    General Concern
+                                            <!-- FULL-WIDTH DEDICATED TRANSACTION CONCERN CONTAINER (CONSISTENT WITH TICKET DETAILS TILES) -->
+                                            <div class="full-width-concern-wrapper d-none" id="fullWidthConcernBox">
+                                                <div class="detail-tile d-flex align-items-start">
+                                                    <div class="tile-icon flex-shrink-0">
+                                                        <i class="bi bi-clipboard-check-fill fs-5"></i>
+                                                    </div>
+                                                    <div class="min-w-0 flex-grow-1">
+                                                        <span class="fw-semibold text-muted d-block mb-1" style="font-size: 0.75rem;">Transaction Concern</span>
+                                                        <strong class="text-dark d-block text-break fs-6" id="fullWidthConcernText" style="line-height: 1.35; word-break: break-word;">
+                                                            General Concern
+                                                        </strong>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -598,7 +662,6 @@ if ($db_connect && $user_id > 0) {
             const counterStatusText = document.getElementById('counterStatusText');
             
             // Timer UI Elements
-            const digitalTimerLabel = document.getElementById('digitalTimerLabel');
             const digitalElapsedTimer = document.getElementById('digitalElapsedTimer');
 
             // Hero UI elements
@@ -763,16 +826,13 @@ if ($db_connect && $user_id > 0) {
 
                             // DYNAMIC TIMER SWITCH LOGIC (CALLED vs SERVING)
                             if (ticket.status === 'CALLED' && ticket.called_at) {
-                                digitalTimerLabel.textContent = 'CALL DURATION:';
                                 currentTimerBaseTime = new Date(ticket.called_at);
                                 startDynamicTimer();
                             } else if (ticket.status === 'SERVING' && ticket.served_at) {
-                                digitalTimerLabel.textContent = 'SERVING DURATION:';
                                 currentTimerBaseTime = new Date(ticket.served_at);
                                 startDynamicTimer();
                             } else {
                                 stopDynamicTimer();
-                                digitalTimerLabel.textContent = 'DURATION:';
                                 digitalElapsedTimer.textContent = '00:00';
                             }
 
@@ -782,7 +842,6 @@ if ($db_connect && $user_id > 0) {
                             ctrlVisitorTypeTag.innerHTML = '';
                             fullWidthConcernBox.classList.add('d-none');
                             stopDynamicTimer();
-                            digitalTimerLabel.textContent = 'DURATION:';
                             digitalElapsedTimer.textContent = '00:00';
                             renderEmptyDetailsState();
                         }
@@ -805,10 +864,12 @@ if ($db_connect && $user_id > 0) {
 
             function renderEmptyDetailsState() {
                 ticketDetailsContainer.innerHTML = `
-                    <div class="text-center py-4 text-muted my-auto">
-                        <i class="bi bi-ticket-detailed fs-1 text-primary opacity-50 d-block mb-2"></i>
-                        <h6 class="fw-bold text-dark mb-1">No Active Ticket Called</h6>
-                        <p class="small text-muted mb-0">Click <strong>"Call Next"</strong> to proceed with the next visitor in queue.</p>
+                    <div class="text-center py-4 my-auto">
+                        <div class="mx-auto mb-3 d-flex align-items-center justify-content-center rounded-circle bg-light text-primary" style="width: 60px; height: 60px; border: 2px dashed #cbd5e1;">
+                            <i class="bi bi-ticket-detailed fs-2 text-primary opacity-75"></i>
+                        </div>
+                        <h6 class="fw-bold text-dark mb-1">No Active Ticket Selected</h6>
+                        <p class="small text-muted mb-0">Click <span class="badge bg-success-subtle text-success border border-success-subtle fw-semibold px-2 py-1"><i class="bi bi-megaphone-fill me-1"></i>Call Next</span> to proceed with the next visitor in queue.</p>
                     </div>
                 `;
             }
@@ -846,6 +907,23 @@ if ($db_connect && $user_id > 0) {
                 return toTitleCase(baseName);
             }
 
+            // Helper to render modular modern detail cards with multi-line text wrapping and responsive layout
+            function renderDetailTile(iconClass, label, value, customClass = '') {
+                return `
+                    <div class="col-12 col-sm-6">
+                        <div class="detail-tile d-flex align-items-start">
+                            <div class="tile-icon flex-shrink-0">
+                                <i class="bi ${iconClass} fs-5"></i>
+                            </div>
+                            <div class="min-w-0 flex-grow-1">
+                                <span class="fw-semibold text-muted d-block mb-1" style="font-size: 0.75rem;">${label}</span>
+                                <strong class="text-dark d-block text-break ${customClass}" style="font-size: 0.875rem; line-height: 1.35; word-break: break-word;" title="${value}">${value}</strong>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
             function renderDynamicTicketDetails(ticket, entryTimeString) {
                 const visitorType = (ticket.visitor_type || 'VISITOR').toUpperCase();
                 const fullName    = buildFormattedName(ticket);
@@ -868,91 +946,39 @@ if ($db_connect && $user_id > 0) {
                     }
 
                     dynamicFieldsHTML = `
-                        <div class="col-sm-6">
-                            <span class="text-muted d-block">Name</span>
-                            <strong class="text-dark fs-6 d-block">${fullName}</strong>
-                        </div>
-                        <div class="col-sm-6">
-                            <span class="text-muted d-block">Course / Program</span>
-                            <strong class="text-dark d-block text-break" title="${courseDisplay}">${courseDisplay}</strong>
-                        </div>
-                        <div class="col-sm-6">
-                            <span class="text-muted d-block">Email</span>
-                            <strong class="text-dark d-block text-break">${email}</strong>
-                        </div>
-                        <div class="col-sm-6">
-                            <span class="text-muted d-block">Year Level</span>
-                            <strong class="text-dark d-block">${yearLevel}</strong>
-                        </div>
-                        <div class="col-sm-6">
-                            <span class="text-muted d-block">Student ID</span>
-                            <strong class="text-dark d-block">${studentId}</strong>
-                        </div>
-                        <div class="col-sm-6">
-                            <span class="text-muted d-block">Sex</span>
-                            <strong class="text-dark d-block">${sex}</strong>
-                        </div>
+                        ${renderDetailTile('bi-person-fill', 'Name', fullName, 'fs-6')}
+                        ${renderDetailTile('bi-mortarboard-fill', 'Course / Program', courseDisplay)}
+                        ${renderDetailTile('bi-envelope-fill', 'Email', email)}
+                        ${renderDetailTile('bi-journal-bookmark-fill', 'Year Level', yearLevel)}
+                        ${renderDetailTile('bi-card-text', 'Student ID', studentId)}
+                        ${renderDetailTile('bi-gender-ambiguous', 'Sex', sex)}
                     `;
                 } else if (visitorType === 'EMPLOYEE') {
                     const department = ticket.department_code || ticket.department_name || 'N/A';
                     const office     = ticket.office_name || ticket.office_code || 'N/A';
 
                     dynamicFieldsHTML = `
-                        <div class="col-sm-6">
-                            <span class="text-muted d-block">Name</span>
-                            <strong class="text-dark fs-6 d-block">${fullName}</strong>
-                        </div>
-                        <div class="col-sm-6">
-                            <span class="text-muted d-block">Email</span>
-                            <strong class="text-dark d-block text-break">${email}</strong>
-                        </div>
-                        <div class="col-sm-6">
-                            <span class="text-muted d-block">Department</span>
-                            <strong class="text-dark d-block">${department}</strong>
-                        </div>
-                        <div class="col-sm-6">
-                            <span class="text-muted d-block">Office</span>
-                            <strong class="text-dark d-block">${office}</strong>
-                        </div>
-                        <div class="col-sm-6">
-                            <span class="text-muted d-block">Sex</span>
-                            <strong class="text-dark d-block">${sex}</strong>
-                        </div>
+                        ${renderDetailTile('bi-person-fill', 'Name', fullName, 'fs-6')}
+                        ${renderDetailTile('bi-envelope-fill', 'Email', email)}
+                        ${renderDetailTile('bi-building', 'Department', department)}
+                        ${renderDetailTile('bi-geo-alt-fill', 'Office', office)}
+                        ${renderDetailTile('bi-gender-ambiguous', 'Sex', sex)}
                     `;
                 } else {
                     const contactNo = ticket.contact_no || 'N/A';
 
                     dynamicFieldsHTML = `
-                        <div class="col-sm-6">
-                            <span class="text-muted d-block">Name</span>
-                            <strong class="text-dark fs-6 d-block">${fullName}</strong>
-                        </div>
-                        <div class="col-sm-6">
-                            <span class="text-muted d-block">Email</span>
-                            <strong class="text-dark d-block text-break">${email}</strong>
-                        </div>
-                        <div class="col-sm-6">
-                            <span class="text-muted d-block">Contact Number</span>
-                            <strong class="text-dark d-block">${contactNo}</strong>
-                        </div>
-                        <div class="col-sm-6">
-                            <span class="text-muted d-block">Sex</span>
-                            <strong class="text-dark d-block">${sex}</strong>
-                        </div>
+                        ${renderDetailTile('bi-person-fill', 'Name', fullName, 'fs-6')}
+                        ${renderDetailTile('bi-envelope-fill', 'Email', email)}
+                        ${renderDetailTile('bi-telephone-fill', 'Contact Number', contactNo)}
+                        ${renderDetailTile('bi-gender-ambiguous', 'Sex', sex)}
                     `;
                 }
 
                 ticketDetailsContainer.innerHTML = `
-                    <div class="d-flex align-items-center justify-content-between border-bottom pb-2 mb-3">
-                        <h6 class="fw-bold text-dark mb-0"><i class="bi bi-person-vcard text-primary me-2 fs-5"></i>Queue Details</h6>
-                    </div>
-
-                    <div class="row g-3 small">
+                    <div class="row g-3 my-auto py-1">
                         ${dynamicFieldsHTML}
-                        <div class="col-sm-6">
-                            <span class="text-muted d-block">Queue Entry Time</span>
-                            <span class="fw-semibold text-dark d-block">${entryTimeString}</span>
-                        </div>
+                        ${renderDetailTile('bi-clock-history', 'Queue Entry Time', entryTimeString)}
                     </div>
                 `;
             }
