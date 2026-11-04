@@ -545,9 +545,9 @@ if ($db_connect) {
                                                     </div>
                                                 </div>
 
-                                                <!-- SEX & CONTACT NUMBER ROW -->
+                                                <!-- SEX, CONTACT NUMBER & EMAIL ROW -->
                                                 <div class="row g-2 g-sm-3 mb-3">
-                                                    <div class="col-12 col-sm-6">
+                                                    <div class="col-12 col-md-4">
                                                         <label for="sex" class="form-label fw-bold text-dark small">Sex</label>
                                                         <select class="form-select form-select-kiosk" id="sex" name="sex" required>
                                                             <option value="" selected disabled>Select sex</option>
@@ -555,15 +555,19 @@ if ($db_connect) {
                                                             <option value="Female">Female</option>
                                                         </select>
                                                     </div>
-                                                    <div class="col-12 col-sm-6">
+                                                    <div class="col-12 col-sm-6 col-md-4">
                                                         <label for="contactNumber" class="form-label fw-bold text-dark small">Contact Number</label>
                                                         <input type="tel" class="form-control form-control-kiosk" id="contactNumber" name="contact_no" placeholder="09XXXXXXXXX" maxlength="11" required>
+                                                    </div>
+                                                    <div class="col-12 col-sm-6 col-md-4">
+                                                        <label for="email" class="form-label fw-bold text-dark small">Email Address</label>
+                                                        <input type="email" class="form-control form-control-kiosk" id="email" name="email" placeholder="employee@ccc.edu.ph" required>
                                                     </div>
                                                 </div>
 
                                                 <!-- DEPARTMENT & OFFICE SELECTION ROW -->
                                                 <div class="row g-2 g-sm-3 mb-3">
-                                                    <div class="col-12 col-sm-6">
+                                                    <div class="col-12 col-sm-6 min-w-0">
                                                         <label for="departmentId" class="form-label fw-bold text-dark small">Department</label>
                                                         <select class="form-select form-select-kiosk" id="departmentId" name="department_id" required>
                                                             <option value="" selected disabled>Select department</option>
@@ -579,7 +583,7 @@ if ($db_connect) {
                                                         </select>
                                                     </div>
 
-                                                    <div class="col-12 col-sm-6">
+                                                    <div class="col-12 col-sm-6 min-w-0">
                                                         <label for="employeeOfficeId" class="form-label fw-bold text-dark small">
                                                             Office <span class="text-muted fw-normal fs-8">(Optional)</span>
                                                         </label>
@@ -814,6 +818,7 @@ if ($db_connect) {
         const suffixSelect         = document.getElementById('suffix');
         const postNominalInput     = document.getElementById('postNominal');
         const sexSelect            = document.getElementById('sex');
+        const emailInput           = document.getElementById('email');
 
         const departmentSelect     = document.getElementById('departmentId');
         const employeeOfficeSelect = document.getElementById('employeeOfficeId');
@@ -898,6 +903,7 @@ if ($db_connect) {
                     suffixSelect.value     = emp.suffix || '';
                     postNominalInput.value = emp.post_nominal || '';
                     sexSelect.value        = emp.sex || '';
+                    emailInput.value       = emp.email || '';
                     contactInput.value     = emp.contact_no || '';
 
                     if (emp.department_id) {
@@ -932,6 +938,7 @@ if ($db_connect) {
             suffixSelect.value         = '';
             postNominalInput.value     = '';
             sexSelect.value            = '';
+            emailInput.value           = '';
             departmentSelect.value     = '';
             if (employeeOfficeSelect) employeeOfficeSelect.value = '';
             contactInput.value         = '';
@@ -957,7 +964,7 @@ if ($db_connect) {
         // 2. STEP TRANSITIONS
         // ---------------------------------------------------------------------
         btnContinue.addEventListener('click', function() {
-            if (!firstNameInput.value.trim() || !lastNameInput.value.trim() || !sexSelect.value || !contactInput.value.trim() || !departmentSelect.value) {
+            if (!firstNameInput.value.trim() || !lastNameInput.value.trim() || !sexSelect.value || !contactInput.value.trim() || !emailInput.value.trim() || !departmentSelect.value) {
                 new swal({
                     title: "Incomplete Details",
                     text: "Please complete all required employee fields before proceeding.",
