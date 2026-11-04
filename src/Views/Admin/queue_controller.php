@@ -223,7 +223,7 @@ if ($db_connect && $user_id > 0) {
             border-color: #fca5a5;
         }
 
-        /* BLUE THEME TIMER BADGE STYLING (FLAT CLEAN BACKGROUND) */
+        /* BLUE THEME TIMER BADGE STYLING */
         .digital-timer-card {
             display: inline-flex;
             align-items: center;
@@ -357,22 +357,6 @@ if ($db_connect && $user_id > 0) {
             margin-top: 2px;
         }
 
-        .btn-action-lg {
-            font-weight: 700;
-            padding: 0.85rem 1.25rem;
-            border-radius: 0.75rem;
-            font-size: 0.95rem;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            transition: all 0.2s ease;
-        }
-
-        .btn-action-lg:hover {
-            transform: translateY(-1px);
-        }
-
         .ticket-pill-item {
             background: #f8fafc;
             border: 1.5px solid #e2e8f0;
@@ -413,6 +397,129 @@ if ($db_connect && $user_id > 0) {
             border-top: 1px solid #e2e8f0;
             padding: 1rem 1.5rem;
             width: 100%;
+        }
+
+        /* =========================================================================
+           HIGHLIGHTED ACTION CONTROLS CONTAINER & TWO-TIER ACTION BUTTON STYLES
+           ========================================================================= */
+        .action-bar-card {
+            border: 1.5px solid #bfdbfe;
+            border-radius: 1rem;
+            background: linear-gradient(135deg, #f8fafc 0%, #eff6ff 100%);
+            box-shadow: 0 8px 20px -4px rgba(37, 99, 235, 0.08), 0 4px 8px -2px rgba(15, 23, 42, 0.04);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-action-modern {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.55rem;
+            padding: 0.75rem 1rem;
+            border-radius: 0.75rem;
+            font-weight: 800;
+            font-size: 0.9rem;
+            letter-spacing: 0.02em;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1.5px solid transparent;
+            text-transform: capitalize;
+            cursor: pointer;
+            white-space: nowrap;
+            width: 100%;
+        }
+
+        /* Taller hero sizing for top row primary actions */
+        .btn-action-hero {
+            padding: 0.95rem 1.25rem;
+            font-size: 1rem;
+            border-radius: 0.85rem;
+        }
+
+        .btn-action-modern:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-action-modern:active {
+            transform: translateY(1px);
+        }
+
+        .btn-action-modern i {
+            font-size: 1.2rem;
+            line-height: 1;
+        }
+
+        /* Call Next: Vibrant Emerald Gradient */
+        .btn-ctrl-call {
+            background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+            color: #ffffff;
+            border-color: #15803d;
+            box-shadow: 0 4px 14px rgba(22, 163, 74, 0.28);
+        }
+
+        .btn-ctrl-call:hover {
+            background: linear-gradient(135deg, #15803d 0%, #166534 100%);
+            color: #ffffff;
+            box-shadow: 0 6px 20px rgba(22, 163, 74, 0.38);
+        }
+
+        /* Serve: Deep Royal Blue Gradient */
+        .btn-ctrl-serve {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            color: #ffffff;
+            border-color: #1d4ed8;
+            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.28);
+        }
+
+        .btn-ctrl-serve:hover {
+            background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+            color: #ffffff;
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.38);
+        }
+
+        /* Recall: Refined Outline Warm Orange */
+        .btn-ctrl-recall {
+            background: #ffffff;
+            color: #ea580c;
+            border-color: #fed7aa;
+            box-shadow: 0 2px 8px rgba(234, 88, 12, 0.06);
+        }
+
+        .btn-ctrl-recall:hover {
+            background: #fff7ed;
+            color: #c2410c;
+            border-color: #fb923c;
+            box-shadow: 0 4px 12px rgba(234, 88, 12, 0.12);
+        }
+
+        /* Complete: Refined Outline Emerald Green */
+        .btn-ctrl-complete {
+            background: #ffffff;
+            color: #16a34a;
+            border-color: #bbf7d0;
+            box-shadow: 0 2px 8px rgba(22, 163, 74, 0.06);
+        }
+
+        .btn-ctrl-complete:hover {
+            background: #f0fdf4;
+            color: #15803d;
+            border-color: #4ade80;
+            box-shadow: 0 4px 12px rgba(22, 163, 74, 0.12);
+        }
+
+        /* Skip: Modern Soft Rose Outline */
+        .btn-ctrl-skip {
+            background: #ffffff;
+            color: #dc2626;
+            border-color: #fecaca;
+            box-shadow: 0 2px 8px rgba(220, 38, 38, 0.06);
+        }
+
+        .btn-ctrl-skip:hover {
+            background: #fef2f2;
+            color: #b91c1c;
+            border-color: #f87171;
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.12);
         }
     </style>
 </head>
@@ -542,35 +649,44 @@ if ($db_connect && $user_id > 0) {
                                             </div>
                                         </div>
 
-                                        <!-- ACTION CONTROLS BAR CONTAINER -->
-                                        <div class="card controller-subcard mb-4">
+                                        <!-- HIGHLIGHTED ACTION CONTROLS BAR CONTAINER -->
+                                        <div class="card action-bar-card mb-4">
                                             <div class="card-body p-3">
-                                                <div class="row g-2 justify-content-center">
-                                                    <div class="col-12 col-sm-6 col-md-auto">
-                                                        <button type="button" class="btn btn-success btn-action-lg w-100 shadow-sm" id="btnCallNext">
-                                                            <i class="bi bi-megaphone-fill fs-5"></i> Call Next
-                                                        </button>
+                                                <div class="d-flex flex-column gap-2 gap-sm-3">
+                                                    
+                                                    <!-- ROW 1: PRIMARY ACTIONS (CALL NEXT & SERVE) -->
+                                                    <div class="row g-2 g-sm-3">
+                                                        <div class="col-12 col-sm-6">
+                                                            <button type="button" class="btn btn-action-modern btn-action-hero btn-ctrl-call" id="btnCallNext">
+                                                                <i class="bi bi-megaphone-fill"></i> Call Next
+                                                            </button>
+                                                        </div>
+                                                        <div class="col-12 col-sm-6">
+                                                            <button type="button" class="btn btn-action-modern btn-action-hero btn-ctrl-serve" id="btnStartServe">
+                                                                <i class="bi bi-play-circle-fill"></i> Serve
+                                                            </button>
+                                                        </div>
                                                     </div>
-                                                    <div class="col-12 col-sm-6 col-md-auto">
-                                                        <button type="button" class="btn btn-primary btn-action-lg w-100 shadow-sm" id="btnStartServe">
-                                                            <i class="bi bi-play-circle-fill fs-5"></i> Serve
-                                                        </button>
+
+                                                    <!-- ROW 2: SECONDARY & LIFECYCLE ACTIONS (RECALL, COMPLETE, SKIP) -->
+                                                    <div class="row g-2 g-sm-3">
+                                                        <div class="col-12 col-sm-4">
+                                                            <button type="button" class="btn btn-action-modern btn-ctrl-recall" id="btnRecallVoice">
+                                                                <i class="bi bi-arrow-counterclockwise"></i> Recall
+                                                            </button>
+                                                        </div>
+                                                        <div class="col-12 col-sm-4">
+                                                            <button type="button" class="btn btn-action-modern btn-ctrl-complete" id="btnCompleteTicket">
+                                                                <i class="bi bi-check-circle-fill"></i> Complete
+                                                            </button>
+                                                        </div>
+                                                        <div class="col-12 col-sm-4">
+                                                            <button type="button" class="btn btn-action-modern btn-ctrl-skip" id="btnSkipTicket">
+                                                                <i class="bi bi-dash-circle"></i> Skip
+                                                            </button>
+                                                        </div>
                                                     </div>
-                                                    <div class="col-12 col-sm-6 col-md-auto">
-                                                        <button type="button" class="btn btn-outline-primary btn-action-lg w-100" id="btnRecallVoice">
-                                                            <i class="bi bi-arrow-counterclockwise"></i> Recall
-                                                        </button>
-                                                    </div>
-                                                    <div class="col-12 col-sm-6 col-md-auto">
-                                                        <button type="button" class="btn btn-dark btn-action-lg w-100" id="btnCompleteTicket">
-                                                            <i class="bi bi-check-circle-fill"></i> Complete
-                                                        </button>
-                                                    </div>
-                                                    <div class="col-12 col-sm-6 col-md-auto">
-                                                        <button type="button" class="btn btn-outline-danger btn-action-lg w-100" id="btnSkipTicket">
-                                                            <i class="bi bi-dash-circle"></i> Skip
-                                                        </button>
-                                                    </div>
+
                                                 </div>
                                             </div>
                                         </div>
