@@ -258,7 +258,7 @@ if ($db_connect && $user_id > 0) {
             transition: transform 0.2s ease;
         }
 
-        /* HIGHLIGHTED MODERN VISITOR TYPE BADGES */
+        /* UNIFIED MODERN VISITOR TYPE BADGE (CONSISTENT STUDENT ROYAL BLUE STYLING FOR ALL TYPES) */
         .visitor-badge-modern {
             display: inline-flex;
             align-items: center;
@@ -271,20 +271,7 @@ if ($db_connect && $user_id > 0) {
             text-transform: uppercase;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
             border: 1px solid rgba(255, 255, 255, 0.25);
-        }
-
-        .visitor-badge-student {
             background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-            color: #ffffff;
-        }
-
-        .visitor-badge-employee {
-            background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
-            color: #ffffff;
-        }
-
-        .visitor-badge-guest {
-            background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
             color: #ffffff;
         }
 
@@ -790,7 +777,7 @@ if ($db_connect && $user_id > 0) {
                                                 </div>
                                             </div>
 
-                                            <!-- COLUMN 2: EMPLOYEES (EXACTLY MATCHED CSS STYLING) -->
+                                            <!-- COLUMN 2: EMPLOYEES -->
                                             <div class="col-lg-6">
                                                 <div class="card controller-subcard h-100">
                                                     <div class="lineup-header-employee d-flex align-items-center justify-content-between">
@@ -972,20 +959,17 @@ if ($db_connect && $user_id > 0) {
                                 ctrlPriorityTag.innerHTML = '';
                             }
 
-                            // Render Highlighted Visitor Type Badge at the Bottom
+                            // Render Dynamic Visitor Type Badge (Unified Royal Blue Student Color)
                             const visitorType = (ticket.visitor_type || 'VISITOR').toUpperCase();
-                            let visitorBadgeClass = 'visitor-badge-guest';
                             let visitorIcon = 'bi-person-heart';
 
                             if (visitorType === 'STUDENT') {
-                                visitorBadgeClass = 'visitor-badge-student';
                                 visitorIcon = 'bi-mortarboard-fill';
                             } else if (visitorType === 'EMPLOYEE') {
-                                visitorBadgeClass = 'visitor-badge-employee';
                                 visitorIcon = 'bi-person-badge-fill';
                             }
 
-                            ctrlVisitorTypeTag.innerHTML = `<span class="visitor-badge-modern ${visitorBadgeClass}"><i class="bi ${visitorIcon}"></i> ${visitorType}</span>`;
+                            ctrlVisitorTypeTag.innerHTML = `<span class="visitor-badge-modern"><i class="bi ${visitorIcon}"></i> ${visitorType}</span>`;
 
                             let entryTimeString = '---';
                             if (ticket.queue_entry_time) {
