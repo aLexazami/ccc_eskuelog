@@ -1487,3 +1487,4 @@ Stack trace:
 [04-Nov-2026 08:44:29 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 284
 [04-Nov-2026 08:44:29 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 285
 [04-Nov-2026 08:44:29 Asia/Manila] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\dev_e_eskuelog\src\Common\cl_session.php on line 286
+[04-Nov-2026 15:05:51 Asia/Manila] PHP Parse error:  syntax error, unexpected token "<", expecting end of file in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\queue_handler.php on line 360
