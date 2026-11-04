@@ -130,9 +130,12 @@ if ($db_connect) {
             border: 1.5px solid #cbd5e1;
             border-radius: 0.75rem;
             padding: 0.85rem 1rem;
-            font-size: 1rem; /* Prevents auto-zoom on mobile */
+            font-size: 1rem;
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             width: 100%;
+            max-width: 100%;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
         .form-control-kiosk:focus, .form-select-kiosk:focus {
@@ -491,9 +494,9 @@ if ($db_connect) {
                                                     </div>
                                                 </div>
 
-                                                <!-- SEX & CONTACT NUMBER ROW -->
+                                                <!-- SEX, CONTACT NUMBER & EMAIL ROW -->
                                                 <div class="row g-2 g-sm-3 mb-3">
-                                                    <div class="col-12 col-sm-6">
+                                                    <div class="col-12 col-md-4">
                                                         <label for="sex" class="form-label fw-bold text-dark small">Sex</label>
                                                         <select class="form-select form-select-kiosk" id="sex" name="sex" required>
                                                             <option value="" selected disabled>Select sex</option>
@@ -501,20 +504,24 @@ if ($db_connect) {
                                                             <option value="Female">Female</option>
                                                         </select>
                                                     </div>
-                                                    <div class="col-12 col-sm-6">
+                                                    <div class="col-12 col-sm-6 col-md-4">
                                                         <label for="contactNumber" class="form-label fw-bold text-dark small">Contact Number</label>
                                                         <input type="tel" class="form-control form-control-kiosk" id="contactNumber" name="contact_no" placeholder="09XXXXXXXXX" maxlength="11" required>
+                                                    </div>
+                                                    <div class="col-12 col-sm-6 col-md-4">
+                                                        <label for="email" class="form-label fw-bold text-dark small">Email Address</label>
+                                                        <input type="email" class="form-control form-control-kiosk" id="email" name="email" placeholder="guest@example.com" required>
                                                     </div>
                                                 </div>
 
                                                 <!-- PRIORITY / SPECIAL ASSISTANCE TOGGLE CARD -->
                                                 <div class="priority-card-box mb-3">
-                                                    <div class="d-flex align-items-start justify-content-between gap-2">
-                                                        <label class="form-check-label fw-bold text-dark mb-0 fs-6" for="isPrioritySwitch" style="word-break: break-word;">
+                                                    <div class="d-flex align-items-center justify-content-between gap-3">
+                                                        <label class="form-check-label fw-bold text-dark mb-0 fs-6 cursor-pointer flex-grow-1" for="isPrioritySwitch" style="word-break: break-word; cursor: pointer;">
                                                             <i class="bi bi-person-wheelchair text-primary me-1 fs-5"></i> Priority / Special Assistance Needed?
                                                         </label>
-                                                        <div class="form-check form-switch ps-0 m-0 flex-shrink-0">
-                                                            <input class="form-check-input fs-4 ms-0" type="checkbox" id="isPrioritySwitch" name="is_priority" value="1">
+                                                        <div class="form-check form-switch p-0 m-0 flex-shrink-0 d-flex align-items-center">
+                                                            <input class="form-check-input fs-4 m-0 cursor-pointer" type="checkbox" id="isPrioritySwitch" name="is_priority" value="1" style="float: none; cursor: pointer;">
                                                         </div>
                                                     </div>
 
@@ -752,6 +759,7 @@ if ($db_connect) {
         const suffixSelect        = document.getElementById('suffix');
         const sexSelect           = document.getElementById('sex');
         const contactInput        = document.getElementById('contactNumber');
+        const emailInput          = document.getElementById('email');
         const consentCheckbox     = document.getElementById('dataConsent');
         const btnContinue         = document.getElementById('btnContinueStep2');
 
@@ -810,6 +818,7 @@ if ($db_connect) {
             suffixSelect.value      = '';
             sexSelect.value         = '';
             contactInput.value      = '';
+            if (emailInput) emailInput.value = '';
             consentCheckbox.checked = false;
 
             if (prioritySwitch) prioritySwitch.checked = false;
@@ -836,10 +845,10 @@ if ($db_connect) {
         // 1. STEP TRANSITIONS
         // ---------------------------------------------------------------------
         btnContinue.addEventListener('click', function() {
-            if (!firstNameInput.value.trim() || !lastNameInput.value.trim() || !sexSelect.value || !contactInput.value.trim()) {
+            if (!firstNameInput.value.trim() || !lastNameInput.value.trim() || !sexSelect.value || !contactInput.value.trim() || !emailInput.value.trim()) {
                 new swal({
                     title: "Incomplete Details",
-                    text: "Please complete all required guest fields (First Name, Last Name, Sex, Contact Number) before proceeding.",
+                    text: "Please complete all required guest fields before proceeding.",
                     icon: "warning",
                     buttons: { confirm: { className: "btn btn-warning" } }
                 });

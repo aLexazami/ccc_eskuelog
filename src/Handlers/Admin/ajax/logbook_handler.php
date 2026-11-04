@@ -170,6 +170,7 @@ switch ($action) {
         $suffix              = trim($_POST['suffix'] ?? '') ?: null;
         $post_nominal        = trim($_POST['post_nominal'] ?? '') ?: null;
         $sex                 = trim($_POST['sex'] ?? '') ?: null;
+        $email               = trim($_POST['email'] ?? '') ?: null;
         $contact_no          = trim($_POST['contact_no'] ?? '') ?: null;
 
         // Type-Specific Attributes
@@ -180,6 +181,7 @@ switch ($action) {
         // Service Choice & Consent
         $office_id           = (int)($_POST['office_id'] ?? 0);
         $transaction_type_id = (int)($_POST['transaction_type_id'] ?? 0);
+        $sub_concern_id      = filter_var($_POST['sub_concern_id'] ?? null, FILTER_VALIDATE_INT) ?: null;
         $data_consent        = isset($_POST['data_consent']) && $_POST['data_consent'] === '1' ? 1 : 0;
 
         // Priority Feature Capture
@@ -205,17 +207,17 @@ switch ($action) {
             $stmtLog = $db_connect->prepare("
                 INSERT INTO logbooks (
                     visitor_type, reference_id, user_id, first_name, middle_name, last_name,
-                    suffix, post_nominal, sex, contact_no, program_code, year_level,
-                    department_id, office_id, transaction_type_id,
+                    suffix, post_nominal, sex, email, contact_no, program_code, year_level,
+                    department_id, office_id, transaction_type_id, sub_concern_id,
                     is_priority, priority_type, data_consent
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ");
 
             $stmtLog->bind_param(
-                "ssissssssssiiiiisi",
+                "ssisssssssssiiiiiisi",
                 $visitor_type, $reference_id, $user_id, $first_name, $middle_name, $last_name,
-                $suffix, $post_nominal, $sex, $contact_no, $program_code, $year_level,
-                $department_id, $office_id, $transaction_type_id,
+                $suffix, $post_nominal, $sex, $email, $contact_no, $program_code, $year_level,
+                $department_id, $office_id, $transaction_type_id, $sub_concern_id,
                 $is_priority, $priority_type, $data_consent
             );
             $stmtLog->execute();
