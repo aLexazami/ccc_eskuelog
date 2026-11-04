@@ -17,7 +17,7 @@ $page_header = render_page_header((string) $title_page, $active_links) ?? '';
 # Fetch Active Programs
 $programs_list = [];
 if ($db_connect) {
-    $stmtProg = $db_connect->query("SELECT program_code, program_name FROM programs WHERE flag_offer = 0 ORDER BY program_code ASC");
+    $stmtProg = $db_connect->query("SELECT program_code, program_name, major FROM programs WHERE flag_offer = 0 ORDER BY program_code ASC");
     if ($stmtProg) {
         while ($row = $stmtProg->fetch_assoc()) {
             $programs_list[] = $row;
@@ -538,8 +538,14 @@ if ($db_connect) {
                                                         <select class="form-select form-select-kiosk" id="courseProgram" name="program_code" required>
                                                             <option value="" selected disabled>Select course / program</option>
                                                             <?php foreach ($programs_list as $prog): ?>
+                                                                <?php 
+                                                                    $displayName = $prog['program_code'] . ' - ' . $prog['program_name'];
+                                                                    if (!empty($prog['major'])) {
+                                                                        $displayName .= ' (Major in ' . $prog['major'] . ')';
+                                                                    }
+                                                                ?>
                                                                 <option value="<?= htmlspecialchars($prog['program_code']); ?>">
-                                                                    <?= htmlspecialchars($prog['program_code'] . ' - ' . $prog['program_name']); ?>
+                                                                    <?= htmlspecialchars($displayName); ?>
                                                                 </option>
                                                             <?php endforeach; ?>
                                                         </select>
