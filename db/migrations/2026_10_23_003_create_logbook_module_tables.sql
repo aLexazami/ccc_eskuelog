@@ -45,6 +45,7 @@ CREATE TABLE IF NOT EXISTS `logbooks` (
     `suffix` VARCHAR(10) DEFAULT NULL,
     `post_nominal` VARCHAR(255) DEFAULT NULL,          -- e.g., LPT, CPA, MIT, PhD
     `sex` VARCHAR(20) DEFAULT NULL,
+    `email` VARCHAR(150) DEFAULT NULL,
     `contact_no` VARCHAR(50) DEFAULT NULL,
     
     -- Metadata Snapshot
