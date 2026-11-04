@@ -862,6 +862,49 @@ if ($db_connect && $user_id > 0) {
             let dynamicTimerInterval = null;
             let currentTimerBaseTime = null;
 
+            // BULLETPROOF KAIADMIN SWEETALERT WRAPPER
+            function showSwalAlert(title, message, iconType = 'info') {
+                const swalObj = typeof swal !== 'undefined' ? swal : (typeof Swal !== 'undefined' ? Swal : null);
+                
+                if (!swalObj) {
+                    alert(`${title}: ${message}`);
+                    return;
+                }
+
+                // Standard Kaiadmin function call
+                if (typeof swalObj === 'function') {
+                    try {
+                        swalObj(title, message, iconType);
+                        return;
+                    } catch (e) {
+                        try {
+                            new swalObj({
+                                title: title,
+                                text: message,
+                                icon: iconType,
+                                buttons: {
+                                    confirm: {
+                                        className: iconType === 'error' || iconType === 'warning' ? 'btn btn-danger' : 'btn btn-primary'
+                                    }
+                                }
+                            });
+                            return;
+                        } catch (e2) {}
+                    }
+                }
+
+                // Static .fire method check (SweetAlert2)
+                if (typeof swalObj.fire === 'function') {
+                    swalObj.fire({
+                        title: title,
+                        text: message,
+                        icon: iconType
+                    });
+                } else {
+                    alert(`${title}: ${message}`);
+                }
+            }
+
             function updateHeaderBannerText() {
                 if (isSelectDropdown && officeSelect.selectedIndex > 0) {
                     const selectedText = officeSelect.options[officeSelect.selectedIndex].text;
@@ -1242,10 +1285,13 @@ if ($db_connect && $user_id > 0) {
                     if (res.success) {
                         loadCounterData();
                     } else {
-                        alert(res.message || 'Failed to process request.');
+                        showSwalAlert("Notice", res.message || 'Failed to process request.', 'warning');
                     }
                 })
-                .catch(err => console.error(`Queue Action (${actionName}) Error:`, err));
+                .catch(err => {
+                    console.error(`Queue Action (${actionName}) Error:`, err);
+                    showSwalAlert("Error", "An unexpected error occurred while communicating with the server.", "error");
+                });
             }
 
             // Global wrapper function so inline button clicks on employee items work cleanly
