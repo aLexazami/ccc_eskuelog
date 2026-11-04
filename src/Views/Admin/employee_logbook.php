@@ -145,8 +145,6 @@ if ($db_connect) {
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             width: 100%;
             max-width: 100%;
-            text-overflow: ellipsis;
-            white-space: nowrap;
         }
 
         .form-control-kiosk:focus, .form-select-kiosk:focus {
@@ -574,10 +572,9 @@ if ($db_connect) {
                                                             <?php foreach ($departments_list as $dept): ?>
                                                                 <?php 
                                                                     $full_dept = $dept['department_code'] . ' - ' . $dept['department_name'];
-                                                                    $display_dept = mb_strimwidth($full_dept, 0, 38, '...');
                                                                 ?>
                                                                 <option value="<?= $dept['department_id']; ?>" title="<?= htmlspecialchars($full_dept); ?>">
-                                                                    <?= htmlspecialchars($display_dept); ?>
+                                                                    <?= htmlspecialchars($full_dept); ?>
                                                                 </option>
                                                             <?php endforeach; ?>
                                                         </select>
@@ -592,10 +589,9 @@ if ($db_connect) {
                                                             <?php foreach ($offices_list as $off): ?>
                                                                 <?php 
                                                                     $full_label = $off['office_code'] . ' - ' . $off['office_name'];
-                                                                    $display_label = mb_strimwidth($full_label, 0, 38, '...'); 
                                                                 ?>
                                                                 <option value="<?= $off['office_id']; ?>" title="<?= htmlspecialchars($full_label); ?>">
-                                                                    <?= htmlspecialchars($display_label); ?>
+                                                                    <?= htmlspecialchars($full_label); ?>
                                                                 </option>
                                                             <?php endforeach; ?>
                                                         </select>
