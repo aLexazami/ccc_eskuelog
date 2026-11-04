@@ -223,7 +223,7 @@ if ($db_connect && $user_id > 0) {
             border-color: #fca5a5;
         }
 
-        /* BLUE THEME FLIP-CLOCK TIMER BADGE STYLING */
+        /* BLUE THEME TIMER BADGE STYLING (FLAT CLEAN BACKGROUND) */
         .digital-timer-card {
             display: inline-flex;
             align-items: center;
@@ -233,22 +233,7 @@ if ($db_connect && $user_id > 0) {
             border-radius: 0.65rem;
             box-shadow: none;
             border: 1.5px solid #3b82f6;
-            position: relative;
-            overflow: hidden;
             transition: all 0.3s ease;
-        }
-
-        /* Middle horizontal split crease simulating a flip-clock / calendar page */
-        .digital-timer-card::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: rgba(0, 0, 0, 0.35);
-            box-shadow: 0 1px 0 rgba(255, 255, 255, 0.25);
-            pointer-events: none;
         }
 
         .digital-timer-card #digitalElapsedTimer {
@@ -257,14 +242,10 @@ if ($db_connect && $user_id > 0) {
             font-weight: 900;
             letter-spacing: 0.12em;
             color: #ffffff;
-            position: relative;
-            z-index: 1;
         }
 
         .digital-timer-card i {
             color: #93c5fd !important;
-            position: relative;
-            z-index: 1;
         }
 
         /* SLIGHTLY ENLARGED & DIAGONALLY TIPPED TICKET ICON */
@@ -505,7 +486,7 @@ if ($db_connect && $user_id > 0) {
                                                 </div>
                                             </div>
 
-                                            <!-- RIGHT COLUMN ALIGNED FLIP-STYLE TIMER (CENTERED OVER QUEUE DETAILS RIGHT) -->
+                                            <!-- RIGHT COLUMN ALIGNED TIMER (CENTERED OVER QUEUE DETAILS RIGHT) -->
                                             <div class="col-lg-8 col-md-7 d-flex justify-content-center mt-2 mt-md-0">
                                                 <div class="digital-timer-card">
                                                     <i class="bi bi-stopwatch fs-5"></i>
