@@ -211,7 +211,7 @@ switch ($action) {
         $db_connect->begin_transaction();
 
         try {
-            // Step A: Insert into logbooks table (Updated with program_id and major)
+            // Step A: Insert into logbooks table
             $stmtLog = $db_connect->prepare("
                 INSERT INTO logbooks (
                     visitor_type, reference_id, user_id, first_name, middle_name, last_name,
@@ -221,12 +221,31 @@ switch ($action) {
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ");
 
+            // Exact 22-character type definition string for 22 parameters
             $stmtLog->bind_param(
-                "ssissssssssisiiiiiiisi",
-                $visitor_type, $reference_id, $user_id, $first_name, $middle_name, $last_name,
-                $suffix, $post_nominal, $sex, $email, $contact_no, $program_id, $program_code, $major,
-                $year_level, $department_id, $office_id, $transaction_type_id, $sub_concern_id,
-                $is_priority, $priority_type, $data_consent
+                "ssissssssssissiiiiiisi",
+                $visitor_type,        // 1.  s
+                $reference_id,        // 2.  s
+                $user_id,             // 3.  i
+                $first_name,          // 4.  s
+                $middle_name,         // 5.  s
+                $last_name,           // 6.  s
+                $suffix,              // 7.  s
+                $post_nominal,        // 8.  s
+                $sex,                 // 9.  s
+                $email,               // 10. s
+                $contact_no,          // 11. s
+                $program_id,          // 12. i
+                $program_code,        // 13. s
+                $major,               // 14. s
+                $year_level,          // 15. i
+                $department_id,       // 16. i
+                $office_id,           // 17. i
+                $transaction_type_id, // 18. i
+                $sub_concern_id,      // 19. i
+                $is_priority,         // 20. i
+                $priority_type,       // 21. s
+                $data_consent         // 22. i
             );
             $stmtLog->execute();
             $logbook_id = $db_connect->insert_id;
