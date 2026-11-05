@@ -14,10 +14,10 @@ $active_links = [
 ];
 $page_header = render_page_header((string) $title_page, $active_links) ?? '';
 
-# Fetch Active Programs
+# Fetch Active Programs (Updated to include program_id)
 $programs_list = [];
 if ($db_connect) {
-    $stmtProg = $db_connect->query("SELECT program_code, program_name, major FROM programs WHERE flag_offer = 0 ORDER BY program_code ASC");
+    $stmtProg = $db_connect->query("SELECT program_id, program_code, program_name, major FROM programs WHERE flag_offer = 0 ORDER BY program_code ASC");
     if ($stmtProg) {
         while ($row = $stmtProg->fetch_assoc()) {
             $programs_list[] = $row;
@@ -465,6 +465,9 @@ if ($db_connect) {
                                         <input type="hidden" name="action" value="logbook_checkin">
                                         <input type="hidden" name="visitor_type" value="STUDENT">
                                         <input type="hidden" id="userId" name="user_id" value="">
+                                        <input type="hidden" id="departmentId" name="department_id" value="0">
+                                        <input type="hidden" id="programCode" name="program_code" value="">
+                                        <input type="hidden" id="programMajor" name="major" value="">
                                         <input type="hidden" id="officeSelect" name="office_id" value="" required>
                                         <input type="hidden" id="transactionSelect" name="transaction_type_id" value="" required>
                                         <input type="hidden" id="subConcernSelect" name="sub_concern_id" value="">
@@ -547,7 +550,7 @@ if ($db_connect) {
                                                 <div class="row g-2 g-sm-3 mb-3">
                                                     <div class="col-12 col-sm-6 min-w-0">
                                                         <label for="courseProgram" class="form-label fw-bold text-dark small">Course / Program</label>
-                                                        <select class="form-select form-select-kiosk" id="courseProgram" name="program_code" required>
+                                                        <select class="form-select form-select-kiosk" id="courseProgram" name="program_id" required>
                                                             <option value="" selected disabled>Select course / program</option>
                                                             <?php foreach ($programs_list as $prog): ?>
                                                                 <?php 
@@ -556,7 +559,10 @@ if ($db_connect) {
                                                                         $displayName .= ' (Major in ' . $prog['major'] . ')';
                                                                     }
                                                                 ?>
-                                                                <option value="<?= htmlspecialchars($prog['program_code']); ?>" title="<?= htmlspecialchars($displayName); ?>">
+                                                                <option value="<?= htmlspecialchars($prog['program_id']); ?>" 
+                                                                        data-program-code="<?= htmlspecialchars($prog['program_code']); ?>"
+                                                                        data-major="<?= htmlspecialchars($prog['major'] ?? ''); ?>"
+                                                                        title="<?= htmlspecialchars($displayName); ?>">
                                                                     <?= htmlspecialchars($displayName); ?>
                                                                 </option>
                                                             <?php endforeach; ?>
@@ -818,6 +824,10 @@ if ($db_connect) {
         const idHelpBlock       = document.getElementById('idHelpBlock');
 
         const userIdInput       = document.getElementById('userId');
+        const departmentIdInput = document.getElementById('departmentId');
+        const programCodeInput  = document.getElementById('programCode');
+        const programMajorInput = document.getElementById('programMajor');
+
         const firstNameInput    = document.getElementById('firstName');
         const middleNameInput   = document.getElementById('middleName');
         const lastNameInput     = document.getElementById('lastName');
@@ -863,6 +873,20 @@ if ($db_connect) {
         if (!studentIdInput || !detailsSection) return;
 
         let debounceTimer;
+
+        // Auto-update hidden program code & major on course dropdown selection change
+        if (courseSelect) {
+            courseSelect.addEventListener('change', function() {
+                const selectedOpt = this.options[this.selectedIndex];
+                if (selectedOpt && selectedOpt.value) {
+                    programCodeInput.value  = selectedOpt.dataset.programCode || '';
+                    programMajorInput.value = selectedOpt.dataset.major || '';
+                } else {
+                    programCodeInput.value  = '';
+                    programMajorInput.value = '';
+                }
+            });
+        }
 
         // Toggle Priority Options Display
         if (prioritySwitch && prioritySection) {
@@ -917,15 +941,28 @@ if ($db_connect) {
                 if (result.success && result.data) {
                     const student = result.data;
 
-                    userIdInput.value     = student.user_id || '';
-                    firstNameInput.value  = student.first_name || '';
-                    middleNameInput.value = student.middle_name || '';
-                    lastNameInput.value   = student.last_name || '';
-                    suffixSelect.value    = student.suffix || '';
-                    sexSelect.value       = student.sex || '';
-                    emailInput.value      = student.email || '';
-                    courseSelect.value    = student.program_code || '';
-                    contactInput.value    = student.contact_no || '';
+                    userIdInput.value       = student.user_id || '';
+                    departmentIdInput.value = student.department_id || 0;
+                    firstNameInput.value    = student.first_name || '';
+                    middleNameInput.value   = student.middle_name || '';
+                    lastNameInput.value     = student.last_name || '';
+                    suffixSelect.value      = student.suffix || '';
+                    sexSelect.value         = student.sex || '';
+                    emailInput.value        = student.email || '';
+                    contactInput.value      = student.contact_no || '';
+
+                    // Auto-select course by program_id (fallback to program_code matching)
+                    if (student.program_id) {
+                        courseSelect.value = student.program_id;
+                    } else if (student.program_code) {
+                        const matchingOpt = Array.from(courseSelect.options).find(opt => opt.dataset.programCode === student.program_code);
+                        if (matchingOpt) {
+                            courseSelect.value = matchingOpt.value;
+                        }
+                    }
+
+                    // Trigger course change event to auto-fill hidden program_code and major
+                    courseSelect.dispatchEvent(new Event('change'));
 
                     if (student.year_level) {
                         const yearNum = student.year_level.toString().charAt(0);
@@ -951,6 +988,9 @@ if ($db_connect) {
         function hideDetailsSection() {
             detailsSection.classList.add('d-none');
             userIdInput.value       = '';
+            departmentIdInput.value = '0';
+            programCodeInput.value  = '';
+            programMajorInput.value = '';
             firstNameInput.value    = '';
             middleNameInput.value   = '';
             lastNameInput.value     = '';

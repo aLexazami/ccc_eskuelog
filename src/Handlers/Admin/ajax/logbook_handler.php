@@ -35,7 +35,10 @@ switch ($action) {
                 SELECT 
                     s.student_id,
                     s.year_level,
+                    s.department_id,
+                    s.program_id,
                     p.program_code,
+                    COALESCE(NULLIF(s.major, ''), p.major) AS major,
                     u.id AS user_id,
                     u.first_name,
                     u.middle_name,
@@ -65,18 +68,21 @@ switch ($action) {
                 echo json_encode([
                     'success' => true,
                     'data'    => [
-                        'user_id'      => $row['user_id'],
-                        'student_id'   => $row['student_id'],
-                        'first_name'   => $row['first_name'] ?? '',
-                        'middle_name'  => $row['middle_name'] ?? '',
-                        'last_name'    => $row['last_name'] ?? '',
-                        'suffix'       => $row['suffix'] ?? '',
-                        'post_nominal' => $row['post_nominal'] ?? '',
-                        'sex'          => !empty($row['sex']) ? ucfirst(strtolower($row['sex'])) : '',
-                        'email'        => $row['email'] ?? '',
-                        'program_code' => $row['program_code'] ?? '',
-                        'year_level'   => $year_level,
-                        'contact_no'   => $row['contact_no'] ?? ''
+                        'user_id'       => $row['user_id'],
+                        'student_id'    => $row['student_id'],
+                        'department_id' => (int)($row['department_id'] ?? 0),
+                        'program_id'    => (int)($row['program_id'] ?? 0),
+                        'program_code'  => $row['program_code'] ?? '',
+                        'major'         => $row['major'] ?? '',
+                        'first_name'    => $row['first_name'] ?? '',
+                        'middle_name'   => $row['middle_name'] ?? '',
+                        'last_name'     => $row['last_name'] ?? '',
+                        'suffix'        => $row['suffix'] ?? '',
+                        'post_nominal'  => $row['post_nominal'] ?? '',
+                        'sex'           => !empty($row['sex']) ? ucfirst(strtolower($row['sex'])) : '',
+                        'email'         => $row['email'] ?? '',
+                        'year_level'    => $year_level,
+                        'contact_no'    => $row['contact_no'] ?? ''
                     ]
                 ]);
                 exit();
@@ -173,8 +179,10 @@ switch ($action) {
         $email               = trim($_POST['email'] ?? '') ?: null;
         $contact_no          = trim($_POST['contact_no'] ?? '') ?: null;
 
-        // Type-Specific Attributes
+        // Academic / Type-Specific Attributes
+        $program_id          = filter_var($_POST['program_id'] ?? null, FILTER_VALIDATE_INT) ?: null;
         $program_code        = trim($_POST['program_code'] ?? '') ?: null;
+        $major               = trim($_POST['major'] ?? '') ?: null;
         $year_level          = filter_var($_POST['year_level'] ?? null, FILTER_VALIDATE_INT) ?: null;
         $department_id       = filter_var($_POST['department_id'] ?? 0, FILTER_VALIDATE_INT) ?: 0;
 
@@ -203,21 +211,21 @@ switch ($action) {
         $db_connect->begin_transaction();
 
         try {
-            // Step A: Insert into logbooks table
+            // Step A: Insert into logbooks table (Updated with program_id and major)
             $stmtLog = $db_connect->prepare("
                 INSERT INTO logbooks (
                     visitor_type, reference_id, user_id, first_name, middle_name, last_name,
-                    suffix, post_nominal, sex, email, contact_no, program_code, year_level,
-                    department_id, office_id, transaction_type_id, sub_concern_id,
+                    suffix, post_nominal, sex, email, contact_no, program_id, program_code, major,
+                    year_level, department_id, office_id, transaction_type_id, sub_concern_id,
                     is_priority, priority_type, data_consent
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ");
 
             $stmtLog->bind_param(
-                "ssisssssssssiiiiiisi",
+                "ssissssssssisiiiiiiisi",
                 $visitor_type, $reference_id, $user_id, $first_name, $middle_name, $last_name,
-                $suffix, $post_nominal, $sex, $email, $contact_no, $program_code, $year_level,
-                $department_id, $office_id, $transaction_type_id, $sub_concern_id,
+                $suffix, $post_nominal, $sex, $email, $contact_no, $program_id, $program_code, $major,
+                $year_level, $department_id, $office_id, $transaction_type_id, $sub_concern_id,
                 $is_priority, $priority_type, $data_consent
             );
             $stmtLog->execute();
