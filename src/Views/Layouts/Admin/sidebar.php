@@ -178,6 +178,14 @@ function render_action_links($links = [])
                             <p>User Information</p>
                         </a>
                     </li>
+
+                    <!-- OFFICE PREFIX CODE ASSIGNMENT -->
+                    <li class="nav-item <?php echo navigation_active("office-prefix"); ?>">
+                        <a href="<?php echo BASE_URL . "admin/office-prefix"; ?>">
+                            <i class="bi bi-building-gear"></i>
+                            <p>Office Prefix Codes</p>
+                        </a>
+                    </li>
                 <?php endif; ?>
 
                 <?php if ($g_user_role == 'ADMIN_STAFF'): ?>
