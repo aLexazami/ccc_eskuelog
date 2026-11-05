@@ -1548,3 +1548,5 @@ Stack trace:
 #1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(152): require_once('C:\\xampp\\htdocs...')
 #2 {main}
   thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Handlers\Admin\ajax\logbook_handler.php on line 225
+[05-Nov-2026 10:56:01 Asia/Manila] Session Fingerprint Mismatch! Stored: c5d926cb623f9a059c112630f1f1d13c6623c11b93f54669c40ff0c615881e00 | Current: 8ad03742c77db51f2a3273fed72d9a3f834c54145f3d7deddedf333fd91aad5e | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36
+[05-Nov-2026 10:56:01 Asia/Manila] Session Fingerprint Mismatch! Stored: c5d926cb623f9a059c112630f1f1d13c6623c11b93f54669c40ff0c615881e00 | Current: 8ad03742c77db51f2a3273fed72d9a3f834c54145f3d7deddedf333fd91aad5e | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36
