@@ -48,23 +48,31 @@ CREATE TABLE IF NOT EXISTS `logbooks` (
     `email` VARCHAR(150) DEFAULT NULL,
     `contact_no` VARCHAR(50) DEFAULT NULL,
     
-    -- Academic / Metadata Snapshot (Updated)
+    -- Academic / Metadata Snapshot
     `program_id` INT DEFAULT NULL,                     -- References programs.program_id / student.program_id
     `program_code` VARCHAR(20) DEFAULT NULL,           -- Snapshot code (e.g., BSIT)
     `major` VARCHAR(100) DEFAULT NULL,                 -- Snapshot major (e.g., Web Development)
     `year_level` INT DEFAULT NULL,                     -- Student specific
     `department_id` INT DEFAULT 0,                     -- Employee / Student specific
     
-    -- Service Selection & Consent
-    `office_id` INT NOT NULL,
-    `transaction_type_id` INT NOT NULL,
-    `data_consent` TINYINT(1) NOT NULL DEFAULT 0,
+    -- Service Selection & Concerns
+    `office_id` INT NOT NULL,                          -- FK to office.office_id
+    `transaction_type_id` INT NOT NULL,                -- FK to transaction_types.id
+    `sub_concern_id` INT DEFAULT NULL,                 -- Optional specific concern detail ID
     
+    -- Priority / Special Assistance
+    `is_priority` TINYINT(1) NOT NULL DEFAULT 0,       -- 0 = Regular, 1 = Priority Ticket
+    `priority_type` VARCHAR(50) DEFAULT NULL,          -- SENIOR, PWD, PREGNANT, OTHER
+    
+    -- Consent & Timestamps
+    `data_consent` TINYINT(1) NOT NULL DEFAULT 0,
     `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     
+    -- Constraints
     CONSTRAINT `fk_log_office` FOREIGN KEY (`office_id`) REFERENCES `office`(`office_id`),
     CONSTRAINT `fk_log_trans` FOREIGN KEY (`transaction_type_id`) REFERENCES `transaction_types`(`id`),
     
+    -- Indexes
     INDEX `idx_log_visitor` (`visitor_type`, `reference_id`),
     INDEX `idx_log_program` (`program_id`),
     INDEX `idx_log_created` (`created_at`)

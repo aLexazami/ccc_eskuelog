@@ -20,8 +20,9 @@ INSERT INTO `users` (
 );
 
 -- 2. Fetch the dynamically generated ID and insert Student Profile
-SET @last_user_id = LAST_INSERT_ID();
+SET @last_user_id = 2;
 
+-- 2. Insert Student Profile
 INSERT INTO `student` (
     `user_id`, 
     `student_id`, 
@@ -32,7 +33,7 @@ INSERT INTO `student` (
     @last_user_id, 
     '2023-10544', 
     4, 
-    3, -- Mapped to 'Department of Computing and Informatics' (DCI)
+    3, -- DCI
     5
 );
 
