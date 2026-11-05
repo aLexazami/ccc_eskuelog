@@ -55,7 +55,7 @@ switch ($route) {
             header("Location: " . BASE_URL . "admin/user-information");
             exit();
         } else if ($g_user_role_upper === "ADMIN_STAFF") {
-            header("Location: " . BASE_URL . "admin/user-information");
+            header("Location: " . BASE_URL . "admin/queue-controller");
             exit();
         } else if ($g_user_role_upper === "STATION_ADMIN") {
             header("Location: " . BASE_URL . "admin/student-logbook");
