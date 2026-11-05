@@ -117,6 +117,57 @@ if ($db_connect && $user_id > 0) {
         .tabulator-responsive-collapse table td {
             padding: 0.35rem 0.75rem;
         }
+
+        /* Modern Modal Polish */
+        .modal-ticket-hero {
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+            border-radius: 0.85rem;
+            color: #ffffff;
+        }
+
+        /* Detail Tile Styling */
+        .detail-tile {
+            background: #f8fafc;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 0.75rem;
+            padding: 0.75rem 1rem;
+            transition: all 0.2s ease;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .detail-tile:hover {
+            background: #ffffff;
+            border-color: #cbd5e1;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+        }
+
+        .detail-tile .tile-icon {
+            width: 42px;
+            height: 42px;
+            min-width: 42px;
+            border-radius: 0.65rem;
+            background: #eff6ff;
+            color: #2563eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 0.85rem;
+            margin-top: 2px;
+        }
+
+        .timeline-step-card {
+            background: #f8fafc;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 0.65rem;
+            padding: 0.65rem 0.75rem;
+            transition: all 0.2s ease;
+        }
+
+        .timeline-step-card:hover {
+            background: #ffffff;
+            border-color: #cbd5e1;
+        }
     </style>
 </head>
 
@@ -225,25 +276,26 @@ if ($db_connect && $user_id > 0) {
         </div>
     </div>
 
-    <!-- TICKET DETAILS MODAL -->
+    <!-- MODERN TICKET DETAILS MODAL -->
     <div class="modal fade" id="ticketDetailsModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content border-0 shadow-lg" style="border-radius: 1rem; overflow: hidden;">
-                <div class="modal-header bg-primary text-white py-3">
-                    <h5 class="modal-title fw-bold" id="modalTicketTitle">
-                        <i class="bi bi-ticket-perforated me-2"></i>Transaction Details
-                    </h5>
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 1.25rem; overflow: hidden;">
+                <div class="modal-header bg-dark text-white px-4 py-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-ticket-detailed fs-4 text-primary"></i>
+                        <h5 class="modal-title fw-bold mb-0" id="modalTicketTitle">Transaction Details</h5>
+                    </div>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body p-4" id="modalTicketBody">
-                    <div class="text-center py-4">
+                    <div class="text-center py-5">
                         <div class="spinner-border text-primary" role="status">
                             <span class="visually-hidden">Loading...</span>
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer bg-light border-0">
-                    <button type="button" class="btn btn-secondary btn-sm px-4 fw-semibold" data-bs-dismiss="modal">Close</button>
+                <div class="modal-footer bg-light border-0 px-4 py-3">
+                    <button type="button" class="btn btn-secondary btn-sm px-4 fw-semibold rounded-pill" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>
@@ -259,6 +311,23 @@ if ($db_connect && $user_id > 0) {
             function formatCapitalized(str) {
                 if (!str) return 'N/A';
                 return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+            }
+
+            // Helper to render modular detail tile matched with Service Counter Workstation
+            function renderDetailTile(iconClass, label, value, colSize = 'col-12 col-sm-6') {
+                return `
+                    <div class="${colSize}">
+                        <div class="detail-tile d-flex align-items-start">
+                            <div class="tile-icon flex-shrink-0">
+                                <i class="bi ${iconClass} fs-5"></i>
+                            </div>
+                            <div class="min-w-0 flex-grow-1">
+                                <span class="fw-semibold text-muted d-block mb-1" style="font-size: 0.75rem;">${label}</span>
+                                <div class="text-dark d-block text-break" style="font-size: 0.875rem; line-height: 1.35; word-break: break-word;">${value}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
             }
 
             function initTabulator() {
@@ -408,7 +477,7 @@ if ($db_connect && $user_id > 0) {
                 const modalBody = $('#modalTicketBody');
                 
                 modalBody.html(`
-                    <div class="text-center py-4">
+                    <div class="text-center py-5">
                         <div class="spinner-border text-primary" role="status"></div>
                     </div>`);
                 modal.show();
@@ -423,50 +492,68 @@ if ($db_connect && $user_id > 0) {
                     if (res.success && res.data) {
                         const t = res.data;
                         const visitorTypeFormatted = formatCapitalized(t.visitor_type);
-                        
+                        const statusUpper = (t.status || 'WAITING').toUpperCase();
+
+                        let statusBadgeCls = 'badge-status-waiting';
+                        if (statusUpper === 'COMPLETED') statusBadgeCls = 'badge-status-completed';
+                        if (statusUpper === 'SKIPPED')   statusBadgeCls = 'badge-status-skipped';
+                        if (statusUpper === 'SERVING')   statusBadgeCls = 'badge-status-serving';
+                        if (statusUpper === 'CALLED')    statusBadgeCls = 'badge-status-called';
+
+                        let statusBadgeHtml = `<span class="badge ${statusBadgeCls} px-3 py-1.5 rounded-pill fw-bold">${statusUpper}</span>`;
+                        let visitorBadgeHtml = `<span class="badge bg-secondary px-3 py-1.5 rounded-pill fw-bold">${visitorTypeFormatted}</span>`;
+
                         let name = t.full_name || 'N/A';
                         let email = t.email || 'N/A';
                         let mainConcern = t.transaction_name || 'General Concern';
                         let subConcern = t.sub_concern_name ? ` &rsaquo; ${t.sub_concern_name}` : '';
+                        let fullConcernDisplay = mainConcern + subConcern;
+                        let officeCounterDisplay = `${t.office_name || 'N/A'}${t.counter_name ? ' (' + t.counter_name + ')' : ''}`;
 
                         modalBody.html(`
-                            <div class="row g-3">
-                                <div class="col-12 text-center pb-3 border-bottom">
-                                    <span class="text-muted text-uppercase fw-bold small">Queue Number</span>
-                                    <h1 class="display-5 fw-bold text-primary font-monospace mb-1">${t.ticket_number}</h1>
-                                    <span class="badge bg-secondary px-3 py-1 rounded-pill">${visitorTypeFormatted}</span>
+                            <!-- HERO TICKET HEADER CARD -->
+                            <div class="modal-ticket-hero p-4 text-center mb-4">
+                                <span class="text-white-50 text-uppercase fw-bold small tracking-wide">Queue Ticket Number</span>
+                                <h1 class="display-4 fw-bold text-info font-monospace my-1 mb-0">${t.ticket_number || '---'}</h1>
+                            </div>
+
+                            <!-- DETAILS GRID (WITH QUEUE STATUS & VISITOR TYPE AT THE VERY TOP) -->
+                            <div class="row g-3 mb-4">
+                                ${renderDetailTile('bi-activity', 'Queue Status', statusBadgeHtml)}
+                                ${renderDetailTile('bi-person-vcard-fill', 'Visitor Type', visitorBadgeHtml)}
+                                ${renderDetailTile('bi-person-fill', 'Visitor Name', `<strong>${name}</strong>`)}
+                                ${renderDetailTile('bi-envelope-fill', 'Email Address', `<strong>${email}</strong>`)}
+                                ${renderDetailTile('bi-building', 'Office & Counter', `<strong>${officeCounterDisplay}</strong>`)}
+                                ${renderDetailTile('bi-person-badge-fill', 'Served By Staff', `<strong>${t.served_by_name || 'N/A'}</strong>`)}
+                                ${renderDetailTile('bi-clipboard-check-fill', 'Transaction Concern', `<strong>${fullConcernDisplay}</strong>`, 'col-12')}
+                            </div>
+
+                            <!-- LIFECYCLE TIMESTAMPS GRID -->
+                            <h6 class="fw-bold text-dark mb-2 ms-1"><i class="bi bi-clock-history me-1 text-primary"></i>Queue Lifecycle Timestamps</h6>
+                            <div class="row g-2">
+                                <div class="col-6 col-md-3">
+                                    <div class="timeline-step-card text-center">
+                                        <small class="text-muted d-block fw-semibold">Entry / Issued</small>
+                                        <span class="fw-bold text-dark small">${t.created_at || '---'}</span>
+                                    </div>
                                 </div>
-                                <div class="col-sm-6">
-                                    <small class="text-muted d-block">Visitor Name</small>
-                                    <strong class="text-dark fs-6">${name}</strong>
+                                <div class="col-6 col-md-3">
+                                    <div class="timeline-step-card text-center">
+                                        <small class="text-muted d-block fw-semibold">Called Time</small>
+                                        <span class="fw-bold text-dark small">${t.called_at || '---'}</span>
+                                    </div>
                                 </div>
-                                <div class="col-sm-6">
-                                    <small class="text-muted d-block">Email Address</small>
-                                    <strong class="text-dark">${email}</strong>
+                                <div class="col-6 col-md-3">
+                                    <div class="timeline-step-card text-center">
+                                        <small class="text-muted d-block fw-semibold">Served Time</small>
+                                        <span class="fw-bold text-dark small">${t.served_at || '---'}</span>
+                                    </div>
                                 </div>
-                                <div class="col-sm-6">
-                                    <small class="text-muted d-block">Office & Counter</small>
-                                    <strong class="text-dark">${t.office_name || 'N/A'} ${t.counter_name ? ' (' + t.counter_name + ')' : ''}</strong>
-                                </div>
-                                <div class="col-sm-6">
-                                    <small class="text-muted d-block">Served By Staff</small>
-                                    <strong class="text-dark">${t.served_by_name || 'N/A'}</strong>
-                                </div>
-                                <div class="col-12 bg-light p-3 rounded-3">
-                                    <small class="text-muted d-block mb-1">Transaction Concern</small>
-                                    <strong class="text-dark fs-6">${mainConcern}${subConcern}</strong>
-                                </div>
-                                <div class="col-sm-4">
-                                    <small class="text-muted d-block">Queue Entry Time</small>
-                                    <span class="fw-semibold text-dark">${t.created_at || '---'}</span>
-                                </div>
-                                <div class="col-sm-4">
-                                    <small class="text-muted d-block">Called Time</small>
-                                    <span class="fw-semibold text-dark">${t.called_at || '---'}</span>
-                                </div>
-                                <div class="col-sm-4">
-                                    <small class="text-muted d-block">Completed Time</small>
-                                    <span class="fw-semibold text-dark">${t.completed_at || '---'}</span>
+                                <div class="col-6 col-md-3">
+                                    <div class="timeline-step-card text-center">
+                                        <small class="text-muted d-block fw-semibold">Completed Time</small>
+                                        <span class="fw-bold text-dark small">${t.completed_at || '---'}</span>
+                                    </div>
                                 </div>
                             </div>
                         `);
