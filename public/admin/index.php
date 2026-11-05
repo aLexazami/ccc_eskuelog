@@ -79,25 +79,26 @@ switch ($route) {
             '/admin/sign-out' => ['file'  => SRC_PATH . '/Handlers/Admin/sign_out.php', 'roles' => ["ADMIN", "ADMIN_STAFF", "STATION_ADMIN", "USER"]],
 
             # ADMIN Views
-            '/admin/user-information' => ['file' => SRC_PATH . '/Views/Admin/user_information.php', 'roles' => ["ADMIN", "ADMIN_STAFF", "STATION_ADMIN", "USER"]],
-            '/admin/student-logbook'  => ['file' => SRC_PATH . '/Views/Admin/student_logbook.php', 'roles' => ["ADMIN", "ADMIN_STAFF", "STATION_ADMIN", "USER"]],
-            '/admin/employee-logbook' => ['file' => SRC_PATH . '/Views/Admin/employee_logbook.php', 'roles' => ["ADMIN", "ADMIN_STAFF", "STATION_ADMIN", "USER"]],
-            '/admin/guest-logbook'    => ['file' => SRC_PATH . '/Views/Admin/guest_logbook.php', 'roles' => ["ADMIN", "ADMIN_STAFF", "STATION_ADMIN", "USER"]],
-            '/admin/live-queue'       => ['file' => SRC_PATH . '/Views/Admin/live_queue.php', 'roles' => ["ADMIN", "ADMIN_STAFF", "STATION_ADMIN", "USER"]],
-            '/admin/queue-controller' => ['file'  => SRC_PATH . '/Views/Admin/queue_controller.php', 
-            'roles' => ["ADMIN", "ADMIN_STAFF"]],
+            '/admin/user-information'    => ['file' => SRC_PATH . '/Views/Admin/user_information.php', 'roles' => ["ADMIN", "ADMIN_STAFF", "STATION_ADMIN", "USER"]],
+            '/admin/student-logbook'     => ['file' => SRC_PATH . '/Views/Admin/student_logbook.php', 'roles' => ["ADMIN", "ADMIN_STAFF", "STATION_ADMIN", "USER"]],
+            '/admin/employee-logbook'    => ['file' => SRC_PATH . '/Views/Admin/employee_logbook.php', 'roles' => ["ADMIN", "ADMIN_STAFF", "STATION_ADMIN", "USER"]],
+            '/admin/guest-logbook'       => ['file' => SRC_PATH . '/Views/Admin/guest_logbook.php', 'roles' => ["ADMIN", "ADMIN_STAFF", "STATION_ADMIN", "USER"]],
+            '/admin/live-queue'          => ['file' => SRC_PATH . '/Views/Admin/live_queue.php', 'roles' => ["ADMIN", "ADMIN_STAFF", "STATION_ADMIN", "USER"]],
+            '/admin/queue-controller'    => ['file' => SRC_PATH . '/Views/Admin/queue_controller.php', 'roles' => ["ADMIN", "ADMIN_STAFF"]],
             '/admin/transaction-records' => ['file' => SRC_PATH . '/Views/Admin/transaction_records.php', 'roles' => ["ADMIN", "ADMIN_STAFF"]],
+            '/admin/reports-analytics'   => ['file' => SRC_PATH . '/Views/Admin/reports_analytics.php', 'roles' => ["ADMIN", "ADMIN_STAFF"]],
 
             # TABLE Handlers
             '/admin/table/user-information' => ['file' => SRC_PATH . '/Handlers/Admin/table/user_information_table.php', 'roles' => ["ADMIN", "ADMIN_STAFF", "STATION_ADMIN", "USER"]],
 
             # MODULAR AJAX Handlers
-            '/admin/ajax/logbook' => ['file' => SRC_PATH . '/Handlers/Admin/ajax/logbook_handler.php', 'roles' => ["ADMIN", "ADMIN_STAFF", "STATION_ADMIN", "USER"]],
-            '/admin/ajax/queue'   => ['file' => SRC_PATH . '/Handlers/Admin/ajax/queue_handler.php', 'roles' => ["ADMIN", "ADMIN_STAFF", "STATION_ADMIN", "USER"]],
-            '/admin/ajax/live-queue' => ['file' => SRC_PATH . '/Handlers/Admin/ajax/live_queue_handler.php', 'roles' => ["ADMIN", "ADMIN_STAFF", "STATION_ADMIN", "USER"]],
-            '/admin/ajax/office'  => ['file' => SRC_PATH . '/Handlers/Admin/ajax/office_handler.php', 'roles' => ["ADMIN", "ADMIN_STAFF", "STATION_ADMIN", "USER"]],
-            '/admin/ajax/counter' => ['file' => SRC_PATH . '/Handlers/Admin/ajax/counter_handler.php', 'roles' => ["ADMIN", "ADMIN_STAFF", "STATION_ADMIN", "USER"]],
+            '/admin/ajax/logbook'             => ['file' => SRC_PATH . '/Handlers/Admin/ajax/logbook_handler.php', 'roles' => ["ADMIN", "ADMIN_STAFF", "STATION_ADMIN", "USER"]],
+            '/admin/ajax/queue'               => ['file' => SRC_PATH . '/Handlers/Admin/ajax/queue_handler.php', 'roles' => ["ADMIN", "ADMIN_STAFF", "STATION_ADMIN", "USER"]],
+            '/admin/ajax/live-queue'          => ['file' => SRC_PATH . '/Handlers/Admin/ajax/live_queue_handler.php', 'roles' => ["ADMIN", "ADMIN_STAFF", "STATION_ADMIN", "USER"]],
+            '/admin/ajax/office'              => ['file' => SRC_PATH . '/Handlers/Admin/ajax/office_handler.php', 'roles' => ["ADMIN", "ADMIN_STAFF", "STATION_ADMIN", "USER"]],
+            '/admin/ajax/counter'             => ['file' => SRC_PATH . '/Handlers/Admin/ajax/counter_handler.php', 'roles' => ["ADMIN", "ADMIN_STAFF", "STATION_ADMIN", "USER"]],
             '/admin/ajax/transaction-records' => ['file' => SRC_PATH . '/Handlers/Admin/ajax/transaction_records_handler.php', 'roles' => ["ADMIN", "ADMIN_STAFF"]],
+            '/admin/ajax/reports-analytics'   => ['file' => SRC_PATH . '/Handlers/Admin/ajax/reports_analytics_handler.php', 'roles' => ["ADMIN", "ADMIN_STAFF"]],
         ];
 
         # Dynamic Route Matching Engine
