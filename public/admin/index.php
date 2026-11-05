@@ -86,6 +86,7 @@ switch ($route) {
             '/admin/live-queue'       => ['file' => SRC_PATH . '/Views/Admin/live_queue.php', 'roles' => ["ADMIN", "ADMIN_STAFF", "STATION_ADMIN", "USER"]],
             '/admin/queue-controller' => ['file'  => SRC_PATH . '/Views/Admin/queue_controller.php', 
             'roles' => ["ADMIN", "ADMIN_STAFF"]],
+            '/admin/transaction-records' => ['file' => SRC_PATH . '/Views/Admin/transaction_records.php', 'roles' => ["ADMIN", "ADMIN_STAFF"]],
 
             # TABLE Handlers
             '/admin/table/user-information' => ['file' => SRC_PATH . '/Handlers/Admin/table/user_information_table.php', 'roles' => ["ADMIN", "ADMIN_STAFF", "STATION_ADMIN", "USER"]],
@@ -96,6 +97,7 @@ switch ($route) {
             '/admin/ajax/live-queue' => ['file' => SRC_PATH . '/Handlers/Admin/ajax/live_queue_handler.php', 'roles' => ["ADMIN", "ADMIN_STAFF", "STATION_ADMIN", "USER"]],
             '/admin/ajax/office'  => ['file' => SRC_PATH . '/Handlers/Admin/ajax/office_handler.php', 'roles' => ["ADMIN", "ADMIN_STAFF", "STATION_ADMIN", "USER"]],
             '/admin/ajax/counter' => ['file' => SRC_PATH . '/Handlers/Admin/ajax/counter_handler.php', 'roles' => ["ADMIN", "ADMIN_STAFF", "STATION_ADMIN", "USER"]],
+            '/admin/ajax/transaction-records' => ['file' => SRC_PATH . '/Handlers/Admin/ajax/transaction_records_handler.php', 'roles' => ["ADMIN", "ADMIN_STAFF"]],
         ];
 
         # Dynamic Route Matching Engine
