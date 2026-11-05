@@ -1056,7 +1056,7 @@ if ($db_connect) {
                     .map(char => (char === '-' ? ' ' : char))
                     .join(' ');
 
-                const phrase = `Now calling ${spokenTicket}, please proceed to the office. I repeat, ${spokenTicket}, please proceed to the office.`;
+                const phrase = `Now calling, ${spokenTicket}, please proceed to the office. I repeat, ${spokenTicket}, please proceed to the office.`;
 
                 audioQueue.push({ phrase, pageIndex });
                 processAudioQueue();
