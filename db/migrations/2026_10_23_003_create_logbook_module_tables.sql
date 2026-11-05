@@ -43,19 +43,21 @@ CREATE TABLE IF NOT EXISTS `logbooks` (
     `middle_name` VARCHAR(100) DEFAULT NULL,
     `last_name` VARCHAR(100) NOT NULL,
     `suffix` VARCHAR(10) DEFAULT NULL,
-    `post_nominal` VARCHAR(255) DEFAULT NULL,          -- e.g., LPT, CPA, MIT, PhD
+    `post_nominal` VARCHAR(255) DEFAULT NULL,
     `sex` VARCHAR(20) DEFAULT NULL,
     `email` VARCHAR(150) DEFAULT NULL,
     `contact_no` VARCHAR(50) DEFAULT NULL,
     
-    -- Metadata Snapshot
-    `program_code` VARCHAR(20) DEFAULT NULL,          -- Student specific
-    `year_level` INT DEFAULT NULL,                    -- Student specific
-    `department_id` INT DEFAULT 0,                    -- Employee / Student specific
+    -- Academic / Metadata Snapshot (Updated)
+    `program_id` INT DEFAULT NULL,                     -- References programs.program_id / student.program_id
+    `program_code` VARCHAR(20) DEFAULT NULL,           -- Snapshot code (e.g., BSIT)
+    `major` VARCHAR(100) DEFAULT NULL,                 -- Snapshot major (e.g., Web Development)
+    `year_level` INT DEFAULT NULL,                     -- Student specific
+    `department_id` INT DEFAULT 0,                     -- Employee / Student specific
     
     -- Service Selection & Consent
-    `office_id` INT NOT NULL,                          -- References office.office_id
-    `transaction_type_id` INT NOT NULL,                -- References transaction_types.id
+    `office_id` INT NOT NULL,
+    `transaction_type_id` INT NOT NULL,
     `data_consent` TINYINT(1) NOT NULL DEFAULT 0,
     
     `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -64,6 +66,7 @@ CREATE TABLE IF NOT EXISTS `logbooks` (
     CONSTRAINT `fk_log_trans` FOREIGN KEY (`transaction_type_id`) REFERENCES `transaction_types`(`id`),
     
     INDEX `idx_log_visitor` (`visitor_type`, `reference_id`),
+    INDEX `idx_log_program` (`program_id`),
     INDEX `idx_log_created` (`created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
