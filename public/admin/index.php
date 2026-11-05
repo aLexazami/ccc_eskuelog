@@ -87,6 +87,7 @@ switch ($route) {
             '/admin/queue-controller'    => ['file' => SRC_PATH . '/Views/Admin/queue_controller.php', 'roles' => ["ADMIN", "ADMIN_STAFF"]],
             '/admin/transaction-records' => ['file' => SRC_PATH . '/Views/Admin/transaction_records.php', 'roles' => ["ADMIN", "ADMIN_STAFF"]],
             '/admin/reports-analytics'   => ['file' => SRC_PATH . '/Views/Admin/reports_analytics.php', 'roles' => ["ADMIN", "ADMIN_STAFF"]],
+            '/admin/reports-analytics-pdf' => ['file' => SRC_PATH . '/Views/Admin/reports_analytics_pdf.php', 'roles' => ["ADMIN", "ADMIN_STAFF"]],
 
             # TABLE Handlers
             '/admin/table/user-information' => ['file' => SRC_PATH . '/Handlers/Admin/table/user_information_table.php', 'roles' => ["ADMIN", "ADMIN_STAFF", "STATION_ADMIN", "USER"]],

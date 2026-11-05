@@ -196,7 +196,7 @@ if ($db_connect && $user_id > 0) {
                                 </div>
 
                                 <!-- VISITOR TYPE -->
-                                <div class="col-12 col-sm-6 col-md-3">
+                                <div class="col-12 col-sm-6 col-md-2">
                                     <label for="filterVisitorType" class="form-label fw-bold small text-muted">Visitor Type</label>
                                     <select id="filterVisitorType" class="form-select form-select-sm">
                                         <option value="">All Types</option>
@@ -218,13 +218,16 @@ if ($db_connect && $user_id > 0) {
                                     <input type="date" id="filterDateTo" class="form-control form-control-sm" value="<?= date('Y-m-d'); ?>">
                                 </div>
 
-                                <!-- ACTION BUTTONS -->
-                                <div class="col-12 col-md-2 d-flex gap-2">
+                                <!-- ACTION BUTTONS INCLUDING SILENT PDF PRINT -->
+                                <div class="col-12 col-md-3 d-flex gap-2">
                                     <button type="submit" class="btn btn-primary btn-sm w-100 fw-bold">
                                         <i class="bi bi-filter me-1"></i>Apply
                                     </button>
                                     <button type="button" id="btnResetFilters" class="btn btn-outline-secondary btn-sm" title="Reset Filters">
                                         <i class="bi bi-arrow-counterclockwise"></i>
+                                    </button>
+                                    <button type="button" id="btnPrintPdfReport" class="btn btn-danger btn-sm fw-bold px-3 text-nowrap" title="Print/Download PDF Report">
+                                        <i class="bi bi-file-earmark-pdf-fill me-1"></i>PDF Report
                                     </button>
                                 </div>
 
@@ -556,6 +559,33 @@ if ($db_connect && $user_id > 0) {
                 $('#filterDateFrom').val(todayStr);
                 $('#filterDateTo').val(todayStr);
                 loadAnalytics();
+            });
+
+            // Silent Background PDF Print Handler (No Redirection / Window Open)
+            $('#btnPrintPdfReport').on('click', function() {
+                const officeId    = $('#filterOfficeId').val() || 0;
+                const visitorType = $('#filterVisitorType').val() || '';
+                const dateFrom    = $('#filterDateFrom').val() || '';
+                const dateTo      = $('#filterDateTo').val() || '';
+
+                const printUrl = `<?= BASE_URL; ?>admin/reports-analytics-pdf?office_id=${officeId}&visitor_type=${encodeURIComponent(visitorType)}&date_from=${dateFrom}&date_to=${dateTo}`;
+
+                // 1. Get or create a hidden background iframe
+                let printFrame = document.getElementById('silentPrintIframe');
+                if (!printFrame) {
+                    printFrame = document.createElement('iframe');
+                    printFrame.id = 'silentPrintIframe';
+                    printFrame.style.position = 'fixed';
+                    printFrame.style.right = '0';
+                    printFrame.style.bottom = '0';
+                    printFrame.style.width = '0';
+                    printFrame.style.height = '0';
+                    printFrame.style.border = '0';
+                    document.body.appendChild(printFrame);
+                }
+
+                // 2. Load PDF template into hidden frame to trigger print preview dialog
+                printFrame.src = printUrl;
             });
 
             $(document).ready(function() {

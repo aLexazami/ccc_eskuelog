@@ -45,16 +45,17 @@ if (isset($role_map[(string)$g_user_role])) {
     $g_user_role = $role_map[(string)$g_user_role];
 }
 
-$action = $_POST['action'] ?? '';
+// Support both POST and GET payloads
+$action = $_REQUEST['action'] ?? '';
 
 switch ($action) {
 
     case 'fetch_analytics':
         try {
-            $office_id    = (int)($_POST['office_id'] ?? 0);
-            $visitor_type = trim($_POST['visitor_type'] ?? '');
-            $date_from    = trim($_POST['date_from'] ?? date('Y-m-d'));
-            $date_to      = trim($_POST['date_to'] ?? date('Y-m-d'));
+            $office_id    = (int)($_REQUEST['office_id'] ?? 0);
+            $visitor_type = trim($_REQUEST['visitor_type'] ?? '');
+            $date_from    = trim($_REQUEST['date_from'] ?? date('Y-m-d'));
+            $date_to      = trim($_REQUEST['date_to'] ?? date('Y-m-d'));
 
             $whereClauses = ["1=1"];
             $params       = [];
@@ -99,6 +100,14 @@ switch ($action) {
             }
             $stmtKpi->execute();
             $kpiData = $stmtKpi->get_result()->fetch_assoc();
+
+            // Sanitize NULL KPI values to 0
+            if ($kpiData) {
+                $kpiData['total_tickets']       = (int)($kpiData['total_tickets'] ?? 0);
+                $kpiData['completed_tickets']   = (int)($kpiData['completed_tickets'] ?? 0);
+                $kpiData['skipped_tickets']     = (int)($kpiData['skipped_tickets'] ?? 0);
+                $kpiData['avg_service_minutes'] = (float)($kpiData['avg_service_minutes'] ?? 0);
+            }
 
             // B. VOLUME TREND (Grouped by Date if multiple days, or Hour if single day)
             $isSingleDay = ($date_from === $date_to);
@@ -210,7 +219,9 @@ switch ($action) {
 
             $staffBreakdown = [];
             while ($row = $resStaff->fetch_assoc()) {
-                $staffBreakdown[] = $row;
+                $row['total_served']    = (int)($row['total_served'] ?? 0);
+                $row['total_completed'] = (int)($row['total_completed'] ?? 0);
+                $staffBreakdown[]       = $row;
             }
 
             echo json_encode([
