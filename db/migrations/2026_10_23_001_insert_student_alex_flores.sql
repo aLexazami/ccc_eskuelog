@@ -26,11 +26,13 @@ INSERT INTO `student` (
     `user_id`, 
     `student_id`, 
     `year_level`, 
+    `department_id`,
     `program_id`
 ) VALUES (
     @last_user_id, 
     '2023-10544', 
     4, 
+    3, -- Mapped to 'Department of Computing and Informatics' (DCI)
     5
 );
 
