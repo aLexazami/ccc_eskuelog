@@ -284,19 +284,19 @@ if ($db_connect) {
 
         /* DYNAMICALLY FLUID PILLAR CARD */
         .office-pillar-card {
-            flex: 1 1 240px;
-            min-width: 200px;
+            flex: 1 1 0; /* Allows 5 pillars to shrink evenly on laptop screens */
+            min-width: 160px; /* Reduced min-width so 5 pillars fit side-by-side without overflowing */
             max-width: 420px;
             min-height: 200px;
             background: var(--bg-card) !important;
             border: var(--border-card) !important;
             box-shadow: var(--card-shadow) !important;
-            border-radius: clamp(1.25rem, 2vh, 2rem);
+            border-radius: clamp(1rem, 2vh, 2rem);
             overflow: hidden;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            padding: clamp(0.75rem, 1.5vh, 1.4rem);
+            padding: clamp(0.5rem, 1.2vh, 1.2rem); /* Optimized padding for tighter screen spaces */
             height: 100%;
             box-sizing: border-box;
             position: relative;
@@ -378,10 +378,11 @@ if ($db_connect) {
 
         /* DYNAMIC NOW SERVING BLOCK */
         .pillar-serving-block {
+            container-type: inline-size; /* Enables container query width (cqw) calculations */
             text-align: center;
-            padding: clamp(0.5rem, 1.2vh, 1rem) 0.5rem;
+            padding: clamp(0.4rem, 1vh, 0.8rem) 0.25rem; /* Reduced horizontal padding for maximum text room */
             background: var(--serving-bg);
-            border-radius: clamp(1rem, 1.5vh, 1.5rem);
+            border-radius: clamp(0.75rem, 1.5vh, 1.5rem);
             border: var(--serving-border);
             margin: clamp(0.35rem, 0.8vh, 0.75rem) 0;
             display: flex;
@@ -389,11 +390,13 @@ if ($db_connect) {
             justify-content: center;
             align-items: center;
             flex-grow: 1;
-            min-height: clamp(130px, 20vh, 240px);
+            min-height: clamp(120px, 18vh, 240px);
             box-sizing: border-box;
             position: relative;
             z-index: 2;
             box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.15), 0 4px 15px rgba(0, 0, 0, 0.15);
+            width: 100%;
+            overflow: hidden;
         }
 
         .serving-label {
@@ -406,16 +409,20 @@ if ($db_connect) {
         }
 
         .serving-ticket-number {
-            font-size: clamp(2rem, 3.8vw, 4.2rem);
+            font-size: clamp(1.2rem, 13.5cqw, 4.2rem); /* cqw scales font based on pillar width, not screen width */
             font-weight: 900;
             color: var(--serving-ticket-color);
             line-height: 1;
-            letter-spacing: 0.02em;
+            letter-spacing: -0.01em; /* Tightened letter spacing so wide ticket numbers fit neatly */
             margin: clamp(0.2rem, 0.5vh, 0.5rem) 0;
             white-space: nowrap;
-            overflow: visible;
-            display: block;
+            overflow: hidden;
+            text-overflow: clip;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             width: 100%;
+            max-width: 100%;
             text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
         }
 
