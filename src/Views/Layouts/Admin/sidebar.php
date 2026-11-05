@@ -194,6 +194,13 @@ function render_action_links($links = [])
                             <p>Service Counter</p>
                         </a>
                     </li>
+
+                    <li class="nav-item <?php echo navigation_active("transaction-records"); ?>">
+                        <a href="<?php echo BASE_URL . "admin/transaction-records"; ?>">
+                            <i class="bi bi-folder-check"></i>
+                            <p>Transaction Records</p>
+                        </a>
+                    </li>
                 <?php endif; ?>
 
                 <?php if ($g_user_role == 'STATION_ADMIN'): ?>
@@ -247,52 +254,6 @@ function render_action_links($links = [])
                                 <li>
                                     <a href="<?php echo BASE_URL . "admin/live-queue?mode=employee"; ?>" target="_blank">
                                         <span class="sub-item">Employees</span>
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-                    </li>
-                <?php endif; ?>
-
-                <?php if (SYSTEM_FLAG === "DEV"): ?>
-                    <li class="nav-item <?php echo navigation_active("activity_log", "active submenu", ["user" => ["admin", "admin_staff"]]); ?>">
-                        <a class="collapsed" aria-expanded="false" data-bs-toggle="collapse" href="#activity_log_nav">
-                            <i class="fas fa-list"></i>
-                            <p>Activity Log</p>
-                            <span class="caret"></span>
-                        </a>
-                        <div class="collapse <?php echo navigation_active("activity_log", "show", ["user" => ["admin", "admin_staff"]]); ?>" id="activity_log_nav">
-                            <ul class="nav nav-collapse">
-                                <li class="<?php echo navigation_active("activity_log", "active", ["user" => ["admin"]]); ?>">
-                                    <a href="<?php echo BASE_URL . "admin/activity_log.php?user=admin" ?>">
-                                        <span class="sub-item">Administrator</span>
-                                    </a>
-                                </li>
-                                <li class="<?php echo navigation_active("activity_log", "active", ["user" => ["admin_staff"]]); ?>">
-                                    <a href="<?php echo BASE_URL . "admin/activity_log.php?user=admin_staff"; ?>">
-                                        <span class="sub-item">Administrator Staff</span>
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-                    </li>
-
-                    <li class="nav-item <?php echo navigation_active("user_log", "active submenu", ["user" => ["admin", "admin_staff"]]); ?>">
-                        <a class="collapsed" aria-expanded="false" data-bs-toggle="collapse" href="#user_log_nav">
-                            <i class="fas fa-list"></i>
-                            <p>User Log</p>
-                            <span class="caret"></span>
-                        </a>
-                        <div class="collapse <?php echo navigation_active("user_log", "show", ["user" => ["admin", "admin_staff"]]); ?>" id="user_log_nav">
-                            <ul class="nav nav-collapse">
-                                <li class="<?php echo navigation_active("user_log", "active", ["user" => ["admin"]]); ?>">
-                                    <a href="<?php echo BASE_URL . "admin/user_log.php?user=admin" ?>">
-                                        <span class="sub-item">Administrator</span>
-                                    </a>
-                                </li>
-                                <li class="<?php echo navigation_active("user_log", "active", ["user" => ["admin_staff"]]); ?>">
-                                    <a href="<?php echo BASE_URL . "admin/user_log.php?user=admin_staff"; ?>">
-                                        <span class="sub-item">Administrator Staff</span>
                                     </a>
                                 </li>
                             </ul>
