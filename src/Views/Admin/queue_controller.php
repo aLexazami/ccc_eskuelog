@@ -13,8 +13,7 @@ require_once ADMIN_PAGE_HEADER_PATH;
 # Page Header Initialization
 $title_page   = "Service Counter";
 $active_links = [
-    ['label' => 'Queue Management', 'url' => 'javascript:void(0)'],
-    ['label' => 'Service Counter', 'url' => '']
+    ['label' => $title_page, 'url' => '']
 ];
 $page_header = render_page_header((string) $title_page, $active_links) ?? '';
 
@@ -258,7 +257,7 @@ if ($db_connect && $user_id > 0) {
             transition: transform 0.2s ease;
         }
 
-        /* UNIFIED MODERN VISITOR TYPE BADGE (CONSISTENT STUDENT ROYAL BLUE STYLING FOR ALL TYPES) */
+        /* UNIFIED MODERN VISITOR TYPE BADGE */
         .visitor-badge-modern {
             display: inline-flex;
             align-items: center;
@@ -313,7 +312,7 @@ if ($db_connect && $user_id > 0) {
             justify-content: center;
         }
 
-        /* MODERN RESPONSIVE DETAIL TILES FOR TICKET DETAILS CONTAINER */
+        /* MODERN RESPONSIVE DETAIL TILES */
         .detail-tile {
             background: #f8fafc;
             border: 1.5px solid #e2e8f0;
@@ -344,9 +343,7 @@ if ($db_connect && $user_id > 0) {
             margin-top: 2px;
         }
 
-        /* =========================================================================
-           MODERN REFINED LINEUP SECTION STYLES (MATCHED THEME FOR BOTH QUEUES)
-           ========================================================================= */
+        /* LINEUP SECTION STYLES */
         .controller-subcard {
             border: 1.5px solid #e2e8f0;
             border-radius: 1rem;
@@ -460,9 +457,7 @@ if ($db_connect && $user_id > 0) {
             width: 100%;
         }
 
-        /* =========================================================================
-           HIGHLIGHTED ACTION CONTROLS CONTAINER & TWO-TIER ACTION BUTTON STYLES
-           ========================================================================= */
+        /* ACTION CONTROLS BAR STYLES */
         .action-bar-card {
             border: 1.5px solid #bfdbfe;
             border-radius: 1rem;
@@ -490,7 +485,6 @@ if ($db_connect && $user_id > 0) {
             width: 100%;
         }
 
-        /* Taller hero sizing for top row primary actions */
         .btn-action-hero {
             padding: 0.95rem 1.25rem;
             font-size: 1rem;
@@ -510,7 +504,7 @@ if ($db_connect && $user_id > 0) {
             line-height: 1;
         }
 
-        /* Call Next: Vibrant Emerald Gradient */
+        /* Button Colors */
         .btn-ctrl-call {
             background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
             color: #ffffff;
@@ -524,7 +518,6 @@ if ($db_connect && $user_id > 0) {
             box-shadow: 0 6px 20px rgba(22, 163, 74, 0.38);
         }
 
-        /* Serve: Deep Royal Blue Gradient */
         .btn-ctrl-serve {
             background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
             color: #ffffff;
@@ -538,7 +531,6 @@ if ($db_connect && $user_id > 0) {
             box-shadow: 0 6px 20px rgba(37, 99, 235, 0.38);
         }
 
-        /* Recall: Refined Outline Warm Orange */
         .btn-ctrl-recall {
             background: #ffffff;
             color: #ea580c;
@@ -553,7 +545,6 @@ if ($db_connect && $user_id > 0) {
             box-shadow: 0 4px 12px rgba(234, 88, 12, 0.12);
         }
 
-        /* Complete: Refined Outline Emerald Green */
         .btn-ctrl-complete {
             background: #ffffff;
             color: #16a34a;
@@ -568,7 +559,6 @@ if ($db_connect && $user_id > 0) {
             box-shadow: 0 4px 12px rgba(22, 163, 74, 0.12);
         }
 
-        /* Skip: Modern Soft Rose Outline */
         .btn-ctrl-skip {
             background: #ffffff;
             color: #dc2626;
@@ -593,10 +583,10 @@ if ($db_connect && $user_id > 0) {
             <?php include_once ADMIN_HEADER_PATH; ?>
 
             <div class="container">
-                <div class="page-inner px-2 px-sm-3">
+                <div class="page-inner">
 
                     <!-- Page Header -->
-                    <div class="kiosk-page-header">
+                    <div>
                         <?php echo is_array($page_header) ? '' : $page_header; ?>
                     </div>
 
@@ -1115,7 +1105,7 @@ if ($db_connect && $user_id > 0) {
                 return toTitleCase(baseName);
             }
 
-            // Helper to render modular modern detail cards with multi-line text wrapping and responsive layout
+            // Helper to render modular modern detail cards
             function renderDetailTile(iconClass, label, value, customClass = '') {
                 return `
                     <div class="col-12 col-sm-6">
