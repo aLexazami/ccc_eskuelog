@@ -186,6 +186,14 @@ function render_action_links($links = [])
                             <p>Office Prefix Codes</p>
                         </a>
                     </li>
+
+                    <!-- OFFICE SERVICE COUNTERS / WINDOWS MANAGEMENT -->
+                    <li class="nav-item <?php echo navigation_active("office-counters"); ?>">
+                        <a href="<?php echo BASE_URL . "admin/office-counters"; ?>">
+                            <i class="bi bi-window-stack"></i>
+                            <p>Office Counters</p>
+                        </a>
+                    </li>
                 <?php endif; ?>
 
                 <?php if ($g_user_role == 'ADMIN_STAFF'): ?>
