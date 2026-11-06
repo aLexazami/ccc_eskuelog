@@ -13,8 +13,7 @@ require_once ADMIN_PAGE_HEADER_PATH;
 # Page Header Initialization
 $title_page   = "Transaction Records";
 $active_links = [
-    ['label' => 'Queue Management', 'url' => 'javascript:void(0)'],
-    ['label' => 'Transaction Records', 'url' => '']
+    ['label' => $title_page, 'url' => '']
 ];
 $page_header = render_page_header((string) $title_page, $active_links) ?? '';
 
@@ -181,7 +180,7 @@ if ($db_connect && $user_id > 0) {
                 <div class="page-inner px-2 px-sm-3">
 
                     <!-- Page Header -->
-                    <div class="kiosk-page-header">
+                    <div>
                         <?php echo is_array($page_header) ? '' : $page_header; ?>
                     </div>
 
