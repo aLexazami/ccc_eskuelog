@@ -52,7 +52,7 @@ switch ($route) {
     case '/admin/login.php':
     case '/admin/login-access.php':
         if ($g_user_role_upper === "ADMIN") {
-            header("Location: " . BASE_URL . "admin/user-information");
+            header("Location: " . BASE_URL . "admin/office-prefix");
             exit();
         } else if ($g_user_role_upper === "ADMIN_STAFF") {
             header("Location: " . BASE_URL . "admin/queue-controller");
