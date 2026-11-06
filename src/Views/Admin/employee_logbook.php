@@ -9,8 +9,7 @@ require_once ADMIN_PAGE_HEADER_PATH;
 # Page Header Initialization
 $title_page   = "Employee Logbook";
 $active_links = [
-    ['label' => 'Digital Logbook', 'url' => 'javascript:void(0)'],
-    ['label' => 'Employee Check-in', 'url' => '']
+    ['label' => $title_page, 'url' => '']
 ];
 $page_header = render_page_header((string) $title_page, $active_links) ?? '';
 
@@ -72,12 +71,6 @@ if ($db_connect) {
             width: 100%;
             margin-left: auto;
             margin-right: auto;
-        }
-
-        .kiosk-header-banner {
-            background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
-            color: #ffffff;
-            padding: 1.25rem 1.5rem;
         }
 
         /* Visual Step Progress Wizard */
@@ -298,6 +291,8 @@ if ($db_connect) {
         :-webkit-full-screen .main-header,
         :fullscreen .kiosk-page-header,
         :-webkit-full-screen .kiosk-page-header,
+        :fullscreen .page-header,
+        :-webkit-full-screen .page-header,
         :fullscreen footer,
         :-webkit-full-screen footer {
             display: none !important;
@@ -355,10 +350,6 @@ if ($db_connect) {
 
         /* RESPONSIVE OVERRIDES FOR SMALL MOBILE SCREENS (<= 575px) */
         @media (max-width: 575.98px) {
-            .kiosk-header-banner {
-                padding: 1rem;
-            }
-
             .step-progress-bar {
                 padding: 0.75rem 0.5rem;
             }
@@ -425,9 +416,9 @@ if ($db_connect) {
             <?php include_once ADMIN_HEADER_PATH; ?>
 
             <div class="container">
-                <div class="page-inner px-2 px-sm-3">
+                <div class="page-inner">
 
-                    <!-- Page Header -->
+                    <!-- Page Header (Hidden on Fullscreen) -->
                     <div class="kiosk-page-header">
                         <?php echo is_array($page_header) ? '' : $page_header; ?>
                     </div>
@@ -436,21 +427,31 @@ if ($db_connect) {
                         <div class="col-12 px-0">
                             <div class="card kiosk-main-card border-0">
 
-                                <!-- KIOSK HEADER BANNER WITH SVG ICON & FULLSCREEN TOGGLE -->
-                                <div class="kiosk-header-banner d-flex align-items-center justify-content-between gap-2">
-                                    <div class="d-flex align-items-center gap-2 gap-sm-3 min-w-0">
-                                        <div class="p-2 rounded-3 text-white d-flex align-items-center justify-content-center flex-shrink-0" style="background-color: rgba(255, 255, 255, 0.2); width: 38px; height: 38px;">
-                                            <i class="bi bi-person-vcard fs-4"></i>
-                                        </div>
-                                        <div class="min-w-0">
-                                            <h4 class="fw-bold text-white mb-0 tracking-wide text-truncate fs-6 fs-sm-5">EMPLOYEE DIGITAL LOGBOOK</h4>
-                                        </div>
-                                    </div>
+                                <!-- STANDARDIZED CARD HEADER (MATCHING OFFICE_PREFIX.PHP & STUDENT_LOGBOOK.PHP) -->
+                                <div class="card-header d-flex align-items-center justify-content-between">
+                                    <div class="d-flex justify-content-between align-items-start align-items-md-center gap-3 w-100">
 
-                                    <div class="d-flex align-items-center flex-shrink-0 ms-auto">
-                                        <button type="button" class="btn btn-light text-primary border-0 rounded-3 p-0 d-flex align-items-center justify-content-center shadow-sm flex-shrink-0 header-action-btn" id="btnToggleFullscreen" style="width: 38px; height: 38px; transition: all 0.2s ease-in-out;" title="Toggle Fullscreen">
-                                            <i class="bi bi-fullscreen fs-5" id="fullscreenIcon"></i>
-                                        </button>
+                                        <div class="d-flex align-items-center gap-3">
+                                            <div class="bg-primary-subtle text-primary rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 44px; height: 44px;">
+                                                <i class="bi bi-person-vcard fs-4"></i>
+                                            </div>
+
+                                            <div>
+                                                <div class="text-uppercase text-muted fw-bold tracking-wide small" style="font-size: 0.95rem;">
+                                                    Employee Digital Logbook
+                                                </div>
+                                                <div class="d-flex align-items-center text-muted small mt-0.5" style="font-size: 0.75rem;">
+                                                    <i class="bi bi-info-circle me-1"></i> Employee kiosk check-in and queue ticket issuance
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="d-flex align-items-start align-items-md-end gap-2 ms-md-auto">
+                                            <button type="button" class="btn btn-action d-inline-flex align-items-center justify-content-center shadow-sm header-action-btn" id="btnToggleFullscreen" title="Toggle Fullscreen">
+                                                <i class="bi bi-fullscreen fs-5" id="fullscreenIcon"></i>
+                                            </button>
+                                        </div>
+
                                     </div>
                                 </div>
 
@@ -961,22 +962,28 @@ if ($db_connect) {
         // ---------------------------------------------------------------------
         btnContinue.addEventListener('click', function() {
             if (!firstNameInput.value.trim() || !lastNameInput.value.trim() || !sexSelect.value || !contactInput.value.trim() || !emailInput.value.trim() || !departmentSelect.value) {
-                new swal({
-                    title: "Incomplete Details",
-                    text: "Please complete all required employee fields before proceeding.",
-                    icon: "warning",
-                    buttons: { confirm: { className: "btn btn-warning" } }
-                });
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        title: "Incomplete Details",
+                        text: "Please complete all required employee fields before proceeding.",
+                        icon: "warning"
+                    });
+                } else {
+                    alert("Please complete all required employee fields before proceeding.");
+                }
                 return;
             }
 
             if (!consentCheckbox.checked) {
-                new swal({
-                    title: "Consent Required",
-                    text: "Please accept the Data Privacy Authorization to proceed.",
-                    icon: "warning",
-                    buttons: { confirm: { className: "btn btn-warning" } }
-                });
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        title: "Consent Required",
+                        text: "Please accept the Data Privacy Authorization to proceed.",
+                        icon: "warning"
+                    });
+                } else {
+                    alert("Please accept the Data Privacy Authorization to proceed.");
+                }
                 return;
             }
 
@@ -1160,33 +1167,30 @@ if ($db_connect) {
             e.preventDefault();
 
             if (!officeInput.value) {
-                new swal({
-                    title: "Office Required",
-                    text: "Please select a Destination Office.",
-                    icon: "warning",
-                    buttons: { confirm: { className: "btn btn-warning" } }
-                });
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({ title: "Office Required", text: "Please select a Destination Office.", icon: "warning" });
+                } else {
+                    alert("Please select a Destination Office.");
+                }
                 return;
             }
 
             if (!transactionInput.value) {
-                new swal({
-                    title: "Concern Required",
-                    text: "Please select a Transaction Concern to proceed.",
-                    icon: "warning",
-                    buttons: { confirm: { className: "btn btn-warning" } }
-                });
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({ title: "Concern Required", text: "Please select a Transaction Concern to proceed.", icon: "warning" });
+                } else {
+                    alert("Please select a Transaction Concern to proceed.");
+                }
                 return;
             }
 
             const activeCard = document.querySelector('.transaction-card.active');
             if (activeCard && activeCard.dataset.hasSubConcerns === '1' && (!subConcernInput || !subConcernInput.value)) {
-                new swal({
-                    title: "Sub-Concern Required",
-                    text: "Please select a specific detail option for your concern.",
-                    icon: "warning",
-                    buttons: { confirm: { className: "btn btn-warning" } }
-                });
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({ title: "Sub-Concern Required", text: "Please select a specific detail option for your concern.", icon: "warning" });
+                } else {
+                    alert("Please select a specific detail option for your concern.");
+                }
                 return;
             }
 
@@ -1228,24 +1232,22 @@ if ($db_connect) {
                     const ticketModal = new bootstrap.Modal(document.getElementById('ticketSuccessModal'));
                     ticketModal.show();
                 } else {
-                    new swal({
-                        title: "Check-in Failed",
-                        text: result.message || "Failed to process check-in. Please try again.",
-                        icon: "error",
-                        buttons: { confirm: { className: "btn btn-danger" } }
-                    });
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({ title: "Check-in Failed", text: result.message || "Failed to process check-in. Please try again.", icon: "error" });
+                    } else {
+                        alert(result.message || "Failed to process check-in. Please try again.");
+                    }
                 }
             })
             .catch(err => {
                 console.error(err);
                 btnFinalSubmit.disabled = false;
                 btnFinalSubmit.innerHTML = '<span>Complete Check-in & Get Ticket</span> <i class="bi bi-check-circle ms-1 fs-5"></i>';
-                new swal({
-                    title: "System Error",
-                    text: "An unexpected server error occurred. Please try again.",
-                    icon: "error",
-                    buttons: { confirm: { className: "btn btn-danger" } }
-                });
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({ title: "System Error", text: "An unexpected server error occurred. Please try again.", icon: "error" });
+                } else {
+                    alert("An unexpected server error occurred. Please try again.");
+                }
             });
         });
 
