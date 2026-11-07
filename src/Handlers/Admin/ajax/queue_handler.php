@@ -46,14 +46,43 @@ if ($user_id <= 0 && session_id()) {
     }
 }
 
+// 2. Resolve User Role
+$g_user_role = '';
+if (isset($session_class) && method_exists($session_class, 'getValue')) {
+    $g_user_role = $session_class->getValue('user_role') ?? $session_class->getValue('system_role') ?? '';
+}
+if (empty($g_user_role)) {
+    $g_user_role = $_SESSION['user_role'] ?? $_SESSION['g_user_role'] ?? $_SESSION['role'] ?? '';
+}
+
+$role_map = ['1' => 'ADMIN', '2' => 'ADMIN_STAFF', '3' => 'STATION_ADMIN', '4' => 'USER'];
+if (isset($role_map[(string)$g_user_role])) {
+    $g_user_role = $role_map[(string)$g_user_role];
+}
+
+if (empty($g_user_role) && $db_connect && $user_id > 0) {
+    $stmtSysRole = $db_connect->prepare("SELECT system_role FROM system_access WHERE user_id = ? AND system_type = 'E-SKUELOG' ORDER BY system_role ASC LIMIT 1");
+    if ($stmtSysRole) {
+        $stmtSysRole->bind_param("i", $user_id);
+        $stmtSysRole->execute();
+        $roleRes = $stmtSysRole->get_result()->fetch_assoc();
+        if ($roleRes && isset($role_map[(string)$roleRes['system_role']])) {
+            $g_user_role = $role_map[(string)$roleRes['system_role']];
+        }
+    }
+}
+
+$g_user_role_upper = strtoupper(trim((string)$g_user_role));
+
 $action = $_POST['action'] ?? '';
 $today  = date('Y-m-d');
 
-// 2. PRIMARY RESOLUTION: Query staff_assignments table for Workstation Assignment
-$office_id  = (int)($_POST['office_id'] ?? $_SESSION['assigned_office_id'] ?? 0);
-$counter_id = (int)($_POST['counter_id'] ?? $_SESSION['assigned_counter_id'] ?? 0);
+// 3. STRICT WORKSTATION ASSIGNMENT AUTHORIZATION
+$assigned_office_id  = 0;
+$assigned_counter_id = 0;
 
-if (($office_id <= 0 || $counter_id <= 0) && $user_id > 0) {
+if ($user_id > 0) {
+    // Priority 1: Direct Workstation Assignment in staff_assignments
     $stmtStaff = $db_connect->prepare("
         SELECT office_id, counter_id, shift_status 
         FROM staff_assignments 
@@ -66,14 +95,44 @@ if (($office_id <= 0 || $counter_id <= 0) && $user_id > 0) {
         $stmtStaff->execute();
         $staffRow = $stmtStaff->get_result()->fetch_assoc();
         if ($staffRow) {
-            $office_id   = $office_id > 0 ? $office_id : (int)$staffRow['office_id'];
-            $counter_id  = $counter_id > 0 ? $counter_id : (int)$staffRow['counter_id'];
+            $assigned_office_id  = (int)$staffRow['office_id'];
+            $assigned_counter_id = (int)$staffRow['counter_id'];
             $_SESSION['shift_status'] = $staffRow['shift_status'] ?? 'ON_DUTY';
+        }
+    }
+
+    // Priority 2: Fallback check on employee table
+    if ($assigned_office_id <= 0) {
+        $stmtEmp = $db_connect->prepare("SELECT office_id FROM employee WHERE user_id = ? LIMIT 1");
+        if ($stmtEmp) {
+            $stmtEmp->bind_param("i", $user_id);
+            $stmtEmp->execute();
+            $empRow = $stmtEmp->get_result()->fetch_assoc();
+            if ($empRow) {
+                $assigned_office_id  = (int)$empRow['office_id'];
+                $assigned_counter_id = 0;
+            }
         }
     }
 }
 
-// Update Active Session Cache
+// Security Enforcement: ADMIN can select any office, but ADMIN_STAFF MUST use their database assignment
+if ($g_user_role_upper === 'ADMIN') {
+    $office_id  = (int)($_POST['office_id'] ?? $assigned_office_id ?? $_SESSION['assigned_office_id'] ?? 0);
+    $counter_id = (int)($_POST['counter_id'] ?? $assigned_counter_id ?? $_SESSION['assigned_counter_id'] ?? 0);
+} else {
+    if ($assigned_office_id > 0) {
+        $office_id  = $assigned_office_id;
+        $counter_id = $assigned_counter_id;
+    } else {
+        // Unassigned non-admin staff member
+        $office_id  = 0;
+        $counter_id = 0;
+        unset($_SESSION['assigned_office_id'], $_SESSION['assigned_counter_id']);
+    }
+}
+
+// Update Active Session Cache if valid
 if ($office_id > 0) {
     $_SESSION['assigned_office_id']  = $office_id;
     $_SESSION['assigned_counter_id'] = $counter_id;
@@ -83,7 +142,7 @@ switch ($action) {
 
     case 'fetch_counter_status':
         if ($office_id <= 0) {
-            echo json_encode(['success' => false, 'message' => 'No active office assignment detected in staff_assignments.']);
+            echo json_encode(['success' => false, 'message' => 'No active workstation assignment detected for this staff account.']);
             exit();
         }
 
@@ -149,7 +208,7 @@ switch ($action) {
                 }
             }
 
-            // Waiting tickets lineup (includes q.id so employee call buttons can select specific tickets)
+            // Waiting tickets lineup
             $up_next = [];
             $stmtNext = $db_connect->prepare("
                 SELECT q.id, q.ticket_number, q.is_priority, l.visitor_type 
@@ -198,7 +257,6 @@ switch ($action) {
         }
 
         try {
-            // Complete any current active ticket on this counter
             if ($counter_id > 0) {
                 $stmtCompletePrev = $db_connect->prepare("
                     UPDATE queue_tickets 
@@ -216,7 +274,6 @@ switch ($action) {
             }
             $stmtCompletePrev->execute();
 
-            // MAIN CALL NEXT STRICTLY CALLS STUDENTS & GUESTS (EXCLUDES EMPLOYEES)
             $stmtNextTicket = $db_connect->prepare("
                 SELECT q.id, q.ticket_number 
                 FROM queue_tickets q
@@ -279,7 +336,6 @@ switch ($action) {
         }
 
         try {
-            // Complete active ticket at current workstation
             if ($counter_id > 0) {
                 $stmtCompletePrev = $db_connect->prepare("
                     UPDATE queue_tickets 
@@ -297,7 +353,6 @@ switch ($action) {
             }
             $stmtCompletePrev->execute();
 
-            // Direct override call for selected ticket
             $now = date('Y-m-d H:i:s');
             if ($counter_id > 0) {
                 $stmtUpdate = $db_connect->prepare("

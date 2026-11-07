@@ -1,4 +1,6 @@
 <?php
+// src/Views/Admin/queue_controller.php
+
 # Core Config Dependencies
 global $session_class, $db_connect;
 $db_connect = $db_connect ?? null;
@@ -140,6 +142,8 @@ if ($db_connect && $user_id > 0) {
                 $offices[] = $row;
             }
         }
+    } else {
+        unset($_SESSION['assigned_office_id'], $_SESSION['assigned_counter_id']);
     }
 }
 ?>
@@ -222,7 +226,6 @@ if ($db_connect && $user_id > 0) {
             border-color: #fca5a5;
         }
 
-        /* BLUE THEME TIMER BADGE STYLING */
         .digital-timer-card {
             display: inline-flex;
             align-items: center;
@@ -247,7 +250,6 @@ if ($db_connect && $user_id > 0) {
             color: #93c5fd !important;
         }
 
-        /* SLIGHTLY ENLARGED & DIAGONALLY TIPPED TICKET ICON */
         .slant-ticket-icon {
             font-size: 1.15rem;
             display: inline-block;
@@ -257,7 +259,6 @@ if ($db_connect && $user_id > 0) {
             transition: transform 0.2s ease;
         }
 
-        /* UNIFIED MODERN VISITOR TYPE BADGE */
         .visitor-badge-modern {
             display: inline-flex;
             align-items: center;
@@ -312,7 +313,6 @@ if ($db_connect && $user_id > 0) {
             justify-content: center;
         }
 
-        /* MODERN RESPONSIVE DETAIL TILES */
         .detail-tile {
             background: #f8fafc;
             border: 1.5px solid #e2e8f0;
@@ -343,7 +343,6 @@ if ($db_connect && $user_id > 0) {
             margin-top: 2px;
         }
 
-        /* DYNAMIC CONCERN HERO CARD (RIGHT COLUMN) */
         .concern-hero-box {
             background: linear-gradient(135deg, #f8fafc 0%, #eff6ff 100%);
             border: 1.5px solid #bfdbfe;
@@ -352,7 +351,6 @@ if ($db_connect && $user_id > 0) {
             box-shadow: 0 4px 12px rgba(37, 99, 235, 0.05);
         }
 
-        /* LINEUP SECTION STYLES */
         .controller-subcard {
             border: 1.5px solid #e2e8f0;
             border-radius: 1rem;
@@ -381,7 +379,6 @@ if ($db_connect && $user_id > 0) {
             letter-spacing: 0.02em;
         }
 
-        /* MODERN TICKET PILL ITEM IN LINEUP */
         .ticket-pill-item {
             background: #f8fafc;
             border: 1.5px solid #e2e8f0;
@@ -429,7 +426,6 @@ if ($db_connect && $user_id > 0) {
             color: #1d4ed8;
         }
 
-        /* DIRECT CALL BUTTON IN EMPLOYEE QUEUE PILL */
         .btn-call-employee-direct {
             background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
             color: #ffffff;
@@ -458,7 +454,6 @@ if ($db_connect && $user_id > 0) {
             font-size: 0.9rem;
         }
 
-        /* ACTION CONTROLS BAR STYLES */
         .action-bar-card {
             border: 1.5px solid #bfdbfe;
             border-radius: 1rem;
@@ -505,7 +500,6 @@ if ($db_connect && $user_id > 0) {
             line-height: 1;
         }
 
-        /* Button Colors */
         .btn-ctrl-call {
             background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
             color: #ffffff;
@@ -603,7 +597,7 @@ if ($db_connect && $user_id > 0) {
                                         </div>
                                         <div class="min-w-0">
                                             <h4 class="fw-bold text-white mb-0 tracking-wide text-truncate fs-6 fs-sm-5" id="headerOfficeName">
-                                                <?= $assigned_office ? htmlspecialchars($assigned_office['office_name']) . ' (' . htmlspecialchars($assigned_office['office_code']) . ')' : 'Select Active Office'; ?>
+                                                <?= $assigned_office ? htmlspecialchars($assigned_office['office_name']) . ' (' . htmlspecialchars($assigned_office['office_code']) . ')' : ($g_user_role_upper === 'ADMIN' ? 'Select Active Office' : 'No Workstation Assigned'); ?>
                                             </h4>
                                             <p class="text-white-50 small mb-0" id="headerCounterName">
                                                 <?= $assigned_office ? htmlspecialchars($assigned_office['counter_label'] ?? 'Service Counter Workstation') : 'Service Counter Workstation'; ?>
@@ -616,7 +610,7 @@ if ($db_connect && $user_id > 0) {
                                         <?php if ($assigned_office): ?>
                                             <input type="hidden" id="officeSelect" value="<?= (int)$assigned_office['office_id']; ?>">
                                             <input type="hidden" id="counterSelect" value="<?= (int)($assigned_office['counter_id'] ?? 0); ?>">
-                                        <?php else: ?>
+                                        <?php elseif ($g_user_role_upper === 'ADMIN'): ?>
                                             <div class="d-flex align-items-center gap-2">
                                                 <label for="officeSelect" class="fw-bold text-white text-nowrap mb-0 small">Active Office:</label>
                                                 <select id="officeSelect" class="form-select form-select-kiosk fw-bold text-dark border-0 shadow-sm" style="min-width: 220px;">
@@ -627,157 +621,179 @@ if ($db_connect && $user_id > 0) {
                                                 </select>
                                                 <input type="hidden" id="counterSelect" value="0">
                                             </div>
+                                        <?php else: ?>
+                                            <input type="hidden" id="officeSelect" value="">
+                                            <input type="hidden" id="counterSelect" value="0">
                                         <?php endif; ?>
                                     </div>
                                 </div>
 
                                 <!-- CONTROLLER MAIN BODY -->
                                 <div class="card-body p-3 p-sm-4">
-                                    <div class="d-none" id="controllerMainContent">
-                                        
-                                        <!-- GRID TOP BAR: STATUS BADGE OVER LEFT HERO COLUMN & TIMER CENTERED OVER RIGHT DETAILS COLUMN -->
-                                        <div class="row g-0 align-items-center mb-3">
-                                            
-                                            <!-- LEFT COLUMN ALIGNED STATUS BADGE (OVER TICKET HERO LEFT) -->
-                                            <div class="col-lg-4 col-md-5 d-flex justify-content-center">
-                                                <div id="counterStatusContainer" class="status-pill-modern status-on-duty">
-                                                    <span id="counterStatusText">ON DUTY</span>
-                                                </div>
-                                            </div>
-
-                                            <!-- RIGHT COLUMN ALIGNED TIMER (CENTERED OVER QUEUE DETAILS RIGHT) -->
-                                            <div class="col-lg-8 col-md-7 d-flex justify-content-center mt-2 mt-md-0">
-                                                <div class="digital-timer-card">
-                                                    <i class="bi bi-stopwatch fs-5"></i>
-                                                    <span id="digitalElapsedTimer">00:00</span>
-                                                </div>
-                                            </div>
-
-                                        </div>
-
-                                        <!-- TOP SECTION: 2-COLUMN SERVING HERO BOX -->
-                                        <div class="card serving-hero-card mb-4">
-                                            <div class="row g-0">
+                                    
+                                    <?php if (!$assigned_office && $g_user_role_upper !== 'ADMIN'): ?>
+                                        <!-- UNASSIGNED STAFF FALLBACK CARD -->
+                                        <div class="card border-0 shadow-sm rounded-4 overflow-hidden my-2" id="unassignedFallbackCard">
+                                            <div class="card-body p-4 p-md-5 text-center">
                                                 
-                                                <!-- LEFT COLUMN: CENTERED TICKET NUMBER CONTAINER -->
-                                                <div class="col-lg-4 col-md-5 ticket-hero-left">
-                                                    
-                                                    <!-- 1. QUEUE NUMBER HEADER TITLE AT TOP -->
-                                                    <div class="text-info text-uppercase fw-bold small tracking-wider mb-2 text-center">
-                                                        <i class="bi bi-ticket-perforated-fill slant-ticket-icon"></i>QUEUE NUMBER
-                                                    </div>
-
-                                                    <!-- 2. QUEUE NUMBER & PRIORITY TAG TIED CLOSELY TOGETHER -->
-                                                    <div class="d-flex flex-column align-items-center my-auto">
-                                                        <div class="ticket-hero-number" id="ctrlServingTicket">---</div>
-                                                        <div id="ctrlPriorityTag" class="mt-1"></div>
-                                                    </div>
-
-                                                    <!-- 3. VISITOR TYPE BADGE AT THE BOTTOM BELOW PRIORITY TAG -->
-                                                    <div id="ctrlVisitorTypeTag" class="mt-2"></div>
-
+                                                <!-- ICON BADGE -->
+                                                <div class="mx-auto mb-3.5 d-flex align-items-center justify-content-center rounded-circle" 
+                                                     style="width: 88px; height: 88px; background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border: 2px dashed #93c5fd;">
+                                                    <i class="bi bi-person-workspace text-primary" style="font-size: 2.6rem;"></i>
                                                 </div>
+                                                
+                                                <!-- TITLE -->
+                                                <h4 class="fw-bold text-dark mb-2">Workstation Not Assigned</h4>
+                                                
+                                                <!-- DESCRIPTION COPY -->
+                                                <p class="text-muted mx-auto mb-4" style="max-width: 500px; font-size: 0.95rem; line-height: 1.65;">
+                                                    Your account is active, but you have not been assigned to a service counter for today's shift. Please coordinate with your station manager or administrator to configure your workstation assignment.
+                                                </p>
 
-                                                <!-- RIGHT COLUMN: DYNAMIC QUEUE DETAILS / EMPTY STATE -->
-                                                <div class="col-lg-8 col-md-7 ticket-hero-right" id="ticketDetailsContainer">
-                                                    <!-- Dynamically populated via JavaScript -->
+                                                <!-- RE-CHECK ASSIGNMENT BUTTON -->
+                                                <div>
+                                                    <button type="button" class="btn btn-primary fw-bold px-4 py-2.5 rounded-3 shadow-sm d-inline-flex align-items-center gap-2" onclick="window.location.reload();">
+                                                        <i class="bi bi-arrow-clockwise fs-5"></i>
+                                                        <span>Check Assignment Status</span>
+                                                    </button>
                                                 </div>
 
                                             </div>
                                         </div>
-
-                                        <!-- HIGHLIGHTED ACTION CONTROLS BAR CONTAINER -->
-                                        <div class="card action-bar-card mb-4">
-                                            <div class="card-body p-3">
-                                                <div class="d-flex flex-column gap-2 gap-sm-3">
-                                                    
-                                                    <!-- ROW 1: PRIMARY ACTIONS (CALL NEXT & SERVE) -->
-                                                    <div class="row g-2 g-sm-3">
-                                                        <div class="col-12 col-sm-6">
-                                                            <button type="button" class="btn btn-action-modern btn-action-hero btn-ctrl-call" id="btnCallNext">
-                                                                <i class="bi bi-megaphone-fill"></i> Call Next
-                                                            </button>
-                                                        </div>
-                                                        <div class="col-12 col-sm-6">
-                                                            <button type="button" class="btn btn-action-modern btn-action-hero btn-ctrl-serve" id="btnStartServe">
-                                                                <i class="bi bi-play-circle-fill"></i> Serve
-                                                            </button>
-                                                        </div>
-                                                    </div>
-
-                                                    <!-- ROW 2: SECONDARY & LIFECYCLE ACTIONS (RECALL, COMPLETE, SKIP) -->
-                                                    <div class="row g-2 g-sm-3">
-                                                        <div class="col-12 col-sm-4">
-                                                            <button type="button" class="btn btn-action-modern btn-ctrl-recall" id="btnRecallVoice">
-                                                                <i class="bi bi-arrow-counterclockwise"></i> Recall
-                                                            </button>
-                                                        </div>
-                                                        <div class="col-12 col-sm-4">
-                                                            <button type="button" class="btn btn-action-modern btn-ctrl-complete" id="btnCompleteTicket">
-                                                                <i class="bi bi-check-circle-fill"></i> Complete
-                                                            </button>
-                                                        </div>
-                                                        <div class="col-12 col-sm-4">
-                                                            <button type="button" class="btn btn-action-modern btn-ctrl-skip" id="btnSkipTicket">
-                                                                <i class="bi bi-dash-circle"></i> Skip
-                                                            </button>
-                                                        </div>
-                                                    </div>
-
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <!-- BOTTOM 2-COLUMN LINEUP SECTION -->
-                                        <div class="row g-3">
+                                    <?php else: ?>
+                                        <div class="d-none" id="controllerMainContent">
                                             
-                                            <!-- COLUMN 1: STUDENTS & GUESTS -->
-                                            <div class="col-lg-6">
-                                                <div class="card controller-subcard h-100">
-                                                    <div class="lineup-header-student d-flex align-items-center justify-content-between">
-                                                        <h6 class="fw-bold text-primary mb-0 d-flex align-items-center">
-                                                            <i class="bi bi-people-fill me-2 fs-5 text-primary"></i>Students & Guests Queue
-                                                        </h6>
-                                                        <span class="lineup-badge-student" id="ctrlStudentBadge">0 Waiting</span>
+                                            <!-- GRID TOP BAR: STATUS BADGE & TIMER -->
+                                            <div class="row g-0 align-items-center mb-3">
+                                                
+                                                <div class="col-lg-4 col-md-5 d-flex justify-content-center">
+                                                    <div id="counterStatusContainer" class="status-pill-modern status-on-duty">
+                                                        <span id="counterStatusText">ON DUTY</span>
                                                     </div>
-                                                    <div class="card-body p-3">
-                                                        <div class="d-flex flex-column gap-2" id="ctrlStudentList">
-                                                            <div class="text-center py-4 my-2">
-                                                                <div class="mx-auto mb-2 d-flex align-items-center justify-content-center rounded-circle bg-light text-muted" style="width: 48px; height: 48px; border: 1.5px dashed #cbd5e1;">
-                                                                    <i class="bi bi-inbox fs-4 opacity-50"></i>
-                                                                </div>
-                                                                <span class="small fw-semibold text-muted">No students currently waiting.</span>
+                                                </div>
+
+                                                <div class="col-lg-8 col-md-7 d-flex justify-content-center mt-2 mt-md-0">
+                                                    <div class="digital-timer-card">
+                                                        <i class="bi bi-stopwatch fs-5"></i>
+                                                        <span id="digitalElapsedTimer">00:00</span>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+
+                                            <!-- TOP SECTION: 2-COLUMN SERVING HERO BOX -->
+                                            <div class="card serving-hero-card mb-4">
+                                                <div class="row g-0">
+                                                    
+                                                    <div class="col-lg-4 col-md-5 ticket-hero-left">
+                                                        <div class="text-info text-uppercase fw-bold small tracking-wider mb-2 text-center">
+                                                            <i class="bi bi-ticket-perforated-fill slant-ticket-icon"></i>QUEUE NUMBER
+                                                        </div>
+
+                                                        <div class="d-flex flex-column align-items-center my-auto">
+                                                            <div class="ticket-hero-number" id="ctrlServingTicket">---</div>
+                                                            <div id="ctrlPriorityTag" class="mt-1"></div>
+                                                        </div>
+
+                                                        <div id="ctrlVisitorTypeTag" class="mt-2"></div>
+                                                    </div>
+
+                                                    <div class="col-lg-8 col-md-7 ticket-hero-right" id="ticketDetailsContainer">
+                                                    </div>
+
+                                                </div>
+                                            </div>
+
+                                            <!-- HIGHLIGHTED ACTION CONTROLS BAR CONTAINER -->
+                                            <div class="card action-bar-card mb-4">
+                                                <div class="card-body p-3">
+                                                    <div class="d-flex flex-column gap-2 gap-sm-3">
+                                                        
+                                                        <div class="row g-2 g-sm-3">
+                                                            <div class="col-12 col-sm-6">
+                                                                <button type="button" class="btn btn-action-modern btn-action-hero btn-ctrl-call" id="btnCallNext">
+                                                                    <i class="bi bi-megaphone-fill"></i> Call Next
+                                                                </button>
+                                                            </div>
+                                                            <div class="col-12 col-sm-6">
+                                                                <button type="button" class="btn btn-action-modern btn-action-hero btn-ctrl-serve" id="btnStartServe">
+                                                                    <i class="bi bi-play-circle-fill"></i> Serve
+                                                                </button>
                                                             </div>
                                                         </div>
+
+                                                        <div class="row g-2 g-sm-3">
+                                                            <div class="col-12 col-sm-4">
+                                                                <button type="button" class="btn btn-action-modern btn-ctrl-recall" id="btnRecallVoice">
+                                                                    <i class="bi bi-arrow-counterclockwise"></i> Recall
+                                                                </button>
+                                                            </div>
+                                                            <div class="col-12 col-sm-4">
+                                                                <button type="button" class="btn btn-action-modern btn-ctrl-complete" id="btnCompleteTicket">
+                                                                    <i class="bi bi-check-circle-fill"></i> Complete
+                                                                </button>
+                                                            </div>
+                                                            <div class="col-12 col-sm-4">
+                                                                <button type="button" class="btn btn-action-modern btn-ctrl-skip" id="btnSkipTicket">
+                                                                    <i class="bi bi-dash-circle"></i> Skip
+                                                                </button>
+                                                            </div>
+                                                        </div>
+
                                                     </div>
                                                 </div>
                                             </div>
 
-                                            <!-- COLUMN 2: EMPLOYEES -->
-                                            <div class="col-lg-6">
-                                                <div class="card controller-subcard h-100">
-                                                    <div class="lineup-header-employee d-flex align-items-center justify-content-between">
-                                                        <h6 class="fw-bold text-primary mb-0 d-flex align-items-center">
-                                                            <i class="bi bi-person-badge-fill me-2 fs-5 text-primary"></i>Employees Queue
-                                                        </h6>
-                                                        <span class="lineup-badge-employee" id="ctrlEmployeeBadge">0 Waiting</span>
-                                                    </div>
-                                                    <div class="card-body p-3">
-                                                        <div class="d-flex flex-column gap-2" id="ctrlEmployeeList">
-                                                            <div class="text-center py-4 my-2">
-                                                                <div class="mx-auto mb-2 d-flex align-items-center justify-content-center rounded-circle bg-light text-muted" style="width: 48px; height: 48px; border: 1.5px dashed #cbd5e1;">
-                                                                    <i class="bi bi-inbox fs-4 opacity-50"></i>
+                                            <!-- BOTTOM 2-COLUMN LINEUP SECTION -->
+                                            <div class="row g-3">
+                                                
+                                                <div class="col-lg-6">
+                                                    <div class="card controller-subcard h-100">
+                                                        <div class="lineup-header-student d-flex align-items-center justify-content-between">
+                                                            <h6 class="fw-bold text-primary mb-0 d-flex align-items-center">
+                                                                <i class="bi bi-people-fill me-2 fs-5 text-primary"></i>Students & Guests Queue
+                                                            </h6>
+                                                            <span class="lineup-badge-student" id="ctrlStudentBadge">0 Waiting</span>
+                                                        </div>
+                                                        <div class="card-body p-3">
+                                                            <div class="d-flex flex-column gap-2" id="ctrlStudentList">
+                                                                <div class="text-center py-4 my-2">
+                                                                    <div class="mx-auto mb-2 d-flex align-items-center justify-content-center rounded-circle bg-light text-muted" style="width: 48px; height: 48px; border: 1.5px dashed #cbd5e1;">
+                                                                        <i class="bi bi-inbox fs-4 opacity-50"></i>
+                                                                    </div>
+                                                                    <span class="small fw-semibold text-muted">No students currently waiting.</span>
                                                                 </div>
-                                                                <span class="small fw-semibold text-muted">No employees currently waiting.</span>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </div>
+
+                                                <div class="col-lg-6">
+                                                    <div class="card controller-subcard h-100">
+                                                        <div class="lineup-header-employee d-flex align-items-center justify-content-between">
+                                                            <h6 class="fw-bold text-primary mb-0 d-flex align-items-center">
+                                                                <i class="bi bi-person-badge-fill me-2 fs-5 text-primary"></i>Employees Queue
+                                                            </h6>
+                                                            <span class="lineup-badge-employee" id="ctrlEmployeeBadge">0 Waiting</span>
+                                                        </div>
+                                                        <div class="card-body p-3">
+                                                            <div class="d-flex flex-column gap-2" id="ctrlEmployeeList">
+                                                                <div class="text-center py-4 my-2">
+                                                                    <div class="mx-auto mb-2 d-flex align-items-center justify-content-center rounded-circle bg-light text-muted" style="width: 48px; height: 48px; border: 1.5px dashed #cbd5e1;">
+                                                                        <i class="bi bi-inbox fs-4 opacity-50"></i>
+                                                                    </div>
+                                                                    <span class="small fw-semibold text-muted">No employees currently waiting.</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
                                             </div>
 
                                         </div>
+                                    <?php endif; ?>
 
-                                    </div>
                                 </div>
 
                             </div>
@@ -802,7 +818,6 @@ if ($db_connect && $user_id > 0) {
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body p-4 bg-light" id="modalUserDetailsContent">
-                    <!-- Dynamically populated via JavaScript -->
                 </div>
                 <div class="modal-footer bg-white border-top">
                     <button type="button" class="btn btn-secondary fw-semibold px-4 rounded-3" data-bs-dismiss="modal">Close</button>
@@ -815,6 +830,9 @@ if ($db_connect && $user_id > 0) {
 
     <script>
         (function() {
+            const IS_ADMIN = <?= json_encode($g_user_role_upper === 'ADMIN'); ?>;
+            const HAS_ASSIGNMENT = <?= json_encode(!empty($assigned_office)); ?>;
+
             const officeSelect = document.getElementById('officeSelect');
             const counterSelect = document.getElementById('counterSelect');
             
@@ -824,17 +842,13 @@ if ($db_connect && $user_id > 0) {
             
             const counterStatusContainer = document.getElementById('counterStatusContainer');
             const counterStatusText = document.getElementById('counterStatusText');
-            
-            // Timer UI Elements
             const digitalElapsedTimer = document.getElementById('digitalElapsedTimer');
 
-            // Hero UI elements
             const ctrlServingTicket = document.getElementById('ctrlServingTicket');
             const ctrlPriorityTag = document.getElementById('ctrlPriorityTag');
             const ctrlVisitorTypeTag = document.getElementById('ctrlVisitorTypeTag');
             const ticketDetailsContainer = document.getElementById('ticketDetailsContainer');
 
-            // Modal Body Container
             const modalUserDetailsContent = document.getElementById('modalUserDetailsContent');
 
             const ctrlStudentBadge = document.getElementById('ctrlStudentBadge');
@@ -857,10 +871,8 @@ if ($db_connect && $user_id > 0) {
             let dynamicTimerInterval = null;
             let currentTimerBaseTime = null;
 
-            // BULLETPROOF KAIADMIN SWEETALERT WRAPPER
             function showSwalAlert(title, message, iconType = 'info') {
                 const swalObj = typeof swal !== 'undefined' ? swal : (typeof Swal !== 'undefined' ? Swal : null);
-                
                 if (!swalObj) {
                     alert(`${title}: ${message}`);
                     return;
@@ -888,11 +900,7 @@ if ($db_connect && $user_id > 0) {
                 }
 
                 if (typeof swalObj.fire === 'function') {
-                    swalObj.fire({
-                        title: title,
-                        text: message,
-                        icon: iconType
-                    });
+                    swalObj.fire({ title: title, text: message, icon: iconType });
                 } else {
                     alert(`${title}: ${message}`);
                 }
@@ -909,7 +917,6 @@ if ($db_connect && $user_id > 0) {
                 }
             }
 
-            // Helper function to convert text to Title Case
             function toTitleCase(str) {
                 if (!str) return '';
                 return str.toLowerCase().replace(/\b\w/g, function(char) {
@@ -918,13 +925,13 @@ if ($db_connect && $user_id > 0) {
             }
 
             // =========================================================================
-            // AUTOMATIC WORKSTATION INITIALIZATION
+            // WORKSTATION INITIALIZATION LOGIC
             // =========================================================================
-            if (!isSelectDropdown && officeSelect && officeSelect.value) {
+            if (HAS_ASSIGNMENT && officeSelect && officeSelect.value) {
                 activeOfficeId = officeSelect.value;
                 activeCounterId = counterSelect ? counterSelect.value : '0';
                 loadCounterData();
-            } else if (isSelectDropdown) {
+            } else if (IS_ADMIN && isSelectDropdown) {
                 const storedOffice = localStorage.getItem('ctrl_active_office') || '';
                 if (storedOffice) {
                     officeSelect.value = storedOffice;
@@ -946,12 +953,12 @@ if ($db_connect && $user_id > 0) {
             }
 
             function loadCounterData() {
-                if (!activeOfficeId) {
-                    controllerMainContent.classList.add('d-none');
+                if (!activeOfficeId || (!HAS_ASSIGNMENT && !IS_ADMIN)) {
+                    if (controllerMainContent) controllerMainContent.classList.add('d-none');
                     return;
                 }
 
-                controllerMainContent.classList.remove('d-none');
+                if (controllerMainContent) controllerMainContent.classList.remove('d-none');
 
                 const formData = new FormData();
                 formData.append('action', 'fetch_counter_status');
@@ -971,41 +978,45 @@ if ($db_connect && $user_id > 0) {
                         const ticket = res.data.now_serving;
                         const shiftStatus = res.data.shift_status || 'ON_DUTY';
 
-                        if (ticket && ticket.status === 'CALLED') {
-                            counterStatusText.textContent = 'NOW CALLING';
-                            counterStatusContainer.className = 'status-pill-modern status-now-calling';
-                        } else if (ticket && ticket.status === 'SERVING') {
-                            counterStatusText.textContent = 'NOW SERVING';
-                            counterStatusContainer.className = 'status-pill-modern status-now-serving';
-                        } else if (shiftStatus === 'ON_BREAK') {
-                            counterStatusText.textContent = 'ON BREAK';
-                            counterStatusContainer.className = 'status-pill-modern status-on-break';
-                        } else {
-                            counterStatusText.textContent = 'ON DUTY';
-                            counterStatusContainer.className = 'status-pill-modern status-on-duty';
+                        if (counterStatusText && counterStatusContainer) {
+                            if (ticket && ticket.status === 'CALLED') {
+                                counterStatusText.textContent = 'NOW CALLING';
+                                counterStatusContainer.className = 'status-pill-modern status-now-calling';
+                            } else if (ticket && ticket.status === 'SERVING') {
+                                counterStatusText.textContent = 'NOW SERVING';
+                                counterStatusContainer.className = 'status-pill-modern status-now-serving';
+                            } else if (shiftStatus === 'ON_BREAK') {
+                                counterStatusText.textContent = 'ON BREAK';
+                                counterStatusContainer.className = 'status-pill-modern status-on-break';
+                            } else {
+                                counterStatusText.textContent = 'ON DUTY';
+                                counterStatusContainer.className = 'status-pill-modern status-on-duty';
+                            }
                         }
 
                         if (ticket && ticket.ticket_number) {
-                            ctrlServingTicket.textContent = ticket.ticket_number;
+                            if (ctrlServingTicket) ctrlServingTicket.textContent = ticket.ticket_number;
 
-                            // Render Priority Badge Directly Below Queue Number
-                            if (ticket.is_priority == 1) {
-                                ctrlPriorityTag.innerHTML = '<span class="badge bg-warning text-dark fw-bold px-3 py-1.5 border-0"><i class="bi bi-star-fill text-danger me-1"></i>Priority</span>';
-                            } else {
-                                ctrlPriorityTag.innerHTML = '';
+                            if (ctrlPriorityTag) {
+                                if (ticket.is_priority == 1) {
+                                    ctrlPriorityTag.innerHTML = '<span class="badge bg-warning text-dark fw-bold px-3 py-1.5 border-0"><i class="bi bi-star-fill text-danger me-1"></i>Priority</span>';
+                                } else {
+                                    ctrlPriorityTag.innerHTML = '';
+                                }
                             }
 
-                            // Render Dynamic Visitor Type Badge
-                            const visitorType = (ticket.visitor_type || 'VISITOR').toUpperCase();
-                            let visitorIcon = 'bi-person-heart';
+                            if (ctrlVisitorTypeTag) {
+                                const visitorType = (ticket.visitor_type || 'VISITOR').toUpperCase();
+                                let visitorIcon = 'bi-person-heart';
 
-                            if (visitorType === 'STUDENT') {
-                                visitorIcon = 'bi-mortarboard-fill';
-                            } else if (visitorType === 'EMPLOYEE') {
-                                visitorIcon = 'bi-person-badge-fill';
+                                if (visitorType === 'STUDENT') {
+                                    visitorIcon = 'bi-mortarboard-fill';
+                                } else if (visitorType === 'EMPLOYEE') {
+                                    visitorIcon = 'bi-person-badge-fill';
+                                }
+
+                                ctrlVisitorTypeTag.innerHTML = `<span class="visitor-badge-modern"><i class="bi ${visitorIcon}"></i> ${visitorType}</span>`;
                             }
-
-                            ctrlVisitorTypeTag.innerHTML = `<span class="visitor-badge-modern"><i class="bi ${visitorIcon}"></i> ${visitorType}</span>`;
 
                             let entryTimeString = '---';
                             if (ticket.queue_entry_time) {
@@ -1017,10 +1028,8 @@ if ($db_connect && $user_id > 0) {
                                 entryTimeString = `${timeFormatted} (Waited: ${waitMins} min${waitMins !== 1 ? 's' : ''})`;
                             }
 
-                            // Render Transaction Concern & Modal Trigger Button in Right Column
                             renderDynamicTicketDetails(ticket, entryTimeString);
 
-                            // DYNAMIC TIMER SWITCH LOGIC (CALLED vs SERVING)
                             if (ticket.status === 'CALLED' && ticket.called_at) {
                                 currentTimerBaseTime = new Date(ticket.called_at);
                                 startDynamicTimer();
@@ -1029,15 +1038,15 @@ if ($db_connect && $user_id > 0) {
                                 startDynamicTimer();
                             } else {
                                 stopDynamicTimer();
-                                digitalElapsedTimer.textContent = '00:00';
+                                if (digitalElapsedTimer) digitalElapsedTimer.textContent = '00:00';
                             }
 
                         } else {
-                            ctrlServingTicket.textContent = '---';
-                            ctrlPriorityTag.innerHTML = '';
-                            ctrlVisitorTypeTag.innerHTML = '';
+                            if (ctrlServingTicket) ctrlServingTicket.textContent = '---';
+                            if (ctrlPriorityTag) ctrlPriorityTag.innerHTML = '';
+                            if (ctrlVisitorTypeTag) ctrlVisitorTypeTag.innerHTML = '';
                             stopDynamicTimer();
-                            digitalElapsedTimer.textContent = '00:00';
+                            if (digitalElapsedTimer) digitalElapsedTimer.textContent = '00:00';
                             renderEmptyDetailsState();
                         }
 
@@ -1045,11 +1054,13 @@ if ($db_connect && $user_id > 0) {
                         const students = waiting.filter(t => t.visitor_type !== 'EMPLOYEE');
                         const employees = waiting.filter(t => t.visitor_type === 'EMPLOYEE');
 
-                        ctrlStudentBadge.textContent = `${students.length} Waiting`;
-                        ctrlEmployeeBadge.textContent = `${employees.length} Waiting`;
+                        if (ctrlStudentBadge) ctrlStudentBadge.textContent = `${students.length} Waiting`;
+                        if (ctrlEmployeeBadge) ctrlEmployeeBadge.textContent = `${employees.length} Waiting`;
 
-                        renderStudentPills(ctrlStudentList, students, 'No students currently waiting.');
-                        renderEmployeePills(ctrlEmployeeList, employees, 'No employees currently waiting.');
+                        if (ctrlStudentList) renderStudentPills(ctrlStudentList, students, 'No students currently waiting.');
+                        if (ctrlEmployeeList) renderEmployeePills(ctrlEmployeeList, employees, 'No employees currently waiting.');
+                    } else if (!res.success) {
+                        if (controllerMainContent) controllerMainContent.classList.add('d-none');
                     }
                 })
                 .catch(err => {
@@ -1058,6 +1069,7 @@ if ($db_connect && $user_id > 0) {
             }
 
             function renderEmptyDetailsState() {
+                if (!ticketDetailsContainer) return;
                 ticketDetailsContainer.innerHTML = `
                     <div class="text-center py-4 my-auto">
                         <div class="mx-auto mb-3 d-flex align-items-center justify-content-center rounded-circle bg-light text-primary" style="width: 60px; height: 60px; border: 2px dashed #cbd5e1;">
@@ -1067,12 +1079,14 @@ if ($db_connect && $user_id > 0) {
                         <p class="small text-muted mb-0">Click <span class="badge bg-success-subtle text-success border border-success-subtle fw-semibold px-2 py-1"><i class="bi bi-megaphone-fill me-1"></i>Call Next</span> to proceed with the next visitor in queue.</p>
                     </div>
                 `;
-                modalUserDetailsContent.innerHTML = `
-                    <div class="text-center py-4">
-                        <i class="bi bi-exclamation-circle text-muted fs-1 mb-2"></i>
-                        <p class="text-muted fw-semibold mb-0">No active ticket available to display details.</p>
-                    </div>
-                `;
+                if (modalUserDetailsContent) {
+                    modalUserDetailsContent.innerHTML = `
+                        <div class="text-center py-4">
+                            <i class="bi bi-exclamation-circle text-muted fs-1 mb-2"></i>
+                            <p class="text-muted fw-semibold mb-0">No active ticket available to display details.</p>
+                        </div>
+                    `;
+                }
             }
 
             function formatYearLevel(year) {
@@ -1108,7 +1122,6 @@ if ($db_connect && $user_id > 0) {
                 return toTitleCase(baseName);
             }
 
-            // Helper to render modular modern detail cards
             function renderDetailTile(iconClass, label, value, customClass = '') {
                 return `
                     <div class="col-12 col-sm-6">
@@ -1126,11 +1139,11 @@ if ($db_connect && $user_id > 0) {
             }
 
             function renderDynamicTicketDetails(ticket, entryTimeString) {
+                if (!ticketDetailsContainer) return;
                 const mainConcern = ticket.transaction_name || 'General Concern';
                 const subConcern  = ticket.sub_concern_name || ticket.sub_concern || null;
                 const concernText = subConcern ? `${mainConcern} &rsaquo; <span class="fw-bold text-primary">${subConcern}</span>` : mainConcern;
 
-                // Render ONLY Transaction Concern & Full Details Modal Trigger in the Right Hero Column
                 ticketDetailsContainer.innerHTML = `
                     <div class="d-flex flex-column justify-content-between h-100 py-1">
                         <div class="concern-hero-box my-auto">
@@ -1156,11 +1169,11 @@ if ($db_connect && $user_id > 0) {
                     </div>
                 `;
 
-                // Populate Modal with detailed info
                 populateVisitorModal(ticket, entryTimeString);
             }
 
             function populateVisitorModal(ticket, entryTimeString) {
+                if (!modalUserDetailsContent) return;
                 const visitorType = (ticket.visitor_type || 'VISITOR').toUpperCase();
                 const fullName    = buildFormattedName(ticket);
                 const email       = ticket.email || 'N/A';
@@ -1293,7 +1306,7 @@ if ($db_connect && $user_id > 0) {
             }
 
             function sendQueueAction(actionName, additionalParams = {}) {
-                if (!activeOfficeId) return;
+                if (!activeOfficeId || (!HAS_ASSIGNMENT && !IS_ADMIN)) return;
 
                 const formData = new FormData();
                 formData.append('action', actionName);
@@ -1322,19 +1335,20 @@ if ($db_connect && $user_id > 0) {
                 });
             }
 
-            // Global wrapper function so inline button clicks on employee items work cleanly
             window.callSpecificTicket = function(ticketId) {
                 if (!ticketId) return;
                 sendQueueAction('call_specific_ticket', { ticket_id: ticketId });
             };
 
-            btnCallNext.addEventListener('click', () => sendQueueAction('call_next'));
-            btnStartServe.addEventListener('click', () => sendQueueAction('serve_ticket'));
-            btnRecallVoice.addEventListener('click', () => sendQueueAction('recall_ticket'));
-            btnCompleteTicket.addEventListener('click', () => sendQueueAction('complete_ticket'));
-            btnSkipTicket.addEventListener('click', () => sendQueueAction('skip_ticket'));
+            if (btnCallNext) btnCallNext.addEventListener('click', () => sendQueueAction('call_next'));
+            if (btnStartServe) btnStartServe.addEventListener('click', () => sendQueueAction('serve_ticket'));
+            if (btnRecallVoice) btnRecallVoice.addEventListener('click', () => sendQueueAction('recall_ticket'));
+            if (btnCompleteTicket) btnCompleteTicket.addEventListener('click', () => sendQueueAction('complete_ticket'));
+            if (btnSkipTicket) btnSkipTicket.addEventListener('click', () => sendQueueAction('skip_ticket'));
 
-            setInterval(loadCounterData, 4000);
+            if (HAS_ASSIGNMENT || IS_ADMIN) {
+                setInterval(loadCounterData, 4000);
+            }
         })();
     </script>
 </body>
