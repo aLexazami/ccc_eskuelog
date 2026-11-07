@@ -37,13 +37,11 @@ if ($db_connect) {
     <style>
         /* LIGHT THEME (DEFAULT) - HIGH CONTRAST FROSTED SLATE BLUE GLASS */
         :root {
-            /* CAMPUS TEMPLATE BACKGROUND WITH BLUE GRADIENT OVERLAY */
             --bg-wrapper: linear-gradient(135deg, rgba(11, 32, 117, 0.25) 0%, rgba(0, 10, 76, 0.45) 100%), url('<?= BASE_URL; ?>public/assets/main/css/bg-template.png');
             --bg-header: rgba(0, 16, 77, 0.88);
             --border-header: 1px solid rgba(255, 255, 255, 0.15);
             --header-title-color: #ffffff;
 
-            /* HIGH CONTRAST FROSTED DEEP-BLUE GLASS CARD */
             --bg-card: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
             --border-card: 1px solid rgba(255, 255, 255, 0.22);
             --card-text-color: #ffffff;
@@ -58,7 +56,6 @@ if ($db_connect) {
             --serving-label-color: #60a5fa;
             --serving-ticket-color: #ffffff;
 
-            /* SOLID GREEN HIGHLIGHT & SHADOW GLOW */
             --calling-border: #22c55e;
             --calling-shadow: 0 0 35px rgba(34, 197, 94, 0.6);
 
@@ -85,7 +82,6 @@ if ($db_connect) {
             --page-badge-color: #ffffff;
             --page-badge-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 
-            /* DATETIME FOOTER COLORS */
             --datetime-bg: transparent;
             --datetime-border: none;
             --datetime-icon-color: #60a5fa;
@@ -95,7 +91,6 @@ if ($db_connect) {
             --footer-bg: rgba(0, 16, 77, 0.85);
             --footer-border: 1px solid rgba(255, 255, 255, 0.15);
 
-            /* MODERN SQUIRCLE ACTION BUTTONS */
             --btn-action-bg: rgba(255, 255, 255, 0.14);
             --btn-action-border: 1px solid rgba(255, 255, 255, 0.22);
             --btn-action-color: #ffffff;
@@ -183,7 +178,6 @@ if ($db_connect) {
             transition: background-color 0.3s ease;
         }
 
-        /* FULLSCREEN MASTER WRAPPER */
         .master-screen-wrapper {
             position: relative;
             display: flex;
@@ -201,7 +195,6 @@ if ($db_connect) {
             transition: background 0.3s ease;
         }
 
-        /* DYNAMIC RESPONSIVE HEADER BAR */
         .master-header {
             display: flex;
             align-items: center;
@@ -219,7 +212,6 @@ if ($db_connect) {
             isolation: isolate;
         }
 
-        /* DYNAMIC SCALING HEADER BANNER IMAGE */
         .header-banner-img {
             height: clamp(44px, 6.5vh, 85px);
             width: auto;
@@ -228,7 +220,6 @@ if ($db_connect) {
             display: block;
         }
 
-        /* ACTION BUTTONS */
         .header-action-btn {
             display: inline-flex;
             align-items: center;
@@ -252,7 +243,6 @@ if ($db_connect) {
             box-shadow: var(--btn-action-hover-shadow);
         }
 
-        /* MAIN DISPLAY AREA */
         .main-display-area {
             display: flex;
             flex-direction: column;
@@ -263,7 +253,6 @@ if ($db_connect) {
             contain: paint;
         }
 
-        /* HORIZONTAL PILLAR GRID */
         .pillar-grid-container {
             display: flex;
             flex-direction: row;
@@ -282,10 +271,9 @@ if ($db_connect) {
             transform: scale(0.97) translateY(4px);
         }
 
-        /* DYNAMICALLY FLUID PILLAR CARD */
         .office-pillar-card {
-            flex: 1 1 0; /* Allows 5 pillars to shrink evenly on laptop screens */
-            min-width: 160px; /* Reduced min-width so 5 pillars fit side-by-side without overflowing */
+            flex: 1 1 0;
+            min-width: 160px;
             max-width: 420px;
             min-height: 200px;
             background: var(--bg-card) !important;
@@ -296,7 +284,7 @@ if ($db_connect) {
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            padding: clamp(0.5rem, 1.2vh, 1.2rem); /* Optimized padding for tighter screen spaces */
+            padding: clamp(0.5rem, 1.2vh, 1.2rem);
             height: 100%;
             box-sizing: border-box;
             position: relative;
@@ -305,18 +293,12 @@ if ($db_connect) {
             transition: box-shadow 0.3s ease, outline-color 0.3s ease;
         }
 
-        .office-pillar-card::before {
-            display: none !important;
-        }
-
         .office-pillar-card.is-calling {
             outline: 3px solid var(--calling-border) !important;
             outline-offset: -3px;
             box-shadow: var(--calling-shadow) !important;
-            animation: none !important;
         }
 
-        /* PILLAR HEADER */
         .pillar-header {
             text-align: center;
             border-bottom: var(--pillar-header-border);
@@ -324,7 +306,7 @@ if ($db_connect) {
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: flex-start;
+            justify-content: center;
             flex-shrink: 0;
             min-height: clamp(90px, 14vh, 140px);
             height: auto;
@@ -367,20 +349,11 @@ if ($db_connect) {
             text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
         }
 
-        .pillar-office-meta {
-            font-size: clamp(0.7rem, 0.85vw, 0.9rem);
-            color: var(--office-meta-color);
-            margin-top: 0.2rem;
-            font-weight: 700;
-            letter-spacing: 0.06em;
-            line-height: 1;
-        }
-
-        /* DYNAMIC NOW SERVING BLOCK */
+        /* NOW SERVING BLOCK WITH WINDOW BADGE */
         .pillar-serving-block {
-            container-type: inline-size; /* Enables container query width (cqw) calculations */
+            container-type: inline-size;
             text-align: center;
-            padding: clamp(0.4rem, 1vh, 0.8rem) 0.25rem; /* Reduced horizontal padding for maximum text room */
+            padding: clamp(0.4rem, 1vh, 0.8rem) 0.25rem;
             background: var(--serving-bg);
             border-radius: clamp(0.75rem, 1.5vh, 1.5rem);
             border: var(--serving-border);
@@ -405,15 +378,29 @@ if ($db_connect) {
             letter-spacing: 0.14em;
             color: var(--serving-label-color);
             text-transform: uppercase;
-            margin-bottom: 0.15rem;
+            margin-bottom: 0.1rem;
+        }
+
+        .window-badge-tag {
+            font-size: clamp(0.65rem, 0.75vw, 0.85rem);
+            font-weight: 800;
+            color: #93c5fd;
+            background: rgba(30, 58, 138, 0.8);
+            border: 1px solid rgba(59, 130, 246, 0.4);
+            padding: 0.15rem 0.6rem;
+            border-radius: 0.4rem;
+            margin-bottom: 0.2rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
         }
 
         .serving-ticket-number {
-            font-size: clamp(1.2rem, 13.5cqw, 4.2rem); /* cqw scales font based on pillar width, not screen width */
+            font-size: clamp(1.2rem, 13.5cqw, 4.2rem);
             font-weight: 900;
             color: var(--serving-ticket-color);
             line-height: 1;
-            letter-spacing: -0.01em; /* Tightened letter spacing so wide ticket numbers fit neatly */
+            letter-spacing: -0.01em;
             margin: clamp(0.2rem, 0.5vh, 0.5rem) 0;
             white-space: nowrap;
             overflow: hidden;
@@ -448,7 +435,6 @@ if ($db_connect) {
             text-transform: uppercase;
         }
 
-        /* UP NEXT WAITING LINEUP BLOCK */
         .pillar-lineup-block {
             border-top: var(--lineup-border-top);
             padding-top: clamp(0.35rem, 0.8vh, 0.65rem);
@@ -518,7 +504,6 @@ if ($db_connect) {
             line-height: 18px;
         }
 
-        /* PAGE ROTATION BADGE */
         .page-badge-wrapper {
             display: flex;
             justify-content: center;
@@ -541,7 +526,6 @@ if ($db_connect) {
             transition: all 0.3s ease;
         }
 
-        /* BOTTOM FOOTER BAR */
         .bottom-pagination-bar {
             position: absolute;
             bottom: 0;
@@ -626,7 +610,6 @@ if ($db_connect) {
             }
         }
 
-        /* FLOATING AUDIO ACTIVATION NOTICE */
         .audio-notice-banner {
             position: fixed;
             top: 4.8rem;
@@ -749,7 +732,7 @@ if ($db_connect) {
             const QUEUE_MODE = <?= json_encode($queue_mode); ?>;
             const ITEMS_PER_PAGE = 5;
             const ROTATION_INTERVAL_MS = 5000;
-            const POST_CALL_HOLD_MS = 6000; // Freeze page during voice callouts
+            const POST_CALL_HOLD_MS = 6000;
 
             const digitalDate = document.getElementById('digitalDate');
             const digitalClock = document.getElementById('digitalClock');
@@ -761,7 +744,6 @@ if ($db_connect) {
             const btnToggleTheme = document.getElementById('btnToggleTheme');
             const themeIcon = document.getElementById('themeIcon');
 
-            const totalOfficesCount = <?= count($all_offices); ?>;
             let calledTicketsHistory = new Set();
             let cachedActiveOffices = [];
             let currentPageIndex = 0;
@@ -769,6 +751,16 @@ if ($db_connect) {
             let postCallHoldTimer = null;
             let isHoldingCall = false;
             let lastRenderedJson = '';
+
+            function escapeHtml(str) {
+                if (str === null || str === undefined) return '';
+                return String(str)
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#039;');
+            }
 
             function applyTheme(isDark) {
                 if (isDark) {
@@ -792,7 +784,7 @@ if ($db_connect) {
                 });
             }
 
-            let audioQueue = []; // Holds objects: { phrase: string, pageIndex: number }
+            let audioQueue = [];
             let isSpeaking = false;
             let singleFemaleVoice = null;
 
@@ -914,7 +906,6 @@ if ($db_connect) {
                                 return;
                             }
 
-                            // AUTO-CLAMP PAGE INDEX IF TOTAL PAGES DECREASED
                             const totalPages = Math.ceil(cachedActiveOffices.length / ITEMS_PER_PAGE);
                             if (currentPageIndex >= totalPages) {
                                 currentPageIndex = 0;
@@ -929,7 +920,8 @@ if ($db_connect) {
                                     if (!calledTicketsHistory.has(callKey)) {
                                         calledTicketsHistory.add(callKey);
                                         const officePageIndex = Math.floor(index / ITEMS_PER_PAGE);
-                                        queueVoiceCallout(office.now_serving.ticket_number, officePageIndex);
+                                        const counterName = office.now_serving.counter_name || '';
+                                        queueVoiceCallout(office.now_serving.ticket_number, counterName, officePageIndex);
                                     }
                                 }
                             });
@@ -968,6 +960,7 @@ if ($db_connect) {
                     pageItems.forEach(office => {
                         const pillar = document.createElement('div');
                         const isCalling = office.now_serving && office.now_serving.status === 'CALLED';
+                        const cntName = office.now_serving ? (office.now_serving.counter_name || '') : '';
 
                         pillar.className = `office-pillar-card ${isCalling ? 'is-calling' : ''}`;
 
@@ -978,39 +971,41 @@ if ($db_connect) {
                                 const isPri = upcoming[i].is_priority == 1;
                                 const priClass = isPri ? 'is-priority' : '';
                                 const priTag = isPri ? '★ ' : '';
-                                lineupHtml += `<div class="lineup-pill ${priClass}">${priTag}${upcoming[i].ticket_number}</div>`;
+                                lineupHtml += `<div class="lineup-pill ${priClass}">${priTag}${escapeHtml(upcoming[i].ticket_number)}</div>`;
                             } else {
                                 lineupHtml += `<div class="lineup-pill empty-pill">---</div>`;
                             }
                         }
 
                         const logoHtml = office.office_logo ?
-                            `<img src="<?= BASE_URL; ?>${office.office_logo}" class="pillar-logo-img" alt="Logo" width="46" height="46">` :
+                            `<img src="<?= BASE_URL; ?>${escapeHtml(office.office_logo)}" class="pillar-logo-img" alt="Logo" width="46" height="46">` :
                             `<div class="pillar-logo-img text-primary fw-bold fs-4"><i class="bi bi-building"></i></div>`;
 
+                        const windowBadgeHtml = cntName ? `<span class="window-badge-tag">${escapeHtml(cntName)}</span>` : '';
+
                         pillar.innerHTML = `
-                        <div class="pillar-header">
-                            ${logoHtml}
-                            <h2 class="pillar-office-name">${office.office_name}</h2>
-                            <div class="pillar-office-meta">${office.office_code}</div>
-                        </div>
-
-                        <div class="pillar-serving-block">
-                            <span class="serving-label">NOW SERVING</span>
-                            <div class="serving-ticket-number">${office.now_serving ? office.now_serving.ticket_number : '---'}</div>
-                            <div class="priority-badge-container">
-                                ${office.now_serving && office.now_serving.is_priority ? '<span class="priority-badge-tag">★ PRIORITY</span>' : ''}
+                            <div class="pillar-header">
+                                ${logoHtml}
+                                <h2 class="pillar-office-name">${escapeHtml(office.office_name)}</h2>
                             </div>
-                        </div>
 
-                        <div class="pillar-lineup-block">
-                            <span class="lineup-label">NEXT IN LINE</span>
-                            <div class="lineup-pills-stack">
-                                ${lineupHtml}
+                            <div class="pillar-serving-block">
+                                <span class="serving-label">NOW SERVING</span>
+                                ${windowBadgeHtml}
+                                <div class="serving-ticket-number">${office.now_serving ? escapeHtml(office.now_serving.ticket_number) : '---'}</div>
+                                <div class="priority-badge-container">
+                                    ${office.now_serving && office.now_serving.is_priority == 1 ? '<span class="priority-badge-tag">★ PRIORITY</span>' : ''}
+                                </div>
                             </div>
-                            <div class="waiting-count-footer">(${office.waiting_count || 0} Waiting)</div>
-                        </div>
-                    `;
+
+                            <div class="pillar-lineup-block">
+                                <span class="lineup-label">NEXT IN LINE</span>
+                                <div class="lineup-pills-stack">
+                                    ${lineupHtml}
+                                </div>
+                                <div class="waiting-count-footer">(${office.waiting_count || 0} Waiting)</div>
+                            </div>
+                        `;
 
                         pillarGridContainer.appendChild(pillar);
                     });
@@ -1057,13 +1052,14 @@ if ($db_connect) {
                 }, ROTATION_INTERVAL_MS);
             }
 
-            function queueVoiceCallout(rawTicketNumber, pageIndex) {
+            function queueVoiceCallout(rawTicketNumber, counterName, pageIndex) {
                 const spokenTicket = rawTicketNumber
                     .split('')
                     .map(char => (char === '-' ? ' ' : char))
                     .join(' ');
 
-                const phrase = `Now calling, ${spokenTicket}, please proceed to the office. I repeat, ${spokenTicket}, please proceed to the office.`;
+                const windowText = counterName ? `, proceed to ${counterName}` : ', proceed to the office';
+                const phrase     = `Now calling, ${spokenTicket}${windowText}. I repeat, ${spokenTicket}${windowText}.`;
 
                 audioQueue.push({ phrase, pageIndex });
                 processAudioQueue();
@@ -1088,7 +1084,6 @@ if ($db_connect) {
                 isSpeaking = true;
                 const nextItem = audioQueue.shift();
 
-                // DYNAMICALLY SYNC SCREEN PAGE TO MATCH SPONKEN TICKET
                 if (currentPageIndex !== nextItem.pageIndex) {
                     currentPageIndex = nextItem.pageIndex;
                     renderCurrentPage(true);
@@ -1114,9 +1109,6 @@ if ($db_connect) {
             fetchLiveQueueData();
             startPageRotation();
 
-            // -----------------------------------------------------------------
-            // BROWSER AUDIO UNLOCK & REMINDER BANNER DISMISSAL
-            // -----------------------------------------------------------------
             const audioNoticeBanner = document.getElementById('audioNoticeBanner');
 
             function unlockAudioContext() {

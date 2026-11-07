@@ -38,11 +38,19 @@ switch ($action) {
             while ($off = $officesRes->fetch_assoc()) {
                 $cur_office_id = (int)$off['office_id'];
 
-                // 1. Fetch currently CALLED or SERVING ticket
+                // 1. Fetch currently CALLED or SERVING ticket + counter name
                 $stmtNow = $db_connect->prepare("
-                    SELECT q.ticket_number, q.status, q.is_priority, q.called_at, l.visitor_type
+                    SELECT 
+                        q.ticket_number, 
+                        q.status, 
+                        q.is_priority, 
+                        q.called_at, 
+                        l.visitor_type,
+                        q.counter_id,
+                        COALESCE(c.counter_name, '') AS counter_name
                     FROM queue_tickets q
                     INNER JOIN logbooks l ON q.logbook_id = l.id
+                    LEFT JOIN counters c ON q.counter_id = c.id
                     WHERE q.office_id = ? AND q.queue_date = ? AND q.status IN ('CALLED', 'SERVING') {$visitor_filter}
                     ORDER BY q.called_at DESC, q.id DESC
                     LIMIT 1
@@ -50,6 +58,7 @@ switch ($action) {
                 $stmtNow->bind_param("is", $cur_office_id, $today);
                 $stmtNow->execute();
                 $now_serving = $stmtNow->get_result()->fetch_assoc();
+                $stmtNow->close();
 
                 // 2. Fetch up next waiting tickets (Limit 4 for pillar display)
                 $stmtNext = $db_connect->prepare("
@@ -67,6 +76,7 @@ switch ($action) {
                 while ($nextRow = $resNext->fetch_assoc()) {
                     $up_next[] = $nextRow;
                 }
+                $stmtNext->close();
 
                 // 3. Count total waiting tickets
                 $stmtCnt = $db_connect->prepare("
@@ -78,6 +88,7 @@ switch ($action) {
                 $stmtCnt->bind_param("is", $cur_office_id, $today);
                 $stmtCnt->execute();
                 $waiting_count = (int)($stmtCnt->get_result()->fetch_assoc()['cnt'] ?? 0);
+                $stmtCnt->close();
 
                 // Only include offices that have active tickets or queued visitors
                 if ($now_serving || count($up_next) > 0 || $waiting_count > 0) {
