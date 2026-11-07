@@ -1,4 +1,6 @@
 <?php
+// src/Views/Admin/office_counters.php
+
 # Core Config Dependencies
 $db_connect = $db_connect ?? null;
 $g_user_role = $g_user_role ?? '';
@@ -374,7 +376,7 @@ $action_buttons = [
                 columns: [
                     { 
                         title: "Action", 
-                        width: 190, 
+                        width: 250, 
                         headerSort: false,
                         download: false,
                         print: false,
@@ -384,7 +386,8 @@ $action_buttons = [
                             const rowData = cell.getRow().getData();
                             const classBtnEdit = "btn btn-action d-inline-flex align-items-center justify-content-center px-2 py-1 me-1 gap-1 text-nowrap btn-update-row";
                             const isStatusActive = rowData.flag_status == 0;
-                            const classBtnToggle = `btn ${isStatusActive ? 'btn-outline-danger' : 'btn-outline-success'} d-inline-flex align-items-center justify-content-center px-2 py-1 gap-1 text-nowrap btn-toggle-row`;
+                            const classBtnToggle = `btn ${isStatusActive ? 'btn-outline-warning' : 'btn-outline-success'} d-inline-flex align-items-center justify-content-center px-2 py-1 me-1 gap-1 text-nowrap btn-toggle-row`;
+                            const classBtnDelete = "btn btn-outline-danger d-inline-flex align-items-center justify-content-center px-2 py-1 gap-1 text-nowrap btn-delete-row";
 
                             return `<div class="d-inline-flex align-items-center justify-content-center text-nowrap">
                                         <button type="button" class="${classBtnEdit}" data-id="${rowData.counter_id}" title="Update Information">
@@ -394,6 +397,10 @@ $action_buttons = [
                                         <button type="button" class="${classBtnToggle}" data-id="${rowData.counter_id}" data-status="${rowData.flag_status}" title="${isStatusActive ? 'Disable' : 'Enable'} Counter">
                                             <i class="bi ${isStatusActive ? 'bi-slash-circle' : 'bi-check-circle'}"></i>
                                             <span style="font-size: 0.75rem;">${isStatusActive ? 'Disable' : 'Enable'}</span>
+                                        </button>
+                                        <button type="button" class="${classBtnDelete}" data-id="${rowData.counter_id}" title="Delete Counter">
+                                            <i class="bi bi-trash"></i>
+                                            <span style="font-size: 0.75rem;">Delete</span>
                                         </button>
                                     </div>`;
                         },
@@ -405,6 +412,10 @@ $action_buttons = [
                                 const counterId = parseInt(btn.getAttribute('data-id'), 10);
                                 const currentStatus = parseInt(btn.getAttribute('data-status'), 10);
                                 toggleCounterStatus(counterId, currentStatus);
+                            } else if (e.target.closest('.btn-delete-row')) {
+                                const btn = e.target.closest('.btn-delete-row');
+                                const counterId = parseInt(btn.getAttribute('data-id'), 10);
+                                deleteCounter(counterId);
                             }
                         }
                     },
@@ -630,6 +641,48 @@ $action_buttons = [
                 dataType: "json",
                 beforeSend: function() {
                     showLoader('Updating status...');
+                },
+                complete: function() {
+                    hideLoader();
+                },
+                success: function(output) {
+                    if (output && output.msg_status === true) {
+                        if (tabulator && typeof tabulator.setData === 'function') tabulator.setData();
+                        showSuccess(output.msg_response);
+                    } else if (output && output.msg_status === false) {
+                        showError(output.msg_response);
+                    } else {
+                        showError("Request error, please try again");
+                    }
+                },
+                error: function(xhr, status, error) {
+                    showError(status + "::" + error);
+                }
+            });
+        }
+
+        /*** delete counter function ***/
+        async function deleteCounter(counterId) {
+            if (!counterId) return;
+
+            const isConfirmed = await notifyConfirm(
+                'Confirm Deletion',
+                'Are you sure you want to permanently delete this service counter? This action cannot be undone.',
+                'Yes, delete it!',
+                'warning'
+            );
+            if (!isConfirmed) return;
+
+            $.ajax({
+                url: AJAX_HANDLER,
+                type: 'POST',
+                data: {
+                    action: 'delete_counter',
+                    counter_id: counterId
+                },
+                dataType: "json",
+                beforeSend: function() {
+                    showLoader('Deleting service counter...');
                 },
                 complete: function() {
                     hideLoader();
