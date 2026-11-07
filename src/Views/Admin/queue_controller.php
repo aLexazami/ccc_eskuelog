@@ -343,6 +343,15 @@ if ($db_connect && $user_id > 0) {
             margin-top: 2px;
         }
 
+        /* DYNAMIC CONCERN HERO CARD (RIGHT COLUMN) */
+        .concern-hero-box {
+            background: linear-gradient(135deg, #f8fafc 0%, #eff6ff 100%);
+            border: 1.5px solid #bfdbfe;
+            border-radius: 0.85rem;
+            padding: 1.25rem 1.5rem;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.05);
+        }
+
         /* LINEUP SECTION STYLES */
         .controller-subcard {
             border: 1.5px solid #e2e8f0;
@@ -447,14 +456,6 @@ if ($db_connect && $user_id > 0) {
             border-radius: 0.65rem;
             padding: 0.45rem 0.85rem;
             font-size: 0.9rem;
-        }
-
-        /* FULL-WIDTH DEDICATED TRANSACTION CONCERN CONTAINER */
-        .full-width-concern-wrapper {
-            background: #ffffff;
-            border-top: 1px solid #e2e8f0;
-            padding: 1rem 1.5rem;
-            width: 100%;
         }
 
         /* ACTION CONTROLS BAR STYLES */
@@ -654,7 +655,7 @@ if ($db_connect && $user_id > 0) {
 
                                         </div>
 
-                                        <!-- TOP SECTION: 2-COLUMN SERVING HERO BOX WITH FULL-WIDTH BOTTOM CONCERN CONTAINER -->
+                                        <!-- TOP SECTION: 2-COLUMN SERVING HERO BOX -->
                                         <div class="card serving-hero-card mb-4">
                                             <div class="row g-0">
                                                 
@@ -682,21 +683,6 @@ if ($db_connect && $user_id > 0) {
                                                     <!-- Dynamically populated via JavaScript -->
                                                 </div>
 
-                                            </div>
-
-                                            <!-- FULL-WIDTH DEDICATED TRANSACTION CONCERN CONTAINER (CONSISTENT WITH TICKET DETAILS TILES) -->
-                                            <div class="full-width-concern-wrapper d-none" id="fullWidthConcernBox">
-                                                <div class="detail-tile d-flex align-items-start">
-                                                    <div class="tile-icon flex-shrink-0">
-                                                        <i class="bi bi-clipboard-check-fill fs-5"></i>
-                                                    </div>
-                                                    <div class="min-w-0 flex-grow-1">
-                                                        <span class="fw-semibold text-muted d-block mb-1" style="font-size: 0.75rem;">Transaction Concern</span>
-                                                        <strong class="text-dark d-block text-break fs-6" id="fullWidthConcernText" style="line-height: 1.35; word-break: break-word;">
-                                                            General Concern
-                                                        </strong>
-                                                    </div>
-                                                </div>
                                             </div>
                                         </div>
 
@@ -805,6 +791,26 @@ if ($db_connect && $user_id > 0) {
         </div>
     </div>
 
+    <!-- VISITOR / USER FULL DETAILS MODAL -->
+    <div class="modal fade" id="userDetailsModal" tabindex="-1" aria-labelledby="userDetailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 1rem; overflow: hidden;">
+                <div class="modal-header text-white" style="background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);">
+                    <h5 class="modal-title fw-bold d-flex align-items-center" id="userDetailsModalLabel">
+                        <i class="bi bi-person-lines-fill me-2 fs-4"></i>Visitor Information Details
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4 bg-light" id="modalUserDetailsContent">
+                    <!-- Dynamically populated via JavaScript -->
+                </div>
+                <div class="modal-footer bg-white border-top">
+                    <button type="button" class="btn btn-secondary fw-semibold px-4 rounded-3" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <?php include_once ADMIN_SCRIPT_PATH; ?>
 
     <script>
@@ -828,9 +834,8 @@ if ($db_connect && $user_id > 0) {
             const ctrlVisitorTypeTag = document.getElementById('ctrlVisitorTypeTag');
             const ticketDetailsContainer = document.getElementById('ticketDetailsContainer');
 
-            // Full-Width Concern Box
-            const fullWidthConcernBox = document.getElementById('fullWidthConcernBox');
-            const fullWidthConcernText = document.getElementById('fullWidthConcernText');
+            // Modal Body Container
+            const modalUserDetailsContent = document.getElementById('modalUserDetailsContent');
 
             const ctrlStudentBadge = document.getElementById('ctrlStudentBadge');
             const ctrlEmployeeBadge = document.getElementById('ctrlEmployeeBadge');
@@ -861,7 +866,6 @@ if ($db_connect && $user_id > 0) {
                     return;
                 }
 
-                // Standard Kaiadmin function call
                 if (typeof swalObj === 'function') {
                     try {
                         swalObj(title, message, iconType);
@@ -883,7 +887,6 @@ if ($db_connect && $user_id > 0) {
                     }
                 }
 
-                // Static .fire method check (SweetAlert2)
                 if (typeof swalObj.fire === 'function') {
                     swalObj.fire({
                         title: title,
@@ -992,7 +995,7 @@ if ($db_connect && $user_id > 0) {
                                 ctrlPriorityTag.innerHTML = '';
                             }
 
-                            // Render Dynamic Visitor Type Badge (Unified Royal Blue Student Color)
+                            // Render Dynamic Visitor Type Badge
                             const visitorType = (ticket.visitor_type || 'VISITOR').toUpperCase();
                             let visitorIcon = 'bi-person-heart';
 
@@ -1014,13 +1017,8 @@ if ($db_connect && $user_id > 0) {
                                 entryTimeString = `${timeFormatted} (Waited: ${waitMins} min${waitMins !== 1 ? 's' : ''})`;
                             }
 
+                            // Render Transaction Concern & Modal Trigger Button in Right Column
                             renderDynamicTicketDetails(ticket, entryTimeString);
-
-                            // Set up Transaction Concern in Full-Width Container below Hero Box
-                            const mainConcern = ticket.transaction_name || 'General Concern';
-                            const subConcern  = ticket.sub_concern_name || ticket.sub_concern || null;
-                            fullWidthConcernText.innerHTML = subConcern ? `${mainConcern} &rsaquo; <span class="fw-semibold">${subConcern}</span>` : mainConcern;
-                            fullWidthConcernBox.classList.remove('d-none');
 
                             // DYNAMIC TIMER SWITCH LOGIC (CALLED vs SERVING)
                             if (ticket.status === 'CALLED' && ticket.called_at) {
@@ -1038,7 +1036,6 @@ if ($db_connect && $user_id > 0) {
                             ctrlServingTicket.textContent = '---';
                             ctrlPriorityTag.innerHTML = '';
                             ctrlVisitorTypeTag.innerHTML = '';
-                            fullWidthConcernBox.classList.add('d-none');
                             stopDynamicTimer();
                             digitalElapsedTimer.textContent = '00:00';
                             renderEmptyDetailsState();
@@ -1068,6 +1065,12 @@ if ($db_connect && $user_id > 0) {
                         </div>
                         <h6 class="fw-bold text-dark mb-1">No Active Ticket Selected</h6>
                         <p class="small text-muted mb-0">Click <span class="badge bg-success-subtle text-success border border-success-subtle fw-semibold px-2 py-1"><i class="bi bi-megaphone-fill me-1"></i>Call Next</span> to proceed with the next visitor in queue.</p>
+                    </div>
+                `;
+                modalUserDetailsContent.innerHTML = `
+                    <div class="text-center py-4">
+                        <i class="bi bi-exclamation-circle text-muted fs-1 mb-2"></i>
+                        <p class="text-muted fw-semibold mb-0">No active ticket available to display details.</p>
                     </div>
                 `;
             }
@@ -1123,6 +1126,41 @@ if ($db_connect && $user_id > 0) {
             }
 
             function renderDynamicTicketDetails(ticket, entryTimeString) {
+                const mainConcern = ticket.transaction_name || 'General Concern';
+                const subConcern  = ticket.sub_concern_name || ticket.sub_concern || null;
+                const concernText = subConcern ? `${mainConcern} &rsaquo; <span class="fw-bold text-primary">${subConcern}</span>` : mainConcern;
+
+                // Render ONLY Transaction Concern & Full Details Modal Trigger in the Right Hero Column
+                ticketDetailsContainer.innerHTML = `
+                    <div class="d-flex flex-column justify-content-between h-100 py-1">
+                        <div class="concern-hero-box my-auto">
+                            <div class="d-flex align-items-start gap-3">
+                                <div class="p-2 bg-primary text-white rounded-3 flex-shrink-0 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
+                                    <i class="bi bi-clipboard-check-fill fs-4"></i>
+                                </div>
+                                <div class="min-w-0 flex-grow-1">
+                                    <span class="text-uppercase text-muted fw-bold tracking-wider d-block mb-1" style="font-size: 0.75rem;">Transaction Concern</span>
+                                    <h5 class="fw-bold text-dark mb-0 text-break" style="line-height: 1.4; word-break: break-word;">
+                                        ${concernText}
+                                    </h5>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pt-3 text-end">
+                            <button type="button" class="btn btn-outline-primary fw-bold d-inline-flex align-items-center gap-2 px-3.5 py-2 rounded-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#userDetailsModal">
+                                <i class="bi bi-person-bounding-box fs-5"></i>
+                                <span>View Visitor Full Details</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+
+                // Populate Modal with detailed info
+                populateVisitorModal(ticket, entryTimeString);
+            }
+
+            function populateVisitorModal(ticket, entryTimeString) {
                 const visitorType = (ticket.visitor_type || 'VISITOR').toUpperCase();
                 const fullName    = buildFormattedName(ticket);
                 const email       = ticket.email || 'N/A';
@@ -1173,8 +1211,8 @@ if ($db_connect && $user_id > 0) {
                     `;
                 }
 
-                ticketDetailsContainer.innerHTML = `
-                    <div class="row g-3 my-auto py-1">
+                modalUserDetailsContent.innerHTML = `
+                    <div class="row g-3">
                         ${dynamicFieldsHTML}
                         ${renderDetailTile('bi-clock-history', 'Queue Entry Time', entryTimeString)}
                     </div>
