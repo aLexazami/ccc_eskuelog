@@ -244,7 +244,7 @@ function render_action_links($links = [])
                     <li class="nav-item <?php echo navigation_active("live-queue"); ?>">
                         <a href="<?php echo BASE_URL . "admin/live-queue"; ?>" target="_blank">
                             <i class="bi bi-tv-fill"></i>
-                            <p>Live Queue Display</p>
+                            <p>Live Queue Monitor</p>
                         </a>
                     </li>
 
