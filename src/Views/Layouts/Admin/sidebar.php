@@ -163,20 +163,57 @@ function render_action_links($links = [])
                         <h4 class="text-section"><?php echo ACCESS_NAME[$g_user_role]; ?></h4>
                     </li>
 
-                    <!-- OFFICE PREFIX CODE ASSIGNMENT -->
-                    <li class="nav-item <?php echo navigation_active("office-prefix"); ?>">
-                        <a href="<?php echo BASE_URL . "admin/office-prefix"; ?>">
-                            <i class="bi bi-building-gear"></i>
-                            <p>Office Prefix Codes</p>
+                    <li class="nav-item <?php echo navigation_active("user-information"); ?>">
+                        <a href="<?php echo BASE_URL . "admin/user-information"; ?>">
+                            <i class="bi bi-people-fill"></i>
+                            <p>User Information</p>
                         </a>
                     </li>
 
-                    <!-- OFFICE SERVICE COUNTERS / WINDOWS MANAGEMENT -->
-                    <li class="nav-item <?php echo navigation_active("office-counters"); ?>">
-                        <a href="<?php echo BASE_URL . "admin/office-counters"; ?>">
-                            <i class="bi bi-window-stack"></i>
-                            <p>Office Counters</p>
+                    <!-- OFFICE MANAGEMENT NAVIGATION -->
+                    <li class="nav-item <?php echo navigation_active("office-prefix, office-counters", "active submenu"); ?>">
+                        <a class="collapsed" aria-expanded="false" data-bs-toggle="collapse" href="#office_management_nav">
+                            <i class="bi bi-building-gear"></i>
+                            <p>Office Management</p>
+                            <span class="caret"></span>
                         </a>
+                        <div class="collapse <?php echo navigation_active("office-prefix, office-counters", "show"); ?>" id="office_management_nav">
+                            <ul class="nav nav-collapse">
+                                <li class="<?php echo navigation_active("office-prefix"); ?>">
+                                    <a href="<?php echo BASE_URL . "admin/office-prefix"; ?>">
+                                        <span class="sub-item">Office Prefix Codes</span>
+                                    </a>
+                                </li>
+                                <li class="<?php echo navigation_active("office-counters"); ?>">
+                                    <a href="<?php echo BASE_URL . "admin/office-counters"; ?>">
+                                        <span class="sub-item">Office Counters</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+
+                    <!-- SERVICES & SUB-CONCERNS NAVIGATION -->
+                    <li class="nav-item <?php echo navigation_active("transaction-types, sub-concerns", "active submenu"); ?>">
+                        <a class="collapsed" aria-expanded="false" data-bs-toggle="collapse" href="#services_management_nav">
+                            <i class="bi bi-card-checklist"></i>
+                            <p>Services & Concerns</p>
+                            <span class="caret"></span>
+                        </a>
+                        <div class="collapse <?php echo navigation_active("transaction-types, sub-concerns", "show"); ?>" id="services_management_nav">
+                            <ul class="nav nav-collapse">
+                                <li class="<?php echo navigation_active("transaction-types"); ?>">
+                                    <a href="<?php echo BASE_URL . "admin/transaction-types"; ?>">
+                                        <span class="sub-item">Transaction Types</span>
+                                    </a>
+                                </li>
+                                <li class="<?php echo navigation_active("sub-concerns"); ?>">
+                                    <a href="<?php echo BASE_URL . "admin/sub-concerns"; ?>">
+                                        <span class="sub-item">Sub Concerns</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
                     </li>
                 <?php endif; ?>
 
