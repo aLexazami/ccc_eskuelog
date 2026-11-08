@@ -163,12 +163,14 @@ function render_action_links($links = [])
                         <h4 class="text-section"><?php echo ACCESS_NAME[$g_user_role]; ?></h4>
                     </li>
 
+                    <!-- USER INFORMATION NAVIGATION
                     <li class="nav-item <?php echo navigation_active("user-information"); ?>">
                         <a href="<?php echo BASE_URL . "admin/user-information"; ?>">
                             <i class="bi bi-people-fill"></i>
                             <p>User Information</p>
                         </a>
                     </li>
+                    -->
 
                     <!-- OFFICE MANAGEMENT NAVIGATION -->
                     <li class="nav-item <?php echo navigation_active("office-prefix, office-counters", "active submenu"); ?>">
