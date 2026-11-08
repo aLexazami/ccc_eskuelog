@@ -82,6 +82,8 @@ switch ($route) {
             '/admin/user-information'      => ['file' => SRC_PATH . '/Views/Admin/user_information.php', 'roles' => ["ADMIN", "ADMIN_STAFF", "STATION_ADMIN", "USER"]],
             '/admin/office-prefix'         => ['file' => SRC_PATH . '/Views/Admin/office_prefix.php', 'roles' => ["ADMIN"]],
             '/admin/office-counters'       => ['file' => SRC_PATH . '/Views/Admin/office_counters.php', 'roles' => ["ADMIN"]],
+            '/admin/transaction-types'     => ['file' => SRC_PATH . '/Views/Admin/transaction_types.php', 'roles' => ["ADMIN"]],
+            '/admin/sub-concerns'          => ['file' => SRC_PATH . '/Views/Admin/sub_concerns.php', 'roles' => ["ADMIN"]],
             '/admin/student-logbook'       => ['file' => SRC_PATH . '/Views/Admin/student_logbook.php', 'roles' => ["ADMIN", "ADMIN_STAFF", "STATION_ADMIN", "USER"]],
             '/admin/employee-logbook'      => ['file' => SRC_PATH . '/Views/Admin/employee_logbook.php', 'roles' => ["ADMIN", "ADMIN_STAFF", "STATION_ADMIN", "USER"]],
             '/admin/guest-logbook'         => ['file' => SRC_PATH . '/Views/Admin/guest_logbook.php', 'roles' => ["ADMIN", "ADMIN_STAFF", "STATION_ADMIN", "USER"]],
@@ -101,6 +103,8 @@ switch ($route) {
             '/admin/ajax/office'              => ['file' => SRC_PATH . '/Handlers/Admin/ajax/office_handler.php', 'roles' => ["ADMIN", "ADMIN_STAFF", "STATION_ADMIN", "USER"]],
             '/admin/ajax/office-prefix'       => ['file' => SRC_PATH . '/Handlers/Admin/ajax/office_prefix_handler.php', 'roles' => ["ADMIN", "ADMIN_STAFF", "STATION_ADMIN", "USER"]],
             '/admin/ajax/office-counters'     => ['file' => SRC_PATH . '/Handlers/Admin/ajax/office_counters_handler.php', 'roles' => ["ADMIN", "ADMIN_STAFF", "STATION_ADMIN", "USER"]],
+            '/admin/ajax/transaction-types'   => ['file' => SRC_PATH . '/Handlers/Admin/ajax/transaction_types_handler.php', 'roles' => ["ADMIN"]],
+            '/admin/ajax/sub-concerns'        => ['file' => SRC_PATH . '/Handlers/Admin/ajax/sub_concerns_handler.php', 'roles' => ["ADMIN"]],
             '/admin/ajax/transaction-records' => ['file' => SRC_PATH . '/Handlers/Admin/ajax/transaction_records_handler.php', 'roles' => ["ADMIN", "ADMIN_STAFF"]],
             '/admin/ajax/reports-analytics'   => ['file' => SRC_PATH . '/Handlers/Admin/ajax/reports_analytics_handler.php', 'roles' => ["ADMIN", "ADMIN_STAFF"]],
         ];
