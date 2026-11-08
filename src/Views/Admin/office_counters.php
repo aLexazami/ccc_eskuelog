@@ -376,7 +376,7 @@ $action_buttons = [
                 columns: [
                     { 
                         title: "Action", 
-                        width: 250, 
+                        width: 180, 
                         headerSort: false,
                         download: false,
                         print: false,
@@ -385,18 +385,12 @@ $action_buttons = [
                         formatter: function(cell) {
                             const rowData = cell.getRow().getData();
                             const classBtnEdit = "btn btn-action d-inline-flex align-items-center justify-content-center px-2 py-1 me-1 gap-1 text-nowrap btn-update-row";
-                            const isStatusActive = rowData.flag_status == 0;
-                            const classBtnToggle = `btn ${isStatusActive ? 'btn-outline-warning' : 'btn-outline-success'} d-inline-flex align-items-center justify-content-center px-2 py-1 me-1 gap-1 text-nowrap btn-toggle-row`;
-                            const classBtnDelete = "btn btn-outline-danger d-inline-flex align-items-center justify-content-center px-2 py-1 gap-1 text-nowrap btn-delete-row";
+                            const classBtnDelete = "btn btn-action d-inline-flex align-items-center justify-content-center px-2 py-1 gap-1 text-nowrap btn-delete-row";
 
                             return `<div class="d-inline-flex align-items-center justify-content-center text-nowrap">
                                         <button type="button" class="${classBtnEdit}" data-id="${rowData.counter_id}" title="Update Information">
                                             <i class="bi bi-pencil-square"></i>
                                             <span style="font-size: 0.75rem;">Update</span>
-                                        </button>
-                                        <button type="button" class="${classBtnToggle}" data-id="${rowData.counter_id}" data-status="${rowData.flag_status}" title="${isStatusActive ? 'Disable' : 'Enable'} Counter">
-                                            <i class="bi ${isStatusActive ? 'bi-slash-circle' : 'bi-check-circle'}"></i>
-                                            <span style="font-size: 0.75rem;">${isStatusActive ? 'Disable' : 'Enable'}</span>
                                         </button>
                                         <button type="button" class="${classBtnDelete}" data-id="${rowData.counter_id}" title="Delete Counter">
                                             <i class="bi bi-trash"></i>
@@ -407,11 +401,6 @@ $action_buttons = [
                         cellClick: function(e, cell) {
                             if (e.target.closest('.btn-update-row')) {
                                 openUpdateModal(cell.getRow().getData());
-                            } else if (e.target.closest('.btn-toggle-row')) {
-                                const btn = e.target.closest('.btn-toggle-row');
-                                const counterId = parseInt(btn.getAttribute('data-id'), 10);
-                                const currentStatus = parseInt(btn.getAttribute('data-status'), 10);
-                                toggleCounterStatus(counterId, currentStatus);
                             } else if (e.target.closest('.btn-delete-row')) {
                                 const btn = e.target.closest('.btn-delete-row');
                                 const counterId = parseInt(btn.getAttribute('data-id'), 10);
@@ -616,50 +605,6 @@ $action_buttons = [
                 }
             });
         });
-
-        /*** toggle status function ***/
-        async function toggleCounterStatus(counterId, currentStatus) {
-            const newStatus = currentStatus === 0 ? 1 : 0;
-            const actionText = newStatus === 1 ? 'disable' : 'enable';
-
-            const isConfirmed = await notifyConfirm(
-                'Confirm Status Change',
-                `Are you sure you want to ${actionText} this service counter?`,
-                `Yes, ${actionText} it!`,
-                'warning'
-            );
-            if (!isConfirmed) return;
-
-            $.ajax({
-                url: AJAX_HANDLER,
-                type: 'POST',
-                data: {
-                    action: 'toggle_counter_status',
-                    counter_id: counterId,
-                    flag_status: newStatus
-                },
-                dataType: "json",
-                beforeSend: function() {
-                    showLoader('Updating status...');
-                },
-                complete: function() {
-                    hideLoader();
-                },
-                success: function(output) {
-                    if (output && output.msg_status === true) {
-                        if (tabulator && typeof tabulator.setData === 'function') tabulator.setData();
-                        showSuccess(output.msg_response);
-                    } else if (output && output.msg_status === false) {
-                        showError(output.msg_response);
-                    } else {
-                        showError("Request error, please try again");
-                    }
-                },
-                error: function(xhr, status, error) {
-                    showError(status + "::" + error);
-                }
-            });
-        }
 
         /*** delete counter function ***/
         async function deleteCounter(counterId) {

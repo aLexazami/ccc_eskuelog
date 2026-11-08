@@ -268,38 +268,6 @@ switch ($action) {
         echo json_encode(['msg_status' => false, 'msg_response' => 'Failed to update service counter in database.']);
         exit();
 
-    case 'toggle_counter_status':
-        $counter_id  = (int)($_POST['counter_id'] ?? 0);
-        $flag_status = (int)($_POST['flag_status'] ?? 0);
-
-        if ($counter_id <= 0) {
-            echo json_encode(['msg_status' => false, 'msg_response' => 'Invalid Counter ID provided.']);
-            exit();
-        }
-
-        $query = "UPDATE counters SET flag_status = ? WHERE id = ?";
-        if ($stmt = $db_connect->prepare($query)) {
-            $stmt->bind_param("ii", $flag_status, $counter_id);
-            if ($stmt->execute()) {
-                $stmt->close();
-
-                // Synchronize flag_status with staff_assignments
-                $stmtSaToggle = $db_connect->prepare("UPDATE staff_assignments SET flag_status = ? WHERE counter_id = ?");
-                if ($stmtSaToggle) {
-                    $stmtSaToggle->bind_param("ii", $flag_status, $counter_id);
-                    $stmtSaToggle->execute();
-                    $stmtSaToggle->close();
-                }
-
-                echo json_encode(['msg_status' => true, 'msg_response' => 'Counter status updated successfully.']);
-                exit();
-            }
-            $stmt->close();
-        }
-
-        echo json_encode(['msg_status' => false, 'msg_response' => 'Failed to update counter status in database.']);
-        exit();
-
     case 'delete_counter':
     case 'deleteCounter':
         $counter_id = (int)($_POST['counter_id'] ?? 0);
