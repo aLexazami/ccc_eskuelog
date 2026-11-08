@@ -211,6 +211,14 @@ function render_action_links($links = [])
                         </a>
                     </li>
 
+                    <!-- Live Queue Monitor Display for Staff Workstation -->
+                    <li class="nav-item <?php echo navigation_active("live-queue"); ?>">
+                        <a href="<?php echo BASE_URL . "admin/live-queue"; ?>" target="_blank">
+                            <i class="bi bi-tv-fill"></i>
+                            <p>Live Queue Display</p>
+                        </a>
+                    </li>
+
                     <li class="nav-item <?php echo navigation_active("transaction-records"); ?>">
                         <a href="<?php echo BASE_URL . "admin/transaction-records"; ?>">
                             <i class="bi bi-folder-check"></i>

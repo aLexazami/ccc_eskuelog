@@ -2,8 +2,12 @@
 // src/Handlers/Admin/ajax/live_queue_handler.php
 
 /** @var \mysqli $db_connect */
-global $db_connect;
+global $db_connect, $session_class;
 $db_connect = $db_connect ?? null;
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 header('Content-Type: application/json');
 
@@ -12,6 +16,72 @@ mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 if (!$db_connect) {
     echo json_encode(['success' => false, 'message' => 'Database connection unavailable.']);
     exit();
+}
+
+// 1. Resolve User ID
+$user_id = 0;
+if (isset($session_class) && method_exists($session_class, 'getValue')) {
+    $user_id = (int)(
+        $session_class->getValue('user_id') ?? 
+        $session_class->getValue('id') ?? 
+        $session_class->getValue('sys_user_id') ?? 
+        0
+    );
+}
+if ($user_id <= 0) {
+    $user_id = (int)($_SESSION['user_id'] ?? $_SESSION['id'] ?? $_SESSION['sys_user_id'] ?? 0);
+}
+
+// 2. Resolve User Role
+$g_user_role = '';
+if (isset($session_class) && method_exists($session_class, 'getValue')) {
+    $g_user_role = $session_class->getValue('user_role') ?? $session_class->getValue('system_role') ?? '';
+}
+if (empty($g_user_role)) {
+    $g_user_role = $_SESSION['user_role'] ?? $_SESSION['g_user_role'] ?? $_SESSION['role'] ?? '';
+}
+
+$role_map = ['1' => 'ADMIN', '2' => 'ADMIN_STAFF', '3' => 'STATION_ADMIN', '4' => 'USER'];
+if (isset($role_map[(string)$g_user_role])) {
+    $g_user_role = $role_map[(string)$g_user_role];
+}
+
+$g_user_role_upper = strtoupper(trim((string)$g_user_role));
+
+// 3. Resolve Assigned Office ID for ADMIN_STAFF
+$assigned_office_id = 0;
+if ($g_user_role_upper === 'ADMIN_STAFF' && $user_id > 0) {
+    // Priority 1: Check staff_assignments table
+    $stmtStaff = $db_connect->prepare("
+        SELECT office_id 
+        FROM staff_assignments 
+        WHERE user_id = ? AND flag_status = 0 
+        ORDER BY (shift_status = 'ON_DUTY') DESC, id DESC 
+        LIMIT 1
+    ");
+    if ($stmtStaff) {
+        $stmtStaff->bind_param("i", $user_id);
+        $stmtStaff->execute();
+        $staffRow = $stmtStaff->get_result()->fetch_assoc();
+        if ($staffRow) {
+            $assigned_office_id = (int)$staffRow['office_id'];
+        }
+        $stmtStaff->close();
+    }
+
+    // Priority 2: Fallback check on employee table
+    if ($assigned_office_id <= 0) {
+        $stmtEmp = $db_connect->prepare("SELECT office_id FROM employee WHERE user_id = ? LIMIT 1");
+        if ($stmtEmp) {
+            $stmtEmp->bind_param("i", $user_id);
+            $stmtEmp->execute();
+            $empRow = $stmtEmp->get_result()->fetch_assoc();
+            if ($empRow) {
+                $assigned_office_id = (int)$empRow['office_id'];
+            }
+            $stmtEmp->close();
+        }
+    }
 }
 
 $action = $_POST['action'] ?? '';
@@ -31,8 +101,16 @@ switch ($action) {
                 $visitor_filter = " AND l.visitor_type = 'EMPLOYEE' ";
             }
 
-            // Fetch all active offices
-            $officesRes = $db_connect->query("SELECT office_id, office_code, office_name, office_logo FROM office WHERE flag_status = 0 ORDER BY office_name ASC");
+            // Fetch active offices (Restricted for ADMIN_STAFF, All offices for ADMIN/STATION_ADMIN)
+            if ($g_user_role_upper === 'ADMIN_STAFF' && $assigned_office_id > 0) {
+                $stmtOffices = $db_connect->prepare("SELECT office_id, office_code, office_name, office_logo FROM office WHERE flag_status = 0 AND office_id = ? ORDER BY office_name ASC");
+                $stmtOffices->bind_param("i", $assigned_office_id);
+                $stmtOffices->execute();
+                $officesRes = $stmtOffices->get_result();
+            } else {
+                $officesRes = $db_connect->query("SELECT office_id, office_code, office_name, office_logo FROM office WHERE flag_status = 0 ORDER BY office_name ASC");
+            }
+
             $active_offices = [];
 
             while ($off = $officesRes->fetch_assoc()) {
@@ -90,8 +168,8 @@ switch ($action) {
                 $waiting_count = (int)($stmtCnt->get_result()->fetch_assoc()['cnt'] ?? 0);
                 $stmtCnt->close();
 
-                // Only include offices that have active tickets or queued visitors
-                if ($now_serving || count($up_next) > 0 || $waiting_count > 0) {
+                // Include offices that have active tickets or queued visitors (or force display for single assigned office)
+                if ($now_serving || count($up_next) > 0 || $waiting_count > 0 || ($g_user_role_upper === 'ADMIN_STAFF' && $assigned_office_id > 0)) {
                     $active_offices[] = [
                         'office_id'     => $off['office_id'],
                         'office_code'   => $off['office_code'],
@@ -102,6 +180,10 @@ switch ($action) {
                         'waiting_count' => $waiting_count
                     ];
                 }
+            }
+
+            if (isset($stmtOffices) && is_object($stmtOffices)) {
+                $stmtOffices->close();
             }
 
             echo json_encode([
