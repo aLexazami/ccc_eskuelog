@@ -215,6 +215,14 @@ function render_action_links($links = [])
                             </ul>
                         </div>
                     </li>
+
+                    <!-- TRANSACTION RECORDS FOR ALL OFFICES -->
+                    <li class="nav-item <?php echo navigation_active("transaction-records"); ?>">
+                        <a href="<?php echo BASE_URL . "admin/transaction-records"; ?>">
+                            <i class="bi bi-folder-check"></i>
+                            <p>Transaction Records</p>
+                        </a>
+                    </li>
                 <?php endif; ?>
 
                 <?php if ($g_user_role == 'ADMIN_STAFF'): ?>

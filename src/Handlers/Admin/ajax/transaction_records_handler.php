@@ -46,6 +46,24 @@ if (isset($role_map[(string)$g_user_role])) {
 }
 $g_user_role_upper = strtoupper(trim((string)$g_user_role));
 
+// 3. Resolve Staff Office Assignment (if NOT ADMIN)
+$assigned_office_id = 0;
+if ($g_user_role_upper !== 'ADMIN' && $user_id > 0) {
+    $stmtAssign = $db_connect->prepare("
+        SELECT office_id 
+        FROM staff_assignments 
+        WHERE user_id = ? AND flag_status = 0 
+        ORDER BY id DESC LIMIT 1
+    ");
+    if ($stmtAssign) {
+        $stmtAssign->bind_param("i", $user_id);
+        $stmtAssign->execute();
+        $assignRes = $stmtAssign->get_result()->fetch_assoc();
+        $assigned_office_id = (int)($assignRes['office_id'] ?? 0);
+        $stmtAssign->close();
+    }
+}
+
 $action = $_POST['action'] ?? '';
 
 switch ($action) {
@@ -57,6 +75,11 @@ switch ($action) {
             $status       = trim($_POST['status'] ?? '');
             $date_from    = trim($_POST['date_from'] ?? date('Y-m-d'));
             $date_to      = trim($_POST['date_to'] ?? date('Y-m-d'));
+
+            // Enforce staff assigned office if user is not ADMIN
+            if ($g_user_role_upper !== 'ADMIN') {
+                $office_id = $assigned_office_id;
+            }
 
             $whereClauses = ["1=1"];
             $params       = [];
