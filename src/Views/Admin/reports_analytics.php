@@ -217,7 +217,7 @@ if ($db_connect && $user_id > 0) {
                                     <input type="date" id="filterDateTo" class="form-control form-control-sm" value="<?= date('Y-m-d'); ?>">
                                 </div>
 
-                                <!-- ACTION BUTTONS INCLUDING SILENT PDF PRINT -->
+                                <!-- ACTION BUTTONS & EXPORT DROPDOWN -->
                                 <div class="col-12 col-md-3 d-flex gap-2">
                                     <button type="submit" class="btn btn-primary btn-sm w-100 fw-bold">
                                         <i class="bi bi-filter me-1"></i>Apply
@@ -225,9 +225,22 @@ if ($db_connect && $user_id > 0) {
                                     <button type="button" id="btnResetFilters" class="btn btn-outline-secondary btn-sm" title="Reset Filters">
                                         <i class="bi bi-arrow-counterclockwise"></i>
                                     </button>
-                                    <button type="button" id="btnPrintPdfReport" class="btn btn-danger btn-sm fw-bold px-3 text-nowrap" title="Print/Download PDF Report">
-                                        <i class="bi bi-file-earmark-pdf-fill me-1"></i>PDF Report
-                                    </button>
+
+                                    <!-- Export Options Dropdown -->
+                                    <div class="dropdown">
+                                        <button class="btn btn-action btn-sm dropdown-toggle d-inline-flex align-items-center fw-semibold text-nowrap" type="button" id="exportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                            <i class="bi bi-download me-1"></i>Export / Download
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="exportDropdown">
+                                            <li><a class="dropdown-item text-slate-700" href="javascript:void(0)" id="export-csv"><i class="bi bi-filetype-csv text-success me-2"></i> Export CSV</a></li>
+                                            <li><a class="dropdown-item text-slate-700" href="javascript:void(0)" id="export-excel"><i class="bi bi-file-earmark-excel text-success me-2"></i> Export Excel (.xlsx)</a></li>
+                                            <li><a class="dropdown-item text-slate-700" href="javascript:void(0)" id="export-json"><i class="bi bi-filetype-json text-warning me-2"></i> Export JSON</a></li>
+                                            <li>
+                                                <hr class="dropdown-divider">
+                                            </li>
+                                            <li><a class="dropdown-item text-slate-700" href="javascript:void(0)" id="export-pdf-report"><i class="bi bi-file-earmark-pdf-fill text-danger me-2"></i> PDF Report</a></li>
+                                        </ul>
+                                    </div>
                                 </div>
 
                             </form>
@@ -367,6 +380,12 @@ if ($db_connect && $user_id > 0) {
                     layout: "fitColumns",
                     responsiveLayout: false,
                     placeholder: "No staff activity recorded for selected range.",
+                    downloadConfig: {
+                        columnHeaders: true,
+                        columnGroups: false,
+                        rowGroups: false,
+                        formatCells: false
+                    },
                     columns: [
                         { 
                             title: "Staff Name", 
@@ -560,8 +579,21 @@ if ($db_connect && $user_id > 0) {
                 loadAnalytics();
             });
 
-            // Silent Background PDF Print Handler (No Redirection / Window Open)
-            $('#btnPrintPdfReport').on('click', function() {
+            // Export Actions (CSV, XLSX, JSON) via Tabulator
+            document.getElementById('export-csv')?.addEventListener('click', () => {
+                if (staffTabulator) staffTabulator.download("csv", "staff_performance_report.csv");
+            });
+
+            document.getElementById('export-excel')?.addEventListener('click', () => {
+                if (staffTabulator) staffTabulator.download("xlsx", "staff_performance_report.xlsx", { sheetName: "Staff Performance" });
+            });
+
+            document.getElementById('export-json')?.addEventListener('click', () => {
+                if (staffTabulator) staffTabulator.download("json", "staff_performance_report.json");
+            });
+
+            // Silent Background PDF Print Handler (Triggers PDF Report Template)
+            document.getElementById('export-pdf-report')?.addEventListener('click', function() {
                 const officeId    = $('#filterOfficeId').val() || 0;
                 const visitorType = $('#filterVisitorType').val() || '';
                 const dateFrom    = $('#filterDateFrom').val() || '';
@@ -569,7 +601,7 @@ if ($db_connect && $user_id > 0) {
 
                 const printUrl = `<?= BASE_URL; ?>admin/reports-analytics-pdf?office_id=${officeId}&visitor_type=${encodeURIComponent(visitorType)}&date_from=${dateFrom}&date_to=${dateTo}`;
 
-                // 1. Get or create a hidden background iframe
+                // Get or create a hidden background iframe
                 let printFrame = document.getElementById('silentPrintIframe');
                 if (!printFrame) {
                     printFrame = document.createElement('iframe');
@@ -583,7 +615,7 @@ if ($db_connect && $user_id > 0) {
                     document.body.appendChild(printFrame);
                 }
 
-                // 2. Load PDF template into hidden frame to trigger print preview dialog
+                // Load PDF template into hidden frame to trigger print preview dialog
                 printFrame.src = printUrl;
             });
 
