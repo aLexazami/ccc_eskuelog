@@ -351,14 +351,35 @@ if ($db_connect && $user_id > 0) {
             box-shadow: 0 4px 12px rgba(37, 99, 235, 0.05);
         }
 
-        .concern-pill-item {
+        /* RECEIPT CONCERN STYLES (MATCHED EXACTLY FROM STUDENT LOGBOOK) */
+        .receipt-concern-item {
             background-color: #ffffff;
-            border: 1px solid #bfdbfe;
-            border-left: 3px solid var(--kiosk-primary);
+            border: 1px solid #e2e8f0;
+            border-left: 3.5px solid var(--kiosk-primary, #1d4ed8);
             border-radius: 0.5rem;
-            padding: 0.5rem 0.85rem;
-            margin-bottom: 0;
+            padding: 0.55rem 0.85rem;
+            margin-bottom: 0.4rem;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+        }
+
+        .receipt-concern-title {
+            font-weight: 700;
+            color: #1e293b;
+            font-size: 0.875rem;
+            line-height: 1.3;
+        }
+
+        .receipt-subconcern-tag {
+            background-color: #eff6ff;
+            color: #1d4ed8;
+            font-weight: 600;
+            font-size: 0.75rem;
+            padding: 0.2rem 0.55rem;
+            border-radius: 0.35rem;
+            display: inline-flex;
+            align-items: center;
+            border: 1px solid #bfdbfe;
+            line-height: 1.2;
         }
 
         .controller-subcard {
@@ -820,7 +841,7 @@ if ($db_connect && $user_id > 0) {
     <!-- VISITOR / USER FULL DETAILS MODAL -->
     <div class="modal fade" id="userDetailsModal" tabindex="-1" aria-labelledby="userDetailsModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content border-0 shadow-lg" style="border-radius: 1rem; overflow: hidden;">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 1.25rem; overflow: hidden;">
                 <div class="modal-header text-white" style="background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);">
                     <h5 class="modal-title fw-bold d-flex align-items-center" id="userDetailsModalLabel">
                         <i class="bi bi-person-lines-fill me-2 fs-4"></i>Visitor Information Details
@@ -881,6 +902,16 @@ if ($db_connect && $user_id > 0) {
             let dynamicTimerInterval = null;
             let currentTimerBaseTime = null;
 
+            function escapeHtml(str) {
+                if (!str) return '';
+                return String(str)
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#039;');
+            }
+
             function showSwalAlert(title, message, iconType = 'info') {
                 const swalObj = typeof swal !== 'undefined' ? swal : (typeof Swal !== 'undefined' ? Swal : null);
                 if (!swalObj) {
@@ -932,6 +963,95 @@ if ($db_connect && $user_id > 0) {
                 return str.toLowerCase().replace(/\b\w/g, function(char) {
                     return char.toUpperCase();
                 });
+            }
+
+            // Build exact Student Logbook Receipt Style for Multiple Primary Transactions & Sub Concerns
+            function buildLogbookStyleConcerns(ticket) {
+                let html = '';
+                const otherText = ticket.other_concern_text ? ticket.other_concern_text.trim() : '';
+
+                if (Array.isArray(ticket.concerns_list) && ticket.concerns_list.length > 0) {
+                    let grouped = {};
+
+                    ticket.concerns_list.forEach(item => {
+                        const main = (item.transaction_name || 'General Concern').trim();
+                        const sub = item.sub_concern_name ? item.sub_concern_name.trim() : null;
+
+                        if (main.toLowerCase().includes('other') && otherText) {
+                            return;
+                        }
+
+                        if (!grouped[main]) {
+                            grouped[main] = [];
+                        }
+
+                        if (sub && !grouped[main].includes(sub)) {
+                            grouped[main].push(sub);
+                        }
+                    });
+
+                    Object.entries(grouped).forEach(([mainTitle, subs]) => {
+                        let subTagsHtml = '';
+                        if (subs && subs.length > 0) {
+                            const tags = subs.map(sub => `
+                                <span class="receipt-subconcern-tag me-1 mb-1">
+                                    <i class="bi bi-tag-fill me-1"></i>${escapeHtml(sub)}
+                                </span>
+                            `).join('');
+                            subTagsHtml = `<div class="mt-1 d-flex flex-wrap align-items-center">${tags}</div>`;
+                        }
+
+                        html += `
+                            <div class="receipt-concern-item">
+                                <div class="receipt-concern-title">${escapeHtml(mainTitle)}</div>
+                                ${subTagsHtml}
+                            </div>
+                        `;
+                    });
+                } else if (ticket.transaction_name) {
+                    const mainConcerns = ticket.transaction_name.split(',').map(s => s.trim()).filter(Boolean);
+                    const subConcerns = (ticket.sub_concern_name || '').split(',').map(s => s.trim()).filter(Boolean);
+
+                    mainConcerns.forEach((main, idx) => {
+                        if (main.toLowerCase().includes('other') && otherText) return;
+
+                        let subTagsHtml = '';
+                        if (idx === 0 && subConcerns.length > 0) {
+                            const tags = subConcerns.map(sub => `
+                                <span class="receipt-subconcern-tag me-1 mb-1">
+                                    <i class="bi bi-tag-fill me-1"></i>${escapeHtml(sub)}
+                                </span>
+                            `).join('');
+                            subTagsHtml = `<div class="mt-1 d-flex flex-wrap align-items-center">${tags}</div>`;
+                        }
+
+                        html += `
+                            <div class="receipt-concern-item">
+                                <div class="receipt-concern-title">${escapeHtml(main)}</div>
+                                ${subTagsHtml}
+                            </div>
+                        `;
+                    });
+                }
+
+                if (otherText) {
+                    html += `
+                        <div class="receipt-concern-item">
+                            <div class="receipt-concern-title"><i class="bi bi-pen me-1 text-primary"></i>Others / Custom Concern</div>
+                            <div class="text-muted small mt-1 fw-semibold" style="word-break: break-word;">${escapeHtml(otherText)}</div>
+                        </div>
+                    `;
+                }
+
+                if (!html) {
+                    html = `
+                        <div class="receipt-concern-item">
+                            <div class="receipt-concern-title">General Concern</div>
+                        </div>
+                    `;
+                }
+
+                return html;
             }
 
             if (HAS_ASSIGNMENT && officeSelect && officeSelect.value) {
@@ -1138,7 +1258,7 @@ if ($db_connect && $user_id > 0) {
                             </div>
                             <div class="min-w-0 flex-grow-1">
                                 <span class="fw-semibold text-muted d-block mb-1" style="font-size: 0.75rem;">${label}</span>
-                                <strong class="text-dark d-block text-break ${customClass}" style="font-size: 0.875rem; line-height: 1.35; word-break: break-word;" title="${value}">${value}</strong>
+                                <strong class="text-dark d-block text-break ${customClass}" style="font-size: 0.875rem; line-height: 1.35; word-break: break-word;" title="${escapeHtml(value)}">${escapeHtml(value)}</strong>
                             </div>
                         </div>
                     </div>
@@ -1148,19 +1268,7 @@ if ($db_connect && $user_id > 0) {
             function renderDynamicTicketDetails(ticket, entryTimeString) {
                 if (!ticketDetailsContainer) return;
                 
-                let concernsHtml = '';
-                if (ticket.concerns_list && ticket.concerns_list.length > 0) {
-                    concernsHtml = ticket.concerns_list.map(c => {
-                        const sub = c.sub_concern_name ? ` &rsaquo; <span class="fw-bold text-primary">${c.sub_concern_name}</span>` : '';
-                        return `<div class="concern-pill-item"><div class="fw-bold text-dark small">${c.transaction_name || 'General Concern'}${sub}</div></div>`;
-                    }).join('');
-                } else if (ticket.transaction_name) {
-                    concernsHtml = `<div class="concern-pill-item"><div class="fw-bold text-dark small">${ticket.transaction_name}</div></div>`;
-                } else if (ticket.other_concern_text) {
-                    concernsHtml = `<div class="concern-pill-item"><div class="fw-bold text-dark small">${ticket.other_concern_text}</div></div>`;
-                } else {
-                    concernsHtml = `<div class="concern-pill-item"><div class="fw-bold text-dark small">General Administrative Inquiry</div></div>`;
-                }
+                const concernsHtml = buildLogbookStyleConcerns(ticket);
 
                 ticketDetailsContainer.innerHTML = `
                     <div class="d-flex flex-column justify-content-between h-100 py-1">
@@ -1171,7 +1279,7 @@ if ($db_connect && $user_id > 0) {
                                 </div>
                                 <div class="min-w-0 flex-grow-1">
                                     <span class="text-uppercase text-muted fw-bold tracking-wider d-block mb-2" style="font-size: 0.75rem;">Transaction Concern(s)</span>
-                                    <div class="d-flex flex-column gap-2">
+                                    <div class="d-flex flex-column gap-1">
                                         ${concernsHtml}
                                     </div>
                                 </div>
@@ -1197,6 +1305,8 @@ if ($db_connect && $user_id > 0) {
                 const email       = ticket.email || 'N/A';
                 const sex         = ticket.sex ? ticket.sex.charAt(0).toUpperCase() + ticket.sex.slice(1).toLowerCase() : 'N/A';
                 
+                const concernsHtml = buildLogbookStyleConcerns(ticket);
+
                 let dynamicFieldsHTML = '';
 
                 if (visitorType === 'STUDENT') {
@@ -1242,9 +1352,28 @@ if ($db_connect && $user_id > 0) {
                     `;
                 }
 
+                let concernsBlockHtml = `
+                    <div class="col-12">
+                        <div class="detail-tile border-primary-subtle bg-white">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="tile-icon flex-shrink-0 bg-primary text-white" style="width: 36px; height: 36px; min-width: 36px; margin-top:0;">
+                                    <i class="bi bi-clipboard-check-fill fs-6"></i>
+                                </div>
+                                <div>
+                                    <span class="fw-bold text-dark d-block" style="font-size: 0.875rem;">Transaction Concerns & Services</span>
+                                </div>
+                            </div>
+                            <div class="ps-1">
+                                ${concernsHtml}
+                            </div>
+                        </div>
+                    </div>
+                `;
+
                 modalUserDetailsContent.innerHTML = `
                     <div class="row g-3">
                         ${dynamicFieldsHTML}
+                        ${concernsBlockHtml}
                         ${renderDetailTile('bi-clock-history', 'Queue Entry Time', entryTimeString)}
                     </div>
                 `;
@@ -1370,4 +1499,4 @@ if ($db_connect && $user_id > 0) {
         })();
     </script>
 </body>
-</html> 
+</html>

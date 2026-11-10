@@ -206,7 +206,7 @@ switch ($action) {
                     $now_serving['sex'] = ucfirst(strtolower($now_serving['sex']));
                 }
 
-                // Fetch multi-concerns from logbook_transaction_items table
+                // Fetch multi-concerns from logbook_transaction_items table (including item-level other_concern_text if available)
                 $concerns_list = [];
                 $stmtItems = $db_connect->prepare("
                     SELECT 

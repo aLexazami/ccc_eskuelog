@@ -51,6 +51,7 @@ $assigned_office = null;
 $offices         = [];
 
 if ($db_connect && $user_id > 0) {
+    // Priority 1: Check staff_assignments table
     $stmtAssign = $db_connect->prepare("
         SELECT sa.office_id, o.office_code, o.office_name 
         FROM staff_assignments sa
@@ -62,9 +63,26 @@ if ($db_connect && $user_id > 0) {
         $stmtAssign->bind_param("i", $user_id);
         $stmtAssign->execute();
         $assigned_office = $stmtAssign->get_result()->fetch_assoc();
+        $stmtAssign->close();
     }
 
-    if ($g_user_role_upper === 'ADMIN' || !$assigned_office) {
+    // Priority 2: Fallback check on employee table
+    if (!$assigned_office && $g_user_role_upper === 'ADMIN_STAFF') {
+        $stmtEmp = $db_connect->prepare("
+            SELECT e.office_id, o.office_code, o.office_name 
+            FROM employee e
+            INNER JOIN office o ON e.office_id = o.office_id
+            WHERE e.user_id = ? LIMIT 1
+        ");
+        if ($stmtEmp) {
+            $stmtEmp->bind_param("i", $user_id);
+            $stmtEmp->execute();
+            $assigned_office = $stmtEmp->get_result()->fetch_assoc();
+            $stmtEmp->close();
+        }
+    }
+
+    if ($g_user_role_upper === 'ADMIN' || $g_user_role_upper === 'STATION_ADMIN' || !$assigned_office) {
         $stmt = $db_connect->query("SELECT office_id, office_code, office_name FROM office WHERE flag_status = 0 ORDER BY office_name ASC");
         if ($stmt) {
             while ($row = $stmt->fetch_assoc()) {
@@ -167,6 +185,37 @@ if ($db_connect && $user_id > 0) {
             background: #ffffff;
             border-color: #cbd5e1;
         }
+
+        /* RECEIPT CONCERN STYLES (MATCHED EXACTLY FROM STUDENT LOGBOOK & QUEUE CONTROLLER) */
+        .receipt-concern-item {
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-left: 3.5px solid #1d4ed8;
+            border-radius: 0.5rem;
+            padding: 0.55rem 0.85rem;
+            margin-bottom: 0.4rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+        }
+
+        .receipt-concern-title {
+            font-weight: 700;
+            color: #1e293b;
+            font-size: 0.875rem;
+            line-height: 1.3;
+        }
+
+        .receipt-subconcern-tag {
+            background-color: #eff6ff;
+            color: #1d4ed8;
+            font-weight: 600;
+            font-size: 0.75rem;
+            padding: 0.2rem 0.55rem;
+            border-radius: 0.35rem;
+            display: inline-flex;
+            align-items: center;
+            border: 1px solid #bfdbfe;
+            line-height: 1.2;
+        }
     </style>
 </head>
 
@@ -193,7 +242,7 @@ if ($db_connect && $user_id > 0) {
                                 <div class="col-12 col-md-3">
                                     <label for="filterOfficeId" class="form-label fw-bold small text-muted">Office Location</label>
                                     <select id="filterOfficeId" class="form-select form-select-sm">
-                                        <?php if ($g_user_role_upper === 'ADMIN'): ?>
+                                        <?php if ($g_user_role_upper === 'ADMIN' || $g_user_role_upper === 'STATION_ADMIN'): ?>
                                             <option value="0">-- All Offices --</option>
                                             <?php foreach ($offices as $off): ?>
                                                 <option value="<?= $off['office_id']; ?>"><?= htmlspecialchars($off['office_name']); ?> (<?= htmlspecialchars($off['office_code']); ?>)</option>
@@ -307,7 +356,6 @@ if ($db_connect && $user_id > 0) {
         const HANDLER_URL = '<?= BASE_URL; ?>admin/ajax/transaction-records';
         let recordsTable = null;
 
-        // Dynamic helper to calculate local browser date (YYYY-MM-DD) across midnight
         const getTodayDate = () => {
             const today = new Date();
             const year = today.getFullYear();
@@ -316,9 +364,108 @@ if ($db_connect && $user_id > 0) {
             return `${year}-${month}-${day}`;
         };
 
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
         function formatCapitalized(str) {
             if (!str) return 'N/A';
             return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+        }
+
+        // Build exact Student Logbook Receipt Style for Multiple Primary Transactions & Sub Concerns
+        function buildLogbookStyleConcerns(ticket) {
+            let html = '';
+            const otherText = ticket.other_concern_text ? ticket.other_concern_text.trim() : '';
+
+            if (Array.isArray(ticket.concerns_list) && ticket.concerns_list.length > 0) {
+                let grouped = {};
+
+                ticket.concerns_list.forEach(item => {
+                    const main = (item.transaction_name || 'General Concern').trim();
+                    const sub = item.sub_concern_name ? item.sub_concern_name.trim() : null;
+
+                    if (main.toLowerCase().includes('other') && otherText) {
+                        return;
+                    }
+
+                    if (!grouped[main]) {
+                        grouped[main] = [];
+                    }
+
+                    if (sub && !grouped[main].includes(sub)) {
+                        grouped[main].push(sub);
+                    }
+                });
+
+                Object.entries(grouped).forEach(([mainTitle, subs]) => {
+                    let subTagsHtml = '';
+                    if (subs && subs.length > 0) {
+                        const tags = subs.map(sub => `
+                            <span class="receipt-subconcern-tag me-1 mb-1">
+                                <i class="bi bi-tag-fill me-1"></i>${escapeHtml(sub)}
+                            </span>
+                        `).join('');
+                        subTagsHtml = `<div class="mt-1 d-flex flex-wrap align-items-center">${tags}</div>`;
+                    }
+
+                    html += `
+                        <div class="receipt-concern-item">
+                            <div class="receipt-concern-title">${escapeHtml(mainTitle)}</div>
+                            ${subTagsHtml}
+                        </div>
+                    `;
+                });
+            } else if (ticket.transaction_name) {
+                const mainConcerns = ticket.transaction_name.split(',').map(s => s.trim()).filter(Boolean);
+                const subConcerns = (ticket.sub_concern_name || '').split(',').map(s => s.trim()).filter(Boolean);
+
+                mainConcerns.forEach((main, idx) => {
+                    if (main.toLowerCase().includes('other') && otherText) return;
+
+                    let subTagsHtml = '';
+                    if (idx === 0 && subConcerns.length > 0) {
+                        const tags = subConcerns.map(sub => `
+                            <span class="receipt-subconcern-tag me-1 mb-1">
+                                <i class="bi bi-tag-fill me-1"></i>${escapeHtml(sub)}
+                            </span>
+                        `).join('');
+                        subTagsHtml = `<div class="mt-1 d-flex flex-wrap align-items-center">${tags}</div>`;
+                    }
+
+                    html += `
+                        <div class="receipt-concern-item">
+                            <div class="receipt-concern-title">${escapeHtml(main)}</div>
+                            ${subTagsHtml}
+                        </div>
+                    `;
+                });
+            }
+
+            if (otherText) {
+                html += `
+                    <div class="receipt-concern-item">
+                        <div class="receipt-concern-title"><i class="bi bi-pen me-1 text-primary"></i>Others / Custom Concern</div>
+                        <div class="text-muted small mt-1 fw-semibold" style="word-break: break-word;">${escapeHtml(otherText)}</div>
+                    </div>
+                `;
+            }
+
+            if (!html) {
+                html = `
+                    <div class="receipt-concern-item">
+                        <div class="receipt-concern-title">General Concern</div>
+                    </div>
+                `;
+            }
+
+            return html;
         }
 
         // Helper to render modular detail tile matched with Service Counter Workstation
@@ -386,27 +533,23 @@ if ($db_connect && $user_id > 0) {
                         field: "full_name", 
                         minWidth: 150,
                         responsive: 1,
-                        formatter: cell => `<span class="text-dark">${cell.getValue() || 'N/A'}</span>` 
+                        formatter: cell => `<span class="text-dark fw-semibold">${cell.getValue() || 'N/A'}</span>` 
                     },
                     { 
                         title: "Visitor Type", 
                         field: "visitor_type", 
-                        minWidth: 120,
+                        minWidth: 110,
                         responsive: 2,
                         formatter: cell => `<span class="text-dark">${formatCapitalized(cell.getValue())}</span>` 
                     },
                     { 
-                        title: "Transaction Concern", 
+                        title: "Transaction Concerns", 
                         field: "transaction_name", 
-                        minWidth: 260,
+                        minWidth: 280,
                         responsive: 3,
                         formatter: cell => {
                             const row = cell.getRow().getData();
-                            let main = cell.getValue() || 'General Transaction';
-                            if (row.sub_concern_name) {
-                                return `<div><span class="d-block text-dark">${main}</span><small class="text-muted">&rsaquo; ${row.sub_concern_name}</small></div>`;
-                            }
-                            return `<span class="text-dark">${main}</span>`;
+                            return `<div class="py-1">${buildLogbookStyleConcerns(row)}</div>`;
                         } 
                     },
                     { 
@@ -455,7 +598,7 @@ if ($db_connect && $user_id > 0) {
                         headerHozAlign: "right", 
                         headerSort: false, 
                         formatter: cell => {
-                            return `<button type="button" class="btn btn-sm btn-outline-primary fw-bold" onclick="viewTicketDetails(${cell.getValue()})">
+                            return `<button type="button" class="btn btn-sm btn-outline-primary fw-bold px-3 rounded-pill" onclick="viewTicketDetails(${cell.getValue()})">
                                         <i class="bi bi-eye-fill me-1"></i>View
                                     </button>`;
                         } 
@@ -469,7 +612,6 @@ if ($db_connect && $user_id > 0) {
             if (recordsTable) recordsTable.setData();
         });
 
-        // Dynamic reset action using browser real-time Date
         $('#btnResetFilters').on('click', function() {
             const todayStr = getTodayDate();
             $('#filterVisitorType').val('');
@@ -515,10 +657,27 @@ if ($db_connect && $user_id > 0) {
 
                     let name = t.full_name || 'N/A';
                     let email = t.email || 'N/A';
-                    let mainConcern = t.transaction_name || 'General Concern';
-                    let subConcern = t.sub_concern_name ? ` &rsaquo; ${t.sub_concern_name}` : '';
-                    let fullConcernDisplay = mainConcern + subConcern;
                     let officeCounterDisplay = `${t.office_name || 'N/A'}${t.counter_name ? ' (' + t.counter_name + ')' : ''}`;
+
+                    const concernsHtml = buildLogbookStyleConcerns(t);
+
+                    let concernsBlockHtml = `
+                        <div class="col-12">
+                            <div class="detail-tile border-primary-subtle bg-white">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="tile-icon flex-shrink-0 bg-primary text-white" style="width: 36px; height: 36px; min-width: 36px; margin-top:0;">
+                                        <i class="bi bi-clipboard-check-fill fs-6"></i>
+                                    </div>
+                                    <div>
+                                        <span class="fw-bold text-dark d-block" style="font-size: 0.875rem;">Transaction Concerns & Services</span>
+                                    </div>
+                                </div>
+                                <div class="ps-1">
+                                    ${concernsHtml}
+                                </div>
+                            </div>
+                        </div>
+                    `;
 
                     modalBody.html(`
                         <!-- HERO TICKET HEADER CARD -->
@@ -527,7 +686,7 @@ if ($db_connect && $user_id > 0) {
                             <h1 class="display-4 fw-bold text-info font-monospace my-1 mb-0">${t.ticket_number || '---'}</h1>
                         </div>
 
-                        <!-- DETAILS GRID (WITH QUEUE STATUS & VISITOR TYPE AT THE VERY TOP) -->
+                        <!-- DETAILS GRID -->
                         <div class="row g-3 mb-4">
                             ${renderDetailTile('bi-activity', 'Queue Status', statusBadgeHtml)}
                             ${renderDetailTile('bi-person-vcard-fill', 'Visitor Type', visitorBadgeHtml)}
@@ -535,7 +694,9 @@ if ($db_connect && $user_id > 0) {
                             ${renderDetailTile('bi-envelope-fill', 'Email Address', `<strong>${email}</strong>`)}
                             ${renderDetailTile('bi-building', 'Office & Counter', `<strong>${officeCounterDisplay}</strong>`)}
                             ${renderDetailTile('bi-person-badge-fill', 'Served By Staff', `<strong>${t.served_by_name || 'N/A'}</strong>`)}
-                            ${renderDetailTile('bi-clipboard-check-fill', 'Transaction Concern', `<strong>${fullConcernDisplay}</strong>`, 'col-12')}
+                            
+                            <!-- STRUCTURED CONCERNS CARD -->
+                            ${concernsBlockHtml}
                         </div>
 
                         <!-- LIFECYCLE TIMESTAMPS GRID -->

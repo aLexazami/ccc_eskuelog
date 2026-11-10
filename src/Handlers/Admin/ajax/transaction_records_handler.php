@@ -46,9 +46,10 @@ if (isset($role_map[(string)$g_user_role])) {
 }
 $g_user_role_upper = strtoupper(trim((string)$g_user_role));
 
-// 3. Resolve Staff Office Assignment (if NOT ADMIN)
+// 3. Resolve Staff Office Assignment (if ADMIN_STAFF)
 $assigned_office_id = 0;
-if ($g_user_role_upper !== 'ADMIN' && $user_id > 0) {
+if ($g_user_role_upper === 'ADMIN_STAFF' && $user_id > 0) {
+    // Priority 1: Check staff_assignments table
     $stmtAssign = $db_connect->prepare("
         SELECT office_id 
         FROM staff_assignments 
@@ -61,6 +62,18 @@ if ($g_user_role_upper !== 'ADMIN' && $user_id > 0) {
         $assignRes = $stmtAssign->get_result()->fetch_assoc();
         $assigned_office_id = (int)($assignRes['office_id'] ?? 0);
         $stmtAssign->close();
+    }
+
+    // Priority 2: Fallback to employee table
+    if ($assigned_office_id <= 0) {
+        $stmtEmp = $db_connect->prepare("SELECT office_id FROM employee WHERE user_id = ? LIMIT 1");
+        if ($stmtEmp) {
+            $stmtEmp->bind_param("i", $user_id);
+            $stmtEmp->execute();
+            $empRow = $stmtEmp->get_result()->fetch_assoc();
+            $assigned_office_id = (int)($empRow['office_id'] ?? 0);
+            $stmtEmp->close();
+        }
     }
 }
 
@@ -76,8 +89,8 @@ switch ($action) {
             $date_from    = trim($_POST['date_from'] ?? date('Y-m-d'));
             $date_to      = trim($_POST['date_to'] ?? date('Y-m-d'));
 
-            // Enforce staff assigned office if user is not ADMIN
-            if ($g_user_role_upper !== 'ADMIN') {
+            // Enforce staff assigned office if user is ADMIN_STAFF
+            if ($g_user_role_upper === 'ADMIN_STAFF' && $assigned_office_id > 0) {
                 $office_id = $assigned_office_id;
             }
 
@@ -112,10 +125,11 @@ switch ($action) {
 
             $whereSql = implode(" AND ", $whereClauses);
 
-            // Fetch Records for Tabulator
+            // Fetch base tickets with logbook and station metadata
             $dataSql = "
                 SELECT 
                     q.id,
+                    q.logbook_id,
                     q.ticket_number,
                     q.queue_date,
                     q.status,
@@ -130,16 +144,15 @@ switch ($action) {
                     l.last_name,
                     l.suffix,
                     l.post_nominal,
+                    l.other_concern_text,
                     o.office_name,
                     c.counter_name,
-                    tt.transaction_name,
-                    tsc.sub_concern_name
+                    tt_main.transaction_name AS transaction_name
                 FROM queue_tickets q
                 INNER JOIN logbooks l ON q.logbook_id = l.id
                 LEFT JOIN office o ON q.office_id = o.office_id
                 LEFT JOIN counters c ON q.counter_id = c.id
-                LEFT JOIN transaction_types tt ON l.transaction_type_id = tt.id
-                LEFT JOIN transaction_sub_concerns tsc ON l.sub_concern_id = tsc.id
+                LEFT JOIN transaction_types tt_main ON l.transaction_type_id = tt_main.id
                 WHERE {$whereSql}
                 ORDER BY q.id DESC
             ";
@@ -157,7 +170,34 @@ switch ($action) {
                 $suf    = !empty($row['suffix']) ? ' ' . $row['suffix'] : '';
                 $post   = !empty($row['post_nominal']) ? ', ' . $row['post_nominal'] : '';
                 $row['full_name'] = trim($row['first_name'] . $m_init . ' ' . $row['last_name'] . $suf . $post);
+
+                // Fetch linked transaction items and sub-concerns per logbook entry
+                $concerns_list = [];
+                $stmtItems = $db_connect->prepare("
+                    SELECT 
+                        tt.transaction_name,
+                        tsc.sub_concern_name
+                    FROM logbook_transaction_items lti
+                    LEFT JOIN transaction_types tt ON lti.transaction_type_id = tt.id
+                    LEFT JOIN transaction_sub_concerns tsc ON lti.sub_concern_id = tsc.id
+                    WHERE lti.logbook_id = ?
+                    ORDER BY lti.id ASC
+                ");
+                if ($stmtItems) {
+                    $stmtItems->bind_param("i", $row['logbook_id']);
+                    $stmtItems->execute();
+                    $resItems = $stmtItems->get_result();
+                    while ($item = $resItems->fetch_assoc()) {
+                        $concerns_list[] = $item;
+                    }
+                    $stmtItems->close();
+                }
+                $row['concerns_list'] = $concerns_list;
+
                 $records[] = $row;
+            }
+            if (isset($stmtData) && is_object($stmtData)) {
+                $stmtData->close();
             }
 
             echo json_encode([
@@ -182,6 +222,7 @@ switch ($action) {
             $stmtDetails = $db_connect->prepare("
                 SELECT 
                     q.id,
+                    q.logbook_id,
                     q.ticket_number,
                     q.queue_date,
                     q.status,
@@ -196,31 +237,55 @@ switch ($action) {
                     l.suffix,
                     l.post_nominal,
                     l.sex,
-                    u.email,
+                    l.other_concern_text,
+                    COALESCE(NULLIF(l.email, ''), u.email, 'N/A') AS email,
                     o.office_name,
                     c.counter_name,
-                    tt.transaction_name,
-                    tsc.sub_concern_name,
+                    tt_main.transaction_name AS transaction_name,
                     CONCAT(su.first_name, ' ', su.last_name) AS served_by_name
                 FROM queue_tickets q
                 INNER JOIN logbooks l ON q.logbook_id = l.id
                 LEFT JOIN users u ON l.user_id = u.id
                 LEFT JOIN office o ON q.office_id = o.office_id
                 LEFT JOIN counters c ON q.counter_id = c.id
-                LEFT JOIN transaction_types tt ON l.transaction_type_id = tt.id
-                LEFT JOIN transaction_sub_concerns tsc ON l.sub_concern_id = tsc.id
+                LEFT JOIN transaction_types tt_main ON l.transaction_type_id = tt_main.id
                 LEFT JOIN users su ON q.served_by_user_id = su.id
-                WHERE q.id = ? LIMIT 1
+                WHERE q.id = ?
+                LIMIT 1
             ");
             $stmtDetails->bind_param("i", $ticket_id);
             $stmtDetails->execute();
             $details = $stmtDetails->get_result()->fetch_assoc();
+            $stmtDetails->close();
 
             if ($details) {
                 $m_init = !empty($details['middle_name']) ? ' ' . substr($details['middle_name'], 0, 1) . '.' : '';
                 $suf    = !empty($details['suffix']) ? ' ' . $details['suffix'] : '';
                 $post   = !empty($details['post_nominal']) ? ', ' . $details['post_nominal'] : '';
                 $details['full_name'] = trim($details['first_name'] . $m_init . ' ' . $details['last_name'] . $suf . $post);
+
+                // Fetch linked transaction items and sub-concerns for modal details
+                $concerns_list = [];
+                $stmtItems = $db_connect->prepare("
+                    SELECT 
+                        tt.transaction_name,
+                        tsc.sub_concern_name
+                    FROM logbook_transaction_items lti
+                    LEFT JOIN transaction_types tt ON lti.transaction_type_id = tt.id
+                    LEFT JOIN transaction_sub_concerns tsc ON lti.sub_concern_id = tsc.id
+                    WHERE lti.logbook_id = ?
+                    ORDER BY lti.id ASC
+                ");
+                if ($stmtItems) {
+                    $stmtItems->bind_param("i", $details['logbook_id']);
+                    $stmtItems->execute();
+                    $resItems = $stmtItems->get_result();
+                    while ($item = $resItems->fetch_assoc()) {
+                        $concerns_list[] = $item;
+                    }
+                    $stmtItems->close();
+                }
+                $details['concerns_list'] = $concerns_list;
 
                 echo json_encode(['success' => true, 'data' => $details]);
             } else {
