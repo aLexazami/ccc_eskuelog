@@ -95,6 +95,72 @@ switch ($action) {
             exit();
         }
 
+        // -------------------------------------------------------------------------
+    // 1.5. FETCH EMPLOYEE INFO
+    // -------------------------------------------------------------------------
+    case 'fetch_employee_info':
+        $employee_id = trim($_POST['employee_id'] ?? '');
+
+        if (empty($employee_id)) {
+            echo json_encode(['success' => false, 'message' => 'Employee ID is required.']);
+            exit();
+        }
+
+        try {
+            $query = "
+                SELECT 
+                    e.employee_id,
+                    e.department_id,
+                    e.office_id,
+                    u.id AS user_id,
+                    u.first_name,
+                    u.middle_name,
+                    u.last_name,
+                    u.suffix,
+                    u.post_nominal,
+                    u.sex,
+                    u.email,
+                    u.contact_no
+                FROM employee e
+                INNER JOIN users u ON e.user_id = u.id
+                WHERE e.employee_id = ?
+                LIMIT 1
+            ";
+
+            $stmt = $db_connect->prepare($query);
+            $stmt->bind_param("s", $employee_id);
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            if ($row = $result->fetch_assoc()) {
+                echo json_encode([
+                    'success' => true,
+                    'data'    => [
+                        'user_id'       => $row['user_id'],
+                        'employee_id'   => $row['employee_id'],
+                        'department_id' => (int)($row['department_id'] ?? 0),
+                        'office_id'     => (int)($row['office_id'] ?? 0),
+                        'first_name'    => $row['first_name'] ?? '',
+                        'middle_name'   => $row['middle_name'] ?? '',
+                        'last_name'     => $row['last_name'] ?? '',
+                        'suffix'        => $row['suffix'] ?? '',
+                        'post_nominal'  => $row['post_nominal'] ?? '',
+                        'sex'           => !empty($row['sex']) ? ucfirst(strtolower($row['sex'])) : '',
+                        'email'         => $row['email'] ?? '',
+                        'contact_no'    => $row['contact_no'] ?? ''
+                    ]
+                ]);
+                exit();
+            }
+
+            echo json_encode(['success' => false, 'message' => 'No employee record found.']);
+            exit();
+
+        } catch (Exception $e) {
+            echo json_encode(['success' => false, 'message' => 'Lookup failed: ' . $e->getMessage()]);
+            exit();
+        }
+
     // -------------------------------------------------------------------------
     // 2. UNIFIED LOGBOOK CHECK-IN
     // -------------------------------------------------------------------------
