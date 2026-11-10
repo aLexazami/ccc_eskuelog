@@ -1370,4 +1370,4 @@ if ($db_connect && $user_id > 0) {
         })();
     </script>
 </body>
-</html>
+</html> 

@@ -186,6 +186,28 @@ switch ($action) {
                 $stmtOffices->close();
             }
 
+            // --- FCFS / RECENT CALL ORDERING ---
+            // 1. Offices actively calling a ticket ('CALLED') are placed first.
+            // 2. Offices are sorted by most recent 'called_at' timestamp.
+            // 3. Alphabetical fallback by office name.
+            usort($active_offices, function ($a, $b) {
+                $a_is_called = ($a['now_serving'] && $a['now_serving']['status'] === 'CALLED') ? 1 : 0;
+                $b_is_called = ($b['now_serving'] && $b['now_serving']['status'] === 'CALLED') ? 1 : 0;
+
+                if ($a_is_called !== $b_is_called) {
+                    return $b_is_called - $a_is_called;
+                }
+
+                $a_time = $a['now_serving']['called_at'] ?? '';
+                $b_time = $b['now_serving']['called_at'] ?? '';
+
+                if ($a_time !== $b_time) {
+                    return strcmp($b_time, $a_time);
+                }
+
+                return strcmp($a['office_name'], $b['office_name']);
+            });
+
             echo json_encode([
                 'success' => true,
                 'data'    => [

@@ -308,7 +308,7 @@ if ($db_connect) {
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
-            min-height: clamp(90px, 14vh, 140px);
+            min-height: clamp(105px, 16vh, 155px); /* Increased min-height for multi-line titles */
             height: auto;
             box-sizing: border-box;
             position: relative;
@@ -332,19 +332,19 @@ if ($db_connect) {
         }
 
         .pillar-office-name {
-            font-size: clamp(0.88rem, 1.1vw, 1.25rem);
+            font-size: clamp(0.72rem, 0.95vw, 1.1rem); /* Scaled down slightly for long titles */
             font-weight: 800;
             color: var(--office-name-color);
             margin: 0;
-            line-height: 1.2;
+            line-height: 1.25;
             text-transform: uppercase;
             word-break: break-word;
             text-align: center;
             display: -webkit-box;
-            -webkit-line-clamp: 2;
+            -webkit-line-clamp: 3; /* Increased from 2 to 3 lines */
             -webkit-box-orient: vertical;
             overflow: hidden;
-            max-height: 2.5em;
+            max-height: 3.8em; /* Increased max-height to accommodate line 3 */
             width: 100%;
             text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
         }
@@ -396,20 +396,22 @@ if ($db_connect) {
         }
 
         .serving-ticket-number {
-            font-size: clamp(1.2rem, 13.5cqw, 4.2rem);
+            font-size: clamp(1.1rem, 9.5cqw, 3.4rem); /* Reduced container width query from 13.5cqw to 9.5cqw */
             font-weight: 900;
             color: var(--serving-ticket-color);
             line-height: 1;
-            letter-spacing: -0.01em;
+            letter-spacing: -0.02em;
             margin: clamp(0.2rem, 0.5vh, 0.5rem) 0;
             white-space: nowrap;
             overflow: hidden;
-            text-overflow: clip;
+            text-overflow: ellipsis;
             display: flex;
             align-items: center;
             justify-content: center;
             width: 100%;
             max-width: 100%;
+            padding: 0 0.3rem; /* Small internal safety padding */
+            box-sizing: border-box;
             text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
         }
 
@@ -468,16 +470,18 @@ if ($db_connect) {
             border: var(--lineup-pill-border);
             color: var(--lineup-pill-color);
             font-weight: 800;
-            font-size: clamp(0.85rem, 1vw, 1.15rem);
-            padding: 0.35rem 0.65rem;
+            font-size: clamp(0.75rem, 0.88vw, 1.05rem); /* Reduced max size slightly for long codes */
+            padding: 0.35rem 0.5rem;
             border-radius: 0.75rem;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.03em;
             height: clamp(30px, 4.2vh, 44px);
             display: flex;
             align-items: center;
             justify-content: center;
             box-sizing: border-box;
             white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .lineup-pill.is-priority {
