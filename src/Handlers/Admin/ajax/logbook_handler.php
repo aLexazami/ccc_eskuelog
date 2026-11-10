@@ -7,7 +7,6 @@ $db_connect = $db_connect ?? null;
 
 header('Content-Type: application/json');
 
-// Force MySQLi to throw catchable exceptions instead of raw HTML error strings
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
 if (!$db_connect) {
@@ -20,7 +19,7 @@ $action = $_POST['action'] ?? '';
 switch ($action) {
 
     // -------------------------------------------------------------------------
-    // 1. FETCH STUDENT INFO (Auto-fill for Students)
+    // 1. FETCH STUDENT INFO
     // -------------------------------------------------------------------------
     case 'fetch_student_info':
         $student_id = trim($_POST['student_id'] ?? '');
@@ -97,79 +96,13 @@ switch ($action) {
         }
 
     // -------------------------------------------------------------------------
-    // 2. FETCH EMPLOYEE INFO (Auto-fill for Employees)
-    // -------------------------------------------------------------------------
-    case 'fetch_employee_info':
-        $employee_id = trim($_POST['employee_id'] ?? '');
-
-        if (empty($employee_id)) {
-            echo json_encode(['success' => false, 'message' => 'Employee ID is required.']);
-            exit();
-        }
-
-        try {
-            $query = "
-                SELECT 
-                    e.employee_id,
-                    e.department_id,
-                    e.office_id,
-                    u.id AS user_id,
-                    u.first_name,
-                    u.middle_name,
-                    u.last_name,
-                    u.suffix,
-                    u.post_nominal,
-                    u.sex,
-                    u.email,
-                    u.contact_no
-                FROM employee e
-                INNER JOIN users u ON e.user_id = u.id
-                WHERE e.employee_id = ?
-                LIMIT 1
-            ";
-
-            $stmt = $db_connect->prepare($query);
-            $stmt->bind_param("s", $employee_id);
-            $stmt->execute();
-            $result = $stmt->get_result();
-
-            if ($row = $result->fetch_assoc()) {
-                echo json_encode([
-                    'success' => true,
-                    'data'    => [
-                        'user_id'       => $row['user_id'],
-                        'employee_id'   => $row['employee_id'],
-                        'first_name'    => $row['first_name'] ?? '',
-                        'middle_name'   => $row['middle_name'] ?? '',
-                        'last_name'     => $row['last_name'] ?? '',
-                        'suffix'        => $row['suffix'] ?? '',
-                        'post_nominal'  => $row['post_nominal'] ?? '',
-                        'department_id' => (int)($row['department_id'] ?? 0),
-                        'sex'           => !empty($row['sex']) ? ucfirst(strtolower($row['sex'])) : '',
-                        'email'         => $row['email'] ?? '',
-                        'contact_no'    => $row['contact_no'] ?? ''
-                    ]
-                ]);
-                exit();
-            }
-
-            echo json_encode(['success' => false, 'message' => 'No employee record found.']);
-            exit();
-
-        } catch (Exception $e) {
-            echo json_encode(['success' => false, 'message' => 'Lookup failed: ' . $e->getMessage()]);
-            exit();
-        }
-
-    // -------------------------------------------------------------------------
-    // 3. UNIFIED LOGBOOK CHECK-IN (Handles Student, Employee, AND Guest)
+    // 2. UNIFIED LOGBOOK CHECK-IN
     // -------------------------------------------------------------------------
     case 'logbook_checkin':
-        $visitor_type        = strtoupper(trim($_POST['visitor_type'] ?? 'GUEST')); // STUDENT, EMPLOYEE, or GUEST
-        $reference_id        = trim($_POST['reference_id'] ?? '') ?: null;          // student_id/employee_id or null
+        $visitor_type        = strtoupper(trim($_POST['visitor_type'] ?? 'STUDENT'));
+        $reference_id        = trim($_POST['reference_id'] ?? '') ?: null;
         $user_id             = filter_var($_POST['user_id'] ?? null, FILTER_VALIDATE_INT) ?: null;
         
-        // Form Inputs
         $first_name          = trim($_POST['first_name'] ?? '');
         $middle_name         = trim($_POST['middle_name'] ?? '') ?: null;
         $last_name           = trim($_POST['last_name'] ?? '');
@@ -179,99 +112,186 @@ switch ($action) {
         $email               = trim($_POST['email'] ?? '') ?: null;
         $contact_no          = trim($_POST['contact_no'] ?? '') ?: null;
 
-        // Academic / Type-Specific Attributes
         $program_id          = filter_var($_POST['program_id'] ?? null, FILTER_VALIDATE_INT) ?: null;
         $program_code        = trim($_POST['program_code'] ?? '') ?: null;
         $major               = trim($_POST['major'] ?? '') ?: null;
         $year_level          = filter_var($_POST['year_level'] ?? null, FILTER_VALIDATE_INT) ?: null;
         $department_id       = filter_var($_POST['department_id'] ?? 0, FILTER_VALIDATE_INT) ?: 0;
 
-        // Service Choice & Consent
         $office_id           = (int)($_POST['office_id'] ?? 0);
-        $transaction_type_id = (int)($_POST['transaction_type_id'] ?? 0);
-        $sub_concern_id      = filter_var($_POST['sub_concern_id'] ?? null, FILTER_VALIDATE_INT) ?: null;
+        $raw_trans_id        = trim($_POST['transaction_type_id'] ?? '');
+        $raw_sub_id          = trim($_POST['sub_concern_id'] ?? '');
+        $other_concern_text  = trim($_POST['other_concern_text'] ?? '') ?: null;
+        
         $data_consent        = isset($_POST['data_consent']) && $_POST['data_consent'] === '1' ? 1 : 0;
-
-        // Priority Feature Capture
         $is_priority         = isset($_POST['is_priority']) && $_POST['is_priority'] === '1' ? 1 : 0;
         $priority_type       = $is_priority ? (trim($_POST['priority_type'] ?? '') ?: 'OTHER') : null;
 
-        // Validation
-        if (empty($first_name) || empty($last_name) || $office_id === 0 || $transaction_type_id === 0) {
-            echo json_encode(['success' => false, 'message' => 'Please complete all required fields.']);
+        if (empty($first_name) || empty($last_name) || $office_id === 0) {
+            echo json_encode(['success' => false, 'message' => 'Please complete all required student details and office selection.']);
             exit();
         }
 
         if ($data_consent !== 1) {
-            echo json_encode(['success' => false, 'message' => 'Data privacy consent is required.']);
+            echo json_encode(['success' => false, 'message' => 'Data privacy authorization consent is required.']);
             exit();
         }
 
-        // Database Transaction for Atomic Write (logbooks + queue_tickets)
+        // Parse array of selected numeric transaction IDs
+        $trans_ids = array_filter(array_map('intval', explode(',', $raw_trans_id)), function($val) {
+            return $val > 0;
+        });
+
+        // Parse sub-concerns (handles JSON map or comma-separated string)
+        $sub_concerns_map = [];
+        if (!empty($raw_sub_id)) {
+            $decoded = json_decode($raw_sub_id, true);
+            if (is_array($decoded)) {
+                $sub_concerns_map = $decoded;
+            } else {
+                // Fallback for comma-separated IDs
+                $raw_ids = array_filter(array_map('intval', explode(',', $raw_sub_id)), fn($v) => $v > 0);
+                if (!empty($raw_ids) && !empty($trans_ids)) {
+                    $sub_concerns_map[$trans_ids[0]] = $raw_ids;
+                }
+            }
+        }
+
+        // Fallback program_code from DB if not provided by form
+        if (empty($program_code) && !empty($program_id)) {
+            $stmtP = $db_connect->prepare("SELECT program_code, major FROM programs WHERE program_id = ? LIMIT 1");
+            $stmtP->bind_param("i", $program_id);
+            $stmtP->execute();
+            $resP = $stmtP->get_result()->fetch_assoc();
+            if ($resP) {
+                $program_code = $resP['program_code'] ?? null;
+                if (empty($major)) {
+                    $major = $resP['major'] ?? null;
+                }
+            }
+        }
+
+        // Determine Primary Transaction Type ID for header snapshot
+        $primary_trans_id = !empty($trans_ids) ? reset($trans_ids) : null;
+
+        if (empty($primary_trans_id)) {
+            $stmtFallback = $db_connect->prepare("SELECT id FROM transaction_types WHERE office_id = ? AND flag_status = 0 LIMIT 1");
+            $stmtFallback->bind_param("i", $office_id);
+            $stmtFallback->execute();
+            $resFB = $stmtFallback->get_result()->fetch_assoc();
+            $primary_trans_id = $resFB['id'] ?? null;
+        }
+
+        // Calculate Dynamic Cumulative Estimated Process Time
+        $estimated_minutes = 0;
+        if (!empty($trans_ids)) {
+            $inClause = implode(',', array_map('intval', $trans_ids));
+            $stmtMins = $db_connect->query("SELECT SUM(estimated_minutes) AS total_mins FROM transaction_types WHERE id IN ($inClause)");
+            if ($stmtMins && $rowMins = $stmtMins->fetch_assoc()) {
+                $estimated_minutes = (int)($rowMins['total_mins'] ?? 0);
+            }
+        }
+
+        if (strpos($raw_trans_id, 'OTHERS') !== false || !empty($other_concern_text)) {
+            $estimated_minutes += 10;
+        }
+
+        if ($estimated_minutes <= 0) {
+            $estimated_minutes = 15;
+        }
+
         $db_connect->begin_transaction();
 
         try {
-            // Step A: Insert into logbooks table
+            // STEP A: Insert primary header record into logbooks
             $stmtLog = $db_connect->prepare("
                 INSERT INTO logbooks (
                     visitor_type, reference_id, user_id, first_name, middle_name, last_name,
                     suffix, post_nominal, sex, email, contact_no, program_id, program_code, major,
-                    year_level, department_id, office_id, transaction_type_id, sub_concern_id,
+                    year_level, department_id, office_id, transaction_type_id, other_concern_text,
                     is_priority, priority_type, data_consent
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ");
 
-            // Exact 22-character type definition string for 22 parameters
             $stmtLog->bind_param(
-                "ssissssssssissiiiiiisi",
-                $visitor_type,        // 1.  s
-                $reference_id,        // 2.  s
-                $user_id,             // 3.  i
-                $first_name,          // 4.  s
-                $middle_name,         // 5.  s
-                $last_name,           // 6.  s
-                $suffix,              // 7.  s
-                $post_nominal,        // 8.  s
-                $sex,                 // 9.  s
-                $email,               // 10. s
-                $contact_no,          // 11. s
-                $program_id,          // 12. i
-                $program_code,        // 13. s
-                $major,               // 14. s
-                $year_level,          // 15. i
-                $department_id,       // 16. i
-                $office_id,           // 17. i
-                $transaction_type_id, // 18. i
-                $sub_concern_id,      // 19. i
-                $is_priority,         // 20. i
-                $priority_type,       // 21. s
-                $data_consent         // 22. i
+                "ssissssssssissiiissisi",
+                $visitor_type,
+                $reference_id,
+                $user_id,
+                $first_name,
+                $middle_name,
+                $last_name,
+                $suffix,
+                $post_nominal,
+                $sex,
+                $email,
+                $contact_no,
+                $program_id,
+                $program_code,
+                $major,
+                $year_level,
+                $department_id,
+                $office_id,
+                $primary_trans_id,
+                $other_concern_text,
+                $is_priority,
+                $priority_type,
+                $data_consent
             );
             $stmtLog->execute();
             $logbook_id = $db_connect->insert_id;
 
-            // Step B: Resolve prefix_code (fallback to office_code) & Daily Sequence Number
+            // STEP B: Populate Junction Table (logbook_transaction_items)
+            $stmtItem = $db_connect->prepare("
+                INSERT INTO logbook_transaction_items (logbook_id, transaction_type_id, sub_concern_id) 
+                VALUES (?, ?, ?)
+            ");
+
+            if (!empty($trans_ids)) {
+                foreach ($trans_ids as $t_id) {
+                    $subsForTrans = $sub_concerns_map[$t_id] ?? [];
+                    if (!empty($subsForTrans) && is_array($subsForTrans)) {
+                        foreach ($subsForTrans as $sub_id) {
+                            $s_id = (int)$sub_id;
+                            $stmtItem->bind_param("iii", $logbook_id, $t_id, $s_id);
+                            $stmtItem->execute();
+                        }
+                    } else {
+                        $nullSub = null;
+                        $stmtItem->bind_param("iii", $logbook_id, $t_id, $nullSub);
+                        $stmtItem->execute();
+                    }
+                }
+            } else {
+                $nullTrans = null;
+                $nullSub = null;
+                $stmtItem->bind_param("iii", $logbook_id, $nullTrans, $nullSub);
+                $stmtItem->execute();
+            }
+
+            // STEP C: Resolve office details, prefix code & daily ticket sequence
             $stmtSeq = $db_connect->prepare("
                 SELECT 
-                    COALESCE(NULLIF(o.prefix_code, ''), o.office_code) AS prefix,
+                    o.office_name,
+                    COALESCE(NULLIF(o.office_code, ''), 'Q') AS prefix,
                     COALESCE(MAX(q.queue_sequence), 0) + 1 AS next_seq
                 FROM office o
                 LEFT JOIN queue_tickets q ON o.office_id = q.office_id AND q.queue_date = CURDATE()
                 WHERE o.office_id = ?
-                GROUP BY o.office_id, o.prefix_code, o.office_code
+                GROUP BY o.office_id, o.office_name, o.office_code
             ");
             $stmtSeq->bind_param("i", $office_id);
             $stmtSeq->execute();
             $resSeq = $stmtSeq->get_result()->fetch_assoc();
 
-            // Priority Ticket Prefixing Logic
+            $office_name   = $resSeq['office_name'] ?? 'Office';
             $base_prefix   = !empty($resSeq['prefix']) ? $resSeq['prefix'] : 'Q';
             $prefix        = $is_priority ? "P-" . $base_prefix : $base_prefix;
             $sequence      = (int)($resSeq['next_seq'] ?? 1);
             $ticket_number = sprintf("%s-%03d", $prefix, $sequence);
             $today         = date('Y-m-d');
 
-            // Step C: Insert into queue_tickets
+            // STEP D: Insert queue ticket
             $stmtQueue = $db_connect->prepare("
                 INSERT INTO queue_tickets (
                     logbook_id, ticket_number, queue_sequence, queue_date, office_id, status, is_priority
@@ -283,11 +303,13 @@ switch ($action) {
             $db_connect->commit();
 
             echo json_encode([
-                'success'       => true,
-                'message'       => 'Check-in successful!',
-                'ticket_number' => $ticket_number,
-                'sequence'      => $sequence,
-                'is_priority'   => $is_priority
+                'success'           => true,
+                'message'           => 'Check-in successful!',
+                'ticket_number'     => $ticket_number,
+                'sequence'          => $sequence,
+                'office_name'       => $office_name,
+                'is_priority'       => $is_priority,
+                'estimated_minutes' => $estimated_minutes
             ]);
             exit();
 

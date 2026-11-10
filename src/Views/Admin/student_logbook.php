@@ -13,7 +13,7 @@ $active_links = [
 ];
 $page_header = render_page_header((string) $title_page, $active_links) ?? '';
 
-# Fetch Active Programs (Updated to include program_id)
+# Fetch Active Programs
 $programs_list = [];
 if ($db_connect) {
     $stmtProg = $db_connect->query("SELECT program_id, program_code, program_name, major FROM programs WHERE flag_offer = 0 ORDER BY program_code ASC");
@@ -24,10 +24,36 @@ if ($db_connect) {
     }
 }
 
-# Fetch Active Offices
+# Fetch Active Facilities / Buildings
+$facilities_list = [];
+if ($db_connect) {
+    $stmtFac = $db_connect->query("SELECT facility_id, facility_code, facility_name, facility_floor FROM facility WHERE flag_status = 0 ORDER BY facility_name ASC");
+    if ($stmtFac) {
+        while ($row = $stmtFac->fetch_assoc()) {
+            $facilities_list[] = $row;
+        }
+    }
+}
+
+# Fetch Active Offices Joined with Room (Driven by Office Table)
 $offices_list = [];
 if ($db_connect) {
-    $stmtOff = $db_connect->query("SELECT office_id, office_code, office_name, office_logo FROM office WHERE flag_status = 0 ORDER BY office_name ASC");
+    $queryOffice = "
+        SELECT 
+            o.office_id, 
+            o.office_code, 
+            o.office_name, 
+            o.office_logo,
+            o.room_id,
+            COALESCE(r.room_name, 'Main Office') AS room_name,
+            COALESCE(r.facility_id, 1) AS facility_id,
+            COALESCE(r.facility_floor, 'Ground Floor') AS facility_floor
+        FROM office o
+        LEFT JOIN room r ON o.room_id = r.room_id AND r.flag_status = 0
+        WHERE o.flag_status = 0
+        ORDER BY o.office_name ASC
+    ";
+    $stmtOff = $db_connect->query($queryOffice);
     if ($stmtOff) {
         while ($row = $stmtOff->fetch_assoc()) {
             $offices_list[] = $row;
@@ -45,7 +71,6 @@ if ($db_connect) {
     <!-- MODERN KIOSK CUSTOM STYLES -->
     <style>
         :root {
-            /* CAMPUS TEMPLATE BACKGROUND WITH BLUE GRADIENT OVERLAY */
             --bg-wrapper: linear-gradient(135deg, rgba(11, 32, 117, 0.25) 0%, rgba(0, 10, 76, 0.45) 100%), url('<?= BASE_URL; ?>public/assets/main/css/bg-template.png');
             --bg-header: rgba(0, 16, 77, 0.88);
             --border-header: 1px solid rgba(255, 255, 255, 0.15);
@@ -61,7 +86,6 @@ if ($db_connect) {
             --kiosk-radius: 1rem;
         }
 
-        /* Container Card Styling */
         .kiosk-main-card {
             border: 1px solid var(--kiosk-border);
             border-radius: var(--kiosk-radius);
@@ -73,12 +97,12 @@ if ($db_connect) {
             margin-right: auto;
         }
 
-        /* Visual Step Progress Wizard */
+        /* 4-STEP WIZARD PROGRESS BAR */
         .step-progress-bar {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0.875rem 1.25rem;
+            padding: 0.875rem 1rem;
             background: var(--kiosk-bg-subtle);
             border-bottom: 1px solid var(--kiosk-border);
         }
@@ -86,8 +110,8 @@ if ($db_connect) {
         .step-item {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            font-size: 0.85rem;
+            gap: 0.4rem;
+            font-size: 0.82rem;
             font-weight: 600;
             color: #64748b;
             transition: all 0.3s ease;
@@ -95,41 +119,35 @@ if ($db_connect) {
         }
 
         .step-item .step-number {
-            width: 30px;
-            height: 30px;
+            width: 28px;
+            height: 28px;
             border-radius: 50%;
             background: #cbd5e1;
             color: #ffffff;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             font-weight: 700;
             flex-shrink: 0;
         }
 
-        .step-item.active {
-            color: var(--kiosk-primary);
-        }
-
+        .step-item.active { color: var(--kiosk-primary); }
         .step-item.active .step-number {
             background: var(--kiosk-primary);
             box-shadow: 0 0 0 4px rgba(29, 78, 216, 0.15);
         }
-
-        .step-item.completed .step-number {
-            background: #10b981;
-        }
+        .step-item.completed .step-number { background: #10b981; }
 
         .step-divider {
             flex-grow: 1;
             height: 2px;
             background: #e2e8f0;
-            margin: 0 0.5rem;
-            min-width: 8px;
+            margin: 0 0.35rem;
+            min-width: 6px;
         }
 
-        /* Form Control Improvements & Responsive Safe Dropdowns */
+        /* Form Controls */
         .form-control-kiosk, .form-select-kiosk {
             border: 1.5px solid #cbd5e1;
             border-radius: 0.75rem;
@@ -137,14 +155,7 @@ if ($db_connect) {
             font-size: 1rem;
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             width: 100%;
-            max-width: 100%;
             box-sizing: border-box;
-        }
-
-        .form-select-kiosk {
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            overflow: hidden;
         }
 
         .form-control-kiosk:focus, .form-select-kiosk:focus {
@@ -153,11 +164,7 @@ if ($db_connect) {
             outline: none;
         }
 
-        .input-group-kiosk {
-            position: relative;
-            width: 100%;
-        }
-
+        .input-group-kiosk { position: relative; width: 100%; }
         .input-group-kiosk .input-icon {
             position: absolute;
             right: 1.25rem;
@@ -167,8 +174,8 @@ if ($db_connect) {
             pointer-events: none;
         }
 
-        /* Office & Transaction Cards */
-        .office-card, .transaction-card {
+        /* Selection Cards */
+        .building-card, .office-card, .transaction-card {
             cursor: pointer;
             transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
             border: 2px solid #e2e8f0;
@@ -177,31 +184,19 @@ if ($db_connect) {
             position: relative;
             padding: 1rem 1.15rem;
             width: 100%;
-            min-width: 0;
         }
 
-        .office-card:hover, .transaction-card:hover {
+        .building-card:hover, .office-card:hover, .transaction-card:hover {
             border-color: #93c5fd;
             background-color: var(--kiosk-bg-subtle);
             transform: translateY(-2px);
             box-shadow: var(--kiosk-shadow-sm);
         }
 
-        .office-card.active, .transaction-card.active {
+        .building-card.active, .office-card.active, .transaction-card.active {
             border-color: var(--kiosk-primary);
             background-color: var(--kiosk-primary-light);
             box-shadow: 0 10px 15px -3px rgba(29, 78, 216, 0.1);
-        }
-
-        .office-card.active::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 15%;
-            bottom: 15%;
-            width: 4px;
-            background-color: var(--kiosk-primary);
-            border-radius: 0 4px 4px 0;
         }
 
         .office-logo-img {
@@ -228,27 +223,21 @@ if ($db_connect) {
             flex-shrink: 0;
         }
 
-        /* Sub-Concern Pill Buttons */
         .sub-concern-btn {
             border-radius: 0.65rem;
             font-weight: 600;
-            font-size: 0.88rem;
+            font-size: 0.85rem;
             transition: all 0.2s ease;
-            word-break: break-word;
-            white-space: normal;
         }
 
-        /* Consent & Priority Card Styling */
         .consent-card-box, .priority-card-box {
             padding: 1rem 1.15rem;
             background-color: var(--kiosk-bg-subtle);
             border: 1px solid var(--kiosk-border);
             border-radius: 0.875rem;
             width: 100%;
-            overflow: hidden;
         }
 
-        /* Action Buttons */
         .btn-kiosk-primary {
             background-color: var(--kiosk-primary);
             border-color: var(--kiosk-primary);
@@ -263,15 +252,12 @@ if ($db_connect) {
             background-color: var(--kiosk-primary-hover);
             border-color: var(--kiosk-primary-hover);
             color: #ffffff;
-            transform: translateY(-1px);
         }
 
-        /* Thermal Receipt Modal */
         .receipt-card {
             background: #ffffff;
             border: 2px dashed #cbd5e1;
             border-radius: 1rem;
-            position: relative;
         }
 
         .receipt-header {
@@ -281,115 +267,58 @@ if ($db_connect) {
             padding: 1.25rem;
         }
 
-        /* FULLSCREEN KIOSK OVERRIDES */
-        :fullscreen,
-        :-webkit-full-screen {
+        /* RECEIPT CONCERN STYLES */
+        .receipt-concern-item {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-left: 3px solid var(--kiosk-primary);
+            border-radius: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            margin-bottom: 0.4rem;
+        }
+        .receipt-concern-title {
+            font-weight: 700;
+            color: #1e293b;
+            font-size: 0.875rem;
+        }
+        .receipt-subconcern-tag {
+            background-color: #eff6ff;
+            color: #1d4ed8;
+            font-weight: 600;
+            font-size: 0.75rem;
+            padding: 0.15rem 0.5rem;
+            border-radius: 0.35rem;
+            display: inline-block;
+            margin-top: 0.2rem;
+            border: 1px solid #bfdbfe;
+        }
+
+        :fullscreen, :-webkit-full-screen {
             background-color: #000a4c !important;
             background-image: var(--bg-wrapper) !important;
             background-position: center center !important;
             background-repeat: no-repeat !important;
             background-size: cover !important;
-            background-attachment: fixed !important;
         }
 
-        :fullscreen .sidebar,
-        :-webkit-full-screen .sidebar,
-        :fullscreen .main-header,
-        :-webkit-full-screen .main-header,
-        :fullscreen .kiosk-page-header,
-        :-webkit-full-screen .kiosk-page-header,
-        :fullscreen .page-header,
-        :-webkit-full-screen .page-header,
-        :fullscreen footer,
-        :-webkit-full-screen footer {
+        :fullscreen .sidebar, :-webkit-full-screen .sidebar,
+        :fullscreen .main-header, :-webkit-full-screen .main-header,
+        :fullscreen .kiosk-page-header, :-webkit-full-screen .kiosk-page-header,
+        :fullscreen footer, :-webkit-full-screen footer {
             display: none !important;
         }
 
-        :fullscreen .main-panel,
-        :-webkit-full-screen .main-panel {
+        :fullscreen .main-panel, :-webkit-full-screen .main-panel {
             width: 100vw !important;
             height: 100vh !important;
             padding: 0 !important;
             margin: 0 !important;
-            float: none !important;
             overflow-y: auto !important;
-            background-color: #000a4c !important;
-            background-image: var(--bg-wrapper) !important;
-            background-position: center center !important;
-            background-repeat: no-repeat !important;
-            background-size: cover !important;
-            background-attachment: fixed !important;
         }
 
-        :fullscreen .container,
-        :-webkit-full-screen .container,
-        :fullscreen .page-inner,
-        :-webkit-full-screen .page-inner {
-            padding: 1rem 0.5rem !important;
-            max-width: 100% !important;
-        }
-
-        :fullscreen .kiosk-main-card,
-        :-webkit-full-screen .kiosk-main-card {
+        :fullscreen .kiosk-main-card, :-webkit-full-screen .kiosk-main-card {
             max-width: 1100px;
             margin: 0.5rem auto 18em auto !important;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4) !important;
-            border-radius: 1rem !important;
-        }
-
-        /* HIDE SCROLLBAR IN FULLSCREEN MODE */
-        :fullscreen::-webkit-scrollbar,
-        :-webkit-full-screen::-webkit-scrollbar,
-        :fullscreen .main-panel::-webkit-scrollbar,
-        :-webkit-full-screen .main-panel::-webkit-scrollbar {
-            display: none !important;
-            width: 0 !important;
-            height: 0 !important;
-        }
-
-        :fullscreen,
-        :-webkit-full-screen,
-        :fullscreen .main-panel,
-        :-webkit-full-screen .main-panel {
-            scrollbar-width: none !important;
-            -ms-overflow-style: none !important;
-        }
-
-        /* RESPONSIVE OVERRIDES FOR SMALL MOBILE SCREENS (<= 575px) */
-        @media (max-width: 575.98px) {
-            .step-progress-bar {
-                padding: 0.75rem 0.5rem;
-            }
-
-            .step-divider {
-                margin: 0 0.25rem;
-            }
-
-            .card-body-kiosk {
-                padding: 1rem !important;
-            }
-
-            .office-card, .transaction-card {
-                padding: 0.875rem;
-            }
-
-            .action-btn-group {
-                flex-direction: column-reverse !important;
-                gap: 0.75rem !important;
-            }
-
-            .action-btn-group .btn {
-                width: 100% !important;
-            }
-        }
-
-        .header-action-btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
-        }
-
-        .header-action-btn:active {
-            transform: translateY(0);
         }
     </style>
 </head>
@@ -404,7 +333,6 @@ if ($db_connect) {
             <div class="container">
                 <div class="page-inner">
 
-                    <!-- Page Header (Hidden on Fullscreen) -->
                     <div class="kiosk-page-header">
                         <?php echo is_array($page_header) ? '' : $page_header; ?>
                     </div>
@@ -413,35 +341,28 @@ if ($db_connect) {
                         <div class="col-12 px-0">
                             <div class="card kiosk-main-card border-0">
 
-                                <!-- STANDARDIZED CARD HEADER (MATCHING OFFICE_PREFIX.PHP) -->
+                                <!-- HEADER -->
                                 <div class="card-header d-flex align-items-center justify-content-between">
                                     <div class="d-flex justify-content-between align-items-start align-items-md-center gap-3 w-100">
-
                                         <div class="d-flex align-items-center gap-3">
                                             <div class="bg-primary-subtle text-primary rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 44px; height: 44px;">
                                                 <i class="bi bi-person-vcard fs-4"></i>
                                             </div>
-
                                             <div>
-                                                <div class="text-uppercase text-muted fw-bold tracking-wide small" style="font-size: 0.95rem;">
-                                                    Student Digital Logbook
-                                                </div>
+                                                <div class="text-uppercase text-muted fw-bold tracking-wide small">Student Digital Logbook</div>
                                                 <div class="d-flex align-items-center text-muted small mt-0.5" style="font-size: 0.75rem;">
                                                     <i class="bi bi-info-circle me-1"></i> Student kiosk check-in and queue ticket issuance
                                                 </div>
                                             </div>
                                         </div>
 
-                                        <div class="d-flex align-items-start align-items-md-end gap-2 ms-md-auto">
-                                            <button type="button" class="btn btn-action d-inline-flex align-items-center justify-content-center shadow-sm header-action-btn" id="btnToggleFullscreen" title="Toggle Fullscreen">
-                                                <i class="bi bi-fullscreen fs-5" id="fullscreenIcon"></i>
-                                            </button>
-                                        </div>
-
+                                        <button type="button" class="btn btn-action shadow-sm" id="btnToggleFullscreen" title="Toggle Fullscreen">
+                                            <i class="bi bi-fullscreen fs-5" id="fullscreenIcon"></i>
+                                        </button>
                                     </div>
                                 </div>
 
-                                <!-- VISUAL STEP WIZARD -->
+                                <!-- 4-STEP PROGRESS WIZARD -->
                                 <div class="step-progress-bar">
                                     <div class="step-item active" id="wizardStep1">
                                         <span class="step-number">1</span>
@@ -450,18 +371,22 @@ if ($db_connect) {
                                     <div class="step-divider"></div>
                                     <div class="step-item" id="wizardStep2">
                                         <span class="step-number">2</span>
-                                        <span class="d-none d-sm-inline">Select Office</span>
+                                        <span class="d-none d-sm-inline">Building</span>
                                     </div>
                                     <div class="step-divider"></div>
                                     <div class="step-item" id="wizardStep3">
                                         <span class="step-number">3</span>
+                                        <span class="d-none d-sm-inline">Office</span>
+                                    </div>
+                                    <div class="step-divider"></div>
+                                    <div class="step-item" id="wizardStep4">
+                                        <span class="step-number">4</span>
                                         <span class="d-none d-sm-inline">Transaction</span>
                                     </div>
                                 </div>
 
                                 <div class="card-body card-body-kiosk p-3 p-sm-4 p-md-5">
 
-                                    <!-- KIOSK FORM -->
                                     <form id="kioskForm" novalidate>
                                         <input type="hidden" name="action" value="logbook_checkin">
                                         <input type="hidden" name="visitor_type" value="STUDENT">
@@ -469,36 +394,32 @@ if ($db_connect) {
                                         <input type="hidden" id="departmentId" name="department_id" value="0">
                                         <input type="hidden" id="programCode" name="program_code" value="">
                                         <input type="hidden" id="programMajor" name="major" value="">
+                                        
+                                        <!-- SELECTION STATES -->
+                                        <input type="hidden" id="facilitySelect" name="facility_id" value="" required>
                                         <input type="hidden" id="officeSelect" name="office_id" value="" required>
                                         <input type="hidden" id="transactionSelect" name="transaction_type_id" value="" required>
                                         <input type="hidden" id="subConcernSelect" name="sub_concern_id" value="">
 
                                         <!-- ========================================================== -->
-                                        <!-- STEP 1: STUDENT INFORMATION                                -->
+                                        <!-- STEP 1: STUDENT INFORMATION & PRIVACY AGREEMENT           -->
                                         <!-- ========================================================== -->
                                         <div id="step1_studentInfo">
-
                                             <div class="mb-3 mb-sm-4">
                                                 <h3 class="fw-bold text-dark mb-1 fs-5 fs-sm-4">Student Identification</h3>
-                                                <p class="text-muted small mb-0">
-                                                    Enter or scan your Student ID to retrieve your record.
-                                                </p>
+                                                <p class="text-muted small mb-0">Enter your Student ID to retrieve your record.</p>
                                             </div>
 
-                                            <!-- ALWAYS VISIBLE: STUDENT ID INPUT -->
                                             <div class="mb-3 mb-sm-4">
                                                 <label for="studentId" class="form-label fw-bold text-dark small">Student ID Number</label>
                                                 <div class="input-group-kiosk">
                                                     <input type="text" class="form-control form-control-kiosk form-control-lg fw-bold text-primary" id="studentId" name="reference_id" placeholder="e.g., 2023-11961" maxlength="15" autocomplete="off" required autofocus>
-                                                    <i class="bi bi-upc-scan input-icon fs-4"></i>
+                                                    <i class="bi bi-person-badge input-icon fs-4"></i>
                                                 </div>
                                                 <div id="idHelpBlock" class="form-text text-muted mt-2 small">Enter your Student ID to verify details.</div>
                                             </div>
 
-                                            <!-- HIDDEN UNTIL VALID STUDENT ID IS ENTERED -->
                                             <div id="studentDetailsSection" class="d-none pt-2">
-
-                                                <!-- NAME FIELDS ROW -->
                                                 <div class="row g-2 g-sm-3 mb-3">
                                                     <div class="col-12 col-md-4">
                                                         <label for="firstName" class="form-label fw-bold text-dark small">First Name</label>
@@ -521,13 +442,10 @@ if ($db_connect) {
                                                             <option value="I">I</option>
                                                             <option value="II">II</option>
                                                             <option value="III">III</option>
-                                                            <option value="IV">IV</option>
-                                                            <option value="V">V</option>
                                                         </select>
                                                     </div>
                                                 </div>
 
-                                                <!-- SEX, CONTACT NUMBER & EMAIL ROW -->
                                                 <div class="row g-2 g-sm-3 mb-3">
                                                     <div class="col-12 col-md-4">
                                                         <label for="sex" class="form-label fw-bold text-dark small">Sex</label>
@@ -547,9 +465,8 @@ if ($db_connect) {
                                                     </div>
                                                 </div>
 
-                                                <!-- COURSE & YEAR LEVEL ROW -->
                                                 <div class="row g-2 g-sm-3 mb-3">
-                                                    <div class="col-12 col-sm-6 min-w-0">
+                                                    <div class="col-12 col-sm-6">
                                                         <label for="courseProgram" class="form-label fw-bold text-dark small">Course / Program</label>
                                                         <select class="form-select form-select-kiosk" id="courseProgram" name="program_id" required>
                                                             <option value="" selected disabled>Select course / program</option>
@@ -562,15 +479,14 @@ if ($db_connect) {
                                                                 ?>
                                                                 <option value="<?= htmlspecialchars($prog['program_id']); ?>" 
                                                                         data-program-code="<?= htmlspecialchars($prog['program_code']); ?>"
-                                                                        data-major="<?= htmlspecialchars($prog['major'] ?? ''); ?>"
-                                                                        title="<?= htmlspecialchars($displayName); ?>">
+                                                                        data-major="<?= htmlspecialchars($prog['major'] ?? ''); ?>">
                                                                     <?= htmlspecialchars($displayName); ?>
                                                                 </option>
                                                             <?php endforeach; ?>
                                                         </select>
                                                     </div>
 
-                                                    <div class="col-12 col-sm-6 min-w-0">
+                                                    <div class="col-12 col-sm-6">
                                                         <label for="yearLevel" class="form-label fw-bold text-dark small">Year Level</label>
                                                         <select class="form-select form-select-kiosk" id="yearLevel" name="year_level" required>
                                                             <option value="" selected disabled>Select year level</option>
@@ -582,14 +498,14 @@ if ($db_connect) {
                                                     </div>
                                                 </div>
 
-                                                <!-- PRIORITY / SPECIAL ASSISTANCE TOGGLE CARD -->
+                                                <!-- PRIORITY TOGGLE -->
                                                 <div class="priority-card-box mb-3">
                                                     <div class="d-flex align-items-center justify-content-between gap-3">
-                                                        <label class="form-check-label fw-bold text-dark mb-0 fs-6 cursor-pointer flex-grow-1" for="isPrioritySwitch" style="word-break: break-word; cursor: pointer;">
+                                                        <label class="form-check-label fw-bold text-dark mb-0 fs-6 cursor-pointer" for="isPrioritySwitch">
                                                             <i class="bi bi-person-wheelchair text-primary me-1 fs-5"></i> Priority / Special Assistance Needed?
                                                         </label>
-                                                        <div class="form-check form-switch p-0 m-0 flex-shrink-0 d-flex align-items-center">
-                                                            <input class="form-check-input fs-4 m-0 cursor-pointer" type="checkbox" id="isPrioritySwitch" name="is_priority" value="1" style="float: none; cursor: pointer;">
+                                                        <div class="form-check form-switch p-0 m-0">
+                                                            <input class="form-check-input fs-4 m-0" type="checkbox" id="isPrioritySwitch" name="is_priority" value="1">
                                                         </div>
                                                     </div>
 
@@ -601,119 +517,151 @@ if ($db_connect) {
                                                             <option value="SENIOR">Senior Citizen</option>
                                                             <option value="OTHER">Other Special Assistance / Express Service</option>
                                                         </select>
-                                                        <span class="form-text text-muted small mt-2 d-block">
-                                                            <i class="bi bi-info-circle me-1"></i> Please present valid proof or ID at the transaction counter when called.
-                                                        </span>
                                                     </div>
                                                 </div>
 
-                                                <!-- CONSENT BOX -->
+                                                <!-- DATA PRIVACY AGREEMENT TRIGGER (DYNAMICALLY SWITCHES TO GREEN ON ACCEPTANCE) -->
                                                 <div class="consent-card-box mb-4">
-                                                    <div class="form-check d-flex align-items-start gap-2 ps-0">
-                                                        <input class="form-check-input mt-1 flex-shrink-0 ms-0" type="checkbox" id="dataConsent" name="data_consent" value="1" required>
-                                                        <label class="form-check-label small text-muted flex-grow-1 text-wrap" for="dataConsent" style="word-break: break-word;">
-                                                            I authorize the school to collect and use the information I have provided for 
-                                                            <strong class="text-dark">school-related services, queue management, and record-keeping purposes</strong>.
-                                                        </label>
+                                                    <input type="hidden" id="dataConsent" name="data_consent" value="0">
+                                                    
+                                                    <button type="button" class="btn btn-outline-primary w-100 py-3 rounded-3 fw-bold d-flex align-items-center justify-content-center gap-2 shadow-sm" id="btnOpenPrivacyModal">
+                                                        <i class="bi bi-file-earmark-check fs-5" id="consentBtnIcon"></i>
+                                                        <span>Read & Sign Agreement Form</span>
+                                                    </button>
+                                                    <div class="text-muted small text-center mt-2" id="consentSubText">
+                                                        <i class="bi bi-shield-lock me-1"></i> Data privacy verification is required before proceeding.
                                                     </div>
                                                 </div>
 
                                                 <button type="button" id="btnContinueStep2" class="btn btn-kiosk-primary w-100 py-3 d-flex align-items-center justify-content-center gap-2 shadow-sm">
-                                                    <span>Continue to Office Selection</span>
+                                                    <span>Continue to Building Selection</span>
                                                     <i class="bi bi-arrow-right fs-5"></i>
                                                 </button>
-
                                             </div>
                                         </div>
 
                                         <!-- ========================================================== -->
-                                        <!-- STEP 2: OFFICE SELECTION                                   -->
+                                        <!-- STEP 2: BUILDING SELECTION                                 -->
                                         <!-- ========================================================== -->
-                                        <div id="step2_officeSelection" class="d-none">
-
+                                        <div id="step2_buildingSelection" class="d-none">
                                             <div class="mb-3 mb-sm-4">
-                                                <h3 class="fw-bold text-dark mb-1 fs-5 fs-sm-4">Select Destination Office</h3>
-                                                <p class="text-muted small mb-0">
-                                                    Tap your destination office below to proceed to transaction selection.
-                                                </p>
+                                                <h3 class="fw-bold text-dark mb-1 fs-5 fs-sm-4">Select Building</h3>
+                                                <p class="text-muted small mb-0">Tap the campus building where your destination office is located.</p>
                                             </div>
 
-                                            <!-- SINGLE-COLUMN OFFICE LIST WITH VALID GAP-3 -->
-                                            <div class="d-flex flex-column gap-3 mb-4" id="officeListContainer">
-                                                <?php if (!empty($offices_list)): ?>
-                                                    <?php foreach ($offices_list as $off): ?>
-                                                        <?php 
-                                                            $logo_path = !empty($off['office_logo']) ? BASE_URL . $off['office_logo'] : ''; 
-                                                        ?>
-                                                        <div class="office-card d-flex align-items-center justify-content-between gap-2" 
-                                                             data-office-id="<?= $off['office_id']; ?>" 
-                                                             data-office-name="<?= htmlspecialchars($off['office_name']); ?>"
-                                                             data-office-code="<?= htmlspecialchars($off['office_code']); ?>">
-                                                            <div class="d-flex align-items-center gap-2 gap-sm-3 min-w-0 flex-grow-1">
-                                                                <?php if (!empty($logo_path)): ?>
-                                                                    <img src="<?= htmlspecialchars($logo_path); ?>" 
-                                                                         alt="<?= htmlspecialchars($off['office_code']); ?> Logo" 
-                                                                         class="office-logo-img me-1 me-sm-2"
-                                                                         onerror="this.style.display='none'; this.nextElementSibling.classList.remove('d-none');">
-                                                                    <div class="office-logo-placeholder me-1 me-sm-2 d-none">
-                                                                        <i class="bi bi-building"></i>
-                                                                    </div>
-                                                                <?php else: ?>
-                                                                    <div class="office-logo-placeholder me-1 me-sm-2">
-                                                                        <i class="bi bi-building"></i>
-                                                                    </div>
-                                                                <?php endif; ?>
-
+                                            <div class="d-flex flex-column gap-3 mb-4" id="buildingListContainer">
+                                                <?php if (!empty($facilities_list)): ?>
+                                                    <?php foreach ($facilities_list as $fac): ?>
+                                                        <div class="building-card d-flex align-items-center justify-content-between gap-3" 
+                                                             data-facility-id="<?= $fac['facility_id']; ?>" 
+                                                             data-facility-name="<?= htmlspecialchars($fac['facility_name']); ?>"
+                                                             data-facility-code="<?= htmlspecialchars($fac['facility_code']); ?>">
+                                                            <div class="d-flex align-items-center gap-3 min-w-0 flex-grow-1">
+                                                                <div class="office-logo-placeholder">
+                                                                    <i class="bi bi-buildings"></i>
+                                                                </div>
                                                                 <div class="min-w-0 flex-grow-1">
-                                                                    <h6 class="fw-bold text-dark mb-0 fs-6 text-break" style="word-break: break-word;"><?= htmlspecialchars($off['office_name']); ?></h6>
-                                                                    <span class="badge bg-light text-primary border mt-1 fw-semibold small text-nowrap"><?= htmlspecialchars($off['office_code']); ?></span>
+                                                                    <h6 class="fw-bold text-dark mb-0 fs-6"><?= htmlspecialchars($fac['facility_name']); ?></h6>
+                                                                    <span class="badge bg-light text-primary border mt-1 fw-semibold small"><?= htmlspecialchars($fac['facility_code']); ?></span>
                                                                 </div>
                                                             </div>
-
-                                                            <i class="bi bi-chevron-right text-muted fs-5 select-icon ms-1 flex-shrink-0"></i>
+                                                            <i class="bi bi-chevron-right text-muted fs-5"></i>
                                                         </div>
                                                     <?php endforeach; ?>
                                                 <?php else: ?>
-                                                    <div class="text-center p-4 bg-light rounded-3 text-muted">
-                                                        No active offices available.
-                                                    </div>
+                                                    <div class="text-center p-4 bg-light rounded-3 text-muted">No active campus buildings available.</div>
                                                 <?php endif; ?>
                                             </div>
 
-                                            <!-- ACTION BUTTON -->
                                             <button type="button" id="btnBackToStep1" class="btn btn-outline-secondary py-3 fw-bold w-100 rounded-3">
                                                 <i class="bi bi-arrow-left me-1"></i> Back to Student Information
                                             </button>
-
                                         </div>
 
                                         <!-- ========================================================== -->
-                                        <!-- STEP 3: TRANSACTION / PURPOSE SELECTION                   -->
+                                        <!-- STEP 3: OFFICE SELECTION                                  -->
                                         <!-- ========================================================== -->
-                                        <div id="step3_purposeSelection" class="d-none">
-
-                                            <!-- SELECTED OFFICE SUMMARY BANNER -->
-                                            <div class="p-3 p-md-4 bg-light rounded-3 border d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between mb-4 gap-2">
-                                                <div class="min-w-0 w-100">
-                                                    <span class="text-muted text-uppercase fw-bold small d-block">Destination Office</span>
-                                                    <h5 class="fw-bold text-primary mb-0 text-break" id="summaryOfficeName" style="word-break: break-word;">---</h5>
+                                        <div id="step3_officeSelection" class="d-none">
+                                            <div class="p-3 bg-light rounded-3 border d-flex align-items-center justify-content-between mb-3">
+                                                <div>
+                                                    <span class="text-muted text-uppercase fw-bold small d-block">Selected Building</span>
+                                                    <h6 class="fw-bold text-primary mb-0" id="summaryBuildingName">---</h6>
                                                 </div>
-                                                <span class="badge bg-primary fs-6 px-3 py-2 align-self-start align-self-sm-center flex-shrink-0" id="summaryOfficeCode">---</span>
+                                                <span class="badge bg-primary fs-6 px-3 py-1" id="summaryBuildingCode">---</span>
+                                            </div>
+
+                                            <div class="mb-3 mb-sm-4">
+                                                <h3 class="fw-bold text-dark mb-1 fs-5 fs-sm-4">Select Destination Office</h3>
+                                                <p class="text-muted small mb-0">Tap your target office inside this building.</p>
+                                            </div>
+
+                                            <div class="d-flex flex-column gap-3 mb-4" id="officeListContainer">
+                                                <?php if (!empty($offices_list)): ?>
+                                                    <?php foreach ($offices_list as $off): ?>
+                                                        <?php $logo_path = !empty($off['office_logo']) ? BASE_URL . $off['office_logo'] : ''; ?>
+                                                        <div class="office-card d-flex align-items-center justify-content-between gap-2" 
+                                                             data-office-id="<?= $off['office_id']; ?>" 
+                                                             data-facility-id="<?= $off['facility_id']; ?>"
+                                                             data-office-name="<?= htmlspecialchars($off['office_name']); ?>"
+                                                             data-office-code="<?= htmlspecialchars($off['office_code']); ?>"
+                                                             data-room-name="<?= htmlspecialchars($off['room_name']); ?>">
+                                                            <div class="d-flex align-items-center gap-3 min-w-0 flex-grow-1">
+                                                                <?php if (!empty($logo_path)): ?>
+                                                                    <img src="<?= htmlspecialchars($logo_path); ?>" class="office-logo-img me-2" onerror="this.style.display='none'; this.nextElementSibling.classList.remove('d-none');">
+                                                                    <div class="office-logo-placeholder me-2 d-none"><i class="bi bi-building"></i></div>
+                                                                <?php else: ?>
+                                                                    <div class="office-logo-placeholder me-2"><i class="bi bi-building"></i></div>
+                                                                <?php endif; ?>
+
+                                                                <div class="min-w-0 flex-grow-1">
+                                                                    <h6 class="fw-bold text-dark mb-1 fs-6"><?= htmlspecialchars($off['office_name']); ?></h6>
+                                                                    <div class="mb-1">
+                                                                        <span class="badge bg-light text-primary border fw-semibold small"><?= htmlspecialchars($off['office_code']); ?></span>
+                                                                    </div>
+                                                                    <div class="text-muted small">
+                                                                        <i class="bi bi-geo-alt me-1"></i><?= htmlspecialchars($off['room_name']); ?>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <i class="bi bi-chevron-right text-muted fs-5"></i>
+                                                        </div>
+                                                    <?php endforeach; ?>
+                                                <?php endif; ?>
+                                            </div>
+
+                                            <button type="button" id="btnBackToStep2" class="btn btn-outline-secondary py-3 fw-bold w-100 rounded-3">
+                                                <i class="bi bi-arrow-left me-1"></i> Back to Building Selection
+                                            </button>
+                                        </div>
+
+                                        <!-- ========================================================== -->
+                                        <!-- STEP 4: TRANSACTION CONCERNS                               -->
+                                        <!-- ========================================================== -->
+                                        <div id="step4_purposeSelection" class="d-none">
+                                            <div class="p-3 bg-light rounded-3 border d-flex align-items-center justify-content-between mb-3">
+                                                <div>
+                                                    <span class="text-muted text-uppercase fw-bold small d-block">Destination Office</span>
+                                                    <h5 class="fw-bold text-primary mb-0" id="summaryOfficeName">---</h5>
+                                                </div>
+                                                <span class="badge bg-primary fs-6 px-3 py-2" id="summaryOfficeCode">---</span>
                                             </div>
 
                                             <div class="mb-3">
-                                                <h4 class="fw-bold text-dark mb-1 fs-5 fs-sm-4">Select Transaction Concern</h4>
-                                                <p class="text-muted small mb-0">Tap your primary concern below to view dynamic options.</p>
+                                                <h4 class="fw-bold text-dark mb-1 fs-5 fs-sm-4">Select Transaction Concern(s)</h4>
+                                                <p class="text-muted small mb-0">Select one or more concerns below. Choose "Others" if your specific concern is not listed.</p>
                                             </div>
 
-                                            <!-- DYNAMIC TRANSACTION CARDS CONTAINER WITH VALID GAP-3 -->
                                             <div class="d-flex flex-column gap-3 mb-4" id="transactionCardsContainer">
                                                 <div class="text-center p-3 text-muted">Loading available concerns...</div>
                                             </div>
 
-                                            <!-- ACTION BUTTONS -->
+                                            <div id="otherConcernInputContainer" class="d-none mb-4 p-3 bg-light rounded-3 border">
+                                                <label for="otherConcernText" class="form-label fw-bold text-dark small">Specify Your Transaction Concern:</label>
+                                                <textarea class="form-control form-control-kiosk" id="otherConcernText" name="other_concern_text" rows="3" placeholder="Please describe your specific concern here..."></textarea>
+                                            </div>
+
                                             <div class="d-flex action-btn-group gap-2 gap-sm-3 mt-4">
-                                                <button type="button" id="btnBackToStep2" class="btn btn-outline-secondary py-3 fw-bold rounded-3 px-4">
+                                                <button type="button" id="btnBackToStep3" class="btn btn-outline-secondary py-3 fw-bold rounded-3 px-4">
                                                     <i class="bi bi-arrow-left me-1"></i> Back
                                                 </button>
                                                 <button type="submit" id="btnFinalSubmit" class="btn btn-success py-3 fw-bold rounded-3 flex-grow-1 shadow-sm">
@@ -721,13 +669,11 @@ if ($db_connect) {
                                                     <i class="bi bi-check-circle ms-1 fs-5"></i>
                                                 </button>
                                             </div>
-
                                         </div>
 
                                     </form>
 
                                 </div>
-
                             </div>
                         </div>
                     </div>
@@ -739,77 +685,118 @@ if ($db_connect) {
         </div>
     </div>
 
-    <!-- QUEUE TICKET SUCCESS MODAL -->
+    <!-- PRIVACY AGREEMENT MODAL -->
+    <div class="modal fade" id="privacyAgreementModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="privacyAgreementModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-light border-bottom py-3 px-4">
+                    <h6 class="modal-title fw-bold text-dark mb-0" id="privacyAgreementModalLabel">
+                        <i class="bi bi-shield-check text-primary me-2 fs-5"></i>DATA PRIVACY & COLLECTION AGREEMENT
+                    </h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body p-3 p-md-4">
+                    <div class="card shadow-none border mb-0">
+                        <div class="card-body p-3 p-md-4">
+
+                            <div class="pe-2 text-secondary small" id="privacyModalScrollBody" style="max-height: 48vh; overflow-y: auto; line-height: 1.6;">
+                                <div class="mb-3">
+                                    <h6 class="fw-bold text-dark fs-6 mb-1">1. Purpose of Information Collection</h6>
+                                    <p class="mb-0 text-muted">City College of Calamba collects personal data including student ID numbers, full names, academic programs, and contact numbers to manage campus queue flows, logbook verification, and official academic service records.</p>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <h6 class="fw-bold text-dark fs-6 mb-1">2. Data Usage & Protection</h6>
+                                    <p class="mb-0 text-muted">All recorded information is strictly stored within internal database systems in accordance with Republic Act No. 10173, otherwise known as the Data Privacy Act of 2012. Data will not be shared with unauthorized third parties.</p>
+                                </div>
+
+                                <div class="mb-3">
+                                    <h6 class="fw-bold text-dark fs-6 mb-1">3. Student Authorization & Consent</h6>
+                                    <p class="mb-0 text-muted">By checking the authorization consent inside this agreement form, you acknowledge that all information provided is accurate and grant explicit consent for processing queue tickets, operational statistics, and campus administrative records.</p>
+                                </div>
+
+                                <div class="mb-3">
+                                    <h6 class="fw-bold text-dark fs-6 mb-1">4. Retention & Confidentiality</h6>
+                                    <p class="mb-0 text-muted">Logbook data will be retained only as long as necessary to fulfill service fulfillment and reporting analytics. Security measures are enforced to safeguard records against unauthorized access, loss, or alteration.</p>
+                                </div>
+
+                                <!-- CHECKBOX BOX INSIDE MODAL -->
+                                <div class="p-3 bg-light rounded-3 border mt-4">
+                                    <div class="form-check d-flex align-items-center gap-2 ps-0 mb-0">
+                                        <input class="form-check-input mt-0 flex-shrink-0 ms-0" type="checkbox" id="modalConsentCheckbox">
+                                        <label class="form-check-label fw-bold text-dark small cursor-pointer mb-0" for="modalConsentCheckbox">
+                                            I have read, understood, and agree to the Data Privacy Terms & Conditions.
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer bg-light border-top p-3 d-flex align-items-center justify-content-end">
+                    <button type="button" class="btn btn-success rounded-3 px-4 fw-bold" id="btnAcceptPrivacyModal" disabled>
+                        <i class="bi bi-check2-circle me-1"></i> Confirm & Accept Agreement
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TICKET SUCCESS MODAL -->
     <div class="modal fade" id="ticketSuccessModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow-lg p-3 p-sm-4 rounded-4 text-center">
                 <div class="modal-body p-0">
-                    
-                    <!-- SUCCESS ICON & HEADER -->
-                    <div class="text-success display-3 mb-2">
-                        <i class="bi bi-check-circle-fill"></i>
-                    </div>
+                    <div class="text-success display-3 mb-2"><i class="bi bi-check-circle-fill"></i></div>
                     <h3 class="fw-bold text-dark mb-1 fs-4">Check-in Complete!</h3>
                     <p class="text-muted small mb-3">Please keep a record of your queue ticket receipt details.</p>
 
-                    <!-- TICKET RECEIPT CARD -->
                     <div class="card receipt-card my-3 text-start shadow-sm overflow-hidden">
-                        
-                        <!-- TICKET NUMBER DISPLAY HEADER -->
                         <div class="receipt-header text-center position-relative">
                             <span class="text-uppercase tracking-wide fw-semibold small opacity-75 d-block">Queue Ticket Number</span>
                             <h1 class="display-3 fw-black mb-0" id="modalTicketNumber">---</h1>
-                            
-                            <!-- HIGHLIGHTED PRIORITY BADGE -->
                             <div id="modalPriorityBadge" class="d-none mt-2">
-                                <span class="badge bg-warning text-dark fw-bold px-3 py-2 fs-7 shadow-sm border border-dark text-wrap">
-                                    <i class="bi bi-star-fill me-1 text-danger"></i>
-                                    <span id="modalPriorityLabel">PRIORITY TICKET</span>
+                                <span class="badge bg-warning text-dark fw-bold px-3 py-2 fs-7 border border-dark">
+                                    <i class="bi bi-star-fill me-1 text-danger"></i><span id="modalPriorityLabel">PRIORITY TICKET</span>
                                 </span>
                             </div>
                         </div>
 
-                        <!-- TICKET BREAKDOWN DETAILS -->
                         <div class="p-3 p-md-4 bg-white">
                             <div class="mb-2">
                                 <span class="text-muted d-block small">Destination Office</span>
-                                <strong class="text-dark fs-6 d-block text-break" id="modalOfficeName">---</strong>
+                                <strong class="text-dark fs-6 d-block" id="modalOfficeName">---</strong>
                             </div>
-
-                            <hr class="my-2 text-muted opacity-25">
-
+                            <hr class="my-2 opacity-25">
+                            
+                            <!-- STRUCTURED CONCERN CONTAINER -->
                             <div class="mb-2">
-                                <span class="text-muted d-block small">Transaction Concern</span>
-                                <strong class="text-dark fs-6 d-block text-break" id="modalTransactionName">---</strong>
+                                <span class="text-muted d-block small mb-1.5">Transaction Concern(s)</span>
+                                <div id="modalTransactionContainer" class="d-flex flex-column gap-1.5">
+                                    <!-- Dynamic clean item cards will be injected here -->
+                                </div>
                             </div>
 
-                            <hr class="my-2 text-muted opacity-25">
-
+                            <hr class="my-2 opacity-25">
                             <div class="mb-2">
                                 <span class="text-muted d-block small">Issued Date & Time</span>
                                 <span class="fw-semibold text-dark small d-block" id="modalIssuedDate">---</span>
                             </div>
-
-                            <hr class="my-2 text-muted opacity-25">
-
-                            <div class="d-flex align-items-center justify-content-between">
-                                <span class="text-muted small fw-semibold">Est. Wait Time</span>
-                                <span class="badge bg-warning text-dark fw-bold px-3 py-2" id="modalEstTime">---</span>
+                            <hr class="my-2 opacity-25">
+                            <div class="d-flex align-items-center justify-content-between pt-1">
+                                <span class="text-muted small fw-semibold"><i class="bi bi-clock-history me-1"></i>Est. Process Time</span>
+                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle fw-bold px-3 py-2 fs-7" id="modalEstTime">~15 mins</span>
                             </div>
                         </div>
-
                     </div>
 
-                    <p class="text-muted small mb-4">
-                        <i class="bi bi-info-circle me-1"></i> Please watch the office display screen for your ticket number call.
-                    </p>
-
-                    <!-- ACTION BUTTON -->
                     <button type="button" class="btn btn-kiosk-primary btn-lg w-100 py-3 shadow-sm" id="btnFinishKiosk">
                         <span>Done & Reset Kiosk</span>
                         <i class="bi bi-arrow-counterclockwise ms-1"></i>
                     </button>
-
                 </div>
             </div>
         </div>
@@ -819,97 +806,128 @@ if ($db_connect) {
 
 <script>
     (function() {
-        // Elements - Step 1
-        const studentIdInput    = document.getElementById('studentId');
-        const detailsSection    = document.getElementById('studentDetailsSection');
-        const idHelpBlock       = document.getElementById('idHelpBlock');
-
-        const userIdInput       = document.getElementById('userId');
-        const departmentIdInput = document.getElementById('departmentId');
-        const programCodeInput  = document.getElementById('programCode');
-        const programMajorInput = document.getElementById('programMajor');
-
-        const firstNameInput    = document.getElementById('firstName');
-        const middleNameInput   = document.getElementById('middleName');
-        const lastNameInput     = document.getElementById('lastName');
-        const suffixSelect      = document.getElementById('suffix');
-        const sexSelect         = document.getElementById('sex');
-        const emailInput        = document.getElementById('email');
-
-        const courseSelect      = document.getElementById('courseProgram');
-        const yearSelect        = document.getElementById('yearLevel');
-        const contactInput      = document.getElementById('contactNumber');
-        const consentCheckbox   = document.getElementById('dataConsent');
-        const btnContinue       = document.getElementById('btnContinueStep2');
-
-        // Priority Elements
-        const prioritySwitch    = document.getElementById('isPrioritySwitch');
-        const prioritySection   = document.getElementById('priorityOptionsSection');
-        const priorityTypeSelect = document.getElementById('priorityType');
-
-        // Elements - Step 2 & 3
-        const step1Div                 = document.getElementById('step1_studentInfo');
-        const step2Div                 = document.getElementById('step2_officeSelection');
-        const step3Div                 = document.getElementById('step3_purposeSelection');
+        const studentIdInput       = document.getElementById('studentId');
+        const detailsSection       = document.getElementById('studentDetailsSection');
+        const idHelpBlock          = document.getElementById('idHelpBlock');
+        const userIdInput          = document.getElementById('userId');
+        const departmentIdInput    = document.getElementById('departmentId');
+        const programCodeInput     = document.getElementById('programCode');
+        const programMajorInput    = document.getElementById('programMajor');
+        const firstNameInput       = document.getElementById('firstName');
+        const middleNameInput      = document.getElementById('middleName');
+        const lastNameInput        = document.getElementById('lastName');
+        const suffixSelect         = document.getElementById('suffix');
+        const sexSelect            = document.getElementById('sex');
+        const emailInput           = document.getElementById('email');
+        const courseSelect         = document.getElementById('courseProgram');
+        const yearSelect           = document.getElementById('yearLevel');
+        const contactInput         = document.getElementById('contactNumber');
         
-        // Wizard Steps Bar
-        const wizardStep1              = document.getElementById('wizardStep1');
-        const wizardStep2              = document.getElementById('wizardStep2');
-        const wizardStep3              = document.getElementById('wizardStep3');
+        // Data Privacy Elements
+        const dataConsentInput     = document.getElementById('dataConsent');
+        const btnOpenPrivacyModal  = document.getElementById('btnOpenPrivacyModal');
+        const consentSubText       = document.getElementById('consentSubText');
 
-        const btnBackTo1               = document.getElementById('btnBackToStep1');
-        const btnBackTo2               = document.getElementById('btnBackToStep2');
-        
-        const officeInput              = document.getElementById('officeSelect');
-        const officeCards              = document.querySelectorAll('.office-card');
-        const summaryOfficeName        = document.getElementById('summaryOfficeName');
-        const summaryOfficeCode        = document.getElementById('summaryOfficeCode');
-        
-        const transactionInput         = document.getElementById('transactionSelect');
-        const subConcernInput          = document.getElementById('subConcernSelect');
-        const transactionContainer     = document.getElementById('transactionCardsContainer');
-        const kioskForm                = document.getElementById('kioskForm');
-        const btnFinalSubmit           = document.getElementById('btnFinalSubmit');
+        const privacyModalEl       = document.getElementById('privacyAgreementModal');
+        const modalConsentCheckbox = document.getElementById('modalConsentCheckbox');
+        const btnAcceptPrivacy     = document.getElementById('btnAcceptPrivacyModal');
 
-        if (!studentIdInput || !detailsSection) return;
+        const btnContinue          = document.getElementById('btnContinueStep2');
 
+        // Priority Switches
+        const prioritySwitch       = document.getElementById('isPrioritySwitch');
+        const prioritySection      = document.getElementById('priorityOptionsSection');
+
+        // Step Containers & Wizards
+        const step1Div             = document.getElementById('step1_studentInfo');
+        const step2Div             = document.getElementById('step2_buildingSelection');
+        const step3Div             = document.getElementById('step3_officeSelection');
+        const step4Div             = document.getElementById('step4_purposeSelection');
+
+        const wizardStep1          = document.getElementById('wizardStep1');
+        const wizardStep2          = document.getElementById('wizardStep2');
+        const wizardStep3          = document.getElementById('wizardStep3');
+        const wizardStep4          = document.getElementById('wizardStep4');
+
+        const btnBackTo1           = document.getElementById('btnBackToStep1');
+        const btnBackTo2           = document.getElementById('btnBackToStep2');
+        const btnBackTo3           = document.getElementById('btnBackToStep3');
+
+        const facilityInput        = document.getElementById('facilitySelect');
+        const buildingCards        = document.querySelectorAll('.building-card');
+        const summaryBuildingName  = document.getElementById('summaryBuildingName');
+        const summaryBuildingCode  = document.getElementById('summaryBuildingCode');
+
+        const officeInput          = document.getElementById('officeSelect');
+        const officeCards          = document.querySelectorAll('.office-card');
+        const summaryOfficeName    = document.getElementById('summaryOfficeName');
+        const summaryOfficeCode    = document.getElementById('summaryOfficeCode');
+
+        const transactionInput     = document.getElementById('transactionSelect');
+        const subConcernInput      = document.getElementById('subConcernSelect');
+        const transactionContainer = document.getElementById('transactionCardsContainer');
+        const otherConcernBox      = document.getElementById('otherConcernInputContainer');
+        const otherConcernText     = document.getElementById('otherConcernText');
+
+        const kioskForm            = document.getElementById('kioskForm');
+        const btnFinalSubmit       = document.getElementById('btnFinalSubmit');
+
+        let selectedConcernIds     = [];
+        let selectedSubConcernsMap = {}; // { trans_id: [sub_id1, sub_id2] }
         let debounceTimer;
 
-        // Auto-update hidden program code & major on course dropdown selection change
-        if (courseSelect) {
-            courseSelect.addEventListener('change', function() {
-                const selectedOpt = this.options[this.selectedIndex];
-                if (selectedOpt && selectedOpt.value) {
-                    programCodeInput.value  = selectedOpt.dataset.programCode || '';
-                    programMajorInput.value = selectedOpt.dataset.major || '';
-                } else {
-                    programCodeInput.value  = '';
-                    programMajorInput.value = '';
+        // Data Privacy Modal Logic
+        const privacyModalInstance = privacyModalEl ? new bootstrap.Modal(privacyModalEl) : null;
+
+        if (btnOpenPrivacyModal && privacyModalInstance) {
+            btnOpenPrivacyModal.addEventListener('click', () => privacyModalInstance.show());
+        }
+
+        if (modalConsentCheckbox && btnAcceptPrivacy) {
+            modalConsentCheckbox.addEventListener('change', function() {
+                btnAcceptPrivacy.disabled = !this.checked;
+            });
+        }
+
+        if (btnAcceptPrivacy) {
+            btnAcceptPrivacy.addEventListener('click', function() {
+                dataConsentInput.value = "1";
+                btnOpenPrivacyModal.className = 'btn btn-success w-100 py-3 rounded-3 fw-bold d-flex align-items-center justify-content-center gap-2 shadow-sm';
+                btnOpenPrivacyModal.innerHTML = '<i class="bi bi-check-circle-fill fs-5"></i><span>Read & Sign Agreement Form</span>';
+                
+                if (consentSubText) {
+                    consentSubText.className = 'text-success small text-center mt-2 fw-semibold';
+                    consentSubText.innerHTML = '<i class="bi bi-check2-circle me-1"></i> Data privacy terms verified & accepted. Tap above to review again.';
+                }
+
+                if (privacyModalInstance) {
+                    privacyModalInstance.hide();
                 }
             });
         }
 
-        // Toggle Priority Options Display
         if (prioritySwitch && prioritySection) {
             prioritySwitch.addEventListener('change', function() {
-                if (this.checked) {
-                    prioritySection.classList.remove('d-none');
-                } else {
-                    prioritySection.classList.add('d-none');
-                }
+                prioritySection.classList.toggle('d-none', !this.checked);
             });
         }
 
-        // Helper to sync Wizard progress UI
+        // Sync Program Code & Major when user changes course dropdown manually
+        courseSelect.addEventListener('change', function() {
+            const selectedOpt = this.options[this.selectedIndex];
+            if (selectedOpt) {
+                programCodeInput.value  = selectedOpt.dataset.programCode || '';
+                programMajorInput.value = selectedOpt.dataset.major || '';
+            }
+        });
+
         function setWizardStep(stepNum) {
-            if (wizardStep1) wizardStep1.className = 'step-item ' + (stepNum === 1 ? 'active' : 'completed');
-            if (wizardStep2) wizardStep2.className = 'step-item ' + (stepNum === 2 ? 'active' : (stepNum > 2 ? 'completed' : ''));
-            if (wizardStep3) wizardStep3.className = 'step-item ' + (stepNum === 3 ? 'active' : '');
+            wizardStep1.className = 'step-item ' + (stepNum === 1 ? 'active' : (stepNum > 1 ? 'completed' : ''));
+            wizardStep2.className = 'step-item ' + (stepNum === 2 ? 'active' : (stepNum > 2 ? 'completed' : ''));
+            wizardStep3.className = 'step-item ' + (stepNum === 3 ? 'active' : (stepNum > 3 ? 'completed' : ''));
+            wizardStep4.className = 'step-item ' + (stepNum === 4 ? 'active' : '');
         }
 
-        // ---------------------------------------------------------------------
-        // 1. DEBOUNCED STUDENT ID LOOKUP
-        // ---------------------------------------------------------------------
         studentIdInput.addEventListener('input', function() {
             clearTimeout(debounceTimer);
             const studentId = this.value.trim();
@@ -917,12 +935,9 @@ if ($db_connect) {
             if (studentId.length >= 5) {
                 idHelpBlock.textContent = "Verifying Student ID...";
                 idHelpBlock.className = "form-text text-info fw-semibold small";
-
-                debounceTimer = setTimeout(() => {
-                    fetchStudentInfo(studentId);
-                }, 400);
+                debounceTimer = setTimeout(() => fetchStudentInfo(studentId), 400);
             } else {
-                hideDetailsSection();
+                detailsSection.classList.add('d-none');
                 idHelpBlock.textContent = "Enter your Student ID to retrieve details.";
                 idHelpBlock.className = "form-text text-muted small";
             }
@@ -933,17 +948,15 @@ if ($db_connect) {
             formData.append('action', 'fetch_student_info');
             formData.append('student_id', studentId);
 
-            fetch('<?= BASE_URL; ?>admin/ajax/logbook', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
+            fetch('<?= BASE_URL; ?>admin/ajax/logbook', { method: 'POST', body: formData })
+            .then(res => res.json())
             .then(result => {
                 if (result.success && result.data) {
                     const student = result.data;
-
                     userIdInput.value       = student.user_id || '';
                     departmentIdInput.value = student.department_id || 0;
+                    programCodeInput.value  = student.program_code || '';
+                    programMajorInput.value = student.major || '';
                     firstNameInput.value    = student.first_name || '';
                     middleNameInput.value   = student.middle_name || '';
                     lastNameInput.value     = student.last_name || '';
@@ -952,110 +965,34 @@ if ($db_connect) {
                     emailInput.value        = student.email || '';
                     contactInput.value      = student.contact_no || '';
 
-                    // Auto-select course by program_id (fallback to program_code matching)
-                    if (student.program_id) {
-                        courseSelect.value = student.program_id;
-                    } else if (student.program_code) {
-                        const matchingOpt = Array.from(courseSelect.options).find(opt => opt.dataset.programCode === student.program_code);
-                        if (matchingOpt) {
-                            courseSelect.value = matchingOpt.value;
-                        }
-                    }
-
-                    // Trigger course change event to auto-fill hidden program_code and major
-                    courseSelect.dispatchEvent(new Event('change'));
-
-                    if (student.year_level) {
-                        const yearNum = student.year_level.toString().charAt(0);
-                        yearSelect.value = yearNum;
-                    }
+                    if (student.program_id) courseSelect.value = student.program_id;
+                    if (student.year_level) yearSelect.value = student.year_level.toString().charAt(0);
 
                     detailsSection.classList.remove('d-none');
-                    idHelpBlock.textContent = "Record verified. Please review your details below.";
+                    idHelpBlock.textContent = "Record verified. Please review details below.";
                     idHelpBlock.className = "form-text text-success fw-bold small";
                 } else {
-                    hideDetailsSection();
-                    idHelpBlock.textContent = "Student ID not recognized. Please check and try again.";
+                    detailsSection.classList.add('d-none');
+                    idHelpBlock.textContent = "Student ID not recognized. Please verify.";
                     idHelpBlock.className = "form-text text-danger fw-semibold small";
                 }
-            })
-            .catch(error => {
-                console.error('Fetch error:', error);
-                idHelpBlock.textContent = "Unable to verify ID at this time. Please try again.";
-                idHelpBlock.className = "form-text text-danger small";
             });
         }
 
-        function hideDetailsSection() {
-            detailsSection.classList.add('d-none');
-            userIdInput.value       = '';
-            departmentIdInput.value = '0';
-            programCodeInput.value  = '';
-            programMajorInput.value = '';
-            firstNameInput.value    = '';
-            middleNameInput.value   = '';
-            lastNameInput.value     = '';
-            suffixSelect.value      = '';
-            sexSelect.value         = '';
-            emailInput.value        = '';
-            courseSelect.value      = '';
-            yearSelect.value        = '';
-            contactInput.value      = '';
-            consentCheckbox.checked = false;
-
-            if (prioritySwitch) prioritySwitch.checked = false;
-            if (prioritySection) prioritySection.classList.add('d-none');
-            if (priorityTypeSelect) priorityTypeSelect.selectedIndex = 0;
-
-            resetOfficeAndTransactionState();
-
-            step3Div.classList.add('d-none');
-            step2Div.classList.add('d-none');
-            step1Div.classList.remove('d-none');
-            setWizardStep(1);
-        }
-
-        function resetOfficeAndTransactionState() {
-            officeInput.value = '';
-            transactionInput.value = '';
-            if (subConcernInput) subConcernInput.value = '';
-            officeCards.forEach(card => card.classList.remove('active'));
-            transactionContainer.innerHTML = '';
-        }
-
-        // ---------------------------------------------------------------------
-        // 2. STEP TRANSITIONS
-        // ---------------------------------------------------------------------
         btnContinue.addEventListener('click', function() {
             if (!firstNameInput.value.trim() || !lastNameInput.value.trim() || !sexSelect.value || !contactInput.value.trim() || !emailInput.value.trim() || !courseSelect.value || !yearSelect.value) {
-                if (typeof Swal !== 'undefined') {
-                    Swal.fire({
-                        title: "Incomplete Details",
-                        text: "Please complete all required personal fields before proceeding.",
-                        icon: "warning"
-                    });
-                } else {
-                    alert("Please complete all required personal fields before proceeding.");
+                alert("Please complete all required personal fields.");
+                return;
+            }
+            if (dataConsentInput.value !== "1") {
+                alert("Please click '[ Read & Sign Agreement Form ]' and accept the privacy terms before proceeding.");
+                if (privacyModalInstance) {
+                    privacyModalInstance.show();
                 }
                 return;
             }
-
-            if (!consentCheckbox.checked) {
-                if (typeof Swal !== 'undefined') {
-                    Swal.fire({
-                        title: "Consent Required",
-                        text: "Please accept the Data Privacy Authorization to proceed.",
-                        icon: "warning"
-                    });
-                } else {
-                    alert("Please accept the Data Privacy Authorization to proceed.");
-                }
-                return;
-            }
-
             step1Div.classList.add('d-none');
             step2Div.classList.remove('d-none');
-            step3Div.classList.add('d-none');
             setWizardStep(2);
         });
 
@@ -1065,199 +1002,235 @@ if ($db_connect) {
             setWizardStep(1);
         });
 
-        btnBackTo2.addEventListener('click', function() {
-            step3Div.classList.add('d-none');
-            step2Div.classList.remove('d-none');
-            setWizardStep(2);
-        });
-
-        // ---------------------------------------------------------------------
-        // 3. STEP 2: OFFICE CARD SELECTION -> ADVANCE TO STEP 3
-        // ---------------------------------------------------------------------
-        officeCards.forEach(card => {
+        buildingCards.forEach(card => {
             card.addEventListener('click', function() {
-                const selectedOfficeId = this.dataset.officeId;
-                const officeName       = this.dataset.officeName;
-                const officeCode       = this.dataset.officeCode;
+                const facId   = this.dataset.facilityId;
+                const facName = this.dataset.facilityName;
+                const facCode = this.dataset.facilityCode;
 
-                officeCards.forEach(c => c.classList.remove('active'));
+                buildingCards.forEach(c => c.classList.remove('active'));
                 this.classList.add('active');
 
-                officeInput.value = selectedOfficeId;
-                summaryOfficeName.textContent = officeName;
-                summaryOfficeCode.textContent = officeCode;
+                facilityInput.value = facId;
+                summaryBuildingName.textContent = facName;
+                summaryBuildingCode.textContent = facCode;
 
-                // Load transactions for selected office
-                fetchOfficeTransactions(selectedOfficeId);
+                officeCards.forEach(offCard => {
+                    if (offCard.dataset.facilityId === facId) {
+                        offCard.classList.remove('d-none');
+                    } else {
+                        offCard.classList.add('d-none');
+                    }
+                });
 
-                // Transition view to Step 3
                 step2Div.classList.add('d-none');
                 step3Div.classList.remove('d-none');
                 setWizardStep(3);
             });
         });
 
-        // ---------------------------------------------------------------------
-        // 4. STEP 3: DYNAMIC TRANSACTION CARDS WITH EXPLICIT ICON SPACING
-        // ---------------------------------------------------------------------
+        btnBackTo2.addEventListener('click', function() {
+            step3Div.classList.add('d-none');
+            step2Div.classList.remove('d-none');
+            setWizardStep(2);
+        });
+
+        officeCards.forEach(card => {
+            card.addEventListener('click', function() {
+                const selectedOfficeId = this.dataset.officeId;
+                officeCards.forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+
+                officeInput.value = selectedOfficeId;
+                summaryOfficeName.textContent = this.dataset.officeName;
+                summaryOfficeCode.textContent = this.dataset.officeCode;
+
+                fetchOfficeTransactions(selectedOfficeId);
+
+                step3Div.classList.add('d-none');
+                step4Div.classList.remove('d-none');
+                setWizardStep(4);
+            });
+        });
+
+        btnBackTo3.addEventListener('click', function() {
+            step4Div.classList.add('d-none');
+            step3Div.classList.remove('d-none');
+            setWizardStep(3);
+        });
+
         function fetchOfficeTransactions(officeId) {
             transactionContainer.innerHTML = '<div class="text-center p-3 text-muted"><span class="spinner-border spinner-border-sm me-2"></span>Loading concerns...</div>';
             transactionInput.value = '';
-            if (subConcernInput) subConcernInput.value = '';
+            subConcernInput.value = '';
+            selectedConcernIds = [];
+            selectedSubConcernsMap = {};
+            otherConcernBox.classList.add('d-none');
+            otherConcernText.value = '';
 
             const formData = new FormData();
             formData.append('action', 'fetch_office_transactions');
             formData.append('office_id', officeId);
 
-            fetch('<?= BASE_URL; ?>admin/ajax/office', {
-                method: 'POST',
-                body: formData
-            })
+            fetch('<?= BASE_URL; ?>admin/ajax/office', { method: 'POST', body: formData })
             .then(res => res.json())
             .then(result => {
                 transactionContainer.innerHTML = '';
+                let dataList = (result.success && result.data) ? result.data : [];
+                
+                dataList.push({
+                    id: 'OTHERS',
+                    transaction_name: 'Others (Please Specify Concern)',
+                    estimated_minutes: 10,
+                    is_others: true,
+                    sub_concerns: []
+                });
 
-                if (result.success && result.data && result.data.length > 0) {
-                    result.data.forEach(trans => {
-                        const card = document.createElement('div');
-                        card.className = 'transaction-card p-0 overflow-hidden mb-3';
-                        card.dataset.transId = trans.id;
-                        card.dataset.estimatedMinutes = trans.estimated_minutes || 5;
+                dataList.forEach(trans => {
+                    const card = document.createElement('div');
+                    card.className = 'transaction-card p-3 mb-2';
+                    card.dataset.transId = trans.id;
+                    card.dataset.estMins  = trans.estimated_minutes || 5;
 
-                        const hasSubConcerns = trans.sub_concerns && trans.sub_concerns.length > 0;
-                        card.dataset.hasSubConcerns = hasSubConcerns ? '1' : '0';
+                    const estLabel = `Estimated Process Time: ${trans.estimated_minutes || 5} mins`;
 
-                        // Single Column Sub-concerns layout
-                        let subConcernsHtml = '';
-                        if (hasSubConcerns) {
-                            subConcernsHtml = `
-                                <div class="mt-3 pt-3 border-top">
-                                    <label class="form-label fw-bold text-dark small mb-2 d-block">Select Specific Concern Detail:</label>
-                                    <div class="d-flex flex-column gap-2">
-                                        ${trans.sub_concerns.map(sub => `
-                                            <button type="button" class="btn btn-outline-primary btn-sm sub-concern-btn w-100 text-start py-2.5 px-3" data-sub-id="${sub.id}" data-sub-name="${sub.sub_concern_name}">
-                                                ${sub.sub_concern_name}
-                                            </button>
-                                        `).join('')}
-                                    </div>
+                    let subConcernsHtml = '';
+                    if (trans.sub_concerns && trans.sub_concerns.length > 0) {
+                        subConcernsHtml = `
+                            <div class="sub-concerns-container d-none mt-3 pt-3 border-top">
+                                <label class="form-label text-muted fw-bold small d-block mb-2">Specific Sub-Concern (Optional):</label>
+                                <div class="d-flex flex-wrap gap-2">
+                                    ${trans.sub_concerns.map(sub => `
+                                        <button type="button" 
+                                                class="btn btn-sm btn-outline-primary sub-concern-btn px-3 py-1.5" 
+                                                data-sub-id="${sub.id}">
+                                            ${sub.sub_concern_name}
+                                        </button>
+                                    `).join('')}
                                 </div>
-                            `;
-                        }
-
-                        card.innerHTML = `
-                            <div class="p-3 d-flex align-items-center justify-content-between trans-card-header gap-2">
-                                <div class="d-flex align-items-center gap-2 min-w-0 flex-grow-1">
-                                    <i class="bi bi-circle text-muted fs-5 select-trans-icon flex-shrink-0 me-2 me-sm-3"></i>
-                                    <div class="min-w-0 flex-grow-1">
-                                        <h6 class="fw-bold text-dark mb-0 fs-6 trans-title text-break" style="word-break: break-word;">${trans.transaction_name}</h6>
-                                        <span class="badge bg-light text-secondary border mt-1 small text-nowrap">~${trans.estimated_minutes} mins</span>
-                                    </div>
-                                </div>
-                                ${hasSubConcerns ? '<i class="bi bi-chevron-down text-muted collapse-chevron flex-shrink-0"></i>' : ''}
-                            </div>
-                            <div class="trans-card-body p-3 pt-0 d-none">
-                                ${subConcernsHtml}
                             </div>
                         `;
+                    }
 
-                        // Main Transaction Card Click
-                        const header = card.querySelector('.trans-card-header');
-                        const body   = card.querySelector('.trans-card-body');
+                    card.innerHTML = `
+                        <div class="card-header-row d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center gap-3 min-w-0 flex-grow-1">
+                                <i class="bi bi-square text-muted fs-4 select-icon flex-shrink-0"></i>
+                                <div class="min-w-0 flex-grow-1">
+                                    <h6 class="fw-bold text-dark mb-0 fs-6">${trans.transaction_name}</h6>
+                                    <span class="badge bg-light text-secondary border mt-1 small">${estLabel}</span>
+                                </div>
+                            </div>
+                        </div>
+                        ${subConcernsHtml}
+                    `;
 
-                        header.addEventListener('click', function() {
-                            document.querySelectorAll('.transaction-card').forEach(tc => {
-                                tc.classList.remove('active');
-                                const icon = tc.querySelector('.select-trans-icon');
-                                if (icon) icon.className = 'bi bi-circle text-muted fs-5 select-trans-icon flex-shrink-0 me-2 me-sm-3';
-                                
-                                const tcBody = tc.querySelector('.trans-card-body');
-                                if (tcBody) tcBody.classList.add('d-none');
+                    const cardHeader = card.querySelector('.card-header-row');
+                    cardHeader.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        const icon = card.querySelector('.select-icon');
+                        const subContainer = card.querySelector('.sub-concerns-container');
 
-                                tc.querySelectorAll('.sub-concern-btn').forEach(b => {
-                                    b.classList.remove('btn-primary', 'text-white');
-                                    b.classList.add('btn-outline-primary');
-                                });
-                            });
-
+                        if (selectedConcernIds.includes(trans.id)) {
+                            selectedConcernIds = selectedConcernIds.filter(id => id !== trans.id);
+                            delete selectedSubConcernsMap[trans.id];
+                            card.classList.remove('active');
+                            icon.className = 'bi bi-square text-muted fs-4 select-icon flex-shrink-0';
+                            if (subContainer) subContainer.classList.add('d-none');
+                            if (trans.is_others) otherConcernBox.classList.add('d-none');
+                        } else {
+                            selectedConcernIds.push(trans.id);
+                            selectedSubConcernsMap[trans.id] = [];
                             card.classList.add('active');
-                            const icon = card.querySelector('.select-trans-icon');
-                            if (icon) icon.className = 'bi bi-check-circle-fill text-primary fs-5 select-trans-icon flex-shrink-0 me-2 me-sm-3';
-
-                            transactionInput.value = trans.id;
-                            if (subConcernInput) subConcernInput.value = '';
-
-                            if (hasSubConcerns && body) {
-                                body.classList.remove('d-none');
-                            }
-                        });
-
-                        // Sub-concern button handlers
-                        if (hasSubConcerns) {
-                            card.querySelectorAll('.sub-concern-btn').forEach(subBtn => {
-                                subBtn.addEventListener('click', function(e) {
-                                    e.stopPropagation();
-
-                                    card.querySelectorAll('.sub-concern-btn').forEach(b => {
-                                        b.classList.remove('btn-primary', 'text-white');
-                                        b.classList.add('btn-outline-primary');
-                                    });
-
-                                    this.classList.remove('btn-outline-primary');
-                                    this.classList.add('btn-primary', 'text-white');
-
-                                    if (subConcernInput) {
-                                        subConcernInput.value = this.dataset.subId;
-                                    }
-
-                                    card.dataset.selectedSubName = this.dataset.subName;
-                                });
-                            });
+                            icon.className = 'bi bi-check-square-fill text-primary fs-4 select-icon flex-shrink-0';
+                            if (subContainer) subContainer.classList.remove('d-none');
+                            if (trans.is_others) otherConcernBox.classList.remove('d-none');
                         }
 
-                        transactionContainer.appendChild(card);
+                        transactionInput.value = selectedConcernIds.join(',');
+                        subConcernInput.value  = JSON.stringify(selectedSubConcernsMap);
                     });
-                } else {
-                    transactionContainer.innerHTML = '<div class="text-center p-4 bg-light rounded-3 text-muted small">No active transaction concerns listed for this office.</div>';
-                }
-            })
-            .catch(err => {
-                console.error(err);
-                transactionContainer.innerHTML = '<div class="text-center p-3 bg-light text-danger rounded-3 small">Error loading transactions. Please try again.</div>';
+
+                    const subBtns = card.querySelectorAll('.sub-concern-btn');
+                    subBtns.forEach(btn => {
+                        btn.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            const subId = parseInt(this.dataset.subId);
+                            if (!selectedSubConcernsMap[trans.id]) {
+                                selectedSubConcernsMap[trans.id] = [];
+                            }
+
+                            const index = selectedSubConcernsMap[trans.id].indexOf(subId);
+                            if (index > -1) {
+                                selectedSubConcernsMap[trans.id].splice(index, 1);
+                                this.classList.remove('btn-primary', 'text-white');
+                                this.classList.add('btn-outline-primary');
+                            } else {
+                                selectedSubConcernsMap[trans.id].push(subId);
+                                this.classList.remove('btn-outline-primary');
+                                this.classList.add('btn-primary', 'text-white');
+                            }
+
+                            subConcernInput.value = JSON.stringify(selectedSubConcernsMap);
+                        });
+                    });
+
+                    transactionContainer.appendChild(card);
+                });
             });
         }
 
-        // ---------------------------------------------------------------------
-        // 5. FINAL CHECK-IN FORM SUBMISSION WITH DETAILED RECEIPT
-        // ---------------------------------------------------------------------
         kioskForm.addEventListener('submit', function(e) {
             e.preventDefault();
-
-            if (!officeInput.value) {
-                if (typeof Swal !== 'undefined') {
-                    Swal.fire({ title: "Office Required", text: "Please select a Destination Office.", icon: "warning" });
-                } else {
-                    alert("Please select a Destination Office.");
-                }
+            if (!transactionInput.value && !otherConcernText.value.trim()) {
+                alert("Please select at least one transaction concern or specify your concern in Others.");
                 return;
             }
 
-            if (!transactionInput.value) {
-                if (typeof Swal !== 'undefined') {
-                    Swal.fire({ title: "Concern Required", text: "Please select a Transaction Concern to proceed.", icon: "warning" });
-                } else {
-                    alert("Please select a Transaction Concern to proceed.");
-                }
-                return;
-            }
+            let structuredConcernsHtml = '';
+            let totalEstimatedMinutes = 0;
 
-            const activeCard = document.querySelector('.transaction-card.active');
-            if (activeCard && activeCard.dataset.hasSubConcerns === '1' && (!subConcernInput || !subConcernInput.value)) {
-                if (typeof Swal !== 'undefined') {
-                    Swal.fire({ title: "Sub-Concern Required", text: "Please select a specific detail option for your concern.", icon: "warning" });
-                } else {
-                    alert("Please select a specific detail option for your concern.");
+            document.querySelectorAll('#transactionCardsContainer .transaction-card.active').forEach(card => {
+                const titleEl = card.querySelector('h6');
+                if (!titleEl) return;
+                let title = titleEl.textContent.trim();
+
+                const cardMins = parseInt(card.dataset.estMins || 10);
+                totalEstimatedMinutes += cardMins;
+
+                if (card.dataset.transId === 'OTHERS') {
+                    const customVal = otherConcernText.value.trim();
+                    structuredConcernsHtml += `
+                        <div class="receipt-concern-item">
+                            <div class="receipt-concern-title"><i class="bi bi-pen me-1 text-primary"></i>Others</div>
+                            <div class="text-muted small mt-1">${customVal ? customVal : 'General Concern'}</div>
+                        </div>
+                    `;
+                    return;
                 }
-                return;
+
+                const activeSubBtns = card.querySelectorAll('.sub-concern-btn.btn-primary');
+                let subTagsHtml = '';
+                if (activeSubBtns.length > 0) {
+                    const subNames = Array.from(activeSubBtns).map(b => `<span class="receipt-subconcern-tag"><i class="bi bi-tag-fill me-1"></i>${b.textContent.trim()}</span>`).join(' ');
+                    subTagsHtml = `<div class="mt-1">${subNames}</div>`;
+                }
+
+                structuredConcernsHtml += `
+                    <div class="receipt-concern-item">
+                        <div class="receipt-concern-title">${title}</div>
+                        ${subTagsHtml}
+                    </div>
+                `;
+            });
+
+            if (!structuredConcernsHtml) {
+                structuredConcernsHtml = `
+                    <div class="receipt-concern-item">
+                        <div class="receipt-concern-title">General Concern</div>
+                    </div>
+                `;
+                totalEstimatedMinutes = 15;
             }
 
             btnFinalSubmit.disabled = true;
@@ -1265,138 +1238,37 @@ if ($db_connect) {
 
             const formData = new FormData(kioskForm);
 
-            fetch('<?= BASE_URL; ?>admin/ajax/logbook', {
-                method: 'POST',
-                body: formData
-            })
+            fetch('<?= BASE_URL; ?>admin/ajax/logbook', { method: 'POST', body: formData })
             .then(res => res.json())
             .then(result => {
                 btnFinalSubmit.disabled = false;
                 btnFinalSubmit.innerHTML = '<span>Complete Check-in & Get Ticket</span> <i class="bi bi-check-circle ms-1 fs-5"></i>';
 
                 if (result.success) {
-                    // Compose transaction name display
-                    let selectedTransName = 'General Inquiry';
-                    if (activeCard) {
-                        const titleEl = activeCard.querySelector('.trans-title');
-                        selectedTransName = titleEl ? titleEl.textContent.trim() : selectedTransName;
-                        if (activeCard.dataset.selectedSubName) {
-                            selectedTransName += ` — ${activeCard.dataset.selectedSubName}`;
-                        }
-                    }
-
-                    // Handle Priority Badge Display
-                    const modalPriorityBadge = document.getElementById('modalPriorityBadge');
-                    const modalPriorityLabel = document.getElementById('modalPriorityLabel');
-
-                    if (result.is_priority || (prioritySwitch && prioritySwitch.checked)) {
-                        const priorityTypeSelect = document.getElementById('priorityType');
-                        const priorityText = priorityTypeSelect && priorityTypeSelect.value 
-                            ? priorityTypeSelect.options[priorityTypeSelect.selectedIndex].text 
-                            : 'Priority Service';
-
-                        if (modalPriorityLabel) {
-                            modalPriorityLabel.textContent = `PRIORITY — ${priorityText.toUpperCase()}`;
-                        }
-                        if (modalPriorityBadge) {
-                            modalPriorityBadge.classList.remove('d-none');
-                        }
-                    } else {
-                        if (modalPriorityBadge) {
-                            modalPriorityBadge.classList.add('d-none');
-                        }
-                    }
-
-                    // Populate standard ticket fields
                     document.getElementById('modalTicketNumber').textContent = result.ticket_number || '---';
                     document.getElementById('modalOfficeName').textContent   = result.office_name || summaryOfficeName.textContent;
-                    document.getElementById('modalTransactionName').textContent = result.transaction_name || selectedTransName;
+                    document.getElementById('modalTransactionContainer').innerHTML = structuredConcernsHtml;
+                    document.getElementById('modalIssuedDate').textContent = new Date().toLocaleString();
                     
-                    const now = new Date();
-                    const formattedDate = result.issued_date || now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) + ' ' + now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-                    document.getElementById('modalIssuedDate').textContent = formattedDate;
-
-                    const estMins = result.estimated_minutes ?? (activeCard ? activeCard.dataset.estimatedMinutes : 5);
+                    const estMins = result.estimated_minutes || totalEstimatedMinutes || 15;
                     document.getElementById('modalEstTime').textContent = `~${estMins} mins`;
 
-                    // Show Modal
+                    const priorityBadge = document.getElementById('modalPriorityBadge');
+                    if (priorityBadge) {
+                        priorityBadge.classList.toggle('d-none', !result.is_priority);
+                    }
+
                     const ticketModal = new bootstrap.Modal(document.getElementById('ticketSuccessModal'));
                     ticketModal.show();
                 } else {
-                    if (typeof Swal !== 'undefined') {
-                        Swal.fire({ title: "Check-in Failed", text: result.message || "Failed to process check-in. Please try again.", icon: "error" });
-                    } else {
-                        alert(result.message || "Failed to process check-in. Please try again.");
-                    }
-                }
-            })
-            .catch(err => {
-                console.error(err);
-                btnFinalSubmit.disabled = false;
-                btnFinalSubmit.innerHTML = '<span>Complete Check-in & Get Ticket</span> <i class="bi bi-check-circle ms-1 fs-5"></i>';
-                if (typeof Swal !== 'undefined') {
-                    Swal.fire({ title: "System Error", text: "An unexpected server error occurred. Please try again.", icon: "error" });
-                } else {
-                    alert("An unexpected server error occurred. Please try again.");
+                    alert(result.message || "Failed to process check-in.");
                 }
             });
         });
-        
-        // ---------------------------------------------------------------------
-        // 6. MANUAL KIOSK RESET
-        // ---------------------------------------------------------------------
-        window.addEventListener('pageshow', function() {
-            if (kioskForm) kioskForm.reset();
-            hideDetailsSection();
+
+        document.getElementById('btnFinishKiosk')?.addEventListener('click', function() {
+            window.location.reload();
         });
-
-        const btnFinish = document.getElementById('btnFinishKiosk');
-        if (btnFinish) {
-            btnFinish.addEventListener('click', function() {
-                window.location.reload();
-            });
-        }
-
-        // ---------------------------------------------------------------------
-        // FULLSCREEN KIOSK TOGGLE HANDLER (FULL DOCUMENT SCOPE)
-        // ---------------------------------------------------------------------
-        const btnToggleFullscreen = document.getElementById('btnToggleFullscreen');
-        const fullscreenIcon      = document.getElementById('fullscreenIcon');
-        const fullscreenText      = document.getElementById('fullscreenText');
-
-        if (btnToggleFullscreen) {
-            btnToggleFullscreen.addEventListener('click', function() {
-                const docEl = document.documentElement;
-                if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-                    if (docEl.requestFullscreen) {
-                        docEl.requestFullscreen();
-                    } else if (docEl.webkitRequestFullscreen) {
-                        docEl.webkitRequestFullscreen();
-                    }
-                } else {
-                    if (document.exitFullscreen) {
-                        document.exitFullscreen();
-                    } else if (document.webkitExitFullscreen) {
-                        document.webkitExitFullscreen();
-                    }
-                }
-            });
-
-            document.addEventListener('fullscreenchange', handleFullscreenChange);
-            document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
-
-            function handleFullscreenChange() {
-                const isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement);
-                if (isFullscreen) {
-                    fullscreenIcon.className = "bi bi-fullscreen-exit";
-                    if (fullscreenText) fullscreenText.textContent = "Exit Kiosk";
-                } else {
-                    fullscreenIcon.className = "bi bi-fullscreen";
-                    if (fullscreenText) fullscreenText.textContent = "Kiosk Mode";
-                }
-            }
-        }
-
     })();
 </script>
 </body>
