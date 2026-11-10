@@ -7,7 +7,7 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// 1. Resolve Current User Info (for Prepared By block)
+// 1. Resolve Current User Info & Role
 $user_id = 0;
 if (isset($session_class) && method_exists($session_class, 'getValue')) {
     $user_id = (int)($session_class->getValue('user_id') ?? $session_class->getValue('id') ?? 0);
@@ -15,6 +15,19 @@ if (isset($session_class) && method_exists($session_class, 'getValue')) {
 if ($user_id <= 0) {
     $user_id = (int)($_SESSION['user_id'] ?? $_SESSION['id'] ?? 0);
 }
+
+$g_user_role = '';
+if (isset($session_class) && method_exists($session_class, 'getValue')) {
+    $g_user_role = $session_class->getValue('user_role') ?? $session_class->getValue('system_role') ?? '';
+}
+if (empty($g_user_role)) {
+    $g_user_role = $_SESSION['user_role'] ?? $_SESSION['g_user_role'] ?? $_SESSION['role'] ?? '';
+}
+$role_map = ['1' => 'ADMIN', '2' => 'ADMIN_STAFF', '3' => 'STATION_ADMIN', '4' => 'USER'];
+if (isset($role_map[(string)$g_user_role])) {
+    $g_user_role = $role_map[(string)$g_user_role];
+}
+$g_user_role_upper = strtoupper(trim((string)$g_user_role));
 
 $generated_by_name = "System Administrator";
 if ($db_connect && $user_id > 0) {
@@ -26,14 +39,31 @@ if ($db_connect && $user_id > 0) {
         if (!empty($userData['full_name'])) {
             $generated_by_name = $userData['full_name'];
         }
+        $stmtUser->close();
     }
 }
 
-// 2. Resolve URL Query Parameters
+// 2. Resolve URL Query Parameters & Enforce Staff Office Scoping
 $office_id    = (int)($_GET['office_id'] ?? 0);
 $visitor_type = trim($_GET['visitor_type'] ?? '');
 $date_from    = trim($_GET['date_from'] ?? date('Y-m-d'));
 $date_to      = trim($_GET['date_to'] ?? date('Y-m-d'));
+
+if ($g_user_role_upper === 'ADMIN_STAFF' && $user_id > 0 && $db_connect) {
+    $stmtAssign = $db_connect->prepare("
+        SELECT office_id FROM staff_assignments 
+        WHERE user_id = ? AND flag_status = 0 ORDER BY id DESC LIMIT 1
+    ");
+    if ($stmtAssign) {
+        $stmtAssign->bind_param("i", $user_id);
+        $stmtAssign->execute();
+        $assignRes = $stmtAssign->get_result()->fetch_assoc();
+        if (!empty($assignRes['office_id'])) {
+            $office_id = (int)$assignRes['office_id'];
+        }
+        $stmtAssign->close();
+    }
+}
 
 // 3. Resolve Office Name
 $office_name = "All Campus Offices";
@@ -46,6 +76,7 @@ if ($db_connect && $office_id > 0) {
         if ($resOffice) {
             $office_name = $resOffice['office_name'] . " (" . $resOffice['office_code'] . ")";
         }
+        $stmtOffice->close();
     }
 }
 ?>
@@ -334,23 +365,19 @@ if ($db_connect && $office_id > 0) {
     <script src="<?= BASE_MAIN_ASSETS_PATH; ?>js/jquery.min.js"></script>
     <script>
         $(document).ready(function() {
-            // Hide preview action bar if running inside an iframe
             if (window.self !== window.top) {
                 $('#previewActionBar').hide();
             }
 
-            // Helper for HTML escaping
             const escapeHtml = (str) => {
                 return String(str || '').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
             };
 
-            // Safely retrieve parameters injected from PHP
             const officeId    = <?= json_encode($office_id); ?>;
             const visitorType = <?= json_encode($visitor_type); ?>;
             const dateFrom    = <?= json_encode($date_from); ?>;
             const dateTo      = <?= json_encode($date_to); ?>;
 
-            // Fetch data via system AJAX Handler
             $.ajax({
                 url: '<?= BASE_URL; ?>admin/ajax/reports-analytics',
                 type: 'POST',
@@ -425,7 +452,6 @@ if ($db_connect && $office_id > 0) {
                             tbodyStaff.html('<tr><td colspan="4" class="text-center py-3 text-muted">No staff activity recorded for selected range.</td></tr>');
                         }
 
-                        // Focus window and trigger print preview dialog
                         setTimeout(() => {
                             window.focus();
                             window.print();

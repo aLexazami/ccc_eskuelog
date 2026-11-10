@@ -44,6 +44,36 @@ $role_map = ['1' => 'ADMIN', '2' => 'ADMIN_STAFF', '3' => 'STATION_ADMIN', '4' =
 if (isset($role_map[(string)$g_user_role])) {
     $g_user_role = $role_map[(string)$g_user_role];
 }
+$g_user_role_upper = strtoupper(trim((string)$g_user_role));
+
+// 3. Resolve Staff Office Assignment (if ADMIN_STAFF)
+$assigned_office_id = 0;
+if ($g_user_role_upper === 'ADMIN_STAFF' && $user_id > 0) {
+    $stmtAssign = $db_connect->prepare("
+        SELECT office_id 
+        FROM staff_assignments 
+        WHERE user_id = ? AND flag_status = 0 
+        ORDER BY id DESC LIMIT 1
+    ");
+    if ($stmtAssign) {
+        $stmtAssign->bind_param("i", $user_id);
+        $stmtAssign->execute();
+        $assignRes = $stmtAssign->get_result()->fetch_assoc();
+        $assigned_office_id = (int)($assignRes['office_id'] ?? 0);
+        $stmtAssign->close();
+    }
+
+    if ($assigned_office_id <= 0) {
+        $stmtEmp = $db_connect->prepare("SELECT office_id FROM employee WHERE user_id = ? LIMIT 1");
+        if ($stmtEmp) {
+            $stmtEmp->bind_param("i", $user_id);
+            $stmtEmp->execute();
+            $empRow = $stmtEmp->get_result()->fetch_assoc();
+            $assigned_office_id = (int)($empRow['office_id'] ?? 0);
+            $stmtEmp->close();
+        }
+    }
+}
 
 // Support both POST and GET payloads
 $action = $_REQUEST['action'] ?? '';
@@ -56,6 +86,11 @@ switch ($action) {
             $visitor_type = trim($_REQUEST['visitor_type'] ?? '');
             $date_from    = trim($_REQUEST['date_from'] ?? date('Y-m-d'));
             $date_to      = trim($_REQUEST['date_to'] ?? date('Y-m-d'));
+
+            // Enforce assigned office for ADMIN_STAFF
+            if ($g_user_role_upper === 'ADMIN_STAFF' && $assigned_office_id > 0) {
+                $office_id = $assigned_office_id;
+            }
 
             $whereClauses = ["1=1"];
             $params       = [];
@@ -101,7 +136,6 @@ switch ($action) {
             $stmtKpi->execute();
             $kpiData = $stmtKpi->get_result()->fetch_assoc();
 
-            // Sanitize NULL KPI values to 0
             if ($kpiData) {
                 $kpiData['total_tickets']       = (int)($kpiData['total_tickets'] ?? 0);
                 $kpiData['completed_tickets']   = (int)($kpiData['completed_tickets'] ?? 0);
@@ -109,7 +143,7 @@ switch ($action) {
                 $kpiData['avg_service_minutes'] = (float)($kpiData['avg_service_minutes'] ?? 0);
             }
 
-            // B. VOLUME TREND (Grouped by Date if multiple days, or Hour if single day)
+            // B. VOLUME TREND
             $isSingleDay = ($date_from === $date_to);
             if ($isSingleDay) {
                 $trendSql = "
@@ -172,15 +206,20 @@ switch ($action) {
                 ];
             }
 
-            // D. TOP TRANSACTION CONCERNS
+            // D. TOP TRANSACTION CONCERNS (Query logbook_transaction_items with fallback to logbooks)
             $concernsSql = "
-                SELECT tt.transaction_name AS concern, COUNT(q.id) AS total
+                SELECT 
+                    COALESCE(tt_item.transaction_name, tt_main.transaction_name, 'General Concern') AS concern,
+                    COUNT(*) AS total
                 FROM queue_tickets q
                 INNER JOIN logbooks l ON q.logbook_id = l.id
-                INNER JOIN transaction_types tt ON l.transaction_type_id = tt.id
-                WHERE {$whereSql}
-                GROUP BY tt.id, tt.transaction_name
-                ORDER BY total DESC LIMIT 5
+                LEFT JOIN logbook_transaction_items lti ON l.id = lti.logbook_id
+                LEFT JOIN transaction_types tt_item ON lti.transaction_type_id = tt_item.id
+                LEFT JOIN transaction_types tt_main ON l.transaction_type_id = tt_main.id
+                WHERE {$whereSql} AND (tt_item.id IS NOT NULL OR tt_main.id IS NOT NULL)
+                GROUP BY COALESCE(tt_item.id, tt_main.id), concern
+                ORDER BY total DESC 
+                LIMIT 5
             ";
             $stmtConcerns = $db_connect->prepare($concernsSql);
             if (!empty($params)) {

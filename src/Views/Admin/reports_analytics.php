@@ -62,9 +62,10 @@ if ($db_connect && $user_id > 0) {
         $stmtAssign->bind_param("i", $user_id);
         $stmtAssign->execute();
         $assigned_office = $stmtAssign->get_result()->fetch_assoc();
+        $stmtAssign->close();
     }
 
-    if ($g_user_role_upper === 'ADMIN' || !$assigned_office) {
+    if ($g_user_role_upper === 'ADMIN' || $g_user_role_upper === 'STATION_ADMIN' || !$assigned_office) {
         $stmt = $db_connect->query("SELECT office_id, office_code, office_name FROM office WHERE flag_status = 0 ORDER BY office_name ASC");
         if ($stmt) {
             while ($row = $stmt->fetch_assoc()) {
@@ -176,7 +177,7 @@ if ($db_connect && $user_id > 0) {
                                 <div class="col-12 col-md-3">
                                     <label for="filterOfficeId" class="form-label fw-bold small text-muted">Office Location</label>
                                     <select id="filterOfficeId" class="form-select form-select-sm">
-                                        <?php if ($g_user_role_upper === 'ADMIN'): ?>
+                                        <?php if ($g_user_role_upper === 'ADMIN' || $g_user_role_upper === 'STATION_ADMIN'): ?>
                                             <option value="0">-- All Offices --</option>
                                             <?php foreach ($offices as $off): ?>
                                                 <option value="<?= $off['office_id']; ?>"><?= htmlspecialchars($off['office_name']); ?> (<?= htmlspecialchars($off['office_code']); ?>)</option>
@@ -373,7 +374,6 @@ if ($db_connect && $user_id > 0) {
                 return `${year}-${month}-${day}`;
             };
 
-            // Initialize Tabulator Table Instance
             function initStaffTable() {
                 staffTabulator = new Tabulator("#staffBreakdownTable", {
                     data: [],
@@ -579,7 +579,6 @@ if ($db_connect && $user_id > 0) {
                 loadAnalytics();
             });
 
-            // Export Actions (CSV, XLSX, JSON) via Tabulator
             document.getElementById('export-csv')?.addEventListener('click', () => {
                 if (staffTabulator) staffTabulator.download("csv", "staff_performance_report.csv");
             });
@@ -592,7 +591,6 @@ if ($db_connect && $user_id > 0) {
                 if (staffTabulator) staffTabulator.download("json", "staff_performance_report.json");
             });
 
-            // Silent Background PDF Print Handler (Triggers PDF Report Template)
             document.getElementById('export-pdf-report')?.addEventListener('click', function() {
                 const officeId    = $('#filterOfficeId').val() || 0;
                 const visitorType = $('#filterVisitorType').val() || '';
@@ -601,7 +599,6 @@ if ($db_connect && $user_id > 0) {
 
                 const printUrl = `<?= BASE_URL; ?>admin/reports-analytics-pdf?office_id=${officeId}&visitor_type=${encodeURIComponent(visitorType)}&date_from=${dateFrom}&date_to=${dateTo}`;
 
-                // Get or create a hidden background iframe
                 let printFrame = document.getElementById('silentPrintIframe');
                 if (!printFrame) {
                     printFrame = document.createElement('iframe');
@@ -615,7 +612,6 @@ if ($db_connect && $user_id > 0) {
                     document.body.appendChild(printFrame);
                 }
 
-                // Load PDF template into hidden frame to trigger print preview dialog
                 printFrame.src = printUrl;
             });
 
