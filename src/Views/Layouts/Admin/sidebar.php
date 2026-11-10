@@ -181,11 +181,6 @@ function render_action_links($links = [])
                         </a>
                         <div class="collapse <?php echo navigation_active("office-prefix, office-counters", "show"); ?>" id="office_management_nav">
                             <ul class="nav nav-collapse">
-                                <li class="<?php echo navigation_active("office-prefix"); ?>">
-                                    <a href="<?php echo BASE_URL . "admin/office-prefix"; ?>">
-                                        <span class="sub-item">Office Prefix Codes</span>
-                                    </a>
-                                </li>
                                 <li class="<?php echo navigation_active("office-counters"); ?>">
                                     <a href="<?php echo BASE_URL . "admin/office-counters"; ?>">
                                         <span class="sub-item">Office Counters</span>
