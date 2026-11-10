@@ -125,7 +125,6 @@ if ($g_user_role_upper === 'ADMIN') {
         $office_id  = $assigned_office_id;
         $counter_id = $assigned_counter_id;
     } else {
-        // Unassigned non-admin staff member
         $office_id  = 0;
         $counter_id = 0;
         unset($_SESSION['assigned_office_id'], $_SESSION['assigned_counter_id']);
@@ -156,6 +155,7 @@ switch ($action) {
                     q.ticket_number,
                     q.status,
                     q.is_priority,
+                    l.id AS logbook_id,
                     l.created_at AS queue_entry_time,
                     q.called_at,
                     q.served_at,
@@ -169,22 +169,21 @@ switch ($action) {
                     l.post_nominal,
                     l.sex,
                     l.contact_no,
-                    l.program_code,
+                    COALESCE(p.program_code, l.program_code) AS program_code,
                     COALESCE(p.program_name, '') AS program_name,
                     l.year_level,
                     d.department_code,
                     d.department_name,
                     o.office_name,
                     tt.transaction_name,
-                    tsc.sub_concern_name
+                    l.other_concern_text
                 FROM queue_tickets q
                 INNER JOIN logbooks l ON q.logbook_id = l.id
                 LEFT JOIN users u ON l.user_id = u.id
-                LEFT JOIN programs p ON TRIM(l.program_code) = TRIM(p.program_code) AND p.flag_status = 0
+                LEFT JOIN programs p ON (l.program_id > 0 AND l.program_id = p.program_id) OR (l.program_code IS NOT NULL AND TRIM(l.program_code) = TRIM(p.program_code))
                 LEFT JOIN departments d ON l.department_id = d.department_id
                 LEFT JOIN office o ON q.office_id = o.office_id
                 LEFT JOIN transaction_types tt ON l.transaction_type_id = tt.id
-                LEFT JOIN transaction_sub_concerns tsc ON l.sub_concern_id = tsc.id
                 WHERE q.office_id = ? 
                   AND (q.counter_id = ? OR q.served_by_user_id = ? OR ? = 0)
                   AND q.queue_date = ? 
@@ -206,6 +205,28 @@ switch ($action) {
                 if (!empty($now_serving['sex'])) {
                     $now_serving['sex'] = ucfirst(strtolower($now_serving['sex']));
                 }
+
+                // Fetch multi-concerns from logbook_transaction_items table
+                $concerns_list = [];
+                $stmtItems = $db_connect->prepare("
+                    SELECT 
+                        tt.transaction_name,
+                        tsc.sub_concern_name
+                    FROM logbook_transaction_items lti
+                    LEFT JOIN transaction_types tt ON lti.transaction_type_id = tt.id
+                    LEFT JOIN transaction_sub_concerns tsc ON lti.sub_concern_id = tsc.id
+                    WHERE lti.logbook_id = ?
+                    ORDER BY lti.id ASC
+                ");
+                if ($stmtItems) {
+                    $stmtItems->bind_param("i", $now_serving['logbook_id']);
+                    $stmtItems->execute();
+                    $resItems = $stmtItems->get_result();
+                    while ($itemRow = $resItems->fetch_assoc()) {
+                        $concerns_list[] = $itemRow;
+                    }
+                }
+                $now_serving['concerns_list'] = $concerns_list;
             }
 
             // Waiting tickets lineup

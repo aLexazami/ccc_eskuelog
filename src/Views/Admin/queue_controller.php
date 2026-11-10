@@ -351,6 +351,16 @@ if ($db_connect && $user_id > 0) {
             box-shadow: 0 4px 12px rgba(37, 99, 235, 0.05);
         }
 
+        .concern-pill-item {
+            background-color: #ffffff;
+            border: 1px solid #bfdbfe;
+            border-left: 3px solid var(--kiosk-primary);
+            border-radius: 0.5rem;
+            padding: 0.5rem 0.85rem;
+            margin-bottom: 0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+        }
+
         .controller-subcard {
             border: 1.5px solid #e2e8f0;
             border-radius: 1rem;
@@ -637,7 +647,7 @@ if ($db_connect && $user_id > 0) {
                                             <div class="card-body p-4 p-md-5 text-center">
                                                 
                                                 <!-- ICON BADGE -->
-                                                <div class="mx-auto mb-3.5 d-flex align-items-center justify-content-center rounded-circle" 
+                                                <div class="mx-auto mb-3 d-flex align-items-center justify-content-center rounded-circle" 
                                                      style="width: 88px; height: 88px; background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border: 2px dashed #93c5fd;">
                                                     <i class="bi bi-person-workspace text-primary" style="font-size: 2.6rem;"></i>
                                                 </div>
@@ -652,7 +662,7 @@ if ($db_connect && $user_id > 0) {
 
                                                 <!-- RE-CHECK ASSIGNMENT BUTTON -->
                                                 <div>
-                                                    <button type="button" class="btn btn-primary fw-bold px-4 py-2.5 rounded-3 shadow-sm d-inline-flex align-items-center gap-2" onclick="window.location.reload();">
+                                                    <button type="button" class="btn btn-primary fw-bold px-4 py-2 rounded-3 shadow-sm d-inline-flex align-items-center gap-2" onclick="window.location.reload();">
                                                         <i class="bi bi-arrow-clockwise fs-5"></i>
                                                         <span>Check Assignment Status</span>
                                                     </button>
@@ -924,9 +934,6 @@ if ($db_connect && $user_id > 0) {
                 });
             }
 
-            // =========================================================================
-            // WORKSTATION INITIALIZATION LOGIC
-            // =========================================================================
             if (HAS_ASSIGNMENT && officeSelect && officeSelect.value) {
                 activeOfficeId = officeSelect.value;
                 activeCounterId = counterSelect ? counterSelect.value : '0';
@@ -1140,9 +1147,20 @@ if ($db_connect && $user_id > 0) {
 
             function renderDynamicTicketDetails(ticket, entryTimeString) {
                 if (!ticketDetailsContainer) return;
-                const mainConcern = ticket.transaction_name || 'General Concern';
-                const subConcern  = ticket.sub_concern_name || ticket.sub_concern || null;
-                const concernText = subConcern ? `${mainConcern} &rsaquo; <span class="fw-bold text-primary">${subConcern}</span>` : mainConcern;
+                
+                let concernsHtml = '';
+                if (ticket.concerns_list && ticket.concerns_list.length > 0) {
+                    concernsHtml = ticket.concerns_list.map(c => {
+                        const sub = c.sub_concern_name ? ` &rsaquo; <span class="fw-bold text-primary">${c.sub_concern_name}</span>` : '';
+                        return `<div class="concern-pill-item"><div class="fw-bold text-dark small">${c.transaction_name || 'General Concern'}${sub}</div></div>`;
+                    }).join('');
+                } else if (ticket.transaction_name) {
+                    concernsHtml = `<div class="concern-pill-item"><div class="fw-bold text-dark small">${ticket.transaction_name}</div></div>`;
+                } else if (ticket.other_concern_text) {
+                    concernsHtml = `<div class="concern-pill-item"><div class="fw-bold text-dark small">${ticket.other_concern_text}</div></div>`;
+                } else {
+                    concernsHtml = `<div class="concern-pill-item"><div class="fw-bold text-dark small">General Administrative Inquiry</div></div>`;
+                }
 
                 ticketDetailsContainer.innerHTML = `
                     <div class="d-flex flex-column justify-content-between h-100 py-1">
@@ -1152,16 +1170,16 @@ if ($db_connect && $user_id > 0) {
                                     <i class="bi bi-clipboard-check-fill fs-4"></i>
                                 </div>
                                 <div class="min-w-0 flex-grow-1">
-                                    <span class="text-uppercase text-muted fw-bold tracking-wider d-block mb-1" style="font-size: 0.75rem;">Transaction Concern</span>
-                                    <h5 class="fw-bold text-dark mb-0 text-break" style="line-height: 1.4; word-break: break-word;">
-                                        ${concernText}
-                                    </h5>
+                                    <span class="text-uppercase text-muted fw-bold tracking-wider d-block mb-2" style="font-size: 0.75rem;">Transaction Concern(s)</span>
+                                    <div class="d-flex flex-column gap-2">
+                                        ${concernsHtml}
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
                         <div class="pt-3 text-end">
-                            <button type="button" class="btn btn-outline-primary fw-bold d-inline-flex align-items-center gap-2 px-3.5 py-2 rounded-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#userDetailsModal">
+                            <button type="button" class="btn btn-outline-primary fw-bold d-inline-flex align-items-center gap-2 px-4 py-2 rounded-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#userDetailsModal">
                                 <i class="bi bi-person-bounding-box fs-5"></i>
                                 <span>View Visitor Full Details</span>
                             </button>
@@ -1251,7 +1269,7 @@ if ($db_connect && $user_id > 0) {
                             <span class="ticket-pill-pos">${index + 1}</span>
                             <span class="ticket-pill-number">${item.ticket_number}</span>
                         </div>
-                        ${item.is_priority == 1 ? '<span class="badge bg-warning text-dark fw-bold px-2.5 py-1.5 rounded-pill"><i class="bi bi-star-fill text-danger me-1"></i>Priority</span>' : '<span class="badge bg-light text-secondary border fw-semibold px-2.5 py-1 rounded-pill small">Waiting</span>'}
+                        ${item.is_priority == 1 ? '<span class="badge bg-warning text-dark fw-bold px-3 py-1.5 rounded-pill"><i class="bi bi-star-fill text-danger me-1"></i>Priority</span>' : '<span class="badge bg-light text-secondary border fw-semibold px-3 py-1 rounded-pill small">Waiting</span>'}
                     </div>
                 `).join('');
             }
