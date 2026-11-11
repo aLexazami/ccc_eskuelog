@@ -51,14 +51,8 @@ switch ($route) {
     case '/admin/index.php':
     case '/admin/login.php':
     case '/admin/login-access.php':
-        if ($g_user_role_upper === "ADMIN") {
-            header("Location: " . BASE_URL . "admin/office-counters");
-            exit();
-        } else if ($g_user_role_upper === "ADMIN_STAFF") {
-            header("Location: " . BASE_URL . "admin/queue-controller");
-            exit();
-        } else if ($g_user_role_upper === "STATION_ADMIN") {
-            header("Location: " . BASE_URL . "admin/student-logbook");
+        if (in_array($g_user_role_upper, ["ADMIN", "ADMIN_STAFF", "STATION_ADMIN"])) {
+            header("Location: " . BASE_URL . "admin/dashboard");
             exit();
         } else if ($g_user_role_upper === "USER") {
             header("Location: " . BASE_URL . "admin/user-information");
@@ -79,10 +73,12 @@ switch ($route) {
             '/admin/sign-out' => ['file'  => SRC_PATH . '/Handlers/Admin/sign_out.php', 'roles' => ["ADMIN", "ADMIN_STAFF", "STATION_ADMIN", "USER"]],
 
             # ADMIN Views
+            '/admin/dashboard'            => ['file' => SRC_PATH . '/Views/Admin/dashboard.php', 'roles' => ["ADMIN", "ADMIN_STAFF", "STATION_ADMIN"]],
             '/admin/user-information'      => ['file' => SRC_PATH . '/Views/Admin/user_information.php', 'roles' => ["ADMIN", "ADMIN_STAFF", "STATION_ADMIN", "USER"]],
             '/admin/office-counters'       => ['file' => SRC_PATH . '/Views/Admin/office_counters.php', 'roles' => ["ADMIN"]],
             '/admin/transaction-types'     => ['file' => SRC_PATH . '/Views/Admin/transaction_types.php', 'roles' => ["ADMIN"]],
             '/admin/sub-concerns'          => ['file' => SRC_PATH . '/Views/Admin/sub_concerns.php', 'roles' => ["ADMIN"]],
+            '/admin/digital-logbook'       => ['file' => SRC_PATH . '/Views/Admin/digital_logbook.php', 'roles' => ["ADMIN", "ADMIN_STAFF", "STATION_ADMIN", "USER"]],
             '/admin/student-logbook'       => ['file' => SRC_PATH . '/Views/Admin/student_logbook.php', 'roles' => ["ADMIN", "ADMIN_STAFF", "STATION_ADMIN", "USER"]],
             '/admin/employee-logbook'      => ['file' => SRC_PATH . '/Views/Admin/employee_logbook.php', 'roles' => ["ADMIN", "ADMIN_STAFF", "STATION_ADMIN", "USER"]],
             '/admin/guest-logbook'         => ['file' => SRC_PATH . '/Views/Admin/guest_logbook.php', 'roles' => ["ADMIN", "ADMIN_STAFF", "STATION_ADMIN", "USER"]],
