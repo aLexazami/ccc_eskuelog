@@ -162,6 +162,23 @@ INSERT INTO `transaction_sub_concerns` (`transaction_type_id`, `sub_concern_name
 
 ((SELECT `id` FROM `transaction_types` WHERE `office_id` = 11 AND `transaction_name` = 'Online Database & E-Journal Account Request'), 'Off-Campus E-Library Access Credentials'),
 ((SELECT `id` FROM `transaction_types` WHERE `office_id` = 11 AND `transaction_name` = 'Online Database & E-Journal Account Request'), 'IEEE / ScienceDirect Account Activation'),
-((SELECT `id` FROM `transaction_types` WHERE `office_id` = 11 AND `transaction_name` = 'Online Database & E-Journal Account Request'), 'Turnitin Plagiarism Checker Account Request');
+((SELECT `id` FROM `transaction_types` WHERE `office_id` = 11 AND `transaction_name` = 'Online Database & E-Journal Account Request'), 'Turnitin Plagiarism Checker Account Request'),
+
+-- 12. Management Information System Department (MISD) - office_id = 12
+((SELECT `id` FROM `transaction_types` WHERE `office_id` = 12 AND `transaction_name` = 'User Account & Access Management'), 'Institutional Email Creation / Recovery'),
+((SELECT `id` FROM `transaction_types` WHERE `office_id` = 12 AND `transaction_name` = 'User Account & Access Management'), 'Password Reset & Account Unlocking'),
+((SELECT `id` FROM `transaction_types` WHERE `office_id` = 12 AND `transaction_name` = 'User Account & Access Management'), 'Campus Wi-Fi Credentials Request'),
+
+((SELECT `id` FROM `transaction_types` WHERE `office_id` = 12 AND `transaction_name` = 'Hardware & Technical Support'), 'Computer & Workstation Diagnostics'),
+((SELECT `id` FROM `transaction_types` WHERE `office_id` = 12 AND `transaction_name` = 'Hardware & Technical Support'), 'Printer & Peripheral Setup / Troubleshooting'),
+((SELECT `id` FROM `transaction_types` WHERE `office_id` = 12 AND `transaction_name` = 'Hardware & Technical Support'), 'Office Equipment Technical Maintenance'),
+
+((SELECT `id` FROM `transaction_types` WHERE `office_id` = 12 AND `transaction_name` = 'Software & System Development Request'), 'Portal Bug Report & Issue Resolution'),
+((SELECT `id` FROM `transaction_types` WHERE `office_id` = 12 AND `transaction_name` = 'Software & System Development Request'), 'System Module Feature Request'),
+((SELECT `id` FROM `transaction_types` WHERE `office_id` = 12 AND `transaction_name` = 'Software & System Development Request'), 'Software Installation & Licensing Assistance'),
+
+((SELECT `id` FROM `transaction_types` WHERE `office_id` = 12 AND `transaction_name` = 'Network & Infrastructure Support'), 'Network Connectivity & Port Inspection'),
+((SELECT `id` FROM `transaction_types` WHERE `office_id` = 12 AND `transaction_name` = 'Network & Infrastructure Support'), 'Server Hosting & Data Backup Request'),
+((SELECT `id` FROM `transaction_types` WHERE `office_id` = 12 AND `transaction_name` = 'Network & Infrastructure Support'), 'Network Outage & Downtime Escalation');
 
 COMMIT;

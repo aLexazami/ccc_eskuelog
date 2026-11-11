@@ -1,5 +1,5 @@
--- Seed Script: Populate Transaction Types / Services per Office
--- Date: 2026-10-23
+-- Seed Script: Populate Transaction Types / Services per Office (Including MISD)
+-- Target Database: e_eskuelog
 -- Target Table: transaction_types
 
 START TRANSACTION;
@@ -77,12 +77,19 @@ INSERT INTO `transaction_types` (`office_id`, `transaction_name`, `estimated_min
 (10, 'Shifting / Department Transfer Evaluation', 15, 0),
 (10, 'General Department Inquiry', 5, 0),
 
--- 11. Learning and Resource Information Center (LRIC) - office_id = 11
+-- 11. Learning and Resource Information Center (LIRC) - office_id = 11
 (11, 'Book Borrowing & Returning', 5, 0),
 (11, 'Library Clearance Signing', 5, 0),
 (11, 'Online Database & E-Journal Account Request', 5, 0),
 (11, 'Discussion Room Reservation', 10, 0),
 (11, 'Lost Book / Penalty Settlement', 10, 0),
-(11, 'General Library Inquiry', 5, 0);
+(11, 'General Library Inquiry', 5, 0),
+
+-- 12. Management Information System Department (MISD) - office_id = 12
+(12, 'User Account & Access Management', 10, 0),
+(12, 'Hardware & Technical Support', 15, 0),
+(12, 'Software & System Development Request', 15, 0),
+(12, 'Network & Infrastructure Support', 10, 0),
+(12, 'General Technical Inquiry', 5, 0);
 
 COMMIT;
