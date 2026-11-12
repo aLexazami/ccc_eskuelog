@@ -112,19 +112,14 @@ $action_buttons = [
                                 </div>
 
                                 <div class="card-body">
+                                    <!-- Row 1: Office selection (left) | Export + Refresh (right) -->
                                     <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
-                                        <div class="d-flex align-items-center gap-2 flex-grow-1" style="max-width: 650px;">
-                                            <select id="filterOffice" class="form-select" style="max-width: 250px;">
-                                                <option value="0">-- All Campus Offices --</option>
-                                                <?php foreach ($offices as $off): ?>
-                                                    <option value="<?= $off['office_id']; ?>"><?= htmlspecialchars($off['office_name']); ?> (<?= htmlspecialchars($off['office_code']); ?>)</option>
-                                                <?php endforeach; ?>
-                                            </select>
-                                            <div class="search-input-group flex-grow-1">
-                                                <i class="bi bi-search search-icon"></i>
-                                                <input type="text" id="global-search" class="form-control" placeholder="Search service, office, or sub-transaction...">
-                                            </div>
-                                        </div>
+                                        <select id="filterOffice" class="form-select" style="width: auto; min-width: 250px; max-width: 100%;">
+                                            <option value="0">-- All Campus Offices --</option>
+                                            <?php foreach ($offices as $off): ?>
+                                                <option value="<?= $off['office_id']; ?>"><?= htmlspecialchars($off['office_name']); ?> (<?= htmlspecialchars($off['office_code']); ?>)</option>
+                                            <?php endforeach; ?>
+                                        </select>
                                         <div class="d-flex align-items-center gap-2">
                                             <div class="dropdown">
                                                 <button class="btn btn-action dropdown-toggle d-inline-flex align-items-center" type="button" data-bs-toggle="dropdown">
@@ -139,6 +134,14 @@ $action_buttons = [
                                             <button id="btn-refresh" class="btn btn-action d-inline-flex align-items-center">
                                                 <i class="bi bi-arrow-clockwise me-2"></i>Refresh Data
                                             </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Row 2: Search bar on its own row -->
+                                    <div class="d-flex mb-3">
+                                        <div class="search-input-group flex-grow-1">
+                                            <i class="bi bi-search search-icon"></i>
+                                            <input type="text" id="global-search" class="form-control" placeholder="Search...">
                                         </div>
                                     </div>
 
@@ -787,7 +790,13 @@ $action_buttons = [
                 ajaxConfig: "POST",
                 ajaxContentType: "form",
                 ajaxParams: () => ({ action: 'fetch_transaction_types', office_id: $('#filterOffice').val() }),
-                ajaxResponse: (url, params, response) => flattenServices(response.data),
+                ajaxResponse: (url, params, response) => {
+                    if (response && response.msg_status === false) {
+                        showError(response.msg_response || 'Unable to load transaction services.');
+                        return [];
+                    }
+                    return flattenServices(response && response.data);
+                },
                 index: "row_key",
                 layout: "fitColumns",
                 resizableColumnFit: true,
