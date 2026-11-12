@@ -34,23 +34,25 @@ switch ($action) {
                 SELECT 
                     s.student_id,
                     s.year_level,
-                    s.department_id,
+                    COALESCE(NULLIF(s.department_id, 0), p.department_id, 0) AS department_id,
                     s.program_id,
                     p.program_code,
+                    p.program_name,
                     COALESCE(NULLIF(s.major, ''), p.major) AS major,
                     u.id AS user_id,
                     u.first_name,
                     u.middle_name,
+                    u.middle_initial,
                     u.last_name,
                     u.suffix,
                     u.post_nominal,
                     u.sex,
                     u.email,
-                    u.contact_no
+                    COALESCE(NULLIF(NULLIF(s.profile_pic, ''), 'default-profile.jpg'), u.profile_pic) AS profile_pic
                 FROM student s
                 INNER JOIN users u ON s.user_id = u.id
                 LEFT JOIN programs p ON s.program_id = p.program_id
-                WHERE s.student_id = ?
+                WHERE BINARY s.student_id = ? AND s.flag_status = 0 AND u.flag_status = 0
                 LIMIT 1
             ";
 
@@ -67,35 +69,38 @@ switch ($action) {
                 echo json_encode([
                     'success' => true,
                     'data'    => [
-                        'user_id'       => $row['user_id'],
-                        'student_id'    => $row['student_id'],
-                        'department_id' => (int)($row['department_id'] ?? 0),
-                        'program_id'    => (int)($row['program_id'] ?? 0),
-                        'program_code'  => $row['program_code'] ?? '',
-                        'major'         => $row['major'] ?? '',
-                        'first_name'    => $row['first_name'] ?? '',
-                        'middle_name'   => $row['middle_name'] ?? '',
-                        'last_name'     => $row['last_name'] ?? '',
-                        'suffix'        => $row['suffix'] ?? '',
-                        'post_nominal'  => $row['post_nominal'] ?? '',
-                        'sex'           => !empty($row['sex']) ? ucfirst(strtolower($row['sex'])) : '',
-                        'email'         => $row['email'] ?? '',
-                        'year_level'    => $year_level,
-                        'contact_no'    => $row['contact_no'] ?? ''
+                        'user_id'        => (int)$row['user_id'],
+                        'student_id'     => trim($row['student_id']),
+                        'department_id'  => (int)($row['department_id'] ?? 0),
+                        'program_id'     => (int)($row['program_id'] ?? 0),
+                        'program_code'   => $row['program_code'] ?? '',
+                        'program_name'   => $row['program_name'] ?? '',
+                        'major'          => $row['major'] ?? '',
+                        'first_name'     => $row['first_name'] ?? '',
+                        'middle_name'    => $row['middle_name'] ?? '',
+                        'middle_initial' => $row['middle_initial'] ?? '',
+                        'last_name'      => $row['last_name'] ?? '',
+                        'suffix'         => $row['suffix'] ?? '',
+                        'post_nominal'   => $row['post_nominal'] ?? '',
+                        'sex'            => !empty($row['sex']) ? ucfirst(strtolower($row['sex'])) : '',
+                        'email'          => $row['email'] ?? '',
+                        'year_level'     => $year_level,
+                        'profile_pic'    => $row['profile_pic'] ?? ''
                     ]
                 ]);
                 exit();
             }
 
-            echo json_encode(['success' => false, 'message' => 'No student record found.']);
+            echo json_encode(['success' => false, 'message' => 'No active student record found.']);
             exit();
 
         } catch (Exception $e) {
-            echo json_encode(['success' => false, 'message' => 'Lookup failed: ' . $e->getMessage()]);
+            error_log('fetch_student_info error: ' . $e->getMessage());
+            echo json_encode(['success' => false, 'message' => 'Student lookup failed. Please try again.']);
             exit();
         }
 
-        // -------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // 1.5. FETCH EMPLOYEE INFO
     // -------------------------------------------------------------------------
     case 'fetch_employee_info':
@@ -112,18 +117,20 @@ switch ($action) {
                     e.employee_id,
                     e.department_id,
                     e.office_id,
+                    COALESCE(e.position, '') AS position,
                     u.id AS user_id,
                     u.first_name,
                     u.middle_name,
+                    u.middle_initial,
                     u.last_name,
                     u.suffix,
                     u.post_nominal,
                     u.sex,
                     u.email,
-                    u.contact_no
+                    COALESCE(NULLIF(e.profile_pic, ''), u.profile_pic) AS profile_pic
                 FROM employee e
                 INNER JOIN users u ON e.user_id = u.id
-                WHERE e.employee_id = ?
+                WHERE BINARY e.employee_id = ? AND e.service_status = 0 AND u.flag_status = 0
                 LIMIT 1
             ";
 
@@ -136,28 +143,31 @@ switch ($action) {
                 echo json_encode([
                     'success' => true,
                     'data'    => [
-                        'user_id'       => $row['user_id'],
-                        'employee_id'   => $row['employee_id'],
-                        'department_id' => (int)($row['department_id'] ?? 0),
-                        'office_id'     => (int)($row['office_id'] ?? 0),
-                        'first_name'    => $row['first_name'] ?? '',
-                        'middle_name'   => $row['middle_name'] ?? '',
-                        'last_name'     => $row['last_name'] ?? '',
-                        'suffix'        => $row['suffix'] ?? '',
-                        'post_nominal'  => $row['post_nominal'] ?? '',
-                        'sex'           => !empty($row['sex']) ? ucfirst(strtolower($row['sex'])) : '',
-                        'email'         => $row['email'] ?? '',
-                        'contact_no'    => $row['contact_no'] ?? ''
+                        'user_id'        => (int)$row['user_id'],
+                        'employee_id'    => trim($row['employee_id']),
+                        'department_id'  => (int)($row['department_id'] ?? 0),
+                        'office_id'      => (int)($row['office_id'] ?? 0),
+                        'position'       => $row['position'] ?? '',
+                        'first_name'     => $row['first_name'] ?? '',
+                        'middle_name'    => $row['middle_name'] ?? '',
+                        'middle_initial' => $row['middle_initial'] ?? '',
+                        'last_name'      => $row['last_name'] ?? '',
+                        'suffix'         => $row['suffix'] ?? '',
+                        'post_nominal'   => $row['post_nominal'] ?? '',
+                        'sex'            => !empty($row['sex']) ? ucfirst(strtolower($row['sex'])) : '',
+                        'email'          => $row['email'] ?? '',
+                        'profile_pic'    => $row['profile_pic'] ?? ''
                     ]
                 ]);
                 exit();
             }
 
-            echo json_encode(['success' => false, 'message' => 'No employee record found.']);
+            echo json_encode(['success' => false, 'message' => 'No active employee record found.']);
             exit();
 
         } catch (Exception $e) {
-            echo json_encode(['success' => false, 'message' => 'Lookup failed: ' . $e->getMessage()]);
+            error_log('fetch_employee_info error: ' . $e->getMessage());
+            echo json_encode(['success' => false, 'message' => 'Employee lookup failed. Please try again.']);
             exit();
         }
 
@@ -165,7 +175,12 @@ switch ($action) {
     // 2. UNIFIED LOGBOOK CHECK-IN
     // -------------------------------------------------------------------------
     case 'logbook_checkin':
-        $visitor_type        = strtoupper(trim($_POST['visitor_type'] ?? 'STUDENT'));
+        $allowed_visitor_types = ['STUDENT', 'EMPLOYEE', 'GUEST'];
+        $visitor_type = strtoupper(trim($_POST['visitor_type'] ?? 'STUDENT'));
+        if (!in_array($visitor_type, $allowed_visitor_types, true)) {
+            $visitor_type = 'GUEST';
+        }
+
         $reference_id        = trim($_POST['reference_id'] ?? '') ?: null;
         $user_id             = filter_var($_POST['user_id'] ?? null, FILTER_VALIDATE_INT) ?: null;
         
@@ -176,7 +191,6 @@ switch ($action) {
         $post_nominal        = trim($_POST['post_nominal'] ?? '') ?: null;
         $sex                 = trim($_POST['sex'] ?? '') ?: null;
         $email               = trim($_POST['email'] ?? '') ?: null;
-        $contact_no          = trim($_POST['contact_no'] ?? '') ?: null;
 
         $program_id          = filter_var($_POST['program_id'] ?? null, FILTER_VALIDATE_INT) ?: null;
         $program_code        = trim($_POST['program_code'] ?? '') ?: null;
@@ -189,12 +203,12 @@ switch ($action) {
         $raw_sub_id          = trim($_POST['sub_concern_id'] ?? '');
         $other_concern_text  = trim($_POST['other_concern_text'] ?? '') ?: null;
         
-        $data_consent        = isset($_POST['data_consent']) && $_POST['data_consent'] === '1' ? 1 : 0;
-        $is_priority         = isset($_POST['is_priority']) && $_POST['is_priority'] === '1' ? 1 : 0;
-        $priority_type       = $is_priority ? (trim($_POST['priority_type'] ?? '') ?: 'OTHER') : null;
+        $data_consent        = (isset($_POST['data_consent']) && $_POST['data_consent'] === '1') ? 1 : 0;
+        $is_priority         = (isset($_POST['is_priority']) && $_POST['is_priority'] === '1') ? 1 : 0;
+        $priority_type       = $is_priority ? (strtoupper(trim($_POST['priority_type'] ?? '')) ?: 'OTHER') : null;
 
-        if (empty($first_name) || empty($last_name) || $office_id === 0) {
-            echo json_encode(['success' => false, 'message' => 'Please complete all required student details and office selection.']);
+        if (empty($first_name) || empty($last_name) || empty($sex) || empty($email) || $office_id <= 0) {
+            echo json_encode(['success' => false, 'message' => 'Please complete all required personal details and office selection.']);
             exit();
         }
 
@@ -203,84 +217,177 @@ switch ($action) {
             exit();
         }
 
-        // Parse array of selected numeric transaction IDs
-        $trans_ids = array_filter(array_map('intval', explode(',', $raw_trans_id)), function($val) {
-            return $val > 0;
-        });
+        // Parse candidate transaction IDs & check for "OTHERS"
+        $raw_trans_ids = array_values(array_unique(array_filter(
+            array_map('intval', explode(',', $raw_trans_id)),
+            fn($val) => $val > 0
+        )));
+        $has_others = (strpos($raw_trans_id, 'OTHERS') !== false || !empty($other_concern_text));
 
-        // Parse sub-concerns (handles JSON map or comma-separated string)
+        // Parse sub-concerns map
         $sub_concerns_map = [];
         if (!empty($raw_sub_id)) {
             $decoded = json_decode($raw_sub_id, true);
             if (is_array($decoded)) {
                 $sub_concerns_map = $decoded;
             } else {
-                // Fallback for comma-separated IDs
                 $raw_ids = array_filter(array_map('intval', explode(',', $raw_sub_id)), fn($v) => $v > 0);
-                if (!empty($raw_ids) && !empty($trans_ids)) {
-                    $sub_concerns_map[$trans_ids[0]] = $raw_ids;
+                if (!empty($raw_ids) && !empty($raw_trans_ids)) {
+                    $sub_concerns_map[$raw_trans_ids[0]] = $raw_ids;
                 }
             }
         }
 
-        // Fallback program_code from DB if not provided by form
-        if (empty($program_code) && !empty($program_id)) {
-            $stmtP = $db_connect->prepare("SELECT program_code, major FROM programs WHERE program_id = ? LIMIT 1");
-            $stmtP->bind_param("i", $program_id);
-            $stmtP->execute();
-            $resP = $stmtP->get_result()->fetch_assoc();
-            if ($resP) {
-                $program_code = $resP['program_code'] ?? null;
-                if (empty($major)) {
-                    $major = $resP['major'] ?? null;
-                }
-            }
-        }
-
-        // Determine Primary Transaction Type ID for header snapshot
-        $primary_trans_id = !empty($trans_ids) ? reset($trans_ids) : null;
-
-        if (empty($primary_trans_id)) {
-            $stmtFallback = $db_connect->prepare("SELECT id FROM transaction_types WHERE office_id = ? AND flag_status = 0 LIMIT 1");
-            $stmtFallback->bind_param("i", $office_id);
-            $stmtFallback->execute();
-            $resFB = $stmtFallback->get_result()->fetch_assoc();
-            $primary_trans_id = $resFB['id'] ?? null;
-        }
-
-        // Calculate Dynamic Cumulative Estimated Process Time
+        // Validate selected transaction types against the target office & calculate estimated minutes
+        $trans_ids = [];
         $estimated_minutes = 0;
-        if (!empty($trans_ids)) {
-            $inClause = implode(',', array_map('intval', $trans_ids));
-            $stmtMins = $db_connect->query("SELECT SUM(estimated_minutes) AS total_mins FROM transaction_types WHERE id IN ($inClause)");
-            if ($stmtMins && $rowMins = $stmtMins->fetch_assoc()) {
-                $estimated_minutes = (int)($rowMins['total_mins'] ?? 0);
+
+        if (!empty($raw_trans_ids)) {
+            $inClause = implode(',', $raw_trans_ids);
+            $stmtValidTrans = $db_connect->prepare("
+                SELECT id, estimated_minutes 
+                FROM transaction_types 
+                WHERE office_id = ? AND flag_status = 0 AND id IN ($inClause)
+            ");
+            $stmtValidTrans->bind_param("i", $office_id);
+            $stmtValidTrans->execute();
+            $resValidTrans = $stmtValidTrans->get_result();
+
+            $validTransLookup = [];
+            while ($rowT = $resValidTrans->fetch_assoc()) {
+                $tid = (int)$rowT['id'];
+                $validTransLookup[$tid] = (int)($rowT['estimated_minutes'] ?? 5);
+            }
+
+            foreach ($raw_trans_ids as $tid) {
+                if (isset($validTransLookup[$tid])) {
+                    $trans_ids[] = $tid;
+                    $estimated_minutes += $validTransLookup[$tid];
+                }
             }
         }
 
-        if (strpos($raw_trans_id, 'OTHERS') !== false || !empty($other_concern_text)) {
+        if (empty($trans_ids) && !$has_others) {
+            echo json_encode(['success' => false, 'message' => 'Please select at least one valid transaction concern or specify your concern under Others.']);
+            exit();
+        }
+
+        if ($has_others) {
             $estimated_minutes += 10;
         }
-
         if ($estimated_minutes <= 0) {
             $estimated_minutes = 15;
         }
 
+        // Validate sub-concerns against active rows in transaction_sub_concerns
+        $validated_sub_map = [];
+        if (!empty($trans_ids) && !empty($sub_concerns_map)) {
+            $inTrans = implode(',', $trans_ids);
+            $stmtValidSubs = $db_connect->query("
+                SELECT id, transaction_type_id 
+                FROM transaction_sub_concerns 
+                WHERE flag_status = 0 AND transaction_type_id IN ($inTrans)
+            ");
+            $validSubPairs = [];
+            while ($rowS = $stmtValidSubs->fetch_assoc()) {
+                $validSubPairs[(int)$rowS['transaction_type_id']][(int)$rowS['id']] = true;
+            }
+
+            foreach ($trans_ids as $tid) {
+                $submittedSubs = $sub_concerns_map[$tid] ?? ($sub_concerns_map[(string)$tid] ?? []);
+                if (is_array($submittedSubs)) {
+                    foreach ($submittedSubs as $sid) {
+                        $sid = (int)$sid;
+                        if ($sid > 0 && isset($validSubPairs[$tid][$sid])) {
+                            $validated_sub_map[$tid][] = $sid;
+                        }
+                    }
+                    if (!empty($validated_sub_map[$tid])) {
+                        $validated_sub_map[$tid] = array_values(array_unique($validated_sub_map[$tid]));
+                    }
+                }
+            }
+        }
+
+        // Normalize visitor metadata by visitor_type
+        if ($visitor_type === 'STUDENT') {
+            $post_nominal = null;
+            if (!empty($program_id)) {
+                $stmtP = $db_connect->prepare("
+                    SELECT department_id, program_code, major 
+                    FROM programs 
+                    WHERE program_id = ? AND flag_status = 0
+                    LIMIT 1
+                ");
+                $stmtP->bind_param("i", $program_id);
+                $stmtP->execute();
+                $resP = $stmtP->get_result()->fetch_assoc();
+                if ($resP) {
+                    if (empty($department_id)) {
+                        $department_id = (int)($resP['department_id'] ?? 0);
+                    }
+                    if (empty($program_code)) {
+                        $program_code = $resP['program_code'] ?? null;
+                    }
+                    if (empty($major)) {
+                        $major = $resP['major'] ?? null;
+                    }
+                } else {
+                    $program_id = null;
+                }
+            }
+        } elseif ($visitor_type === 'EMPLOYEE') {
+            $program_id   = null;
+            $program_code = null;
+            $major        = null;
+            $year_level   = null;
+        } else { // GUEST
+            $user_id       = null;
+            $reference_id  = null;
+            $post_nominal  = null;
+            $department_id = 0;
+            $program_id    = null;
+            $program_code  = null;
+            $major         = null;
+            $year_level    = null;
+        }
+
+        $primary_trans_id = !empty($trans_ids) ? $trans_ids[0] : null;
+
         $db_connect->begin_transaction();
 
         try {
-            // STEP A: Insert primary header record into logbooks
+            // STEP A: Lock office row first to verify active office & serialize daily ticket sequence
+            $today = date('Y-m-d');
+
+            $stmtOffice = $db_connect->prepare("
+                SELECT office_name, COALESCE(NULLIF(office_code, ''), 'Q') AS prefix
+                FROM office
+                WHERE office_id = ? AND flag_status = 0
+                FOR UPDATE
+            ");
+            $stmtOffice->bind_param("i", $office_id);
+            $stmtOffice->execute();
+            $resOffice = $stmtOffice->get_result()->fetch_assoc();
+
+            if (!$resOffice) {
+                $db_connect->rollback();
+                echo json_encode(['success' => false, 'message' => 'Selected office is unavailable or inactive.']);
+                exit();
+            }
+
+            // STEP B: Insert primary header record into logbooks
             $stmtLog = $db_connect->prepare("
                 INSERT INTO logbooks (
                     visitor_type, reference_id, user_id, first_name, middle_name, last_name,
-                    suffix, post_nominal, sex, email, contact_no, program_id, program_code, major,
+                    suffix, post_nominal, sex, email, program_id, program_code, major,
                     year_level, department_id, office_id, transaction_type_id, other_concern_text,
                     is_priority, priority_type, data_consent
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ");
 
             $stmtLog->bind_param(
-                "ssissssssssissiiissisi",
+                "ssisssssssissiiiisisi",
                 $visitor_type,
                 $reference_id,
                 $user_id,
@@ -291,7 +398,6 @@ switch ($action) {
                 $post_nominal,
                 $sex,
                 $email,
-                $contact_no,
                 $program_id,
                 $program_code,
                 $major,
@@ -307,7 +413,7 @@ switch ($action) {
             $stmtLog->execute();
             $logbook_id = $db_connect->insert_id;
 
-            // STEP B: Populate Junction Table (logbook_transaction_items)
+            // STEP C: Populate Junction Table (logbook_transaction_items)
             $stmtItem = $db_connect->prepare("
                 INSERT INTO logbook_transaction_items (logbook_id, transaction_type_id, sub_concern_id) 
                 VALUES (?, ?, ?)
@@ -315,10 +421,10 @@ switch ($action) {
 
             if (!empty($trans_ids)) {
                 foreach ($trans_ids as $t_id) {
-                    $subsForTrans = $sub_concerns_map[$t_id] ?? [];
-                    if (!empty($subsForTrans) && is_array($subsForTrans)) {
-                        foreach ($subsForTrans as $sub_id) {
-                            $s_id = (int)$sub_id;
+                    $validSubs = $validated_sub_map[$t_id] ?? [];
+
+                    if (!empty($validSubs)) {
+                        foreach ($validSubs as $s_id) {
                             $stmtItem->bind_param("iii", $logbook_id, $t_id, $s_id);
                             $stmtItem->execute();
                         }
@@ -335,29 +441,22 @@ switch ($action) {
                 $stmtItem->execute();
             }
 
-            // STEP C: Resolve office details, prefix code & daily ticket sequence
+            // STEP D: Resolve daily sequence & insert queue ticket
             $stmtSeq = $db_connect->prepare("
-                SELECT 
-                    o.office_name,
-                    COALESCE(NULLIF(o.office_code, ''), 'Q') AS prefix,
-                    COALESCE(MAX(q.queue_sequence), 0) + 1 AS next_seq
-                FROM office o
-                LEFT JOIN queue_tickets q ON o.office_id = q.office_id AND q.queue_date = CURDATE()
-                WHERE o.office_id = ?
-                GROUP BY o.office_id, o.office_name, o.office_code
+                SELECT COALESCE(MAX(queue_sequence), 0) + 1 AS next_seq
+                FROM queue_tickets
+                WHERE office_id = ? AND queue_date = ?
             ");
-            $stmtSeq->bind_param("i", $office_id);
+            $stmtSeq->bind_param("is", $office_id, $today);
             $stmtSeq->execute();
             $resSeq = $stmtSeq->get_result()->fetch_assoc();
 
-            $office_name   = $resSeq['office_name'] ?? 'Office';
-            $base_prefix   = !empty($resSeq['prefix']) ? $resSeq['prefix'] : 'Q';
+            $office_name   = $resOffice['office_name'] ?? 'Office';
+            $base_prefix   = !empty($resOffice['prefix']) ? $resOffice['prefix'] : 'Q';
             $prefix        = $is_priority ? "P-" . $base_prefix : $base_prefix;
             $sequence      = (int)($resSeq['next_seq'] ?? 1);
             $ticket_number = sprintf("%s-%03d", $prefix, $sequence);
-            $today         = date('Y-m-d');
 
-            // STEP D: Insert queue ticket
             $stmtQueue = $db_connect->prepare("
                 INSERT INTO queue_tickets (
                     logbook_id, ticket_number, queue_sequence, queue_date, office_id, status, is_priority
@@ -381,7 +480,8 @@ switch ($action) {
 
         } catch (Exception $e) {
             $db_connect->rollback();
-            echo json_encode(['success' => false, 'message' => 'Check-in failed: ' . $e->getMessage()]);
+            error_log('logbook_checkin error: ' . $e->getMessage());
+            echo json_encode(['success' => false, 'message' => 'Check-in failed. Please try again or ask staff for assistance.']);
             exit();
         }
 
