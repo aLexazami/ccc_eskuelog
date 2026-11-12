@@ -1,5 +1,6 @@
 <?php
 # Core Config Dependencies
+global $db_connect;
 $db_connect  = $db_connect ?? null;
 $g_user_role = $g_user_role ?? '';
 
