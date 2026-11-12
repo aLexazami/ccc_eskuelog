@@ -530,20 +530,20 @@ if ($db_connect) {
 
                     <div id="personalDetailsSection" class="summary-section-box d-none">
 
-                        <div class="row g-2 g-sm-3 mb-3">
-                            <div class="col-12 col-md-3">
+                        <div class="row g-2 g-sm-3 mb-3" id="step1NameRow">
+                            <div class="col-12 col-sm-6 col-md-3 name-col-primary">
                                 <label for="firstName" class="form-label fw-bold text-dark small">First Name</label>
                                 <input type="text" class="form-control form-control-kiosk step1-sync" id="firstName" name="first_name" placeholder="First Name" required>
                             </div>
-                            <div class="col-12 col-sm-6 col-md-2">
+                            <div class="col-12 col-sm-6 col-md-3 name-col-secondary">
                                 <label for="middleName" class="form-label fw-bold text-dark small">Middle Name</label>
                                 <input type="text" class="form-control form-control-kiosk step1-sync" id="middleName" name="middle_name" placeholder="Middle Name">
                             </div>
-                            <div class="col-12 col-sm-6 col-md-3">
+                            <div class="col-12 col-sm-6 col-md-3 name-col-primary">
                                 <label for="lastName" class="form-label fw-bold text-dark small">Last Name</label>
                                 <input type="text" class="form-control form-control-kiosk step1-sync" id="lastName" name="last_name" placeholder="Last Name" required>
                             </div>
-                            <div class="col-6 col-sm-6 col-md-2">
+                            <div class="col-12 col-sm-6 col-md-3 name-col-secondary" id="suffixContainer">
                                 <label for="suffix" class="form-label fw-bold text-dark small">Suffix</label>
                                 <select class="form-select form-select-kiosk step1-sync" id="suffix" name="suffix">
                                     <option value="" selected>None</option>
@@ -820,20 +820,20 @@ if ($db_connect) {
                     <div id="step5VisitorDetailsSection" class="d-none">
                         <div class="summary-section-box">
 
-                            <div class="row g-2 g-sm-3 mb-3">
-                                <div class="col-12 col-md-3">
+                            <div class="row g-2 g-sm-3 mb-3" id="step5NameRow">
+                                <div class="col-12 col-sm-6 col-md-3 name-col-primary">
                                     <label for="step5_firstName" class="form-label fw-bold text-dark small">First Name</label>
                                     <input type="text" class="form-control form-control-kiosk step5-sync" id="step5_firstName" placeholder="First Name">
                                 </div>
-                                <div class="col-12 col-sm-6 col-md-2">
+                                <div class="col-12 col-sm-6 col-md-3 name-col-secondary">
                                     <label for="step5_middleName" class="form-label fw-bold text-dark small">Middle Name</label>
                                     <input type="text" class="form-control form-control-kiosk step5-sync" id="step5_middleName" placeholder="Middle Name">
                                 </div>
-                                <div class="col-12 col-sm-6 col-md-3">
+                                <div class="col-12 col-sm-6 col-md-3 name-col-primary">
                                     <label for="step5_lastName" class="form-label fw-bold text-dark small">Last Name</label>
                                     <input type="text" class="form-control form-control-kiosk step5-sync" id="step5_lastName" placeholder="Last Name">
                                 </div>
-                                <div class="col-6 col-sm-6 col-md-2">
+                                <div class="col-12 col-sm-6 col-md-3 name-col-secondary" id="step5_suffixContainer">
                                     <label for="step5_suffix" class="form-label fw-bold text-dark small">Suffix</label>
                                     <select class="form-select form-select-kiosk step5-sync" id="step5_suffix">
                                         <option value="">None</option>
@@ -1299,6 +1299,20 @@ if ($db_connect) {
             }
         }
 
+        function updateNameGridColumns(isEmployee) {
+            document.querySelectorAll('.name-col-secondary').forEach(col => {
+                col.classList.toggle('col-md-2', isEmployee);
+                col.classList.toggle('col-md-3', !isEmployee);
+            });
+
+            ['suffixContainer', 'step5_suffixContainer'].forEach(id => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                el.classList.toggle('col-6', isEmployee);
+                el.classList.toggle('col-12', !isEmployee);
+            });
+        }
+
         function configureWizardFlowMode() {
             if (visitorRecordFound) {
                 // 5-Step Flow: Matched ID Record
@@ -1356,6 +1370,7 @@ if ($db_connect) {
             setWizardStep(1);
             
             if (type === 'STUDENT') {
+                updateNameGridColumns(false);
                 idLookupSection.classList.remove('d-none');
                 personalDetailsSec.classList.add('d-none');
                 referenceIdLabel.textContent = "Student ID Number";
@@ -1370,6 +1385,7 @@ if ($db_connect) {
                 step5EmployeeCont.classList.add('d-none');
                 step5PostNomCont.classList.add('d-none');
             } else if (type === 'EMPLOYEE') {
+                updateNameGridColumns(true);
                 idLookupSection.classList.remove('d-none');
                 personalDetailsSec.classList.add('d-none');
                 referenceIdLabel.textContent = "Employee ID Number";
@@ -1384,6 +1400,7 @@ if ($db_connect) {
                 step5EmployeeCont.classList.remove('d-none');
                 step5PostNomCont.classList.remove('d-none');
             } else { // GUEST
+                updateNameGridColumns(false);
                 idLookupSection.classList.add('d-none');
                 personalDetailsSec.classList.remove('d-none');
                 
