@@ -52,7 +52,6 @@ CREATE TABLE `logbooks` (
     `post_nominal` VARCHAR(255) DEFAULT NULL,
     `sex` VARCHAR(20) DEFAULT NULL,
     `email` VARCHAR(150) DEFAULT NULL,
-    `contact_no` VARCHAR(50) DEFAULT NULL,
 
     -- Academic / Metadata Snapshot
     `program_id` INT DEFAULT NULL,                     -- References programs.program_id[cite: 23]
