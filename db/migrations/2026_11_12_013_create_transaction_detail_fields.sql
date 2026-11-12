@@ -27,3 +27,8 @@ COMMIT;
 
 ALTER TABLE `transaction_sub_concerns` 
 ADD COLUMN `estimated_minutes` INT(11) NOT NULL DEFAULT 5 AFTER `sub_concern_name`;
+
+ALTER TABLE transaction_types
+ADD COLUMN date_modify DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;
+
+UPDATE transaction_types SET date_modify = created_at;
