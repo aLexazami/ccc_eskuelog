@@ -1,6 +1,10 @@
 <?php
 # Core Config & Session Setup
-$db_connect  = $db_connect ?? null;
+global $db_connect;
+if (!$db_connect && defined('CONNECT_PATH')) {
+    require_once CONNECT_PATH;
+}
+
 $g_user_role = strtoupper(trim($g_user_role ?? ''));
 
 # Dispatch to role-specific partial views
@@ -18,7 +22,6 @@ switch ($g_user_role) {
         break;
 
     default:
-        // Fallback for unauthorized roles
         http_response_code(403);
         header("Location: " . BASE_URL . "admin/sign-out");
         exit();
