@@ -190,27 +190,12 @@ function render_action_links($links = [])
                         </div>
                     </li>
 
-                    <!-- SERVICES & SUB-CONCERNS NAVIGATION -->
-                    <li class="nav-item <?php echo navigation_active("transaction-types, sub-concerns", "active submenu"); ?>">
-                        <a class="collapsed" aria-expanded="false" data-bs-toggle="collapse" href="#services_management_nav">
+                    <!-- UNIFIED SERVICES & SUB-CONCERNS NAVIGATION -->
+                    <li class="nav-item <?php echo navigation_active("transaction-types, sub-concerns"); ?>">
+                        <a href="<?php echo BASE_URL . "admin/transaction-types"; ?>">
                             <i class="bi bi-card-checklist"></i>
-                            <p>Services & Concerns</p>
-                            <span class="caret"></span>
+                            <p>Services & Sub-Concerns</p>
                         </a>
-                        <div class="collapse <?php echo navigation_active("transaction-types, sub-concerns", "show"); ?>" id="services_management_nav">
-                            <ul class="nav nav-collapse">
-                                <li class="<?php echo navigation_active("transaction-types"); ?>">
-                                    <a href="<?php echo BASE_URL . "admin/transaction-types"; ?>">
-                                        <span class="sub-item">Transaction Types</span>
-                                    </a>
-                                </li>
-                                <li class="<?php echo navigation_active("sub-concerns"); ?>">
-                                    <a href="<?php echo BASE_URL . "admin/sub-concerns"; ?>">
-                                        <span class="sub-item">Sub Concerns</span>
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
                     </li>
 
                     <!-- TRANSACTION RECORDS FOR ALL OFFICES -->
