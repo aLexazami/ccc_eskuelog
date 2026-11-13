@@ -5,7 +5,7 @@
 global $db_connect;
 $db_connect = $db_connect ?? null;
 
-header('Content-Type: application/json');
+header('Content-Type: application/json; charset=utf-8');
 
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
@@ -183,7 +183,7 @@ switch ($action) {
 
         $reference_id        = trim($_POST['reference_id'] ?? '') ?: null;
         $user_id             = filter_var($_POST['user_id'] ?? null, FILTER_VALIDATE_INT) ?: null;
-        
+
         $first_name          = trim($_POST['first_name'] ?? '');
         $middle_name         = trim($_POST['middle_name'] ?? '') ?: null;
         $last_name           = trim($_POST['last_name'] ?? '');
@@ -202,7 +202,8 @@ switch ($action) {
         $raw_trans_id        = trim($_POST['transaction_type_id'] ?? '');
         $raw_sub_id          = trim($_POST['sub_concern_id'] ?? '');
         $other_concern_text  = trim($_POST['other_concern_text'] ?? '') ?: null;
-        
+        $submitted_details   = $_POST['transaction_details'] ?? [];
+
         $data_consent        = (isset($_POST['data_consent']) && $_POST['data_consent'] === '1') ? 1 : 0;
         $is_priority         = (isset($_POST['is_priority']) && $_POST['is_priority'] === '1') ? 1 : 0;
         $priority_type       = $is_priority ? (strtoupper(trim($_POST['priority_type'] ?? '')) ?: 'OTHER') : null;
@@ -210,6 +211,19 @@ switch ($action) {
         if (empty($first_name) || empty($last_name) || empty($sex) || empty($email) || $office_id <= 0) {
             echo json_encode(['success' => false, 'message' => 'Please complete all required personal details and office selection.']);
             exit();
+        }
+
+        // Category-specific required validation
+        if ($visitor_type === 'STUDENT') {
+            if (empty($program_id) || empty($year_level)) {
+                echo json_encode(['success' => false, 'message' => 'Course / Program and Year Level are required for Student visitors.']);
+                exit();
+            }
+        } elseif ($visitor_type === 'EMPLOYEE') {
+            if ($department_id <= 0) {
+                echo json_encode(['success' => false, 'message' => 'Department is required for Employee visitors.']);
+                exit();
+            }
         }
 
         if ($data_consent !== 1) {
@@ -238,14 +252,14 @@ switch ($action) {
             }
         }
 
-        // Validate selected transaction types against the target office & calculate estimated minutes
+        // Validate selected transaction types against the target office
         $trans_ids = [];
-        $estimated_minutes = 0;
+        $validTransLookup = [];
 
         if (!empty($raw_trans_ids)) {
             $inClause = implode(',', $raw_trans_ids);
             $stmtValidTrans = $db_connect->prepare("
-                SELECT id, estimated_minutes 
+                SELECT id, transaction_name, estimated_minutes 
                 FROM transaction_types 
                 WHERE office_id = ? AND flag_status = 0 AND id IN ($inClause)
             ");
@@ -253,16 +267,17 @@ switch ($action) {
             $stmtValidTrans->execute();
             $resValidTrans = $stmtValidTrans->get_result();
 
-            $validTransLookup = [];
             while ($rowT = $resValidTrans->fetch_assoc()) {
                 $tid = (int)$rowT['id'];
-                $validTransLookup[$tid] = (int)($rowT['estimated_minutes'] ?? 5);
+                $validTransLookup[$tid] = [
+                    'name'              => $rowT['transaction_name'],
+                    'estimated_minutes' => (int)($rowT['estimated_minutes'] ?? 5)
+                ];
             }
 
             foreach ($raw_trans_ids as $tid) {
                 if (isset($validTransLookup[$tid])) {
                     $trans_ids[] = $tid;
-                    $estimated_minutes += $validTransLookup[$tid];
                 }
             }
         }
@@ -272,25 +287,27 @@ switch ($action) {
             exit();
         }
 
-        if ($has_others) {
-            $estimated_minutes += 10;
-        }
-        if ($estimated_minutes <= 0) {
-            $estimated_minutes = 15;
-        }
-
-        // Validate sub-concerns against active rows in transaction_sub_concerns
+        // Fetch active sub-concerns & their individual estimated_minutes
         $validated_sub_map = [];
-        if (!empty($trans_ids) && !empty($sub_concerns_map)) {
+        $transHasActiveSubs = [];
+        $validSubInfo = [];
+
+        if (!empty($trans_ids)) {
             $inTrans = implode(',', $trans_ids);
             $stmtValidSubs = $db_connect->query("
-                SELECT id, transaction_type_id 
+                SELECT id, transaction_type_id, sub_concern_name, estimated_minutes 
                 FROM transaction_sub_concerns 
                 WHERE flag_status = 0 AND transaction_type_id IN ($inTrans)
             ");
-            $validSubPairs = [];
+
             while ($rowS = $stmtValidSubs->fetch_assoc()) {
-                $validSubPairs[(int)$rowS['transaction_type_id']][(int)$rowS['id']] = true;
+                $tId = (int)$rowS['transaction_type_id'];
+                $sId = (int)$rowS['id'];
+                $transHasActiveSubs[$tId] = true;
+                $validSubInfo[$tId][$sId] = [
+                    'name'              => $rowS['sub_concern_name'],
+                    'estimated_minutes' => (int)($rowS['estimated_minutes'] ?? 5)
+                ];
             }
 
             foreach ($trans_ids as $tid) {
@@ -298,7 +315,7 @@ switch ($action) {
                 if (is_array($submittedSubs)) {
                     foreach ($submittedSubs as $sid) {
                         $sid = (int)$sid;
-                        if ($sid > 0 && isset($validSubPairs[$tid][$sid])) {
+                        if ($sid > 0 && isset($validSubInfo[$tid][$sid])) {
                             $validated_sub_map[$tid][] = $sid;
                         }
                     }
@@ -306,6 +323,113 @@ switch ($action) {
                         $validated_sub_map[$tid] = array_values(array_unique($validated_sub_map[$tid]));
                     }
                 }
+
+                // Enforce selecting at least one sub-concern if the primary transaction has sub-concerns
+                if (!empty($transHasActiveSubs[$tid]) && empty($validated_sub_map[$tid])) {
+                    $tName = $validTransLookup[$tid]['name'] ?? 'Selected service';
+                    echo json_encode([
+                        'success' => false,
+                        'message' => "Please select at least one sub-transaction under \"{$tName}\"."
+                    ]);
+                    exit();
+                }
+            }
+        }
+
+        // Calculate total estimated minutes:
+        // - If transaction has sub-concerns: sum selected sub-concerns' estimated_minutes
+        // - If standalone transaction: use transaction_types.estimated_minutes
+        $estimated_minutes = 0;
+        foreach ($trans_ids as $tid) {
+            if (!empty($transHasActiveSubs[$tid])) {
+                foreach ($validated_sub_map[$tid] as $sid) {
+                    $estimated_minutes += $validSubInfo[$tid][$sid]['estimated_minutes'];
+                }
+            } else {
+                $estimated_minutes += $validTransLookup[$tid]['estimated_minutes'];
+            }
+        }
+
+        if ($has_others) {
+            $estimated_minutes += 10;
+        }
+        if ($estimated_minutes <= 0) {
+            $estimated_minutes = 5;
+        }
+
+        // Fetch configured dynamic detail fields for selected transactions / sub-concerns
+        $requiredDetailItems = [];
+        if (!empty($trans_ids)) {
+            $inTrans = implode(',', $trans_ids);
+            $detailSql = "
+                SELECT
+                    h.transaction_type_id,
+                    h.sub_concern_id,
+                    i.id AS item_id,
+                    i.field_title,
+                    i.detail_mode,
+                    i.input_data_type
+                FROM transaction_detail_fields h
+                INNER JOIN transaction_detail_field_items i
+                    ON i.detail_field_id = h.id
+                   AND i.flag_status = 0
+                WHERE h.transaction_type_id IN ({$inTrans})
+                  AND h.flag_status = 0
+                ORDER BY h.id DESC, i.field_order ASC
+            ";
+            $resDetails = $db_connect->query($detailSql);
+            while ($dRow = $resDetails->fetch_assoc()) {
+                $tId = (int)$dRow['transaction_type_id'];
+                $sId = $dRow['sub_concern_id'] !== null ? (int)$dRow['sub_concern_id'] : 0;
+
+                if ($sId === 0 && empty($transHasActiveSubs[$tId])) {
+                    $scopeKey = "type_{$tId}";
+                    $requiredDetailItems[$scopeKey][] = $dRow;
+                } elseif ($sId > 0 && in_array($sId, $validated_sub_map[$tId] ?? [], true)) {
+                    $scopeKey = "sub_{$sId}";
+                    $requiredDetailItems[$scopeKey][] = $dRow;
+                }
+            }
+            $resDetails->free();
+        }
+
+        // Validate submitted detail field answers
+        $validatedDetailAnswers = [];
+        foreach ($requiredDetailItems as $scopeKey => $fieldsList) {
+            $submittedScope = is_array($submitted_details[$scopeKey] ?? null) ? $submitted_details[$scopeKey] : [];
+            foreach ($fieldsList as $fieldMeta) {
+                $itemId = (int)$fieldMeta['item_id'];
+                $title  = (string)$fieldMeta['field_title'];
+                $mode   = strtoupper((string)$fieldMeta['detail_mode']);
+                $fmt    = strtoupper((string)($fieldMeta['input_data_type'] ?? 'CHAR'));
+
+                $rawEntry = $submittedScope[$itemId] ?? null;
+                $ansVal   = is_array($rawEntry) ? trim((string)($rawEntry['value'] ?? '')) : trim((string)$rawEntry);
+                $choiceId = is_array($rawEntry) ? (filter_var($rawEntry['choice_id'] ?? null, FILTER_VALIDATE_INT) ?: null) : null;
+
+                if ($ansVal === '') {
+                    echo json_encode([
+                        'success' => false,
+                        'message' => "Please fill out the required detail field: \"{$title}\"."
+                    ]);
+                    exit();
+                }
+
+                if ($mode === 'INPUT' && $fmt === 'INT' && !preg_match('/^-?\d+$/', $ansVal)) {
+                    echo json_encode([
+                        'success' => false,
+                        'message' => "\"{$title}\" must be a valid whole number."
+                    ]);
+                    exit();
+                }
+
+                $validatedDetailAnswers[$scopeKey][] = [
+                    'field_item_id' => $itemId,
+                    'field_title'   => $title,
+                    'detail_mode'   => in_array($mode, ['INPUT', 'SELECT'], true) ? $mode : 'INPUT',
+                    'choice_id'     => $choiceId,
+                    'answer_value'  => $ansVal
+                ];
             }
         }
 
@@ -413,10 +537,16 @@ switch ($action) {
             $stmtLog->execute();
             $logbook_id = $db_connect->insert_id;
 
-            // STEP C: Populate Junction Table (logbook_transaction_items)
+            // STEP C: Populate Junction Table (logbook_transaction_items) & Dynamic Detail Answers
             $stmtItem = $db_connect->prepare("
                 INSERT INTO logbook_transaction_items (logbook_id, transaction_type_id, sub_concern_id) 
                 VALUES (?, ?, ?)
+            ");
+
+            $stmtItemDetail = $db_connect->prepare("
+                INSERT INTO logbook_transaction_item_details (
+                    logbook_item_id, field_item_id, field_title, detail_mode, choice_id, answer_value
+                ) VALUES (?, ?, ?, ?, ?, ?)
             ");
 
             if (!empty($trans_ids)) {
@@ -427,11 +557,39 @@ switch ($action) {
                         foreach ($validSubs as $s_id) {
                             $stmtItem->bind_param("iii", $logbook_id, $t_id, $s_id);
                             $stmtItem->execute();
+                            $logbook_item_id = (int)$db_connect->insert_id;
+
+                            foreach ($validatedDetailAnswers["sub_{$s_id}"] ?? [] as $ans) {
+                                $stmtItemDetail->bind_param(
+                                    "iissis",
+                                    $logbook_item_id,
+                                    $ans['field_item_id'],
+                                    $ans['field_title'],
+                                    $ans['detail_mode'],
+                                    $ans['choice_id'],
+                                    $ans['answer_value']
+                                );
+                                $stmtItemDetail->execute();
+                            }
                         }
                     } else {
                         $nullSub = null;
                         $stmtItem->bind_param("iii", $logbook_id, $t_id, $nullSub);
                         $stmtItem->execute();
+                        $logbook_item_id = (int)$db_connect->insert_id;
+
+                        foreach ($validatedDetailAnswers["type_{$t_id}"] ?? [] as $ans) {
+                            $stmtItemDetail->bind_param(
+                                "iissis",
+                                $logbook_item_id,
+                                $ans['field_item_id'],
+                                $ans['field_title'],
+                                $ans['detail_mode'],
+                                $ans['choice_id'],
+                                $ans['answer_value']
+                            );
+                            $stmtItemDetail->execute();
+                        }
                     }
                 }
             } else {

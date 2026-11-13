@@ -264,6 +264,25 @@ if ($db_connect) {
             font-weight: 600;
             font-size: 0.85rem;
             transition: all 0.2s ease;
+            display: inline-flex;
+            flex-direction: column;
+            align-items: flex-start;
+            text-align: left;
+            gap: 0.25rem;
+        }
+
+        .sub-concern-btn .sub-est-badge {
+            font-size: 0.72rem;
+            padding: 0.15rem 0.45rem;
+            border-radius: 0.4rem;
+            background-color: rgba(29, 78, 216, 0.1);
+            color: #1d4ed8;
+            font-weight: 700;
+        }
+
+        .sub-concern-btn.btn-primary .sub-est-badge {
+            background-color: rgba(255, 255, 255, 0.22);
+            color: #ffffff;
         }
 
         .consent-card-box, .priority-card-box {
@@ -400,6 +419,14 @@ if ($db_connect) {
             margin-bottom: 1.25rem;
         }
 
+        .detail-group-card {
+            background-color: #f8fafc;
+            border: 1.5px solid #cbd5e1;
+            border-left: 4px solid var(--kiosk-primary);
+            border-radius: 0.75rem;
+            padding: 1rem 1.15rem;
+        }
+
         .receipt-reminder-highlight {
             background-color: #fef3c7;
             border: 1.5px solid #f59e0b;
@@ -463,9 +490,9 @@ if ($db_connect) {
                 <span class="d-none d-sm-inline">Concerns</span>
             </div>
 
-            <div class="step-divider d-none" id="wizardStep5Divider"></div>
+            <div class="step-divider" id="wizardStep5Divider"></div>
 
-            <div class="step-item d-none" id="wizardStep5"
+            <div class="step-item" id="wizardStep5"
                 role="button" tabindex="0" aria-label="Go back to Summary">
                 <span class="step-number">5</span>
                 <span class="d-none d-sm-inline">Summary & Submit</span>
@@ -578,7 +605,7 @@ if ($db_connect) {
                         <div id="studentFieldsContainer" class="row g-2 g-sm-3 mb-3">
                             <div class="col-12 col-sm-6">
                                 <label for="courseProgram" class="form-label fw-bold text-dark small">Course / Program</label>
-                                <select class="form-select form-select-kiosk step1-sync" id="courseProgram" name="program_id">
+                                <select class="form-select form-select-kiosk step1-sync" id="courseProgram" name="program_id" required>
                                     <option value="" selected disabled>Select course / program</option>
                                     <?php foreach ($programs_list as $prog): ?>
                                         <?php 
@@ -600,7 +627,7 @@ if ($db_connect) {
 
                             <div class="col-12 col-sm-6">
                                 <label for="yearLevel" class="form-label fw-bold text-dark small">Year Level</label>
-                                <select class="form-select form-select-kiosk step1-sync" id="yearLevel" name="year_level">
+                                <select class="form-select form-select-kiosk step1-sync" id="yearLevel" name="year_level" required>
                                     <option value="" selected disabled>Select year level</option>
                                     <option value="1">1st Year</option>
                                     <option value="2">2nd Year</option>
@@ -659,16 +686,7 @@ if ($db_connect) {
                             </div>
                         </div>
 
-                        <!-- DATA PRIVACY AGREEMENT (MANUAL ENTRY / GUEST) -->
-                        <div class="consent-card-box mb-4">
-                            <button type="button" class="btn btn-outline-warning w-100 py-3 rounded-3 fw-bold d-flex align-items-center justify-content-center gap-2 shadow-sm btn-open-privacy">
-                                <i class="bi bi-file-earmark-check fs-5"></i>
-                                <span class="consent-btn-label">Read & Sign Agreement Form</span>
-                            </button>
-                        </div>
-
-                        <button type="button" id="btnContinueStep2" class="btn btn-kiosk-primary w-100 py-3 d-flex align-items-center justify-content-center gap-2 shadow-sm" disabled>
-                            <i class="bi bi-lock-fill" id="continueBtnLockIcon"></i>
+                        <button type="button" id="btnContinueStep2" class="btn btn-kiosk-primary w-100 py-3 d-flex align-items-center justify-content-center gap-2 shadow-sm">
                             <span>Continue to Building Selection</span>
                             <i class="bi bi-arrow-right fs-5"></i>
                         </button>
@@ -799,9 +817,9 @@ if ($db_connect) {
                         <button type="button" id="btnBackToStep3" class="btn btn-outline-secondary py-3 fw-bold rounded-3 px-4">
                             <i class="bi bi-arrow-left me-1"></i> Back to Office Selection
                         </button>
-                        <button type="button" id="btnContinueToStep5" class="btn btn-success py-3 fw-bold rounded-3 flex-grow-1 shadow-sm">
-                            <span id="step4PrimaryBtnText">Confirm & Issue Ticket</span>
-                            <i class="bi bi-check-circle ms-1 fs-5" id="step4PrimaryBtnIcon"></i>
+                        <button type="button" id="btnContinueToStep5" class="btn btn-kiosk-primary py-3 fw-bold rounded-3 flex-grow-1 shadow-sm">
+                            <span>Proceed to Logbook Summary</span>
+                            <i class="bi bi-arrow-right ms-1 fs-5"></i>
                         </button>
                     </div>
                 </div>
@@ -813,17 +831,20 @@ if ($db_connect) {
                     
                     <div class="mb-4">
                         <h3 class="fw-bold text-dark mb-1 fs-4">Review Logbook Summary</h3>
-                        <p class="text-muted small mb-0">Please verify your details and accept the agreement before submitting your check-in.</p>
+                        <p class="text-muted small mb-0">Please verify your details, complete any required transaction information, and accept the agreement before submitting.</p>
                     </div>
 
-                    <!-- VISITOR PERSONAL DETAILS: shown only for confirmed ID records -->
-                    <div id="step5VisitorDetailsSection" class="d-none">
+                    <!-- VISITOR PERSONAL DETAILS (SHOWN FOR ALL FLOWS & SYNCED WITH STEP 1) -->
+                    <div id="step5VisitorDetailsSection">
                         <div class="summary-section-box">
+                            <h6 class="fw-bold text-primary mb-3">
+                                <i class="bi bi-person-lines-fill me-1"></i> Personal Information
+                            </h6>
 
                             <div class="row g-2 g-sm-3 mb-3" id="step5NameRow">
                                 <div class="col-12 col-sm-6 col-md-3 name-col-primary">
                                     <label for="step5_firstName" class="form-label fw-bold text-dark small">First Name</label>
-                                    <input type="text" class="form-control form-control-kiosk step5-sync" id="step5_firstName" placeholder="First Name">
+                                    <input type="text" class="form-control form-control-kiosk step5-sync" id="step5_firstName" placeholder="First Name" required>
                                 </div>
                                 <div class="col-12 col-sm-6 col-md-3 name-col-secondary">
                                     <label for="step5_middleName" class="form-label fw-bold text-dark small">Middle Name</label>
@@ -831,7 +852,7 @@ if ($db_connect) {
                                 </div>
                                 <div class="col-12 col-sm-6 col-md-3 name-col-primary">
                                     <label for="step5_lastName" class="form-label fw-bold text-dark small">Last Name</label>
-                                    <input type="text" class="form-control form-control-kiosk step5-sync" id="step5_lastName" placeholder="Last Name">
+                                    <input type="text" class="form-control form-control-kiosk step5-sync" id="step5_lastName" placeholder="Last Name" required>
                                 </div>
                                 <div class="col-12 col-sm-6 col-md-3 name-col-secondary" id="step5_suffixContainer">
                                     <label for="step5_suffix" class="form-label fw-bold text-dark small">Suffix</label>
@@ -853,15 +874,15 @@ if ($db_connect) {
                             <div class="row g-2 g-sm-3 mb-3">
                                 <div class="col-12 col-md-6">
                                     <label for="step5_sex" class="form-label fw-bold text-dark small">Sex</label>
-                                    <select class="form-select form-select-kiosk step5-sync" id="step5_sex">
-                                        <option value="" disabled>Select sex</option>
+                                    <select class="form-select form-select-kiosk step5-sync" id="step5_sex" required>
+                                        <option value="" selected disabled>Select sex</option>
                                         <option value="Male">Male</option>
                                         <option value="Female">Female</option>
                                     </select>
                                 </div>
                                 <div class="col-12 col-md-6">
                                     <label for="step5_email" class="form-label fw-bold text-dark small">Email Address</label>
-                                    <input type="email" class="form-control form-control-kiosk step5-sync" id="step5_email" placeholder="user@example.com">
+                                    <input type="email" class="form-control form-control-kiosk step5-sync" id="step5_email" placeholder="user@example.com" required>
                                 </div>
                             </div>
 
@@ -869,8 +890,8 @@ if ($db_connect) {
                             <div id="step5_studentFieldsContainer" class="row g-2 g-sm-3 mb-1">
                                 <div class="col-12 col-sm-6">
                                     <label for="step5_courseProgram" class="form-label fw-bold text-dark small">Course / Program</label>
-                                    <select class="form-select form-select-kiosk step5-sync" id="step5_courseProgram">
-                                        <option value="" disabled>Select course / program</option>
+                                    <select class="form-select form-select-kiosk step5-sync" id="step5_courseProgram" required>
+                                        <option value="" selected disabled>Select course / program</option>
                                         <?php foreach ($programs_list as $prog): ?>
                                             <?php 
                                                 $displayName = $prog['program_code'] . ' - ' . $prog['program_name'];
@@ -887,8 +908,8 @@ if ($db_connect) {
 
                                 <div class="col-12 col-sm-6">
                                     <label for="step5_yearLevel" class="form-label fw-bold text-dark small">Year Level</label>
-                                    <select class="form-select form-select-kiosk step5-sync" id="step5_yearLevel">
-                                        <option value="" disabled>Select year level</option>
+                                    <select class="form-select form-select-kiosk step5-sync" id="step5_yearLevel" required>
+                                        <option value="" selected disabled>Select year level</option>
                                         <option value="1">1st Year</option>
                                         <option value="2">2nd Year</option>
                                         <option value="3">3rd Year</option>
@@ -902,7 +923,7 @@ if ($db_connect) {
                                 <div class="col-12 col-sm-6">
                                     <label for="step5_employeeDepartment" class="form-label fw-bold text-dark small">Department</label>
                                     <select class="form-select form-select-kiosk step5-sync" id="step5_employeeDepartment">
-                                        <option value="" disabled>Select department</option>
+                                        <option value="" selected disabled>Select department</option>
                                         <?php foreach ($departments_list as $dept): ?>
                                             <option value="<?= htmlspecialchars($dept['department_id']); ?>">
                                                 <?= htmlspecialchars($dept['department_code'] . ' - ' . $dept['department_name']); ?>
@@ -912,7 +933,9 @@ if ($db_connect) {
                                 </div>
 
                                 <div class="col-12 col-sm-6">
-                                    <label for="step5_employeeOfficeId" class="form-label fw-bold text-dark small">Office</label>
+                                    <label for="step5_employeeOfficeId" class="form-label fw-bold text-dark small">
+                                        Office <span class="text-muted fw-normal fs-8">(Optional)</span>
+                                    </label>
                                     <select class="form-select form-select-kiosk step5-sync" id="step5_employeeOfficeId">
                                         <option value="">Select office</option>
                                         <?php foreach ($offices_list as $off): ?>
@@ -924,6 +947,17 @@ if ($db_connect) {
                                 </div>
                             </div>
                         </div>
+                    </div>
+
+                    <!-- DYNAMIC TRANSACTION ADDITIONAL DETAILS (SHOWN WHEN SELECTED CONCERNS HAVE DETAIL FIELDS) -->
+                    <div id="step5DynamicDetailsSection" class="summary-section-box d-none">
+                        <div class="mb-3">
+                            <h6 class="fw-bold text-primary mb-1">
+                                <i class="bi bi-ui-checks-grid me-1"></i> Required Transaction Details
+                            </h6>
+                            <p class="text-muted small mb-0">Please provide the required additional information for your selected service(s).</p>
+                        </div>
+                        <div id="step5DynamicDetailsContainer" class="d-flex flex-column gap-3"></div>
                     </div>
 
                     <!-- DATA PRIVACY AGREEMENT CONTAINER -->
@@ -1180,7 +1214,10 @@ if ($db_connect) {
         const step5EmployeeCont    = document.getElementById('step5_employeeFieldsContainer');
         const step5EmpDept         = document.getElementById('step5_employeeDepartment');
         const step5EmpOffice       = document.getElementById('step5_employeeOfficeId');
-        const step5VisitorDetailsSection = document.getElementById('step5VisitorDetailsSection');
+
+        // STEP 5 DYNAMIC DETAILS ELEMENTS
+        const step5DynamicDetailsSec  = document.getElementById('step5DynamicDetailsSection');
+        const step5DynamicDetailsCont = document.getElementById('step5DynamicDetailsContainer');
 
         // IDENTITY VERIFICATION MODAL ELEMENTS
         const idVerificationModalEl = document.getElementById('idVerificationModal');
@@ -1201,7 +1238,6 @@ if ($db_connect) {
         // PRIVACY AGREEMENT MODAL & STATE
         const dataConsentInput     = document.getElementById('dataConsent');
         const privacyOpenBtns      = document.querySelectorAll('.btn-open-privacy');
-        const continueBtnLockIcon  = document.getElementById('continueBtnLockIcon');
         const privacyModalEl       = document.getElementById('privacyAgreementModal');
         const modalConsentCheckbox = document.getElementById('modalConsentCheckbox');
         const btnAcceptPrivacy     = document.getElementById('btnAcceptPrivacyModal');
@@ -1223,7 +1259,6 @@ if ($db_connect) {
         const wizardStep2          = document.getElementById('wizardStep2');
         const wizardStep3          = document.getElementById('wizardStep3');
         const wizardStep4          = document.getElementById('wizardStep4');
-        const wizardStep5Divider   = document.getElementById('wizardStep5Divider');
         const wizardStep5          = document.getElementById('wizardStep5');
 
         // NAVIGATION BUTTONS
@@ -1232,8 +1267,6 @@ if ($db_connect) {
         const btnBackTo2           = document.getElementById('btnBackToStep2');
         const btnBackTo3           = document.getElementById('btnBackToStep3');
         const btnContinueTo5       = document.getElementById('btnContinueToStep5');
-        const step4PrimaryBtnText  = document.getElementById('step4PrimaryBtnText');
-        const step4PrimaryBtnIcon  = document.getElementById('step4PrimaryBtnIcon');
         const btnBackTo4           = document.getElementById('btnBackToStep4');
 
         const facilityInput        = document.getElementById('facilitySelect');
@@ -1256,11 +1289,18 @@ if ($db_connect) {
 
         let selectedConcernIds     = [];
         let selectedSubConcernsMap = {};
+        let officeTransactionsMap  = {};
         let pendingVisitorData     = null;
-
-        // True ONLY when an ID lookup matched a record and the user confirmed it (5-step flow).
-        // False for Manual Entry and Guest flows (4-step flow without Step 5).
         let visitorRecordFound     = false;
+
+        function escapeHtml(str) {
+            return String(str ?? '')
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
 
         function showSweetAlert(title, text, icon = 'warning') {
             const config = {
@@ -1283,6 +1323,46 @@ if ($db_connect) {
             } else {
                 alert(title + "\n\n" + text);
             }
+        }
+
+        function clearVisitorPersonalInputs() {
+            userIdInput.value       = '';
+            departmentIdInput.value = '0';
+            programCodeInput.value  = '';
+            programMajorInput.value = '';
+
+            firstNameInput.value    = '';
+            middleNameInput.value   = '';
+            lastNameInput.value     = '';
+            suffixSelect.value      = '';
+            postNominalInput.value  = '';
+            sexSelect.value         = '';
+            emailInput.value        = '';
+
+            if (courseSelect) courseSelect.value = '';
+            if (yearSelect) yearSelect.value = '';
+            if (employeeDeptSelect) employeeDeptSelect.value = '';
+            if (employeeOfficeSelect) employeeOfficeSelect.value = '';
+
+            if (prioritySwitch) {
+                prioritySwitch.checked = false;
+                prioritySection?.classList.add('d-none');
+            }
+
+            syncStep1ToStep5Fields();
+        }
+
+        function updateCategoryRequiredAttributes(type) {
+            const isStudent  = type === 'STUDENT';
+            const isEmployee = type === 'EMPLOYEE';
+
+            if (courseSelect) courseSelect.required = isStudent;
+            if (yearSelect) yearSelect.required = isStudent;
+            if (step5Course) step5Course.required = isStudent;
+            if (step5Year) step5Year.required = isStudent;
+
+            if (employeeDeptSelect) employeeDeptSelect.required = isEmployee;
+            if (step5EmpDept) step5EmpDept.required = isEmployee;
         }
 
         function syncStudentProgramMetadata() {
@@ -1313,36 +1393,6 @@ if ($db_connect) {
             });
         }
 
-        function configureWizardFlowMode() {
-            if (visitorRecordFound) {
-                // 5-Step Flow: Matched ID Record
-                wizardStep5Divider?.classList.remove('d-none');
-                wizardStep5?.classList.remove('d-none');
-                step5VisitorDetailsSection?.classList.remove('d-none');
-
-                // Step 1 shows ONLY ID lookup when revisited (prevents duplicating Step 5 details)
-                idLookupSection.classList.remove('d-none');
-                personalDetailsSec.classList.add('d-none');
-
-                // Step 4 proceeds to Step 5 Summary
-                btnContinueTo5.classList.remove('btn-success');
-                btnContinueTo5.classList.add('btn-kiosk-primary');
-                if (step4PrimaryBtnText) step4PrimaryBtnText.textContent = 'Proceed to Logbook Summary';
-                if (step4PrimaryBtnIcon) step4PrimaryBtnIcon.className = 'bi bi-arrow-right ms-1 fs-5';
-            } else {
-                // 4-Step Flow: Manual Entry / Guest (Step 5 removed)
-                wizardStep5Divider?.classList.add('d-none');
-                wizardStep5?.classList.add('d-none');
-                step5VisitorDetailsSection?.classList.add('d-none');
-
-                // Step 4 directly confirms & issues ticket
-                btnContinueTo5.classList.remove('btn-kiosk-primary');
-                btnContinueTo5.classList.add('btn-success');
-                if (step4PrimaryBtnText) step4PrimaryBtnText.textContent = 'Confirm & Issue Ticket';
-                if (step4PrimaryBtnIcon) step4PrimaryBtnIcon.className = 'bi bi-check-circle ms-1 fs-5';
-            }
-        }
-
         visitorTypeBtns.forEach(btn => {
             btn.addEventListener('click', function() {
                 visitorTypeBtns.forEach(b => b.classList.remove('active'));
@@ -1356,17 +1406,12 @@ if ($db_connect) {
 
         function switchVisitorTypeUI(type) {
             referenceIdInput.value = '';
-            userIdInput.value = '';
-            departmentIdInput.value = '0';
-            programCodeInput.value = '';
-            programMajorInput.value = '';
-            if (courseSelect) courseSelect.value = '';
-            if (employeeDeptSelect) employeeDeptSelect.value = '';
             pendingVisitorData = null;
             visitorRecordFound = false;
             furthestWizardStep = 1;
+            clearVisitorPersonalInputs();
+            updateCategoryRequiredAttributes(type);
             updateConsentState(false);
-            configureWizardFlowMode();
             setWizardStep(1);
             
             if (type === 'STUDENT') {
@@ -1523,6 +1568,8 @@ if ($db_connect) {
             const info = pendingVisitorData;
             const type = visitorTypeInput.value;
 
+            clearVisitorPersonalInputs();
+
             userIdInput.value       = info.user_id || '';
             firstNameInput.value    = info.first_name || '';
             middleNameInput.value   = info.middle_name || '';
@@ -1542,7 +1589,7 @@ if ($db_connect) {
             } else if (type === 'EMPLOYEE') {
                 if (info.employee_id) referenceIdInput.value = info.employee_id.trim();
                 postNominalInput.value = info.post_nominal || '';
-                if (info.department_id) {
+                if (info.department_id && info.department_id > 0) {
                     employeeDeptSelect.value = info.department_id;
                     departmentIdInput.value  = info.department_id;
                 }
@@ -1551,7 +1598,6 @@ if ($db_connect) {
 
             visitorRecordFound = true;
             updateConsentState(false);
-            configureWizardFlowMode();
             syncStep1ToStep5Fields();
 
             if (idVerificationModal) idVerificationModal.hide();
@@ -1565,12 +1611,8 @@ if ($db_connect) {
             pendingVisitorData = null;
             visitorRecordFound = false;
             referenceIdInput.value = '';
-            userIdInput.value = '';
-            departmentIdInput.value = '0';
-            programCodeInput.value = '';
-            programMajorInput.value = '';
             furthestWizardStep = 1;
-            configureWizardFlowMode();
+            clearVisitorPersonalInputs();
 
             idLookupSection.classList.remove('d-none');
             personalDetailsSec.classList.add('d-none');
@@ -1582,16 +1624,11 @@ if ($db_connect) {
         btnManualEntryModal?.addEventListener('click', function() {
             if (idNotFoundModal) idNotFoundModal.hide();
 
+            pendingVisitorData = null;
             visitorRecordFound = false;
-            userIdInput.value = '';
-            departmentIdInput.value = '0';
-            programCodeInput.value = '';
-            programMajorInput.value = '';
-            if (courseSelect) courseSelect.value = '';
-            if (employeeDeptSelect) employeeDeptSelect.value = '';
             furthestWizardStep = 1;
+            clearVisitorPersonalInputs();
             updateConsentState(false);
-            configureWizardFlowMode();
 
             idLookupSection.classList.add('d-none');
             personalDetailsSec.classList.remove('d-none');
@@ -1631,15 +1668,13 @@ if ($db_connect) {
             privacyOpenBtns.forEach(btn => {
                 if (isApproved) {
                     btn.className = 'btn btn-success w-100 py-3 rounded-3 fw-bold d-flex align-items-center justify-content-center gap-2 shadow-sm btn-open-privacy';
-                    btn.innerHTML = '<i class="bi bi-check-circle-fill fs-5"></i><span class="consent-btn-label">Read & Sign Agreement Form</span>';
+                    btn.innerHTML = '<i class="bi bi-check-circle-fill fs-5"></i><span class="consent-btn-label">Agreement Signed & Accepted</span>';
                 } else {
                     btn.className = 'btn btn-outline-warning w-100 py-3 rounded-3 fw-bold d-flex align-items-center justify-content-center gap-2 shadow-sm btn-open-privacy';
                     btn.innerHTML = '<i class="bi bi-file-earmark-check fs-5"></i><span class="consent-btn-label">Read & Sign Agreement Form</span>';
                 }
             });
 
-            if (btnContinue) btnContinue.disabled = !isApproved;
-            if (continueBtnLockIcon) continueBtnLockIcon.className = isApproved ? 'bi bi-unlock-fill' : 'bi bi-lock-fill';
             btnFinalSubmit.disabled = !isApproved;
             if (submitBtnLockIcon) submitBtnLockIcon.className = isApproved ? 'bi bi-check-circle-fill me-1' : 'bi bi-lock-fill me-1';
         }
@@ -1678,12 +1713,12 @@ if ($db_connect) {
         };
 
         function setWizardStep(stepNum) {
-            const maxAllowedStep = visitorRecordFound ? 5 : 4;
+            const maxAllowedStep = 5;
             stepNum = Math.min(stepNum, maxAllowedStep);
             currentWizardStep = stepNum;
             furthestWizardStep = Math.min(Math.max(furthestWizardStep, stepNum), maxAllowedStep);
 
-            // Enforce Step 1 state whenever Step 1 is active
+            // Enforce Step 1 view state whenever Step 1 is active
             if (stepNum === 1 && visitorRecordFound) {
                 idLookupSection.classList.remove('d-none');
                 personalDetailsSec.classList.add('d-none');
@@ -1691,8 +1726,6 @@ if ($db_connect) {
 
             Object.entries(wizardStepItems).forEach(([number, element]) => {
                 const step = Number(number);
-                if (step > maxAllowedStep) return;
-
                 const canNavigate = step !== stepNum && step <= furthestWizardStep;
 
                 element.classList.remove('active', 'completed');
@@ -1708,14 +1741,12 @@ if ($db_connect) {
             });
         }
 
-        // Initialize default 4-step mode and progress state
-        configureWizardFlowMode();
+        updateCategoryRequiredAttributes('STUDENT');
         setWizardStep(1);
 
         function navigateToVisitedStep(stepNum) {
-            const maxAllowedStep = visitorRecordFound ? 5 : 4;
             if (!wizardStepContainers[stepNum] ||
-                stepNum > maxAllowedStep ||
+                stepNum > 5 ||
                 stepNum === currentWizardStep ||
                 stepNum > furthestWizardStep) {
                 return;
@@ -1727,8 +1758,9 @@ if ($db_connect) {
 
             wizardStepContainers[stepNum].classList.remove('d-none');
 
-            if (stepNum === 5 && visitorRecordFound) {
+            if (stepNum === 5) {
                 syncStep1ToStep5Fields();
+                renderStep5DynamicDetails();
             }
 
             setWizardStep(stepNum);
@@ -1754,7 +1786,7 @@ if ($db_connect) {
             });
         });
 
-        // SYNC INPUT FIELDS BETWEEN STEP 1 AND STEP 5
+        // BI-DIRECTIONAL SYNC BETWEEN STEP 1 AND STEP 5 PERSONAL FIELDS
         function syncStep1ToStep5Fields() {
             step5FirstName.value   = firstNameInput.value;
             step5MiddleName.value  = middleNameInput.value;
@@ -1801,20 +1833,46 @@ if ($db_connect) {
             el.addEventListener('change', syncStep5ToStep1Fields);
         });
 
+        function validatePersonalInfoFields(sourceStep) {
+            const vType = visitorTypeInput.value;
+            const fName = (sourceStep === 5 ? step5FirstName : firstNameInput).value.trim();
+            const lName = (sourceStep === 5 ? step5LastName : lastNameInput).value.trim();
+            const sexV  = (sourceStep === 5 ? step5Sex : sexSelect).value;
+            const mailV = (sourceStep === 5 ? step5Email : emailInput).value.trim();
+
+            if (!fName || !lName || !sexV || !mailV) {
+                showSweetAlert("Incomplete Information", "Please complete all required personal fields (First Name, Last Name, Sex, and Email Address).", "warning");
+                return false;
+            }
+
+            if (vType === 'STUDENT') {
+                const progV = (sourceStep === 5 ? step5Course : courseSelect).value;
+                const yearV = (sourceStep === 5 ? step5Year : yearSelect).value;
+                if (!progV || !yearV) {
+                    showSweetAlert("Incomplete Student Information", "Please select your Course / Program and Year Level.", "warning");
+                    return false;
+                }
+            } else if (vType === 'EMPLOYEE') {
+                const deptV = (sourceStep === 5 ? step5EmpDept : employeeDeptSelect).value;
+                if (!deptV) {
+                    showSweetAlert("Incomplete Employee Information", "Please select your Department.", "warning");
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
         // STEP 1 CONTINUATION (Manual Entry & Guest)
         if (btnContinue) {
             btnContinue.addEventListener('click', function() {
-                if (!firstNameInput.value.trim() || !lastNameInput.value.trim() || !sexSelect.value || !emailInput.value.trim()) {
-                    showSweetAlert("Incomplete Information", "Please complete all required personal fields before continuing.", "warning");
-                    return;
-                }
-                if (dataConsentInput.value !== "1") {
-                    showSweetAlert("Privacy Consent Required", "Please click 'Read & Sign Agreement Form' and accept the data privacy terms before continuing.", "warning");
-                    if (privacyModalInstance) privacyModalInstance.show();
+                if (!validatePersonalInfoFields(1)) {
                     return;
                 }
                 if (visitorTypeInput.value === 'STUDENT') {
                     syncStudentProgramMetadata();
+                } else if (visitorTypeInput.value === 'EMPLOYEE') {
+                    departmentIdInput.value = employeeDeptSelect.value || '0';
                 }
                 syncStep1ToStep5Fields();
                 step1Div.classList.add('d-none');
@@ -1832,7 +1890,7 @@ if ($db_connect) {
         // STEP 2 BUILDING SELECTION
         buildingCards.forEach(card => {
             card.addEventListener('click', function() {
-                const facId   = this.dataset.facilityId;
+                const facId = this.dataset.facilityId;
                 buildingCards.forEach(c => c.classList.remove('active'));
                 this.classList.add('active');
 
@@ -1885,23 +1943,43 @@ if ($db_connect) {
             setWizardStep(3);
         });
 
-        // STEP 4 ACTION:
-        // - Matched Record (visitorRecordFound === true): Proceed to Step 5 Summary & Agreement
-        // - Manual Entry / Guest (visitorRecordFound === false): Directly Submit & Issue Ticket
+        // STEP 4 -> STEP 5 (LOGBOOK SUMMARY, ADDITIONAL DETAILS & AGREEMENT)
         btnContinueTo5.addEventListener('click', function() {
             if (!transactionInput.value && !otherConcernText.value.trim()) {
                 showSweetAlert("Transaction Concern Required", "Please select at least one transaction concern or specify your concern under Others.", "warning");
                 return;
             }
 
-            if (visitorRecordFound) {
-                syncStep1ToStep5Fields();
-                step4Div.classList.add('d-none');
-                step5Div.classList.remove('d-none');
-                setWizardStep(5);
-            } else {
-                submitLogbookForm(btnContinueTo5);
+            // Ensure every selected primary transaction with sub-transactions has at least one sub-transaction selected
+            for (const tid of selectedConcernIds) {
+                if (tid === 'OTHERS') continue;
+                const transObj = officeTransactionsMap[tid];
+                if (transObj && Array.isArray(transObj.sub_concerns) && transObj.sub_concerns.length > 0) {
+                    const pickedSubs = selectedSubConcernsMap[tid] || [];
+                    if (pickedSubs.length === 0) {
+                        showSweetAlert(
+                            "Sub-Transaction Required",
+                            `Please select at least one specific sub-transaction under "${transObj.transaction_name}".`,
+                            "warning"
+                        );
+                        return;
+                    }
+                }
             }
+
+            if (selectedConcernIds.includes('OTHERS') && !otherConcernText.value.trim()) {
+                showSweetAlert("Specify Concern", "Please describe your specific concern under Others.", "warning");
+                otherConcernText.focus();
+                return;
+            }
+
+            syncStep1ToStep5Fields();
+            renderStep5DynamicDetails();
+
+            step4Div.classList.add('d-none');
+            step5Div.classList.remove('d-none');
+            setWizardStep(5);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         });
 
         btnBackTo4.addEventListener('click', function() {
@@ -1916,6 +1994,7 @@ if ($db_connect) {
             subConcernInput.value = '';
             selectedConcernIds = [];
             selectedSubConcernsMap = {};
+            officeTransactionsMap = {};
             otherConcernBox.classList.add('d-none');
             otherConcernText.value = '';
 
@@ -1934,24 +2013,32 @@ if ($db_connect) {
                     transaction_name: 'Others (Please Specify Concern)',
                     estimated_minutes: 10,
                     is_others: true,
+                    direct_details: null,
                     sub_concerns: []
                 });
 
                 dataList.forEach(trans => {
+                    officeTransactionsMap[trans.id] = trans;
+                    const hasSubConcerns = Array.isArray(trans.sub_concerns) && trans.sub_concerns.length > 0;
+
                     const card = document.createElement('div');
                     card.className = 'transaction-card p-3 mb-2';
                     card.dataset.transId = trans.id;
                     card.dataset.estMins  = trans.estimated_minutes || 5;
 
                     let subConcernsHtml = '';
-                    if (trans.sub_concerns && trans.sub_concerns.length > 0) {
+                    if (hasSubConcerns) {
                         subConcernsHtml = `
                             <div class="sub-concerns-container d-none mt-3 pt-3 border-top">
-                                <label class="form-label text-muted fw-bold small d-block mb-2">Specific Sub-Concern (Optional):</label>
+                                <label class="form-label text-muted fw-bold small d-block mb-2">Select Specific Sub-Transaction(s):</label>
                                 <div class="d-flex flex-wrap gap-2">
                                     ${trans.sub_concerns.map(sub => `
-                                        <button type="button" class="btn btn-sm btn-outline-primary sub-concern-btn px-3 py-1.5" data-sub-id="${sub.id}">
-                                            ${sub.sub_concern_name}
+                                        <button type="button"
+                                                class="btn btn-sm btn-outline-primary sub-concern-btn px-3 py-2"
+                                                data-sub-id="${sub.id}"
+                                                data-sub-est="${sub.estimated_minutes || 5}">
+                                            <span>${escapeHtml(sub.sub_concern_name)}</span>
+                                            <span class="sub-est-badge">Est. ${sub.estimated_minutes || 5} mins</span>
                                         </button>
                                     `).join('')}
                                 </div>
@@ -1959,13 +2046,18 @@ if ($db_connect) {
                         `;
                     }
 
+                    // Show Est. Time on primary transaction ONLY when it has NO sub-transactions
+                    const primaryEstBadgeHtml = !hasSubConcerns
+                        ? `<span class="badge bg-light text-secondary border mt-1 small">Est. Time: ${trans.estimated_minutes || 5} mins</span>`
+                        : `<span class="badge bg-primary-subtle text-primary border border-primary-subtle mt-1 small">${trans.sub_concerns.length} Sub-Transaction Option(s)</span>`;
+
                     card.innerHTML = `
                         <div class="card-header-row d-flex align-items-center justify-content-between">
                             <div class="d-flex align-items-center gap-3 min-w-0 flex-grow-1">
                                 <i class="bi bi-square text-muted fs-4 select-icon flex-shrink-0"></i>
                                 <div class="min-w-0 flex-grow-1">
-                                    <h6 class="fw-bold text-dark mb-0 fs-6">${trans.transaction_name}</h6>
-                                    <span class="badge bg-light text-secondary border mt-1 small">Est. Time: ${trans.estimated_minutes || 5} mins</span>
+                                    <h6 class="fw-bold text-dark mb-0 fs-6">${escapeHtml(trans.transaction_name)}</h6>
+                                    ${primaryEstBadgeHtml}
                                 </div>
                             </div>
                         </div>
@@ -1983,7 +2075,13 @@ if ($db_connect) {
                             delete selectedSubConcernsMap[trans.id];
                             card.classList.remove('active');
                             icon.className = 'bi bi-square text-muted fs-4 select-icon flex-shrink-0';
-                            if (subContainer) subContainer.classList.add('d-none');
+                            if (subContainer) {
+                                subContainer.classList.add('d-none');
+                                subContainer.querySelectorAll('.sub-concern-btn').forEach(b => {
+                                    b.classList.remove('btn-primary', 'text-white');
+                                    b.classList.add('btn-outline-primary');
+                                });
+                            }
                             if (trans.is_others) otherConcernBox.classList.add('d-none');
                         } else {
                             selectedConcernIds.push(trans.id);
@@ -2002,7 +2100,7 @@ if ($db_connect) {
                     subBtns.forEach(btn => {
                         btn.addEventListener('click', function(e) {
                             e.stopPropagation();
-                            const subId = parseInt(this.dataset.subId);
+                            const subId = parseInt(this.dataset.subId, 10);
                             if (!selectedSubConcernsMap[trans.id]) {
                                 selectedSubConcernsMap[trans.id] = [];
                             }
@@ -2027,20 +2125,188 @@ if ($db_connect) {
             });
         }
 
-        function submitLogbookForm(triggerBtn) {
-            if (visitorRecordFound) {
-                syncStep5ToStep1Fields();
-            } else if (visitorTypeInput.value === 'STUDENT') {
-                syncStudentProgramMetadata();
+        // RENDER DYNAMIC ADDITIONAL DETAILS IN STEP 5
+        function buildDynamicFieldControlHtml(scopeKey, field) {
+            const inputName = `transaction_details[${scopeKey}][${field.id}][value]`;
+            const fieldIdAttr = `detail_${scopeKey}_${field.id}`;
+
+            if (field.mode === 'SELECT') {
+                const optionsHtml = (field.choices || []).map(choice => `
+                    <option value="${escapeHtml(choice.value)}" data-choice-id="${choice.id}">
+                        ${escapeHtml(choice.value)}
+                    </option>
+                `).join('');
+
+                return `
+                    <input type="hidden" name="transaction_details[${scopeKey}][${field.id}][choice_id]" class="detail-choice-id-hidden" value="">
+                    <select class="form-select form-select-kiosk dynamic-detail-input dynamic-detail-select"
+                            id="${fieldIdAttr}"
+                            name="${inputName}"
+                            data-field-title="${escapeHtml(field.title)}"
+                            data-scope-key="${escapeHtml(scopeKey)}"
+                            required>
+                        <option value="" selected disabled>Select ${escapeHtml(field.title)}</option>
+                        ${optionsHtml}
+                    </select>
+                `;
             }
+
+            if (field.format === 'INT') {
+                return `
+                    <input type="number"
+                           step="1"
+                           inputmode="numeric"
+                           class="form-control form-control-kiosk dynamic-detail-input"
+                           id="${fieldIdAttr}"
+                           name="${inputName}"
+                           data-field-title="${escapeHtml(field.title)}"
+                           data-scope-key="${escapeHtml(scopeKey)}"
+                           data-format="INT"
+                           placeholder="Enter ${escapeHtml(field.title)} (Numbers only)"
+                           required>
+                `;
+            }
+
+            const placeholderHint = field.format === 'CHAR'
+                ? `Enter ${field.title} (Text / Characters)`
+                : `Enter ${field.title}`;
+
+            return `
+                <input type="text"
+                       class="form-control form-control-kiosk dynamic-detail-input"
+                       id="${fieldIdAttr}"
+                       name="${inputName}"
+                       data-field-title="${escapeHtml(field.title)}"
+                       data-scope-key="${escapeHtml(scopeKey)}"
+                       data-format="${escapeHtml(field.format || 'VAR')}"
+                       placeholder="${escapeHtml(placeholderHint)}"
+                       required>
+            `;
+        }
+
+        function renderStep5DynamicDetails() {
+            // Preserve previously entered values if user goes back and forth
+            const existingValues = {};
+            step5DynamicDetailsCont.querySelectorAll('.dynamic-detail-input').forEach(inp => {
+                existingValues[inp.name] = inp.value;
+            });
+
+            step5DynamicDetailsCont.innerHTML = '';
+            let totalGroupsRendered = 0;
+
+            selectedConcernIds.forEach(tid => {
+                if (tid === 'OTHERS') return;
+                const transObj = officeTransactionsMap[tid];
+                if (!transObj) return;
+
+                const hasSubs = Array.isArray(transObj.sub_concerns) && transObj.sub_concerns.length > 0;
+
+                if (!hasSubs) {
+                    const dd = transObj.direct_details;
+                    if (dd && dd.has_details && Array.isArray(dd.fields) && dd.fields.length > 0) {
+                        totalGroupsRendered++;
+                        const scopeKey = `type_${tid}`;
+                        const groupEl = document.createElement('div');
+                        groupEl.className = 'detail-group-card';
+                        groupEl.dataset.scopeKey = scopeKey;
+                        groupEl.innerHTML = `
+                            <div class="fw-bold text-dark mb-2">
+                                <i class="bi bi-card-checklist text-primary me-1"></i>${escapeHtml(transObj.transaction_name)}
+                            </div>
+                            <div class="row g-3">
+                                ${dd.fields.map(field => `
+                                    <div class="col-12 col-md-6">
+                                        <label for="detail_${scopeKey}_${field.id}" class="form-label fw-bold text-dark small">
+                                            ${escapeHtml(field.title)}
+                                        </label>
+                                        ${buildDynamicFieldControlHtml(scopeKey, field)}
+                                    </div>
+                                `).join('')}
+                            </div>
+                        `;
+                        step5DynamicDetailsCont.appendChild(groupEl);
+                    }
+                } else {
+                    const pickedSubIds = selectedSubConcernsMap[tid] || [];
+                    pickedSubIds.forEach(sid => {
+                        const subObj = transObj.sub_concerns.find(s => Number(s.id) === Number(sid));
+                        if (!subObj) return;
+                        const sd = subObj.parsed_details;
+                        if (sd && sd.has_details && Array.isArray(sd.fields) && sd.fields.length > 0) {
+                            totalGroupsRendered++;
+                            const scopeKey = `sub_${sid}`;
+                            const groupEl = document.createElement('div');
+                            groupEl.className = 'detail-group-card';
+                            groupEl.dataset.scopeKey = scopeKey;
+                            groupEl.innerHTML = `
+                                <div class="fw-bold text-dark mb-2">
+                                    <i class="bi bi-card-checklist text-primary me-1"></i>${escapeHtml(transObj.transaction_name)}
+                                    <span class="badge bg-primary-subtle text-primary border ms-1">${escapeHtml(subObj.sub_concern_name)}</span>
+                                </div>
+                                <div class="row g-3">
+                                    ${sd.fields.map(field => `
+                                        <div class="col-12 col-md-6">
+                                            <label for="detail_${scopeKey}_${field.id}" class="form-label fw-bold text-dark small">
+                                                ${escapeHtml(field.title)}
+                                            </label>
+                                            ${buildDynamicFieldControlHtml(scopeKey, field)}
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            `;
+                            step5DynamicDetailsCont.appendChild(groupEl);
+                        }
+                    });
+                }
+            });
+
+            // Restore values & wire choice_id hidden sync for SELECT fields
+            step5DynamicDetailsCont.querySelectorAll('.dynamic-detail-input').forEach(inp => {
+                if (existingValues[inp.name] !== undefined && existingValues[inp.name] !== '') {
+                    inp.value = existingValues[inp.name];
+                }
+                if (inp.classList.contains('dynamic-detail-select')) {
+                    const syncChoiceId = () => {
+                        const opt = inp.options[inp.selectedIndex];
+                        const hiddenChoice = inp.parentElement.querySelector('.detail-choice-id-hidden');
+                        if (hiddenChoice) {
+                            hiddenChoice.value = opt ? (opt.dataset.choiceId || '') : '';
+                        }
+                    };
+                    syncChoiceId();
+                    inp.addEventListener('change', syncChoiceId);
+                }
+            });
+
+            step5DynamicDetailsSec.classList.toggle('d-none', totalGroupsRendered === 0);
+        }
+
+        function submitLogbookForm(triggerBtn) {
+            syncStep5ToStep1Fields();
 
             if (referenceIdInput.value) {
                 referenceIdInput.value = referenceIdInput.value.trim();
             }
 
-            if (!firstNameInput.value.trim() || !lastNameInput.value.trim() || !sexSelect.value || !emailInput.value.trim()) {
-                showSweetAlert("Incomplete Information", "Please complete all required personal fields before submitting.", "warning");
+            if (!validatePersonalInfoFields(5)) {
                 return;
+            }
+
+            // Validate required dynamic transaction detail fields in Step 5
+            const dynamicInputs = step5DynamicDetailsCont.querySelectorAll('.dynamic-detail-input');
+            for (const inp of dynamicInputs) {
+                const val = inp.value.trim();
+                const fieldTitle = inp.dataset.fieldTitle || 'Additional Detail';
+                if (!val) {
+                    inp.focus();
+                    showSweetAlert("Required Detail Missing", `Please fill out "${fieldTitle}".`, "warning");
+                    return;
+                }
+                if (inp.dataset.format === 'INT' && !/^-?\d+$/.test(val)) {
+                    inp.focus();
+                    showSweetAlert("Invalid Number", `"${fieldTitle}" must be a whole number.`, "warning");
+                    return;
+                }
             }
 
             if (dataConsentInput.value !== "1") {
@@ -2060,15 +2326,16 @@ if ($db_connect) {
             document.querySelectorAll('#transactionCardsContainer .transaction-card.active').forEach(card => {
                 const titleEl = card.querySelector('h6');
                 if (!titleEl) return;
-                let title = titleEl.textContent.trim();
-                totalEstimatedMinutes += parseInt(card.dataset.estMins || 10);
+                const title = titleEl.textContent.trim();
+                const transId = card.dataset.transId;
 
-                if (card.dataset.transId === 'OTHERS') {
+                if (transId === 'OTHERS') {
+                    totalEstimatedMinutes += 10;
                     const customVal = otherConcernText.value.trim();
                     structuredConcernsHtml += `
                         <div class="receipt-concern-item">
                             <div class="receipt-concern-title"><i class="bi bi-pen me-1 text-primary"></i>Others</div>
-                            <div class="text-muted small mt-1">${customVal ? customVal : 'General Concern'}</div>
+                            <div class="text-muted small mt-1">${escapeHtml(customVal || 'General Concern')}</div>
                         </div>
                     `;
                     return;
@@ -2076,14 +2343,21 @@ if ($db_connect) {
 
                 const activeSubBtns = card.querySelectorAll('.sub-concern-btn.btn-primary');
                 let subTagsHtml = '';
+
                 if (activeSubBtns.length > 0) {
-                    const subNames = Array.from(activeSubBtns).map(b => `<span class="receipt-subconcern-tag"><i class="bi bi-tag-fill me-1"></i>${b.textContent.trim()}</span>`).join(' ');
-                    subTagsHtml = `<div class="mt-1">${subNames}</div>`;
+                    const subNames = Array.from(activeSubBtns).map(b => {
+                        totalEstimatedMinutes += parseInt(b.dataset.subEst || '5', 10);
+                        const subName = b.querySelector('span')?.textContent.trim() || b.textContent.trim();
+                        return `<div class="mt-1"><span class="receipt-subconcern-tag"><i class="bi bi-tag-fill me-1"></i>${escapeHtml(subName)}</span></div>`;
+                    }).join('');
+                    subTagsHtml = `<div>${subNames}</div>`;
+                } else {
+                    totalEstimatedMinutes += parseInt(card.dataset.estMins || '5', 10);
                 }
 
                 structuredConcernsHtml += `
                     <div class="receipt-concern-item">
-                        <div class="receipt-concern-title">${title}</div>
+                        <div class="receipt-concern-title">${escapeHtml(title)}</div>
                         ${subTagsHtml}
                     </div>
                 `;
@@ -2107,7 +2381,7 @@ if ($db_connect) {
                     document.getElementById('modalOfficeName').textContent   = result.office_name || summaryOfficeName.textContent;
                     document.getElementById('modalTransactionContainer').innerHTML = structuredConcernsHtml;
                     document.getElementById('modalIssuedDate').textContent = new Date().toLocaleString();
-                    document.getElementById('modalEstTime').textContent = `~${result.estimated_minutes || totalEstimatedMinutes || 15} mins`;
+                    document.getElementById('modalEstTime').textContent = `~${result.estimated_minutes || totalEstimatedMinutes || 5} mins`;
 
                     const priorityBadge = document.getElementById('modalPriorityBadge');
                     if (priorityBadge) {
