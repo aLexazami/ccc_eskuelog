@@ -126,6 +126,7 @@ if ($db_connect && $user_id > 0) {
             font-weight: 600;
             color: #475569;
         }
+        #transactionRecordsTable .tabulator-cell { white-space: normal; }
         .tabulator-responsive-collapse {
             padding: 0.75rem 1rem !important;
             background-color: #f8fafc !important;
@@ -313,6 +314,31 @@ if ($db_connect && $user_id > 0) {
                     <!-- TABULATOR TABLE CONTAINER CARD -->
                     <div class="card border-0 shadow-sm rounded-3">
                         <div class="card-body p-3 p-sm-4">
+                            <!-- Row 1: Export + Refresh -->
+                            <div class="d-flex justify-content-end align-items-center gap-2 mb-3">
+                                <div class="dropdown">
+                                    <button class="btn btn-action dropdown-toggle d-inline-flex align-items-center" type="button" data-bs-toggle="dropdown">
+                                        <i class="bi bi-download me-2"></i>Export / Download
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                                        <li><a class="dropdown-item" href="javascript:void(0)" id="export-csv"><i class="bi bi-filetype-csv text-success me-2"></i> Export CSV</a></li>
+                                        <li><a class="dropdown-item" href="javascript:void(0)" id="export-excel"><i class="bi bi-file-earmark-excel text-success me-2"></i> Export Excel (.xlsx)</a></li>
+                                        <li><a class="dropdown-item" href="javascript:void(0)" id="export-json"><i class="bi bi-filetype-json text-warning me-2"></i> Export JSON</a></li>
+                                    </ul>
+                                </div>
+                                <button type="button" id="btn-refresh" class="btn btn-action d-inline-flex align-items-center">
+                                    <i class="bi bi-arrow-clockwise me-2"></i>Refresh Data
+                                </button>
+                            </div>
+
+                            <!-- Row 2: Search bar on its own row -->
+                            <div class="d-flex mb-3">
+                                <div class="search-input-group flex-grow-1">
+                                    <i class="bi bi-search search-icon"></i>
+                                    <input type="text" id="global-search" class="form-control" placeholder="Search...">
+                                </div>
+                            </div>
+
                             <div id="transactionRecordsTable"></div>
                         </div>
                     </div>
@@ -485,16 +511,70 @@ if ($db_connect && $user_id > 0) {
             `;
         }
 
+        // Plain-text version of a ticket's concerns (used for per-column filter, search and export)
+        function buildConcernsText(t) {
+            const parts = [];
+            if (Array.isArray(t.concerns_list) && t.concerns_list.length > 0) {
+                t.concerns_list.forEach(i => {
+                    const main = (i.transaction_name || '').trim();
+                    const sub  = (i.sub_concern_name || '').trim();
+                    parts.push(sub ? (main ? `${main}: ${sub}` : sub) : main);
+                });
+            } else if (t.transaction_name) {
+                parts.push(t.transaction_name);
+            }
+            if (t.other_concern_text) parts.push(t.other_concern_text.trim());
+            return parts.filter(Boolean).join('; ');
+        }
+
+        // Add flat, filterable/exportable fields to each record
+        function normalizeRecords(rows) {
+            return (rows || []).map(r => {
+                r.status         = (r.status || '').trim().toUpperCase();
+                r.visitor_type   = (r.visitor_type || '').trim().toUpperCase();
+                r.concerns_text  = buildConcernsText(r);
+                r.office_counter = (r.office_name || '') + (r.counter_name ? ` (${r.counter_name})` : '');
+                const d    = r.created_at ? new Date(r.created_at) : null;
+                const time = (d && !isNaN(d)) ? d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+                r.time_text     = time;
+                r.datetime_text = `${r.queue_date || ''} ${time}`.trim();
+                return r;
+            });
+        }
+
+        const colFilter = {
+            headerFilter: "input",
+            headerFilterFunc: "like",
+            headerFilterParams: { allowEmpty: true }
+        };
+
+        // Dropdown header filter factory: options = [[value, label], ...]
+        function selectHeaderFilter(options) {
+            return function (cell, onRendered, success, cancel) {
+                const select = document.createElement('select');
+                select.className = 'form-select form-select-sm';
+                select.style.width = '100%';
+                [['', 'All']].concat(options).forEach(([val, label]) => {
+                    const opt = document.createElement('option');
+                    opt.value = val;
+                    opt.textContent = label;
+                    select.appendChild(opt);
+                });
+                select.addEventListener('change', () => success(select.value));
+                return select;
+            };
+        }
+
         function initTabulator() {
             recordsTable = new Tabulator("#transactionRecordsTable", {
                 layout: "fitColumns",
-                responsiveLayout: "collapse",
-                responsiveLayoutCollapseStartOpen: false,
+                resizableColumnFit: true,
+                headerFilterPlaceholder: "Search",
                 pagination: "local",
                 paginationSize: 10,
                 paginationSizeSelector: [10, 25, 50, 100],
                 movableColumns: true,
-                placeholder: "No transaction records found matching criteria.",
+                placeholder: "No Record Found",
                 ajaxURL: HANDLER_URL,
                 ajaxConfig: "POST",
                 ajaxContentType: "form",
@@ -509,101 +589,118 @@ if ($db_connect && $user_id > 0) {
                     };
                 },
                 ajaxResponse: function(url, params, response) {
-                    return response.data || [];
+                    if (response && response.success === false) {
+                        if (typeof showError === 'function') showError(response.message || 'Unable to load transaction records.');
+                        return [];
+                    }
+                    return normalizeRecords(response && response.data);
+                },
+                downloadConfig: {
+                    columnHeaders: true,
+                    columnGroups: false,
+                    rowGroups: false,
+                    formatCells: false
                 },
                 columns: [
-                    { 
-                        formatter: "responsiveCollapse", 
-                        width: 30, 
-                        minWidth: 30, 
-                        hozAlign: "center", 
-                        resizable: false, 
+                    {
+                        title: "Action",
+                        field: "id",
+                        minWidth: 120,
                         headerSort: false,
-                        responsive: 0 
+                        download: false,
+                        vertAlign: 'middle',
+                        hozAlign: 'center',
+                        formatter: () => `<button type="button" class="btn btn-action d-inline-flex align-items-center justify-content-center px-2 py-1 gap-2 btn-view-row" title="View">
+                                              <i class="bi bi-eye"></i><span style="font-size: 0.75rem;">View</span>
+                                          </button>`,
+                        cellClick: function(e, cell) {
+                            if (e.target.closest('.btn-view-row')) viewTicketDetails(cell.getValue());
+                        }
                     },
-                    { 
-                        title: "Ticket #", 
-                        field: "ticket_number", 
-                        minWidth: 110,
-                        responsive: 0,
-                        formatter: cell => `<strong class="text-primary font-monospace fs-6">${cell.getValue() || '---'}</strong>` 
-                    },
-                    { 
-                        title: "Visitor Name", 
-                        field: "full_name", 
-                        minWidth: 150,
-                        responsive: 1,
-                        formatter: cell => `<span class="text-dark fw-semibold">${cell.getValue() || 'N/A'}</span>` 
-                    },
-                    { 
-                        title: "Visitor Type", 
-                        field: "visitor_type", 
-                        minWidth: 110,
-                        responsive: 2,
-                        formatter: cell => `<span class="text-dark">${formatCapitalized(cell.getValue())}</span>` 
-                    },
-                    { 
-                        title: "Transaction Concerns", 
-                        field: "transaction_name", 
-                        minWidth: 280,
-                        responsive: 3,
-                        formatter: cell => {
-                            const row = cell.getRow().getData();
-                            return `<div class="py-1">${buildLogbookStyleConcerns(row)}</div>`;
-                        } 
-                    },
-                    { 
-                        title: "Office / Counter", 
-                        field: "office_name", 
-                        minWidth: 220,
-                        responsive: 4,
-                        formatter: cell => {
-                            const row = cell.getRow().getData();
-                            const counter = row.counter_name ? ` (${row.counter_name})` : '';
-                            return `<span class="text-dark">${cell.getValue() || '---'}${counter}</span>`;
-                        } 
-                    },
-                    { 
-                        title: "Status", 
-                        field: "status", 
-                        minWidth: 110,
-                        responsive: 0,
-                        formatter: cell => {
-                            const st = (cell.getValue() || '').toUpperCase();
-                            let cls = 'badge-status-waiting';
-                            if (st === 'COMPLETED') cls = 'badge-status-completed';
-                            if (st === 'SKIPPED') cls = 'badge-status-skipped';
-                            if (st === 'SERVING') cls = 'badge-status-serving';
-                            if (st === 'CALLED') cls = 'badge-status-called';
-                            return `<span class="badge ${cls} px-2.5 py-1.5 rounded-pill fw-bold">${st}</span>`;
-                        } 
-                    },
-                    { 
-                        title: "Date & Time", 
-                        field: "queue_date", 
+                    Object.assign({
+                        title: "Ticket #",
+                        field: "ticket_number",
+                        minWidth: 120,
+                        vertAlign: 'middle',
+                        formatter: cell => `<strong class="text-primary font-monospace fs-6">${escapeHtml(cell.getValue()) || '---'}</strong>`
+                    }, colFilter),
+                    Object.assign({
+                        title: "Visitor Name",
+                        field: "full_name",
+                        minWidth: 170,
+                        vertAlign: 'middle',
+                        formatter: cell => `<span class="text-dark fw-semibold">${escapeHtml(cell.getValue()) || 'N/A'}</span>`
+                    }, colFilter),
+                    {
+                        title: "Visitor Type",
+                        field: "visitor_type",
                         minWidth: 130,
-                        responsive: 2,
+                        vertAlign: 'middle',
+                        headerFilter: selectHeaderFilter([['STUDENT', 'Student'], ['EMPLOYEE', 'Employee'], ['GUEST', 'Guest']]),
+                        headerFilterFunc: "=",
+                        formatter: cell => `<span class="text-dark">${formatCapitalized(cell.getValue())}</span>`
+                    },
+                    Object.assign({
+                        title: "Transaction Concerns",
+                        field: "concerns_text",
+                        minWidth: 300,
+                        vertAlign: 'middle',
+                        formatter: cell => `<div class="py-1">${buildLogbookStyleConcerns(cell.getRow().getData())}</div>`
+                    }, colFilter),
+                    Object.assign({
+                        title: "Office / Counter",
+                        field: "office_counter",
+                        minWidth: 220,
+                        vertAlign: 'middle',
+                        formatter: cell => `<span class="text-dark">${escapeHtml(cell.getValue()) || '---'}</span>`
+                    }, colFilter),
+                    {
+                        title: "Status",
+                        field: "status",
+                        minWidth: 130,
+                        vertAlign: 'middle',
+                        hozAlign: 'center',
+                        headerFilter: selectHeaderFilter([
+                            ['COMPLETED', 'Completed'], ['SKIPPED', 'Skipped'], ['SERVING', 'Serving'],
+                            ['CALLED', 'Called'], ['WAITING', 'Waiting']
+                        ]),
+                        headerFilterFunc: "=",
+                        formatter: cell => escapeHtml(formatCapitalized(cell.getValue()))
+                    },
+                    Object.assign({
+                        title: "Date & Time",
+                        field: "datetime_text",
+                        minWidth: 150,
+                        vertAlign: 'middle',
+                        sorter: (a, b, aRow, bRow) => String(aRow.getData().created_at || '').localeCompare(String(bRow.getData().created_at || '')),
                         formatter: cell => {
                             const row = cell.getRow().getData();
-                            const time = row.created_at ? new Date(row.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '';
-                            return `<div><span class="d-block text-dark">${cell.getValue() || ''}</span><small class="text-muted">${time}</small></div>`;
-                        } 
-                    },
-                    { 
-                        title: "Action", 
-                        field: "id", 
-                        minWidth: 90,
-                        responsive: 0,
-                        hozAlign: "right", 
-                        headerHozAlign: "right", 
-                        headerSort: false, 
-                        formatter: cell => {
-                            return `<button type="button" class="btn btn-sm btn-outline-primary fw-bold px-3 rounded-pill" onclick="viewTicketDetails(${cell.getValue()})">
-                                        <i class="bi bi-eye-fill me-1"></i>View
-                                    </button>`;
-                        } 
-                    }
+                            return `<div><span class="d-block text-dark">${escapeHtml(row.queue_date)}</span><small class="text-muted">${escapeHtml(row.time_text)}</small></div>`;
+                        }
+                    }, colFilter)
                 ]
+            });
+
+            document.getElementById('export-csv')?.addEventListener('click', () => recordsTable.download("csv", "transaction_records.csv"));
+            document.getElementById('export-excel')?.addEventListener('click', () => recordsTable.download("xlsx", "transaction_records.xlsx", { sheetName: "Records" }));
+            document.getElementById('export-json')?.addEventListener('click', () => recordsTable.download("json", "transaction_records.json"));
+
+            // --- GLOBAL SEARCH HANDLER (works together with the per-column filters) ---
+            $('#global-search').on('input', function() {
+                const kw = this.value.trim().toLowerCase();
+                if (!kw) { recordsTable.clearFilter(); return; }
+                recordsTable.setFilter(function(data) {
+                    return [data.ticket_number, data.full_name, data.visitor_type, data.concerns_text, data.office_counter, data.status, data.datetime_text]
+                        .some(v => String(v ?? '').toLowerCase().includes(kw));
+                });
+            });
+
+            // --- REFRESH DATA HANDLER ---
+            $('#btn-refresh').on('click', function() {
+                $('#global-search').val('');
+                recordsTable.clearFilter();
+                recordsTable.clearHeaderFilter();
+                recordsTable.setData();
             });
         }
 
