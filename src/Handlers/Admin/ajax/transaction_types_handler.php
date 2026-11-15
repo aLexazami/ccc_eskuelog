@@ -1,4 +1,3 @@
-
 <?php
 // src/Handlers/Admin/ajax/transaction_types_handler.php
 
@@ -1122,6 +1121,101 @@ function deleteRemovedSubConcerns(
     $stmt->close();
 }
 
+/**
+ * SQL expression: the staff user currently bound to a counter row aliased `c`.
+ * Mirrors office_counters_handler.php (active staff_assignments first,
+ * then counters.assigned_user_id).
+ */
+const COUNTER_STAFF_USER_SQL = "COALESCE(
+    (SELECT sa.user_id FROM staff_assignments sa
+      WHERE sa.counter_id = c.id AND sa.flag_status = 0
+      ORDER BY sa.id DESC LIMIT 1),
+    c.assigned_user_id
+)";
+
+/**
+ * IDs of the active windows that belong to an office.
+ */
+function fetchActiveCounterIds(mysqli $db, int $officeId): array
+{
+    $stmt = $db->prepare("
+        SELECT id
+        FROM counters
+        WHERE office_id = ?
+          AND flag_status = 0
+    ");
+
+    $stmt->bind_param('i', $officeId);
+    $stmt->execute();
+
+    $result = $stmt->get_result();
+    $ids = [];
+
+    while ($row = $result->fetch_assoc()) {
+        $ids[] = (int)$row['id'];
+    }
+
+    $stmt->close();
+
+    return $ids;
+}
+
+/**
+ * Validate one submitted Window and return its integer ID.
+ */
+function requireValidCounter($raw, array $validIds, string $label): int
+{
+    $counterId = (int)$raw;
+
+    if ($counterId <= 0) {
+        throw new TransactionTypesValidationException(
+            "{$label}: please assign a Window."
+        );
+    }
+
+    if (!in_array($counterId, $validIds, true)) {
+        throw new TransactionTypesValidationException(
+            "{$label}: the selected Window is not an active Window of the selected office."
+        );
+    }
+
+    return $counterId;
+}
+
+/**
+ * Every standalone service, or every named sub-transaction, must be bound
+ * to an active Window of the selected office.
+ */
+function validateCounterAssignments(
+    mysqli $db,
+    int $officeId,
+    string $hasSub,
+    $primaryCounter,
+    $subConcerns
+): void {
+    $validIds = fetchActiveCounterIds($db, $officeId);
+
+    if ($hasSub !== 'yes') {
+        requireValidCounter($primaryCounter, $validIds, 'Primary service');
+        return;
+    }
+
+    foreach ((array)$subConcerns as $sub) {
+        $sub = is_array($sub) ? $sub : [];
+        $subName = trim((string)($sub['name'] ?? ''));
+
+        if ($subName === '') {
+            continue;
+        }
+
+        requireValidCounter(
+            $sub['counter_id'] ?? 0,
+            $validIds,
+            "Sub-transaction \"{$subName}\""
+        );
+    }
+}
+
 /*
 |--------------------------------------------------------------------------
 | DATABASE CHECK
@@ -1150,6 +1244,53 @@ try {
         |--------------------------------------------------------------------------
         */
 
+        case 'fetch_office_counters':
+
+            $officeId = (int)($_POST['office_id'] ?? 0);
+
+            if ($officeId <= 0) {
+                transactionTypesJsonResponse([
+                    'success' => true,
+                    'data' => []
+                ]);
+            }
+
+            $staffSql = COUNTER_STAFF_USER_SQL;
+
+            $stmt = $db_connect->prepare("
+                SELECT
+                    c.id,
+                    c.counter_name,
+                    TRIM(CONCAT(IFNULL(u.first_name, ''), ' ', IFNULL(u.last_name, ''))) AS staff_name
+                FROM counters c
+                LEFT JOIN users u
+                    ON u.id = {$staffSql}
+                WHERE c.office_id = ?
+                  AND c.flag_status = 0
+                ORDER BY c.counter_name ASC
+            ");
+
+            $stmt->bind_param('i', $officeId);
+            $stmt->execute();
+
+            $result = $stmt->get_result();
+            $counters = [];
+
+            while ($row = $result->fetch_assoc()) {
+                $counters[] = [
+                    'id' => (int)$row['id'],
+                    'counter_name' => (string)$row['counter_name'],
+                    'staff_name' => trim((string)($row['staff_name'] ?? ''))
+                ];
+            }
+
+            $stmt->close();
+
+            transactionTypesJsonResponse([
+                'success' => true,
+                'data' => $counters
+            ]);
+
         case 'fetch_transaction_types':
 
             $officeId = (int)($_POST['office_id'] ?? 0);
@@ -1157,6 +1298,8 @@ try {
             $whereClause = $officeId > 0
                 ? ' WHERE tt.office_id = ? '
                 : '';
+
+            $staffSql = COUNTER_STAFF_USER_SQL;
 
             $sql = "
                 SELECT
@@ -1166,6 +1309,10 @@ try {
                     o.office_name,
                     tt.transaction_name,
                     tt.estimated_minutes,
+                    tt.counter_id,
+                    c.counter_name,
+                    c.flag_status AS counter_flag_status,
+                    TRIM(CONCAT(IFNULL(u.first_name, ''), ' ', IFNULL(u.last_name, ''))) AS staff_name,
                     tt.flag_status,
                     tt.date_modify
 
@@ -1173,6 +1320,12 @@ try {
 
                 INNER JOIN office o
                     ON tt.office_id = o.office_id
+
+                LEFT JOIN counters c
+                    ON c.id = tt.counter_id
+
+                LEFT JOIN users u
+                    ON u.id = {$staffSql}
 
                 {$whereClause}
 
@@ -1197,6 +1350,10 @@ try {
             while ($row = $result->fetch_assoc()) {
                 $typeId = (int)$row['id'];
 
+                $row['counter_id'] = $row['counter_id'] !== null
+                    ? (int)$row['counter_id']
+                    : null;
+                $row['staff_name'] = trim((string)($row['staff_name'] ?? ''));
                 $row['direct_details'] = null;
                 $row['sub_concerns'] = [];
                 $row['sub_concerns_count'] = 0;
@@ -1229,17 +1386,27 @@ try {
 
                 $subResult = $db_connect->query("
                     SELECT
-                        id,
-                        transaction_type_id,
-                        sub_concern_name,
-                        estimated_minutes,
-                        flag_status
+                        s.id,
+                        s.transaction_type_id,
+                        s.sub_concern_name,
+                        s.estimated_minutes,
+                        s.counter_id,
+                        c.counter_name,
+                        c.flag_status AS counter_flag_status,
+                        TRIM(CONCAT(IFNULL(u.first_name, ''), ' ', IFNULL(u.last_name, ''))) AS staff_name,
+                        s.flag_status
 
-                    FROM transaction_sub_concerns
+                    FROM transaction_sub_concerns s
 
-                    WHERE transaction_type_id IN ({$inList})
+                    LEFT JOIN counters c
+                        ON c.id = s.counter_id
 
-                    ORDER BY id ASC
+                    LEFT JOIN users u
+                        ON u.id = {$staffSql}
+
+                    WHERE s.transaction_type_id IN ({$inList})
+
+                    ORDER BY s.id ASC
                 ");
 
                 while ($sub = $subResult->fetch_assoc()) {
@@ -1252,6 +1419,10 @@ try {
 
                     $sub['id'] = $subId;
                     $sub['transaction_type_id'] = $typeId;
+                    $sub['counter_id'] = $sub['counter_id'] !== null
+                        ? (int)$sub['counter_id']
+                        : null;
+                    $sub['staff_name'] = trim((string)($sub['staff_name'] ?? ''));
                     $sub['estimated_minutes'] = (int)(
                         $sub['estimated_minutes'] ?? 5
                     );
@@ -1301,6 +1472,7 @@ try {
 
             $directDetails = $_POST['direct_details'] ?? null;
             $subConcerns = $_POST['sub_concerns'] ?? [];
+            $primaryCounter = $_POST['counter_id'] ?? 0;
 
             if ($officeId <= 0 || $transactionName === '') {
                 transactionTypesJsonResponse([
@@ -1319,6 +1491,19 @@ try {
                 $subConcerns
             );
 
+            validateCounterAssignments(
+                $db_connect,
+                $officeId,
+                $hasSubConcerns,
+                $primaryCounter,
+                $subConcerns
+            );
+
+            // A service with sub-transactions has no Window of its own.
+            $primaryCounterId = $hasSubConcerns === 'yes'
+                ? null
+                : (int)$primaryCounter;
+
             $db_connect->begin_transaction();
             $transactionOpen = true;
 
@@ -1329,16 +1514,18 @@ try {
                         office_id,
                         transaction_name,
                         estimated_minutes,
+                        counter_id,
                         flag_status
                     )
-                VALUES (?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?)
             ");
 
             $stmtType->bind_param(
-                'isii',
+                'isiii',
                 $officeId,
                 $transactionName,
                 $estimatedMinutes,
+                $primaryCounterId,
                 $flagStatus
             );
 
@@ -1355,9 +1542,10 @@ try {
                             transaction_type_id,
                             sub_concern_name,
                             estimated_minutes,
+                            counter_id,
                             flag_status
                         )
-                    VALUES (?, ?, ?, 0)
+                    VALUES (?, ?, ?, ?, 0)
                 ");
 
                 foreach ($subConcerns as $subItem) {
@@ -1373,11 +1561,14 @@ try {
                         $subItem['estimated_minutes'] ?? 5
                     );
 
+                    $subCounterId = (int)($subItem['counter_id'] ?? 0);
+
                     $stmtSub->bind_param(
-                        'isi',
+                        'isii',
                         $newTypeId,
                         $subName,
-                        $subMinutes
+                        $subMinutes,
+                        $subCounterId
                     );
 
                     $stmtSub->execute();
@@ -1445,6 +1636,7 @@ try {
 
             $directDetails = $_POST['direct_details'] ?? null;
             $subConcerns = $_POST['sub_concerns'] ?? [];
+            $primaryCounter = $_POST['counter_id'] ?? 0;
 
             if (
                 $typeId <= 0 ||
@@ -1466,6 +1658,18 @@ try {
                 $directDetails,
                 $subConcerns
             );
+
+            validateCounterAssignments(
+                $db_connect,
+                $officeId,
+                $hasSubConcerns,
+                $primaryCounter,
+                $subConcerns
+            );
+
+            $primaryCounterId = $hasSubConcerns === 'yes'
+                ? null
+                : (int)$primaryCounter;
 
             $db_connect->begin_transaction();
             $transactionOpen = true;
@@ -1498,16 +1702,18 @@ try {
                     office_id = ?,
                     transaction_name = ?,
                     estimated_minutes = ?,
+                    counter_id = ?,
                     flag_status = ?,
                     date_modify = NOW()
                 WHERE id = ?
             ");
 
             $stmtUpdate->bind_param(
-                'isiii',
+                'isiiii',
                 $officeId,
                 $transactionName,
                 $estimatedMinutes,
+                $primaryCounterId,
                 $flagStatus,
                 $typeId
             );
@@ -1556,16 +1762,18 @@ try {
                             transaction_type_id,
                             sub_concern_name,
                             estimated_minutes,
+                            counter_id,
                             flag_status
                         )
-                    VALUES (?, ?, ?, 0)
+                    VALUES (?, ?, ?, ?, 0)
                 ");
 
                 $stmtSubUpdate = $db_connect->prepare("
                     UPDATE transaction_sub_concerns
                     SET
                         sub_concern_name = ?,
-                        estimated_minutes = ?
+                        estimated_minutes = ?,
+                        counter_id = ?
                     WHERE id = ?
                       AND transaction_type_id = ?
                 ");
@@ -1585,6 +1793,8 @@ try {
                         $subItem['estimated_minutes'] ?? 5
                     );
 
+                    $subCounterId = (int)($subItem['counter_id'] ?? 0);
+
                     /*
                      * Only update IDs that belong to this transaction type.
                      * An unknown or foreign ID is treated as a new sub-transaction.
@@ -1594,9 +1804,10 @@ try {
                         in_array($subId, $existingIds, true)
                     ) {
                         $stmtSubUpdate->bind_param(
-                            'siii',
+                            'siiii',
                             $subName,
                             $subMinutes,
+                            $subCounterId,
                             $subId,
                             $typeId
                         );
@@ -1606,10 +1817,11 @@ try {
                         $targetSubId = $subId;
                     } else {
                         $stmtSubInsert->bind_param(
-                            'isi',
+                            'isii',
                             $typeId,
                             $subName,
-                            $subMinutes
+                            $subMinutes,
+                            $subCounterId
                         );
 
                         $stmtSubInsert->execute();

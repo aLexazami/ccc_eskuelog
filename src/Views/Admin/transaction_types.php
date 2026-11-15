@@ -32,7 +32,7 @@ if ($db_connect) {
 
 $action_buttons = [
     [
-        'label' => 'Add Transaction Type',
+        'label' => 'Add Transaction Service',
         'icon'  => 'bi bi-plus-circle',
         'class' => 'add-type-btn',
         'type'  => 'button'
@@ -128,6 +128,8 @@ $action_buttons = [
         .detail-cell-choice-item {
             line-height: 1.3;
         }
+        .window-cell-name { font-weight: 600; color: #1e293b; }
+        .window-cell-staff { font-size: 0.75rem; color: #64748b; }
     </style>
 </head>
 
@@ -211,7 +213,7 @@ $action_buttons = [
                             <div class="modal-content">
                                 <div class="modal-header bg-light border-bottom py-3 px-4">
                                     <h5 class="modal-title fw-bold" id="unifiedModalTitle">
-                                        <i class="bi bi-plus-circle text-primary me-2"></i>Create Transaction Type
+                                        <i class="bi bi-plus-circle text-primary me-2"></i>Create Transaction Service
                                     </h5>
                                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                 </div>
@@ -260,13 +262,21 @@ $action_buttons = [
                                                     </select>
                                                 </div>
 
-                                                <!-- Row 3: Add Sub-Transactions (Optional) -->
+                                                <!-- Row 3: Add Sub-Transactions (Optional) | Window (standalone only) -->
                                                 <div class="col-lg-6">
                                                     <label class="form-label fw-bold" for="form_has_sub_concerns">Add Sub-Transactions? (Optional)</label>
                                                     <select name="has_sub_concerns" id="form_has_sub_concerns" class="form-select border-primary">
                                                         <option value="no" selected>No — Standalone Service Only</option>
                                                         <option value="yes">Yes — Configure Sub-Transactions</option>
                                                     </select>
+                                                </div>
+
+                                                <div class="col-lg-6" id="primary_window_wrapper">
+                                                    <label class="form-label fw-bold" for="form_counter_id">Assigned Window <span class="text-danger">*</span></label>
+                                                    <select name="counter_id" id="form_counter_id" class="form-select counter-select">
+                                                        <option value="">-- Select Office First --</option>
+                                                    </select>
+                                                    <small class="text-muted" id="primary_window_hint">Windows come from Office Service Counters.</small>
                                                 </div>
                                             </div>
 
@@ -291,7 +301,7 @@ $action_buttons = [
                                                     <h6 class="fw-bold text-primary mb-0">
                                                         <i class="bi bi-2-circle-fill me-1"></i> Sub-Transactions Configuration
                                                     </h6>
-                                                    <small class="text-muted">Set the number of sub-transactions, name each one, set their individual estimated time, and optionally add details.</small>
+                                                    <small class="text-muted">Set the number of sub-transactions, name each one, set their estimated time, assign their own Window, and optionally add details.</small>
                                                 </div>
 
                                                 <div class="d-flex align-items-center gap-2">
@@ -358,6 +368,74 @@ $action_buttons = [
                 .replace(/"/g, "&quot;")
                 .replace(/'/g, "&#039;");
         }
+
+        // =====================================================================
+        // WINDOWS (COUNTERS) — fetched per selected office
+        // =====================================================================
+        let officeCounters = [];
+        let counterRequestSeq = 0;
+
+        function counterLabel(c) {
+            return c.staff_name ? `${c.counter_name} — ${c.staff_name}` : `${c.counter_name} (Unassigned)`;
+        }
+
+        function counterOptionsHtml(selectedId) {
+            const sel = parseInt(selectedId, 10) || 0;
+            if (!$('#form_office_id').val()) {
+                return '<option value="">-- Select Office First --</option>';
+            }
+            if (!officeCounters.length) {
+                return '<option value="">-- No active Window for this office --</option>';
+            }
+            return '<option value="">-- Select Window --</option>' + officeCounters.map(c =>
+                `<option value="${c.id}" ${c.id === sel ? 'selected' : ''}>${escapeHtml(counterLabel(c))}</option>`
+            ).join('');
+        }
+
+        // Rebuild every Window dropdown; keep a selection only if it is still valid for the office
+        function refreshCounterSelects() {
+            $('#unified_service_modal .counter-select').each(function () {
+                $(this).html(counterOptionsHtml($(this).val()));
+            });
+            const noWin = $('#form_office_id').val() && !officeCounters.length;
+            $('#primary_window_hint').text(noWin
+                ? 'This office has no active Window yet. Create one in Office Service Counters first.'
+                : 'Windows come from Office Service Counters.')
+                .toggleClass('text-danger', !!noWin).toggleClass('text-muted', !noWin);
+        }
+
+        function loadOfficeCounters(officeId) {
+            const seq = ++counterRequestSeq;
+            officeId = parseInt(officeId, 10) || 0;
+            if (!officeId) {
+                officeCounters = [];
+                refreshCounterSelects();
+                return $.Deferred().resolve().promise();
+            }
+            return $.ajax({
+                url: AJAX_HANDLER,
+                method: 'POST',
+                data: { action: 'fetch_office_counters', office_id: officeId },
+                dataType: 'json'
+            }).then(res => {
+                if (seq !== counterRequestSeq) return; // a newer office selection won
+                officeCounters = (res && res.success && Array.isArray(res.data)) ? res.data : [];
+                refreshCounterSelects();
+            }, () => {
+                if (seq !== counterRequestSeq) return;
+                officeCounters = [];
+                refreshCounterSelects();
+                showError('Unable to load the Windows for this office.');
+            });
+        }
+
+        $('#form_office_id').on('change', function () {
+            // Old selections belong to the previous office; clear them
+            $('#unified_service_modal .counter-select').val('');
+            officeCounters = [];
+            refreshCounterSelects();
+            loadOfficeCounters($(this).val());
+        });
 
         // =====================================================================
         // ESTIMATED DURATION STEPPER HANDLERS (PRIMARY SERVICE)
@@ -696,6 +774,7 @@ $action_buttons = [
             const estMinutes = prefill?.estimated_minutes || 5;
             const details    = prefill?.parsed_details || null;
             const hasDetails = Boolean(details && details.has_details);
+            const counterId  = prefill?.counter_id || 0;
 
             const $card = $(`
                 <div class="sub-concern-card p-3 position-relative" data-sub-index="${idx}">
@@ -707,7 +786,7 @@ $action_buttons = [
                     </button>
 
                     <div class="row g-2 align-items-center pe-4">
-                        <div class="col-md-5">
+                        <div class="col-md-4">
                             <label class="form-label fw-bold small mb-1 sub-card-title-label">Title ${idx + 1} <span class="text-danger">*</span></label>
                             <input type="text"
                                    name="sub_concerns[${idx}][name]"
@@ -728,12 +807,18 @@ $action_buttons = [
                                 <button type="button" class="btn btn-outline-primary sub-dur-inc">+</button>
                             </div>
                         </div>
-                        <div class="col-md-4 text-md-end pt-md-3">
-                            <button type="button" class="btn btn-sm ${hasDetails ? 'btn-warning' : 'btn-outline-primary'} toggle-sub-details-btn w-100">
-                                <i class="bi ${hasDetails ? 'bi-dash-circle' : 'bi-plus-square'} me-1"></i>
-                                ${hasDetails ? 'Remove Details' : 'Add Details'}
-                            </button>
+                        <div class="col-md-5">
+                            <label class="form-label fw-bold small mb-1">Assigned Window <span class="text-danger">*</span></label>
+                            <select name="sub_concerns[${idx}][counter_id]" class="form-select form-select-sm counter-select sub-counter-select">
+                                ${counterOptionsHtml(counterId)}
+                            </select>
                         </div>
+                    </div>
+                    <div class="text-end mt-2">
+                        <button type="button" class="btn btn-sm ${hasDetails ? 'btn-warning' : 'btn-outline-primary'} toggle-sub-details-btn">
+                            <i class="bi ${hasDetails ? 'bi-dash-circle' : 'bi-plus-square'} me-1"></i>
+                            ${hasDetails ? 'Remove Details' : 'Add Details'}
+                        </button>
                     </div>
                     <div class="sub-detail-mount"></div>
                 </div>
@@ -754,6 +839,8 @@ $action_buttons = [
                     .attr('placeholder', `Enter Title ${newIdx + 1} here`);
                 $(this).find('.sub-dur-input')
                     .attr('name', `sub_concerns[${newIdx}][estimated_minutes]`);
+                $(this).find('.sub-counter-select')
+                    .attr('name', `sub_concerns[${newIdx}][counter_id]`);
                 $(this).find('input[type="hidden"][name*="[id]"]')
                     .attr('name', `sub_concerns[${newIdx}][id]`);
                 
@@ -798,12 +885,14 @@ $action_buttons = [
         $('#form_has_sub_concerns').on('change', function () {
             if ($(this).val() === 'yes') {
                 $('#primary_duration_wrapper').addClass('d-none');
+                $('#primary_window_wrapper').addClass('d-none');
                 $('#form_estimated_minutes').prop('required', false);
                 $('#direct_details_wrapper').addClass('d-none');
                 $('#sub_concerns_section').removeClass('d-none');
                 syncSubConcernBlocks();
             } else {
                 $('#primary_duration_wrapper').removeClass('d-none');
+                $('#primary_window_wrapper').removeClass('d-none');
                 $('#form_estimated_minutes').prop('required', true);
                 $('#sub_concerns_section').addClass('d-none');
                 $('#direct_details_wrapper').removeClass('d-none');
@@ -1030,11 +1119,20 @@ $action_buttons = [
                     date_modify: svc.date_modify || '',
                     service: svc
                 };
+                const win = (src) => ({
+                    window_name: src.counter_id ? (src.counter_name || '') : '',
+                    window_staff: src.counter_id ? (src.staff_name || '') : '',
+                    window_disabled: src.counter_id && String(src.counter_flag_status) !== '0',
+                    window_text: src.counter_id
+                        ? [src.counter_name, src.staff_name || 'Unassigned'].filter(Boolean).join(' ')
+                        : ''
+                });
                 if (svc.sub_concerns && svc.sub_concerns.length > 0) {
                     svc.sub_concerns.forEach(sub => rows.push(Object.assign({}, base, {
                         row_key: svc.id + '-s' + sub.id,
                         sub_name: sub.sub_concern_name,
                         process_time: parseInt(sub.estimated_minutes, 10) || 0,
+                        ...win(sub),
                         details_items: sub.parsed_details?.formatted_items || [],
                         details_text: buildDetailsPlainText(sub.parsed_details)
                     })));
@@ -1043,6 +1141,7 @@ $action_buttons = [
                         row_key: svc.id + '-p',
                         sub_name: '',
                         process_time: parseInt(svc.estimated_minutes, 10) || 0,
+                        ...win(svc),
                         details_items: svc.direct_details?.formatted_items || [],
                         details_text: buildDetailsPlainText(svc.direct_details)
                     }));
@@ -1181,6 +1280,21 @@ $action_buttons = [
                         hozAlign: 'center',
                         formatter: (cell) => `${parseInt(cell.getValue(), 10) || 0} min`
                     }, colFilter),
+                    Object.assign({
+                        title: "Window",
+                        field: "window_text",
+                        minWidth: 200,
+                        vertAlign: 'middle',
+                        hozAlign: 'left',
+                        formatter: (cell) => {
+                            const d = cell.getRow().getData();
+                            if (!d.window_name) return '<span class="text-muted">Not assigned</span>';
+                            return `<div style="white-space:normal;">
+                                        <div class="window-cell-name">${escapeHtml(d.window_name)}${d.window_disabled ? ' <span class="text-danger small">(Disabled)</span>' : ''}</div>
+                                        <div class="window-cell-staff">${escapeHtml(d.window_staff || 'Unassigned')}</div>
+                                    </div>`;
+                        }
+                    }, colFilter),
                     {
                         title: "Status",
                         field: "status_label",
@@ -1213,7 +1327,7 @@ $action_buttons = [
                 const kw = this.value.trim().toLowerCase();
                 if (!kw) { tabulator.clearFilter(); return; }
                 tabulator.setFilter(function (data) {
-                    return [data.office_name, data.transaction_name, data.sub_name, data.details_text, String(data.process_time), data.status_label]
+                    return [data.office_name, data.transaction_name, data.sub_name, data.details_text, String(data.process_time), data.window_text, data.status_label]
                         .some(v => String(v ?? '').toLowerCase().includes(kw));
                 });
             });
@@ -1235,16 +1349,21 @@ $action_buttons = [
         // =====================================================================
         $('.add-type-btn').on('click', function () {
             isEditMode = false;
-            $('#unifiedModalTitle').html('<i class="bi bi-plus-circle text-primary me-2"></i>Create Transaction Type');
+            $('#unifiedModalTitle').html('<i class="bi bi-plus-circle text-primary me-2"></i>Create Transaction Service');
             $('#unified_service_form')[0].reset();
             $('#form_type_id').val('0');
             $('#form_estimated_minutes').val('5');
             $('#form_has_sub_concerns').val('no');
 
             $('#primary_duration_wrapper').removeClass('d-none');
+            $('#primary_window_wrapper').removeClass('d-none');
             $('#form_estimated_minutes').prop('required', true);
             $('#direct_details_wrapper').removeClass('d-none');
             resetDirectDetails(null);
+
+            officeCounters = [];
+            counterRequestSeq++;
+            refreshCounterSelects();
 
             $('#sub_concerns_section').addClass('d-none');
             $('#dynamic_sub_concerns_list').empty();
@@ -1252,7 +1371,7 @@ $action_buttons = [
             $('#unified_service_modal').modal('show');
         });
 
-        function openEditModal(data) {
+        async function openEditModal(data) {
             isEditMode = true;
             $('#unifiedModalTitle').html('<i class="bi bi-pencil-square text-primary me-2"></i>Manage Service & Sub-Transactions');
             $('#form_type_id').val(data.id);
@@ -1260,9 +1379,18 @@ $action_buttons = [
             $('#form_transaction_name').val(data.transaction_name);
             $('#form_flag_status').val(data.flag_status);
 
+            // Windows must be loaded for this office before any dropdown is built
+            showLoader('Loading Windows...');
+            try {
+                await loadOfficeCounters(data.office_id);
+            } finally {
+                hideLoader();
+            }
+
             if (data.sub_concerns && data.sub_concerns.length > 0) {
                 $('#form_has_sub_concerns').val('yes');
                 $('#primary_duration_wrapper').addClass('d-none');
+                $('#primary_window_wrapper').addClass('d-none');
                 $('#form_estimated_minutes').prop('required', false);
                 $('#direct_details_wrapper').addClass('d-none');
                 resetDirectDetails(null);
@@ -1271,8 +1399,10 @@ $action_buttons = [
             } else {
                 $('#form_has_sub_concerns').val('no');
                 $('#primary_duration_wrapper').removeClass('d-none');
+                $('#primary_window_wrapper').removeClass('d-none');
                 $('#form_estimated_minutes').val(data.estimated_minutes || 5);
                 $('#form_estimated_minutes').prop('required', true);
+                $('#form_counter_id').html(counterOptionsHtml(data.counter_id));
                 $('#sub_concerns_section').addClass('d-none');
                 $('#dynamic_sub_concerns_list').empty();
                 $('#sub_concern_count').val('1');
@@ -1352,6 +1482,25 @@ $action_buttons = [
                 return;
             }
             $('#unified_service_modal .detail-title-field').removeClass('is-invalid');
+
+            // Every standalone service / every sub-transaction needs a Window
+            $('#unified_service_modal .counter-select').removeClass('is-invalid');
+            const hasSubs = $('#form_has_sub_concerns').val() === 'yes';
+            const $windowSelects = hasSubs
+                ? $('#dynamic_sub_concerns_list .sub-counter-select')
+                : $('#form_counter_id');
+            let missingWindow = null;
+            $windowSelects.each(function () {
+                if (!$(this).val()) { missingWindow = $(this); return false; }
+            });
+            if (missingWindow) {
+                missingWindow.addClass('is-invalid').trigger('focus');
+                showError(hasSubs
+                    ? 'Please assign a Window to every sub-transaction.'
+                    : 'Please assign a Window to this transaction service.');
+                return;
+            }
+
             let invalidChoices = null;
             $('#unified_service_modal .detail-builder-box:not(.d-none) .detail-item-row').each(function () {
                 const $row = $(this);
