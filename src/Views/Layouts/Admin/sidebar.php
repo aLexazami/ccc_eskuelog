@@ -222,6 +222,13 @@ function render_action_links($links = [])
                         <h4 class="text-section"><?php echo ACCESS_NAME[$g_user_role] ?? 'Admin Staff'; ?></h4>
                     </li>
 
+                    <li class="nav-item <?php echo navigation_active("dashboard"); ?>">
+                        <a href="<?php echo BASE_URL . "admin/dashboard"; ?>">
+                            <i class="bi bi-speedometer2"></i>
+                            <p>Dashboard</p>
+                        </a>
+                    </li>
+
                     <li class="nav-item <?php echo navigation_active("queue-controller"); ?>">
                         <a href="<?php echo BASE_URL . "admin/queue-controller"; ?>">
                             <i class="bi bi-person-workspace"></i>
