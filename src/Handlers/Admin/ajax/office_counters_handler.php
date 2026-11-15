@@ -9,7 +9,7 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-header('Content-Type: application/json');
+header('Content-Type: application/json; charset=utf-8');
 
 if (!$db_connect) {
     echo json_encode(['msg_status' => false, 'msg_response' => 'Database connection unavailable.']);
@@ -35,6 +35,36 @@ if (!empty($rawInput)) {
     }
 }
 
+/**
+ * Check if a staff member is already assigned to another counter.
+ * Returns an associative array with office_name and counter_name if busy, or null if available.
+ */
+function findExistingStaffAssignment(mysqli $db, int $userId, int $excludeCounterId = 0): ?array
+{
+    if ($userId <= 0) {
+        return null;
+    }
+
+    $sql = "
+        SELECT c.id AS counter_id, c.counter_name, o.office_name, o.office_code
+        FROM counters c
+        INNER JOIN office o ON o.office_id = c.office_id
+        WHERE c.assigned_user_id = ?
+          AND c.id != ?
+        LIMIT 1
+    ";
+    $stmt = $db->prepare($sql);
+    if (!$stmt) {
+        return null;
+    }
+    $stmt->bind_param("ii", $userId, $excludeCounterId);
+    $stmt->execute();
+    $conflict = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+
+    return $conflict ?: null;
+}
+
 $action = $_REQUEST['action'] ?? $_REQUEST['actionSubmit'] ?? $_REQUEST['actionUpdate'] ?? '';
 
 switch ($action) {
@@ -48,7 +78,8 @@ switch ($action) {
             $whereClause .= " AND c.office_id = " . $office_id;
         }
 
-        // Priority lookup for assigned staff: Join staff_assignments first, fallback to counters.assigned_user_id
+        // Only join active staff_assignments (sa.flag_status = 0) and match c.assigned_user_id
+        // so deactivated/stale rows never ghost into the UI
         $query = "
             SELECT 
                 c.id AS counter_id,
@@ -57,13 +88,16 @@ switch ($action) {
                 c.flag_status,
                 o.office_name,
                 o.office_code,
-                COALESCE(sa.user_id, c.assigned_user_id, 0) AS assigned_user_id,
+                COALESCE(c.assigned_user_id, 0) AS assigned_user_id,
                 CONCAT(u.first_name, ' ', IFNULL(u.last_name, '')) AS assigned_staff_name,
                 sa.shift_status
             FROM counters c
             INNER JOIN office o ON c.office_id = o.office_id
-            LEFT JOIN staff_assignments sa ON sa.counter_id = c.id AND sa.flag_status = 0
-            LEFT JOIN users u ON u.id = COALESCE(sa.user_id, c.assigned_user_id)
+            LEFT JOIN users u ON u.id = c.assigned_user_id
+            LEFT JOIN staff_assignments sa 
+                ON sa.counter_id = c.id 
+               AND sa.user_id = c.assigned_user_id 
+               AND sa.flag_status = 0
             {$whereClause}
             ORDER BY o.office_name ASC, c.counter_name ASC
         ";
@@ -74,7 +108,7 @@ switch ($action) {
                 $row['office_id']           = (int)$row['office_id'];
                 $row['assigned_user_id']    = (int)($row['assigned_user_id'] ?? 0);
                 $row['flag_status']         = (int)$row['flag_status'];
-                $row['assigned_staff_name'] = trim($row['assigned_staff_name'] ?? '');
+                $row['assigned_staff_name'] = $row['assigned_user_id'] > 0 ? trim($row['assigned_staff_name'] ?? '') : '';
                 $counters[] = $row;
             }
             $result->free();
@@ -97,51 +131,60 @@ switch ($action) {
             exit();
         }
 
-        // CHECK FOR DUPLICATE COUNTER NAME IN THE SAME OFFICE
+        // 1. Check for duplicate counter name in the same office
         $stmtCheck = $db_connect->prepare("SELECT id FROM counters WHERE office_id = ? AND LOWER(counter_name) = LOWER(?) LIMIT 1");
         if ($stmtCheck) {
             $stmtCheck->bind_param("is", $office_id, $counter_name);
             $stmtCheck->execute();
             $existing = $stmtCheck->get_result()->fetch_assoc();
             $stmtCheck->close();
-            
+
             if ($existing) {
-                echo json_encode(['msg_status' => false, 'msg_response' => 'A service counter named "' . htmlspecialchars($counter_name) . '" already exists for this office. Please update the existing counter instead.']);
+                echo json_encode([
+                    'msg_status'   => false,
+                    'msg_response' => 'A service counter named "' . htmlspecialchars($counter_name) . '" already exists for this office.'
+                ]);
                 exit();
             }
         }
 
-        // 1. If assigned_user_id is selected, unassign this user from any previous counter
+        // 2. Prevent assigning a staff member who is already assigned to another counter
         if ($assigned_user_id > 0) {
-            $stmtClearPrev = $db_connect->prepare("UPDATE counters SET assigned_user_id = NULL WHERE assigned_user_id = ?");
-            if ($stmtClearPrev) {
-                $stmtClearPrev->bind_param("i", $assigned_user_id);
-                $stmtClearPrev->execute();
-                $stmtClearPrev->close();
-            }
-
-            $query = "INSERT INTO counters (office_id, counter_name, assigned_user_id, flag_status) VALUES (?, ?, ?, ?)";
-            $stmt  = $db_connect->prepare($query);
-            if ($stmt) {
-                $stmt->bind_param("isii", $office_id, $counter_name, $assigned_user_id, $flag_status);
-            }
-        } else {
-            $query = "INSERT INTO counters (office_id, counter_name, assigned_user_id, flag_status) VALUES (?, ?, NULL, ?)";
-            $stmt  = $db_connect->prepare($query);
-            if ($stmt) {
-                $stmt->bind_param("isi", $office_id, $counter_name, $flag_status);
+            $conflict = findExistingStaffAssignment($db_connect, $assigned_user_id, 0);
+            if ($conflict) {
+                echo json_encode([
+                    'msg_status'   => false,
+                    'msg_response' => 'This staff member is already assigned to ' . htmlspecialchars($conflict['office_name']) . ' (' . htmlspecialchars($conflict['counter_name']) . '). Please unassign them there first.'
+                ]);
+                exit();
             }
         }
 
-        if ($stmt && $stmt->execute()) {
-            $new_counter_id = $stmt->insert_id;
+        $db_connect->begin_transaction();
+
+        try {
+            if ($assigned_user_id > 0) {
+                $stmt = $db_connect->prepare("INSERT INTO counters (office_id, counter_name, assigned_user_id, flag_status) VALUES (?, ?, ?, ?)");
+                $stmt->bind_param("isii", $office_id, $counter_name, $assigned_user_id, $flag_status);
+            } else {
+                $stmt = $db_connect->prepare("INSERT INTO counters (office_id, counter_name, assigned_user_id, flag_status) VALUES (?, ?, NULL, ?)");
+                $stmt->bind_param("isi", $office_id, $counter_name, $flag_status);
+            }
+
+            if (!$stmt || !$stmt->execute()) {
+                throw new Exception('Failed to create service counter in database.');
+            }
+            $new_counter_id = (int)$stmt->insert_id;
             $stmt->close();
 
-            // 2. Synchronize with staff_assignments table
             if ($assigned_user_id > 0 && $new_counter_id > 0) {
+                $sa_flag_status  = ($flag_status === 0) ? 0 : 1;
+                $sa_shift_status = ($flag_status === 0) ? 'ON_DUTY' : 'OFF_DUTY';
+                $assigner        = $admin_user_id > 0 ? $admin_user_id : null;
+
                 $stmtSa = $db_connect->prepare("
                     INSERT INTO staff_assignments (user_id, office_id, counter_id, shift_status, flag_status, assigned_by_user_id)
-                    VALUES (?, ?, ?, 'ON_DUTY', 0, ?)
+                    VALUES (?, ?, ?, ?, ?, ?)
                     ON DUPLICATE KEY UPDATE 
                         office_id = VALUES(office_id),
                         counter_id = VALUES(counter_id),
@@ -149,21 +192,21 @@ switch ($action) {
                         flag_status = VALUES(flag_status),
                         assigned_by_user_id = VALUES(assigned_by_user_id)
                 ");
-                if ($stmtSa) {
-                    $assigner = $admin_user_id > 0 ? $admin_user_id : null;
-                    $stmtSa->bind_param("iiii", $assigned_user_id, $office_id, $new_counter_id, $assigner);
-                    $stmtSa->execute();
-                    $stmtSa->close();
+                $stmtSa->bind_param("iiisii", $assigned_user_id, $office_id, $new_counter_id, $sa_shift_status, $sa_flag_status, $assigner);
+                if (!$stmtSa->execute()) {
+                    throw new Exception('Failed to synchronize staff assignment.');
                 }
+                $stmtSa->close();
             }
 
+            $db_connect->commit();
             echo json_encode(['msg_status' => true, 'msg_response' => 'Service counter created successfully.']);
             exit();
+        } catch (Throwable $e) {
+            $db_connect->rollback();
+            echo json_encode(['msg_status' => false, 'msg_response' => $e->getMessage()]);
+            exit();
         }
-        if ($stmt) $stmt->close();
-
-        echo json_encode(['msg_status' => false, 'msg_response' => 'Failed to create service counter in database.']);
-        exit();
 
     case 'submitUpdateCounter':
     case 'update_counter':
@@ -183,7 +226,7 @@ switch ($action) {
             exit();
         }
 
-        // CHECK FOR DUPLICATE COUNTER NAME IN THE SAME OFFICE (EXCLUDING CURRENT COUNTER)
+        // 1. Check for duplicate counter name in the same office (excluding current counter)
         $stmtCheck = $db_connect->prepare("SELECT id FROM counters WHERE office_id = ? AND LOWER(counter_name) = LOWER(?) AND id != ? LIMIT 1");
         if ($stmtCheck) {
             $stmtCheck->bind_param("isi", $office_id, $counter_name, $counter_id);
@@ -192,81 +235,84 @@ switch ($action) {
             $stmtCheck->close();
 
             if ($existing) {
-                echo json_encode(['msg_status' => false, 'msg_response' => 'Another service counter named "' . htmlspecialchars($counter_name) . '" already exists in this office.']);
+                echo json_encode([
+                    'msg_status'   => false,
+                    'msg_response' => 'Another service counter named "' . htmlspecialchars($counter_name) . '" already exists in this office.'
+                ]);
                 exit();
             }
         }
 
-        // 1. Update counters table
+        // 2. Prevent assigning a staff member who is already assigned to another counter
         if ($assigned_user_id > 0) {
-            // Unassign this user from any other counter first so there are no duplicate active assignments
-            $stmtClearPrev = $db_connect->prepare("UPDATE counters SET assigned_user_id = NULL WHERE assigned_user_id = ? AND id != ?");
-            if ($stmtClearPrev) {
-                $stmtClearPrev->bind_param("ii", $assigned_user_id, $counter_id);
-                $stmtClearPrev->execute();
-                $stmtClearPrev->close();
-            }
-
-            $query = "UPDATE counters SET office_id = ?, counter_name = ?, assigned_user_id = ?, flag_status = ? WHERE id = ?";
-            $stmt  = $db_connect->prepare($query);
-            if ($stmt) {
-                $stmt->bind_param("isiii", $office_id, $counter_name, $assigned_user_id, $flag_status, $counter_id);
-            }
-        } else {
-            $query = "UPDATE counters SET office_id = ?, counter_name = ?, assigned_user_id = NULL, flag_status = ? WHERE id = ?";
-            $stmt  = $db_connect->prepare($query);
-            if ($stmt) {
-                $stmt->bind_param("isii", $office_id, $counter_name, $flag_status, $counter_id);
+            $conflict = findExistingStaffAssignment($db_connect, $assigned_user_id, $counter_id);
+            if ($conflict) {
+                echo json_encode([
+                    'msg_status'   => false,
+                    'msg_response' => 'This staff member is already assigned to ' . htmlspecialchars($conflict['office_name']) . ' (' . htmlspecialchars($conflict['counter_name']) . '). Please unassign them there first.'
+                ]);
+                exit();
             }
         }
 
-        if ($stmt && $stmt->execute()) {
+        $db_connect->begin_transaction();
+
+        try {
+            if ($assigned_user_id > 0) {
+                $stmt = $db_connect->prepare("UPDATE counters SET office_id = ?, counter_name = ?, assigned_user_id = ?, flag_status = ? WHERE id = ?");
+                $stmt->bind_param("isiii", $office_id, $counter_name, $assigned_user_id, $flag_status, $counter_id);
+            } else {
+                $stmt = $db_connect->prepare("UPDATE counters SET office_id = ?, counter_name = ?, assigned_user_id = NULL, flag_status = ? WHERE id = ?");
+                $stmt->bind_param("isii", $office_id, $counter_name, $flag_status, $counter_id);
+            }
+
+            if (!$stmt || !$stmt->execute()) {
+                throw new Exception('Failed to update service counter in database.');
+            }
             $stmt->close();
 
-            // 2. Synchronize with staff_assignments table
             if ($assigned_user_id > 0) {
-                // Clear any other user's active assignment on this specific counter
-                $stmtClearOther = $db_connect->prepare("UPDATE staff_assignments SET flag_status = 1 WHERE counter_id = ? AND user_id != ?");
-                if ($stmtClearOther) {
-                    $stmtClearOther->bind_param("ii", $counter_id, $assigned_user_id);
-                    $stmtClearOther->execute();
-                    $stmtClearOther->close();
-                }
+                // Clear any previous user that was assigned to this counter
+                $stmtClearOther = $db_connect->prepare("UPDATE staff_assignments SET flag_status = 1, shift_status = 'OFF_DUTY', counter_id = NULL WHERE counter_id = ? AND user_id != ?");
+                $stmtClearOther->bind_param("ii", $counter_id, $assigned_user_id);
+                $stmtClearOther->execute();
+                $stmtClearOther->close();
 
-                // UPSERT staff_assignments for the assigned staff user
+                $sa_flag_status  = ($flag_status === 0) ? 0 : 1;
+                $sa_shift_status = ($flag_status === 0) ? 'ON_DUTY' : 'OFF_DUTY';
+                $assigner        = $admin_user_id > 0 ? $admin_user_id : null;
+
                 $stmtSa = $db_connect->prepare("
                     INSERT INTO staff_assignments (user_id, office_id, counter_id, shift_status, flag_status, assigned_by_user_id)
-                    VALUES (?, ?, ?, 'ON_DUTY', 0, ?)
+                    VALUES (?, ?, ?, ?, ?, ?)
                     ON DUPLICATE KEY UPDATE 
                         office_id = VALUES(office_id),
                         counter_id = VALUES(counter_id),
-                        shift_status = 'ON_DUTY',
-                        flag_status = 0,
+                        shift_status = VALUES(shift_status),
+                        flag_status = VALUES(flag_status),
                         assigned_by_user_id = VALUES(assigned_by_user_id)
                 ");
-                if ($stmtSa) {
-                    $assigner = $admin_user_id > 0 ? $admin_user_id : null;
-                    $stmtSa->bind_param("iiii", $assigned_user_id, $office_id, $counter_id, $assigner);
-                    $stmtSa->execute();
-                    $stmtSa->close();
+                $stmtSa->bind_param("iiisii", $assigned_user_id, $office_id, $counter_id, $sa_shift_status, $sa_flag_status, $assigner);
+                if (!$stmtSa->execute()) {
+                    throw new Exception('Failed to synchronize staff assignment.');
                 }
+                $stmtSa->close();
             } else {
-                // If set to Unassigned (0), deactivate any staff_assignment record for this counter
-                $stmtUnassign = $db_connect->prepare("UPDATE staff_assignments SET flag_status = 1 WHERE counter_id = ?");
-                if ($stmtUnassign) {
-                    $stmtUnassign->bind_param("i", $counter_id);
-                    $stmtUnassign->execute();
-                    $stmtUnassign->close();
-                }
+                // Set to Unassigned (0): clear counter_id and mark OFF_DUTY
+                $stmtUnassign = $db_connect->prepare("UPDATE staff_assignments SET flag_status = 1, shift_status = 'OFF_DUTY', counter_id = NULL WHERE counter_id = ?");
+                $stmtUnassign->bind_param("i", $counter_id);
+                $stmtUnassign->execute();
+                $stmtUnassign->close();
             }
 
+            $db_connect->commit();
             echo json_encode(['msg_status' => true, 'msg_response' => 'Service counter updated successfully.']);
             exit();
+        } catch (Throwable $e) {
+            $db_connect->rollback();
+            echo json_encode(['msg_status' => false, 'msg_response' => $e->getMessage()]);
+            exit();
         }
-        if ($stmt) $stmt->close();
-
-        echo json_encode(['msg_status' => false, 'msg_response' => 'Failed to update service counter in database.']);
-        exit();
 
     case 'delete_counter':
     case 'deleteCounter':
@@ -277,28 +323,29 @@ switch ($action) {
             exit();
         }
 
-        // 1. Clean up active staff assignments linked to this counter first
-        $stmtSaClean = $db_connect->prepare("DELETE FROM staff_assignments WHERE counter_id = ?");
-        if ($stmtSaClean) {
+        $db_connect->begin_transaction();
+
+        try {
+            $stmtSaClean = $db_connect->prepare("DELETE FROM staff_assignments WHERE counter_id = ?");
             $stmtSaClean->bind_param("i", $counter_id);
             $stmtSaClean->execute();
             $stmtSaClean->close();
-        }
 
-        // 2. Delete counter record
-        $stmtDel = $db_connect->prepare("DELETE FROM counters WHERE id = ?");
-        if ($stmtDel) {
+            $stmtDel = $db_connect->prepare("DELETE FROM counters WHERE id = ?");
             $stmtDel->bind_param("i", $counter_id);
-            if ($stmtDel->execute()) {
-                $stmtDel->close();
-                echo json_encode(['msg_status' => true, 'msg_response' => 'Service counter deleted successfully.']);
-                exit();
+            if (!$stmtDel->execute()) {
+                throw new Exception('Failed to delete service counter from database.');
             }
             $stmtDel->close();
-        }
 
-        echo json_encode(['msg_status' => false, 'msg_response' => 'Failed to delete service counter from database.']);
-        exit();
+            $db_connect->commit();
+            echo json_encode(['msg_status' => true, 'msg_response' => 'Service counter deleted successfully.']);
+            exit();
+        } catch (Throwable $e) {
+            $db_connect->rollback();
+            echo json_encode(['msg_status' => false, 'msg_response' => $e->getMessage()]);
+            exit();
+        }
 
     default:
         echo json_encode(['msg_status' => false, 'msg_response' => 'Invalid action specified.']);

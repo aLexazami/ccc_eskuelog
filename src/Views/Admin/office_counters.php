@@ -385,7 +385,7 @@ $action_buttons = [
                 pagination: "local",
                 paginationSize: 10,
                 paginationSizeSelector: [10, 25, 50, 100, true],
-                placeholder: "No active service counters found.",
+                placeholder: "No service counters found.",
                 height: "600px",
                 headerHozAlign: 'center',
                 printAsHtml: true,
@@ -509,6 +509,39 @@ $action_buttons = [
             }
         }
 
+        function syncStaffDropdownAvailability(excludeCounterId = 0) {
+            const rows = tabulator ? tabulator.getData() : [];
+            const assignedMap = {};
+
+            rows.forEach(r => {
+                const uid = Number(r.assigned_user_id || 0);
+                const cid = Number(r.counter_id || 0);
+                if (uid > 0 && cid !== Number(excludeCounterId)) {
+                    assignedMap[uid] = `${r.office_code} - ${r.counter_name}`;
+                }
+            });
+
+            ['#add_assigned_user_id', '#u_assigned_user_id'].forEach(selector => {
+                $(selector).find('option').each(function() {
+                    const $opt = $(this);
+                    const uid = Number($opt.val() || 0);
+                    if (uid === 0) return;
+
+                    if (!$opt.data('base-label')) {
+                        $opt.data('base-label', $opt.text());
+                    }
+
+                    if (assignedMap[uid]) {
+                        $opt.prop('disabled', true)
+                            .text(`${$opt.data('base-label')} [Assigned: ${assignedMap[uid]}]`);
+                    } else {
+                        $opt.prop('disabled', false)
+                            .text($opt.data('base-label'));
+                    }
+                });
+            });
+        }
+
         /* Initialize Tabulator Table */
         initTabulatorTable();
 
@@ -516,6 +549,7 @@ $action_buttons = [
         $('.add-counter-btn').on('click', function() {
             $('#add_counter_modal').modal('show');
             $('#add_counter_modal').find('form').trigger('reset');
+            syncStaffDropdownAvailability(0);
         });
 
         /*** submit add counter form ***/
@@ -581,6 +615,7 @@ $action_buttons = [
             document.getElementById("update_counter_modal").querySelector("#u_assigned_user_id").value = data.assigned_user_id || '0';
             document.getElementById("update_counter_modal").querySelector("#u_flag_status").value = data.flag_status;
 
+            syncStaffDropdownAvailability(data.counter_id);
             $("#update_counter_modal").modal("show");
         }
 
