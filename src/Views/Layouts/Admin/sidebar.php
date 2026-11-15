@@ -172,6 +172,13 @@ function render_action_links($links = [])
                     </li>
                     -->
 
+                    <li class="nav-item <?php echo navigation_active("dashboard"); ?>">
+                        <a href="<?php echo BASE_URL . "admin/dashboard"; ?>">
+                            <i class="bi bi-speedometer2"></i>
+                            <p>Dashboard</p>
+                        </a>
+                    </li>
+
                     <!-- OFFICE MANAGEMENT NAVIGATION -->
                     <li class="nav-item <?php echo navigation_active("office-prefix, office-counters", "active submenu"); ?>">
                         <a class="collapsed" aria-expanded="false" data-bs-toggle="collapse" href="#office_management_nav">
