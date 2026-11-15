@@ -118,21 +118,14 @@ $action_buttons = [
                                 </div>
 
                                 <div class="card-body">
-                                    <!-- Toolbar with Search, Filter and Export Buttons -->
+                                    <!-- Row 1: Office selection (left) | Export + Refresh (right) -->
                                     <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
-                                        <div class="d-flex align-items-center gap-2 flex-grow-1" style="max-width: 600px;">
-                                            <select id="filterOffice" class="form-select" style="max-width: 220px;">
-                                                <option value="0">-- All Offices --</option>
-                                                <?php foreach ($offices as $off): ?>
-                                                    <option value="<?= $off['office_id']; ?>"><?= htmlspecialchars($off['office_name']); ?> (<?= htmlspecialchars($off['office_code']); ?>)</option>
-                                                <?php endforeach; ?>
-                                            </select>
-
-                                            <div class="search-input-group flex-grow-1">
-                                                <i class="bi bi-search search-icon"></i>
-                                                <input type="text" id="global-search" class="form-control" placeholder="Search counter, office, or staff...">
-                                            </div>
-                                        </div>
+                                        <select id="filterOffice" class="form-select" style="width: auto; min-width: 320px; max-width: 100%;">
+                                            <option value="0">-- All Offices --</option>
+                                            <?php foreach ($offices as $off): ?>
+                                                <option value="<?= $off['office_id']; ?>"><?= htmlspecialchars($off['office_name']); ?> (<?= htmlspecialchars($off['office_code']); ?>)</option>
+                                            <?php endforeach; ?>
+                                        </select>
 
                                         <div class="d-flex align-items-center gap-2">
                                             <!-- Export Options Dropdown -->
@@ -154,6 +147,14 @@ $action_buttons = [
                                             <button id="btn-refresh" class="btn btn-action d-inline-flex align-items-center">
                                                 <i class="bi bi-arrow-clockwise me-2"></i>Refresh Data
                                             </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Row 2: Search bar on its own row -->
+                                    <div class="d-flex mb-3">
+                                        <div class="search-input-group flex-grow-1">
+                                            <i class="bi bi-search search-icon"></i>
+                                            <input type="text" id="global-search" class="form-control" placeholder="Search...">
                                         </div>
                                     </div>
 
@@ -332,7 +333,28 @@ $action_buttons = [
         }
 
         function statusFormatter(cell) {
-            return cell.getValue() == 0 ? 'Active' : 'Disabled';
+            return escapeHtml(cell.getValue());
+        }
+
+        const colFilter = {
+            headerFilter: "input",
+            headerFilterFunc: "like",
+            headerFilterParams: { allowEmpty: true }
+        };
+
+        // Dropdown header filter for the Status column (All / Active / Disabled)
+        function statusHeaderFilter(cell, onRendered, success, cancel) {
+            const select = document.createElement('select');
+            select.className = 'form-select form-select-sm';
+            select.style.width = '100%';
+            [['', 'All'], ['Active', 'Active'], ['Disabled', 'Disabled']].forEach(([val, label]) => {
+                const opt = document.createElement('option');
+                opt.value = val;
+                opt.textContent = label;
+                select.appendChild(opt);
+            });
+            select.addEventListener('change', () => success(select.value));
+            return select;
         }
 
         /* Tabulator Table Setup */
@@ -350,11 +372,16 @@ $action_buttons = [
                     };
                 },
                 ajaxResponse: function(url, params, response) {
-                    return response.data || [];
+                    return (response.data || []).map(r => Object.assign({}, r, {
+                        office_label: `${r.office_name || ''} (${r.office_code || ''})`,
+                        staff_label: r.assigned_staff_name && String(r.assigned_staff_name).trim() !== '' ? r.assigned_staff_name : 'Unassigned',
+                        status_label: Number(r.flag_status) === 0 ? 'Active' : 'Disabled'
+                    }));
                 },
                 index: "counter_id",
                 layout: "fitColumns",
-                responsiveLayout: "collapse",
+                resizableColumnFit: true,
+                headerFilterPlaceholder: "Search",
                 pagination: "local",
                 paginationSize: 10,
                 paginationSizeSelector: [10, 25, 50, 100, true],
@@ -408,10 +435,13 @@ $action_buttons = [
                             }
                         }
                     },
-                    { title: "Office Location", field: "office_name", formatter: officeFormatter, sorter: "string", minWidth: 280, vertAlign: 'middle', hozAlign: 'left' },
-                    { title: "Counter Name", field: "counter_name", formatter: counterNameFormatter, width: 180, vertAlign: 'middle', hozAlign: 'center' },
-                    { title: "Assigned Staff", field: "assigned_staff_name", formatter: staffFormatter, width: 260, vertAlign: 'middle', hozAlign: 'left' },
-                    { title: "Status", field: "flag_status", formatter: statusFormatter, width: 140, vertAlign: 'middle', hozAlign: 'center' }
+                    Object.assign({ title: "Office Location", field: "office_label", sorter: "string", minWidth: 280, vertAlign: 'middle', hozAlign: 'left',
+                        formatter: (cell) => escapeHtml(cell.getValue()) }, colFilter),
+                    Object.assign({ title: "Counter Name", field: "counter_name", formatter: counterNameFormatter, minWidth: 180, vertAlign: 'middle', hozAlign: 'center' }, colFilter),
+                    Object.assign({ title: "Assigned Staff", field: "staff_label", minWidth: 240, vertAlign: 'middle', hozAlign: 'left',
+                        formatter: (cell) => escapeHtml(cell.getValue()) }, colFilter),
+                    { title: "Status", field: "status_label", formatter: statusFormatter, minWidth: 140, vertAlign: 'middle', hozAlign: 'center',
+                        headerFilter: statusHeaderFilter, headerFilterFunc: "=" }
                 ]
             });
 
@@ -454,12 +484,14 @@ $action_buttons = [
             if (searchInput) {
                 searchInput.addEventListener('input', function() {
                     const keyword = this.value.trim().toLowerCase();
+                    if (!keyword) { tabulator.clearFilter(); return; }
                     tabulator.setFilter(function(data) {
                         const office  = (data.office_name || '').toLowerCase();
                         const code    = (data.office_code || '').toLowerCase();
                         const counter = (data.counter_name || '').toLowerCase();
                         const staff   = (data.assigned_staff_name || '').toLowerCase();
-                        return office.includes(keyword) || code.includes(keyword) || counter.includes(keyword) || staff.includes(keyword);
+                        const status  = (data.status_label || '').toLowerCase();
+                        return office.includes(keyword) || code.includes(keyword) || counter.includes(keyword) || staff.includes(keyword) || status.includes(keyword);
                     });
                 });
             }
@@ -471,6 +503,7 @@ $action_buttons = [
                     if (searchInput) searchInput.value = '';
                     $('#filterOffice').val('0');
                     tabulator.clearFilter();
+                    tabulator.clearHeaderFilter();
                     tabulator.setData();
                 });
             }
