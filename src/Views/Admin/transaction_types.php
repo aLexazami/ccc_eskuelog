@@ -228,7 +228,7 @@ $action_buttons = [
                                                 <i class="bi bi-1-circle-fill me-1"></i> Primary Transaction Service Details
                                             </h6>
                                             <div class="row g-3">
-                                                <!-- Row 1: Selection of Office & Transaction Service Name -->
+                                                <!-- Row 1: Selection of Office | Service Status -->
                                                 <div class="col-lg-6">
                                                     <label class="form-label fw-bold" for="form_office_id">Selection of Office</label>
                                                     <select name="office_id" id="form_office_id" class="form-select" required>
@@ -240,21 +240,6 @@ $action_buttons = [
                                                 </div>
 
                                                 <div class="col-lg-6">
-                                                    <label class="form-label fw-bold" for="form_transaction_name">Transaction Service Name</label>
-                                                    <input type="text" name="transaction_name" class="form-control" id="form_transaction_name" placeholder="e.g., Transcript Request, ID Validation" required>
-                                                </div>
-
-                                                <!-- Row 2: Estimated Duration & Service Status -->
-                                                <div class="col-lg-6" id="primary_duration_wrapper">
-                                                    <label class="form-label fw-bold" for="form_estimated_minutes">Estimated Duration (Minutes)</label>
-                                                    <div class="input-group stepper-group">
-                                                        <button type="button" class="btn btn-outline-secondary" id="btn_duration_dec">-</button>
-                                                        <input type="number" name="estimated_minutes" class="form-control" id="form_estimated_minutes" value="5" min="1" max="180">
-                                                        <button type="button" class="btn btn-outline-primary" id="btn_duration_inc">+</button>
-                                                    </div>
-                                                </div>
-
-                                                <div class="col-lg-6">
                                                     <label class="form-label fw-bold" for="form_flag_status">Service Status</label>
                                                     <select name="flag_status" id="form_flag_status" class="form-select">
                                                         <option value="0" selected>Active</option>
@@ -262,13 +247,29 @@ $action_buttons = [
                                                     </select>
                                                 </div>
 
-                                                <!-- Row 3: Add Sub-Transactions (Optional) | Window (standalone only) -->
-                                                <div class="col-lg-6">
+                                                <!-- Row 2: Transaction Service Name (full width) -->
+                                                <div class="col-12">
+                                                    <label class="form-label fw-bold" for="form_transaction_name">Transaction Service Name</label>
+                                                    <input type="text" name="transaction_name" class="form-control" id="form_transaction_name" placeholder="e.g., Transcript Request, ID Validation" required>
+                                                </div>
+
+                                                <!-- Row 3: Add Sub-Transactions (Optional) (full width) -->
+                                                <div class="col-12">
                                                     <label class="form-label fw-bold" for="form_has_sub_concerns">Add Sub-Transactions? (Optional)</label>
                                                     <select name="has_sub_concerns" id="form_has_sub_concerns" class="form-select border-primary">
                                                         <option value="no" selected>No — Standalone Service Only</option>
                                                         <option value="yes">Yes — Configure Sub-Transactions</option>
                                                     </select>
+                                                </div>
+
+                                                <!-- Row 4: Estimated Duration | Assigned Window (primary service only) -->
+                                                <div class="col-lg-6" id="primary_duration_wrapper">
+                                                    <label class="form-label fw-bold" for="form_estimated_minutes">Estimated Duration (Minutes)</label>
+                                                    <div class="input-group stepper-group">
+                                                        <button type="button" class="btn btn-outline-secondary" id="btn_duration_dec">-</button>
+                                                        <input type="number" name="estimated_minutes" class="form-control" id="form_estimated_minutes" value="5" min="1" max="180">
+                                                        <button type="button" class="btn btn-outline-primary" id="btn_duration_inc">+</button>
+                                                    </div>
                                                 </div>
 
                                                 <div class="col-lg-6" id="primary_window_wrapper">
