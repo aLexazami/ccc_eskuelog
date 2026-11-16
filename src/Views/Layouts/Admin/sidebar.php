@@ -179,22 +179,12 @@ function render_action_links($links = [])
                         </a>
                     </li>
 
-                    <!-- OFFICE MANAGEMENT NAVIGATION -->
-                    <li class="nav-item <?php echo navigation_active("office-prefix, office-counters", "active submenu"); ?>">
-                        <a class="collapsed" aria-expanded="false" data-bs-toggle="collapse" href="#office_management_nav">
+                    <!-- OFFICE COUNTERS NAVIGATION -->
+                    <li class="nav-item <?php echo navigation_active("office-counters"); ?>">
+                        <a href="<?php echo BASE_URL . "admin/office-counters"; ?>">
                             <i class="bi bi-building-gear"></i>
-                            <p>Office Management</p>
-                            <span class="caret"></span>
+                            <p>Office Counters</p>
                         </a>
-                        <div class="collapse <?php echo navigation_active("office-prefix, office-counters", "show"); ?>" id="office_management_nav">
-                            <ul class="nav nav-collapse">
-                                <li class="<?php echo navigation_active("office-counters"); ?>">
-                                    <a href="<?php echo BASE_URL . "admin/office-counters"; ?>">
-                                        <span class="sub-item">Office Counters</span>
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
                     </li>
 
                     <!-- UNIFIED SERVICES & SUB-CONCERNS NAVIGATION -->
