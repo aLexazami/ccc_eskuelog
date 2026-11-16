@@ -223,7 +223,7 @@ if ($db_connect) {
             width: 100%;
         }
 
-        .building-card:hover, .office-card:hover, .transaction-card:hover {
+        .building-card:hover, .office-card:hover, .transaction-card:hover:not(.window-disabled) {
             border-color: #93c5fd;
             background-color: var(--kiosk-bg-subtle);
             transform: translateY(-2px);
@@ -233,6 +233,111 @@ if ($db_connect) {
             border-color: var(--kiosk-primary);
             background-color: var(--kiosk-primary-light);
             box-shadow: 0 10px 15px -3px rgba(29, 78, 216, 0.1);
+        }
+
+        /* DISABLED STATE WHEN ANOTHER WINDOW IS SELECTED */
+        .transaction-card.window-disabled {
+            opacity: 0.48;
+            background-color: #f1f5f9 !important;
+            border-color: #cbd5e1 !important;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        .transaction-card.window-disabled .card-header-row {
+            pointer-events: none;
+        }
+
+        .sub-concern-btn.window-disabled,
+        .sub-concern-btn:disabled {
+            opacity: 0.45 !important;
+            cursor: not-allowed !important;
+            pointer-events: none;
+            background-color: #f1f5f9 !important;
+            border-color: #cbd5e1 !important;
+            color: #64748b !important;
+        }
+
+        /* BLUE-THEMED HIGHLIGHTED WINDOW BADGE ABOVE SERVICE NAMES */
+        .window-assign-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-size: 0.72rem;
+            font-weight: 800;
+            letter-spacing: 0.35px;
+            padding: 0.22rem 0.65rem;
+            border-radius: 0.45rem;
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            color: #1e40af;
+            border: 1px solid #60a5fa;
+            box-shadow: 0 1px 2px rgba(29, 78, 216, 0.16);
+            text-transform: uppercase;
+            margin-bottom: 0.35rem;
+        }
+
+        .window-assign-badge.window-default {
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            color: #1d4ed8;
+            border-color: #93c5fd;
+            box-shadow: 0 1px 2px rgba(37, 99, 235, 0.14);
+        }
+
+        .sub-concern-btn.btn-primary .window-assign-badge {
+            background: rgba(255, 255, 255, 0.95);
+            color: #1e3a8a;
+            border-color: #ffffff;
+        }
+
+        /* SAME-WINDOW RULE HIGHLIGHT NOTICE */
+        .window-rule-notice {
+            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+            border: 1.5px solid #f59e0b;
+            border-left: 5px solid #d97706;
+            color: #78350f;
+            border-radius: 0.75rem;
+            padding: 0.85rem 1rem;
+            font-size: 0.875rem;
+            line-height: 1.45;
+        }
+
+        /* DYNAMIC FULL-WIDTH SUB-TRANSACTIONS GRID */
+        .sub-concerns-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 0.65rem;
+            width: 100%;
+        }
+
+        .sub-concern-btn {
+            width: 100%;
+            border-radius: 0.65rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: space-between;
+            text-align: left;
+            gap: 0.35rem;
+            padding: 0.75rem 0.95rem;
+            border-width: 1.5px;
+        }
+
+        .sub-concern-btn .sub-est-badge {
+            font-size: 0.72rem;
+            padding: 0.18rem 0.5rem;
+            border-radius: 0.4rem;
+            background-color: rgba(29, 78, 216, 0.1);
+            color: #1d4ed8;
+            font-weight: 700;
+        }
+
+        .sub-concern-btn.btn-primary .sub-est-badge {
+            background-color: rgba(255, 255, 255, 0.22);
+            color: #ffffff;
         }
 
         .office-logo-img {
@@ -257,32 +362,6 @@ if ($db_connect) {
             border-radius: 50%;
             font-size: 1.25rem;
             flex-shrink: 0;
-        }
-
-        .sub-concern-btn {
-            border-radius: 0.65rem;
-            font-weight: 600;
-            font-size: 0.85rem;
-            transition: all 0.2s ease;
-            display: inline-flex;
-            flex-direction: column;
-            align-items: flex-start;
-            text-align: left;
-            gap: 0.25rem;
-        }
-
-        .sub-concern-btn .sub-est-badge {
-            font-size: 0.72rem;
-            padding: 0.15rem 0.45rem;
-            border-radius: 0.4rem;
-            background-color: rgba(29, 78, 216, 0.1);
-            color: #1d4ed8;
-            font-weight: 700;
-        }
-
-        .sub-concern-btn.btn-primary .sub-est-badge {
-            background-color: rgba(255, 255, 255, 0.22);
-            color: #ffffff;
         }
 
         .consent-card-box, .priority-card-box {
@@ -320,6 +399,23 @@ if ($db_connect) {
             color: #ffffff;
             border-radius: 0.85rem 0.85rem 0 0;
             padding: 1.25rem;
+        }
+
+        .receipt-window-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.45);
+            color: #ffffff;
+            font-size: 0.8rem;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            padding: 0.22rem 0.85rem;
+            border-radius: 999px;
+            margin-top: 0.35rem;
+            margin-bottom: 0.25rem;
         }
 
         .receipt-concern-item {
@@ -427,10 +523,11 @@ if ($db_connect) {
             padding: 1rem 1.15rem;
         }
 
+        /* BLUE-THEMED RECEIPT REMINDER HIGHLIGHT */
         .receipt-reminder-highlight {
-            background-color: #fef3c7;
-            border: 1.5px solid #f59e0b;
-            color: #78350f;
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            border: 1.5px solid #3b82f6;
+            color: #1e3a8a;
             border-radius: 0.75rem;
             padding: 0.65rem 0.9rem;
             font-weight: 700;
@@ -439,6 +536,11 @@ if ($db_connect) {
             align-items: center;
             justify-content: center;
             gap: 0.5rem;
+        }
+
+        /* Ensure single asterisk even if global theme CSS also styles required labels */
+        label.has-js-asterisk::after {
+            content: none !important;
         }
     </style>
 </head>
@@ -557,22 +659,30 @@ if ($db_connect) {
 
                     <div id="personalDetailsSection" class="summary-section-box d-none">
 
+                        <!-- MANUAL ENTRY ID NUMBER FIELD (SHOWN FOR STUDENT & EMPLOYEE MANUAL ENTRY) -->
+                        <div id="manualIdRow" class="row g-2 g-sm-3 mb-3">
+                            <div class="col-12">
+                                <label for="manualReferenceId" class="form-label fw-bold text-dark small" id="manualReferenceIdLabel">Student ID Number</label>
+                                <input type="text" class="form-control form-control-kiosk fw-bold text-primary" id="manualReferenceId" placeholder="e.g., 2000-1234" maxlength="20" autocomplete="off">
+                            </div>
+                        </div>
+
                         <div class="row g-2 g-sm-3 mb-3" id="step1NameRow">
                             <div class="col-12 col-sm-6 col-md-3 name-col-primary">
                                 <label for="firstName" class="form-label fw-bold text-dark small">First Name</label>
-                                <input type="text" class="form-control form-control-kiosk step1-sync" id="firstName" name="first_name" placeholder="First Name" required>
+                                <input type="text" class="form-control form-control-kiosk" id="firstName" name="first_name" placeholder="First Name" required>
                             </div>
                             <div class="col-12 col-sm-6 col-md-3 name-col-secondary">
                                 <label for="middleName" class="form-label fw-bold text-dark small">Middle Name</label>
-                                <input type="text" class="form-control form-control-kiosk step1-sync" id="middleName" name="middle_name" placeholder="Middle Name">
+                                <input type="text" class="form-control form-control-kiosk" id="middleName" name="middle_name" placeholder="Middle Name">
                             </div>
                             <div class="col-12 col-sm-6 col-md-3 name-col-primary">
                                 <label for="lastName" class="form-label fw-bold text-dark small">Last Name</label>
-                                <input type="text" class="form-control form-control-kiosk step1-sync" id="lastName" name="last_name" placeholder="Last Name" required>
+                                <input type="text" class="form-control form-control-kiosk" id="lastName" name="last_name" placeholder="Last Name" required>
                             </div>
                             <div class="col-12 col-sm-6 col-md-3 name-col-secondary" id="suffixContainer">
                                 <label for="suffix" class="form-label fw-bold text-dark small">Suffix</label>
-                                <select class="form-select form-select-kiosk step1-sync" id="suffix" name="suffix">
+                                <select class="form-select form-select-kiosk" id="suffix" name="suffix">
                                     <option value="" selected>None</option>
                                     <option value="Jr.">Jr.</option>
                                     <option value="Sr.">Sr.</option>
@@ -583,14 +693,14 @@ if ($db_connect) {
                             </div>
                             <div class="col-6 col-sm-6 col-md-2 d-none" id="postNominalContainer">
                                 <label for="postNominal" class="form-label fw-bold text-dark small">Post Nominal</label>
-                                <input type="text" class="form-control form-control-kiosk step1-sync" id="postNominal" name="post_nominal" placeholder="PhD, LPT">
+                                <input type="text" class="form-control form-control-kiosk" id="postNominal" name="post_nominal" placeholder="PhD, LPT">
                             </div>
                         </div>
 
                         <div class="row g-2 g-sm-3 mb-3">
                             <div class="col-12 col-md-6">
                                 <label for="sex" class="form-label fw-bold text-dark small">Sex</label>
-                                <select class="form-select form-select-kiosk step1-sync" id="sex" name="sex" required>
+                                <select class="form-select form-select-kiosk" id="sex" name="sex" required>
                                     <option value="" selected disabled>Select sex</option>
                                     <option value="Male">Male</option>
                                     <option value="Female">Female</option>
@@ -598,14 +708,14 @@ if ($db_connect) {
                             </div>
                             <div class="col-12 col-md-6">
                                 <label for="email" class="form-label fw-bold text-dark small">Email Address</label>
-                                <input type="email" class="form-control form-control-kiosk step1-sync" id="email" name="email" placeholder="user@example.com" required>
+                                <input type="email" class="form-control form-control-kiosk" id="email" name="email" placeholder="user@example.com" required>
                             </div>
                         </div>
 
                         <div id="studentFieldsContainer" class="row g-2 g-sm-3 mb-3">
                             <div class="col-12 col-sm-6">
                                 <label for="courseProgram" class="form-label fw-bold text-dark small">Course / Program</label>
-                                <select class="form-select form-select-kiosk step1-sync" id="courseProgram" name="program_id" required>
+                                <select class="form-select form-select-kiosk" id="courseProgram" name="program_id" required>
                                     <option value="" selected disabled>Select course / program</option>
                                     <?php foreach ($programs_list as $prog): ?>
                                         <?php 
@@ -627,7 +737,7 @@ if ($db_connect) {
 
                             <div class="col-12 col-sm-6">
                                 <label for="yearLevel" class="form-label fw-bold text-dark small">Year Level</label>
-                                <select class="form-select form-select-kiosk step1-sync" id="yearLevel" name="year_level" required>
+                                <select class="form-select form-select-kiosk" id="yearLevel" name="year_level" required>
                                     <option value="" selected disabled>Select year level</option>
                                     <option value="1">1st Year</option>
                                     <option value="2">2nd Year</option>
@@ -640,7 +750,7 @@ if ($db_connect) {
                         <div id="employeeFieldsContainer" class="row g-2 g-sm-3 mb-3 d-none">
                             <div class="col-12 col-sm-6">
                                 <label for="employeeDepartment" class="form-label fw-bold text-dark small">Department</label>
-                                <select class="form-select form-select-kiosk step1-sync" id="employeeDepartment" name="department_id_select">
+                                <select class="form-select form-select-kiosk" id="employeeDepartment" name="department_id_select">
                                     <option value="" selected disabled>Select department</option>
                                     <?php foreach ($departments_list as $dept): ?>
                                         <option value="<?= htmlspecialchars($dept['department_id']); ?>">
@@ -654,7 +764,7 @@ if ($db_connect) {
                                 <label for="employeeOfficeId" class="form-label fw-bold text-dark small">
                                     Office <span class="text-muted fw-normal fs-8">(Optional)</span>
                                 </label>
-                                <select class="form-select form-select-kiosk step1-sync" id="employeeOfficeId" name="employee_office_id">
+                                <select class="form-select form-select-kiosk" id="employeeOfficeId" name="employee_office_id">
                                     <option value="" selected>Select office</option>
                                     <?php foreach ($offices_list as $off): ?>
                                         <option value="<?= htmlspecialchars($off['office_id']); ?>">
@@ -801,7 +911,15 @@ if ($db_connect) {
 
                     <div class="mb-3">
                         <h4 class="fw-bold text-dark mb-1 fs-5 fs-sm-4">Select Transaction Concern(s)</h4>
-                        <p class="text-muted small mb-0">Select one or more concerns below. Choose "Others" if your specific concern is not listed.</p>
+                        <p class="text-muted small mb-2">Select one or more concerns below. Choose "Others" if your specific concern is not listed.</p>
+
+                        <!-- HIGHLIGHTED SAME-WINDOW SELECTION NOTICE -->
+                        <div class="window-rule-notice d-flex align-items-start gap-2 shadow-sm">
+                            <i class="bi bi-exclamation-triangle-fill text-warning fs-5 flex-shrink-0 mt-0.5"></i>
+                            <div>
+                                <strong>Same-Window Selection Policy:</strong> You may select one or more transactions <strong>only if they are assigned to the same Window</strong>. Selecting a transaction from a specific window will temporarily disable services assigned to other windows. To switch windows, unselect your current window's transaction(s) first.
+                            </div>
+                        </div>
                     </div>
 
                     <div class="d-flex flex-column gap-3 mb-4" id="transactionCardsContainer">
@@ -831,122 +949,7 @@ if ($db_connect) {
                     
                     <div class="mb-4">
                         <h3 class="fw-bold text-dark mb-1 fs-4">Review Logbook Summary</h3>
-                        <p class="text-muted small mb-0">Please verify your details, complete any required transaction information, and accept the agreement before submitting.</p>
-                    </div>
-
-                    <!-- VISITOR PERSONAL DETAILS (SHOWN FOR ALL FLOWS & SYNCED WITH STEP 1) -->
-                    <div id="step5VisitorDetailsSection">
-                        <div class="summary-section-box">
-                            <h6 class="fw-bold text-primary mb-3">
-                                <i class="bi bi-person-lines-fill me-1"></i> Personal Information
-                            </h6>
-
-                            <div class="row g-2 g-sm-3 mb-3" id="step5NameRow">
-                                <div class="col-12 col-sm-6 col-md-3 name-col-primary">
-                                    <label for="step5_firstName" class="form-label fw-bold text-dark small">First Name</label>
-                                    <input type="text" class="form-control form-control-kiosk step5-sync" id="step5_firstName" placeholder="First Name" required>
-                                </div>
-                                <div class="col-12 col-sm-6 col-md-3 name-col-secondary">
-                                    <label for="step5_middleName" class="form-label fw-bold text-dark small">Middle Name</label>
-                                    <input type="text" class="form-control form-control-kiosk step5-sync" id="step5_middleName" placeholder="Middle Name">
-                                </div>
-                                <div class="col-12 col-sm-6 col-md-3 name-col-primary">
-                                    <label for="step5_lastName" class="form-label fw-bold text-dark small">Last Name</label>
-                                    <input type="text" class="form-control form-control-kiosk step5-sync" id="step5_lastName" placeholder="Last Name" required>
-                                </div>
-                                <div class="col-12 col-sm-6 col-md-3 name-col-secondary" id="step5_suffixContainer">
-                                    <label for="step5_suffix" class="form-label fw-bold text-dark small">Suffix</label>
-                                    <select class="form-select form-select-kiosk step5-sync" id="step5_suffix">
-                                        <option value="">None</option>
-                                        <option value="Jr.">Jr.</option>
-                                        <option value="Sr.">Sr.</option>
-                                        <option value="I">I</option>
-                                        <option value="II">II</option>
-                                        <option value="III">III</option>
-                                    </select>
-                                </div>
-                                <div class="col-6 col-sm-6 col-md-2 d-none" id="step5_postNominalContainer">
-                                    <label for="step5_postNominal" class="form-label fw-bold text-dark small">Post Nominal</label>
-                                    <input type="text" class="form-control form-control-kiosk step5-sync" id="step5_postNominal" placeholder="PhD, LPT">
-                                </div>
-                            </div>
-
-                            <div class="row g-2 g-sm-3 mb-3">
-                                <div class="col-12 col-md-6">
-                                    <label for="step5_sex" class="form-label fw-bold text-dark small">Sex</label>
-                                    <select class="form-select form-select-kiosk step5-sync" id="step5_sex" required>
-                                        <option value="" selected disabled>Select sex</option>
-                                        <option value="Male">Male</option>
-                                        <option value="Female">Female</option>
-                                    </select>
-                                </div>
-                                <div class="col-12 col-md-6">
-                                    <label for="step5_email" class="form-label fw-bold text-dark small">Email Address</label>
-                                    <input type="email" class="form-control form-control-kiosk step5-sync" id="step5_email" placeholder="user@example.com" required>
-                                </div>
-                            </div>
-
-                            <!-- STUDENT FIELDS -->
-                            <div id="step5_studentFieldsContainer" class="row g-2 g-sm-3 mb-1">
-                                <div class="col-12 col-sm-6">
-                                    <label for="step5_courseProgram" class="form-label fw-bold text-dark small">Course / Program</label>
-                                    <select class="form-select form-select-kiosk step5-sync" id="step5_courseProgram" required>
-                                        <option value="" selected disabled>Select course / program</option>
-                                        <?php foreach ($programs_list as $prog): ?>
-                                            <?php 
-                                                $displayName = $prog['program_code'] . ' - ' . $prog['program_name'];
-                                                if (!empty($prog['major'])) {
-                                                    $displayName .= ' (Major in ' . $prog['major'] . ')';
-                                                }
-                                            ?>
-                                            <option value="<?= htmlspecialchars($prog['program_id']); ?>">
-                                                <?= htmlspecialchars($displayName); ?>
-                                            </option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </div>
-
-                                <div class="col-12 col-sm-6">
-                                    <label for="step5_yearLevel" class="form-label fw-bold text-dark small">Year Level</label>
-                                    <select class="form-select form-select-kiosk step5-sync" id="step5_yearLevel" required>
-                                        <option value="" selected disabled>Select year level</option>
-                                        <option value="1">1st Year</option>
-                                        <option value="2">2nd Year</option>
-                                        <option value="3">3rd Year</option>
-                                        <option value="4">4th Year</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <!-- EMPLOYEE FIELDS -->
-                            <div id="step5_employeeFieldsContainer" class="row g-2 g-sm-3 mb-1 d-none">
-                                <div class="col-12 col-sm-6">
-                                    <label for="step5_employeeDepartment" class="form-label fw-bold text-dark small">Department</label>
-                                    <select class="form-select form-select-kiosk step5-sync" id="step5_employeeDepartment">
-                                        <option value="" selected disabled>Select department</option>
-                                        <?php foreach ($departments_list as $dept): ?>
-                                            <option value="<?= htmlspecialchars($dept['department_id']); ?>">
-                                                <?= htmlspecialchars($dept['department_code'] . ' - ' . $dept['department_name']); ?>
-                                            </option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </div>
-
-                                <div class="col-12 col-sm-6">
-                                    <label for="step5_employeeOfficeId" class="form-label fw-bold text-dark small">
-                                        Office <span class="text-muted fw-normal fs-8">(Optional)</span>
-                                    </label>
-                                    <select class="form-select form-select-kiosk step5-sync" id="step5_employeeOfficeId">
-                                        <option value="">Select office</option>
-                                        <?php foreach ($offices_list as $off): ?>
-                                            <option value="<?= htmlspecialchars($off['office_id']); ?>">
-                                                <?= htmlspecialchars($off['office_code'] . ' - ' . $off['office_name']); ?>
-                                            </option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
+                        <p class="text-muted small mb-0">Please complete any required transaction details and accept the data privacy agreement before submitting.</p>
                     </div>
 
                     <!-- DYNAMIC TRANSACTION ADDITIONAL DETAILS (SHOWN WHEN SELECTED CONCERNS HAVE DETAIL FIELDS) -->
@@ -1113,13 +1116,19 @@ if ($db_connect) {
                     <div class="text-success display-3 mb-2"><i class="bi bi-check-circle-fill"></i></div>
                     <h3 class="fw-bold text-dark mb-2 fs-4">Check-in Complete!</h3>
                     <div class="receipt-reminder-highlight mb-3 shadow-sm">
-                        <i class="bi bi-exclamation-circle-fill text-warning fs-5 flex-shrink-0"></i>
+                        <i class="bi bi-exclamation-circle-fill text-primary fs-5 flex-shrink-0"></i>
                         <span>Please keep a record of your queue ticket receipt details.</span>
                     </div>
 
                     <div class="card receipt-card my-3 text-start shadow-sm overflow-hidden">
                         <div class="receipt-header text-center position-relative">
                             <span class="text-uppercase tracking-wide fw-semibold small opacity-75 d-block">Queue Ticket Number</span>
+                            <div>
+                                <span class="receipt-window-pill">
+                                    <i class="bi bi-window-sidebar"></i>
+                                    <span id="modalWindowName">Any Window</span>
+                                </span>
+                            </div>
                             <h1 class="display-3 fw-black mb-0" id="modalTicketNumber">---</h1>
                             <div id="modalPriorityBadge" class="d-none mt-2">
                                 <span class="badge bg-warning text-dark fw-bold px-3 py-2 fs-7 border border-dark">
@@ -1175,6 +1184,11 @@ if ($db_connect) {
         const btnVerifyId          = document.getElementById('btnVerifyId');
         const idHelpBlock          = document.getElementById('idHelpBlock');
         const personalDetailsSec   = document.getElementById('personalDetailsSection');
+
+        // MANUAL ENTRY ID NUMBER ELEMENTS
+        const manualIdRow          = document.getElementById('manualIdRow');
+        const manualRefIdLabel     = document.getElementById('manualReferenceIdLabel');
+        const manualRefIdInput     = document.getElementById('manualReferenceId');
         
         const userIdInput          = document.getElementById('userId');
         const departmentIdInput    = document.getElementById('departmentId');
@@ -1198,22 +1212,6 @@ if ($db_connect) {
         const employeeFieldsCont   = document.getElementById('employeeFieldsContainer');
         const employeeDeptSelect   = document.getElementById('employeeDepartment');
         const employeeOfficeSelect = document.getElementById('employeeOfficeId');
-
-        // STEP 5 INPUTS (PERSONAL DETAILS REVIEW)
-        const step5FirstName       = document.getElementById('step5_firstName');
-        const step5MiddleName      = document.getElementById('step5_middleName');
-        const step5LastName        = document.getElementById('step5_lastName');
-        const step5Suffix          = document.getElementById('step5_suffix');
-        const step5PostNomCont     = document.getElementById('step5_postNominalContainer');
-        const step5PostNominal     = document.getElementById('step5_postNominal');
-        const step5Sex             = document.getElementById('step5_sex');
-        const step5Email           = document.getElementById('step5_email');
-        const step5StudentCont     = document.getElementById('step5_studentFieldsContainer');
-        const step5Course          = document.getElementById('step5_courseProgram');
-        const step5Year            = document.getElementById('step5_yearLevel');
-        const step5EmployeeCont    = document.getElementById('step5_employeeFieldsContainer');
-        const step5EmpDept         = document.getElementById('step5_employeeDepartment');
-        const step5EmpOffice       = document.getElementById('step5_employeeOfficeId');
 
         // STEP 5 DYNAMIC DETAILS ELEMENTS
         const step5DynamicDetailsSec  = document.getElementById('step5DynamicDetailsSection');
@@ -1302,6 +1300,37 @@ if ($db_connect) {
                 .replace(/'/g, "&#039;");
         }
 
+        /**
+         * Ensures every <label for="..."> linked to a [required] field displays
+         * exactly one red asterisk (*), including dynamically rendered Step 5 fields.
+         */
+        function syncRequiredLabelIndicators(scopeEl = document) {
+            scopeEl.querySelectorAll('label[for]').forEach(label => {
+                // Remove any existing JS-injected asterisk first to prevent duplicates
+                label.querySelectorAll('.req-asterisk-mark').forEach(m => m.remove());
+                label.classList.remove('has-js-asterisk');
+
+                const targetId = label.getAttribute('for');
+                if (!targetId) return;
+
+                const targetEl = document.getElementById(targetId);
+                if (targetEl && targetEl.hasAttribute('required')) {
+                    label.classList.add('has-js-asterisk');
+                    const star = document.createElement('span');
+                    star.className = 'text-danger req-asterisk-mark ms-1';
+                    star.textContent = '*';
+                    label.appendChild(star);
+                }
+            });
+        }
+
+        // Keep manual entry ID input synchronized with the hidden/submitted referenceId input
+        if (manualRefIdInput) {
+            manualRefIdInput.addEventListener('input', function() {
+                referenceIdInput.value = this.value;
+            });
+        }
+
         function showSweetAlert(title, text, icon = 'warning') {
             const config = {
                 title: title,
@@ -1331,6 +1360,7 @@ if ($db_connect) {
             programCodeInput.value  = '';
             programMajorInput.value = '';
 
+            if (manualRefIdInput) manualRefIdInput.value = '';
             firstNameInput.value    = '';
             middleNameInput.value   = '';
             lastNameInput.value     = '';
@@ -1348,8 +1378,6 @@ if ($db_connect) {
                 prioritySwitch.checked = false;
                 prioritySection?.classList.add('d-none');
             }
-
-            syncStep1ToStep5Fields();
         }
 
         function updateCategoryRequiredAttributes(type) {
@@ -1358,11 +1386,9 @@ if ($db_connect) {
 
             if (courseSelect) courseSelect.required = isStudent;
             if (yearSelect) yearSelect.required = isStudent;
-            if (step5Course) step5Course.required = isStudent;
-            if (step5Year) step5Year.required = isStudent;
-
             if (employeeDeptSelect) employeeDeptSelect.required = isEmployee;
-            if (step5EmpDept) step5EmpDept.required = isEmployee;
+
+            syncRequiredLabelIndicators(personalDetailsSec);
         }
 
         function syncStudentProgramMetadata() {
@@ -1385,12 +1411,11 @@ if ($db_connect) {
                 col.classList.toggle('col-md-3', !isEmployee);
             });
 
-            ['suffixContainer', 'step5_suffixContainer'].forEach(id => {
-                const el = document.getElementById(id);
-                if (!el) return;
-                el.classList.toggle('col-6', isEmployee);
-                el.classList.toggle('col-12', !isEmployee);
-            });
+            const suffixEl = document.getElementById('suffixContainer');
+            if (suffixEl) {
+                suffixEl.classList.toggle('col-6', isEmployee);
+                suffixEl.classList.toggle('col-12', !isEmployee);
+            }
         }
 
         visitorTypeBtns.forEach(btn => {
@@ -1421,14 +1446,14 @@ if ($db_connect) {
                 referenceIdLabel.textContent = "Student ID Number";
                 referenceIdInput.placeholder = "e.g., 2000-1234";
                 idHelpBlock.textContent = "Enter your ID number and click Verify.";
+
+                if (manualIdRow) manualIdRow.classList.remove('d-none');
+                if (manualRefIdLabel) manualRefIdLabel.textContent = "Student ID Number";
+                if (manualRefIdInput) manualRefIdInput.placeholder = "e.g., 2000-1234";
                 
                 studentFieldsCont.classList.remove('d-none');
                 employeeFieldsCont.classList.add('d-none');
                 postNominalContainer.classList.add('d-none');
-
-                step5StudentCont.classList.remove('d-none');
-                step5EmployeeCont.classList.add('d-none');
-                step5PostNomCont.classList.add('d-none');
             } else if (type === 'EMPLOYEE') {
                 updateNameGridColumns(true);
                 idLookupSection.classList.remove('d-none');
@@ -1436,26 +1461,24 @@ if ($db_connect) {
                 referenceIdLabel.textContent = "Employee ID Number";
                 referenceIdInput.placeholder = "e.g., ABC-12345";
                 idHelpBlock.textContent = "Enter your ID number and click Verify.";
+
+                if (manualIdRow) manualIdRow.classList.remove('d-none');
+                if (manualRefIdLabel) manualRefIdLabel.textContent = "Employee ID Number";
+                if (manualRefIdInput) manualRefIdInput.placeholder = "e.g., ABC-12345";
                 
                 studentFieldsCont.classList.add('d-none');
                 employeeFieldsCont.classList.remove('d-none');
                 postNominalContainer.classList.remove('d-none');
-
-                step5StudentCont.classList.add('d-none');
-                step5EmployeeCont.classList.remove('d-none');
-                step5PostNomCont.classList.remove('d-none');
             } else { // GUEST
                 updateNameGridColumns(false);
                 idLookupSection.classList.add('d-none');
                 personalDetailsSec.classList.remove('d-none');
+
+                if (manualIdRow) manualIdRow.classList.add('d-none');
                 
                 studentFieldsCont.classList.add('d-none');
                 employeeFieldsCont.classList.add('d-none');
                 postNominalContainer.classList.add('d-none');
-
-                step5StudentCont.classList.add('d-none');
-                step5EmployeeCont.classList.add('d-none');
-                step5PostNomCont.classList.add('d-none');
             }
         }
 
@@ -1598,7 +1621,6 @@ if ($db_connect) {
 
             visitorRecordFound = true;
             updateConsentState(false);
-            syncStep1ToStep5Fields();
 
             if (idVerificationModal) idVerificationModal.hide();
 
@@ -1624,16 +1646,36 @@ if ($db_connect) {
         btnManualEntryModal?.addEventListener('click', function() {
             if (idNotFoundModal) idNotFoundModal.hide();
 
+            const enteredId = referenceIdInput.value.trim();
+            const type      = visitorTypeInput.value;
+
             pendingVisitorData = null;
             visitorRecordFound = false;
             furthestWizardStep = 1;
             clearVisitorPersonalInputs();
             updateConsentState(false);
 
+            // Carry over the typed ID Number into the editable Manual Entry field
+            referenceIdInput.value = enteredId;
+            if (manualIdRow) {
+                manualIdRow.classList.toggle('d-none', type === 'GUEST');
+            }
+            if (manualRefIdLabel) {
+                manualRefIdLabel.textContent = (type === 'EMPLOYEE') ? 'Employee ID Number' : 'Student ID Number';
+            }
+            if (manualRefIdInput) {
+                manualRefIdInput.placeholder = (type === 'EMPLOYEE') ? 'e.g., ABC-12345' : 'e.g., 2000-1234';
+                manualRefIdInput.value = enteredId;
+            }
+
             idLookupSection.classList.add('d-none');
             personalDetailsSec.classList.remove('d-none');
 
-            firstNameInput.focus();
+            if (manualRefIdInput && !enteredId) {
+                manualRefIdInput.focus();
+            } else {
+                firstNameInput.focus();
+            }
         });
 
         btnTryAgainModal?.addEventListener('click', function() {
@@ -1759,7 +1801,6 @@ if ($db_connect) {
             wizardStepContainers[stepNum].classList.remove('d-none');
 
             if (stepNum === 5) {
-                syncStep1ToStep5Fields();
                 renderStep5DynamicDetails();
             }
 
@@ -1786,59 +1827,12 @@ if ($db_connect) {
             });
         });
 
-        // BI-DIRECTIONAL SYNC BETWEEN STEP 1 AND STEP 5 PERSONAL FIELDS
-        function syncStep1ToStep5Fields() {
-            step5FirstName.value   = firstNameInput.value;
-            step5MiddleName.value  = middleNameInput.value;
-            step5LastName.value    = lastNameInput.value;
-            step5Suffix.value      = suffixSelect.value;
-            step5PostNominal.value = postNominalInput.value;
-            step5Sex.value         = sexSelect.value;
-            step5Email.value       = emailInput.value;
-            step5Course.value      = courseSelect.value;
-            step5Year.value        = yearSelect.value;
-            step5EmpDept.value     = employeeDeptSelect.value;
-            step5EmpOffice.value   = employeeOfficeSelect.value;
-        }
-
-        function syncStep5ToStep1Fields() {
-            firstNameInput.value       = step5FirstName.value;
-            middleNameInput.value      = step5MiddleName.value;
-            lastNameInput.value        = step5LastName.value;
-            suffixSelect.value         = step5Suffix.value;
-            postNominalInput.value     = step5PostNominal.value;
-            sexSelect.value            = step5Sex.value;
-            emailInput.value           = step5Email.value;
-            courseSelect.value         = step5Course.value;
-            yearSelect.value           = step5Year.value;
-            employeeDeptSelect.value   = step5EmpDept.value;
-            employeeOfficeSelect.value = step5EmpOffice.value;
-
-            if (visitorTypeInput.value === 'STUDENT') {
-                syncStudentProgramMetadata();
-            } else if (visitorTypeInput.value === 'EMPLOYEE') {
-                departmentIdInput.value = step5EmpDept.value || '0';
-            } else {
-                departmentIdInput.value = '0';
-            }
-        }
-
-        document.querySelectorAll('.step1-sync').forEach(el => {
-            el.addEventListener('input', syncStep1ToStep5Fields);
-            el.addEventListener('change', syncStep1ToStep5Fields);
-        });
-
-        document.querySelectorAll('.step5-sync').forEach(el => {
-            el.addEventListener('input', syncStep5ToStep1Fields);
-            el.addEventListener('change', syncStep5ToStep1Fields);
-        });
-
-        function validatePersonalInfoFields(sourceStep) {
+        function validatePersonalInfoFields() {
             const vType = visitorTypeInput.value;
-            const fName = (sourceStep === 5 ? step5FirstName : firstNameInput).value.trim();
-            const lName = (sourceStep === 5 ? step5LastName : lastNameInput).value.trim();
-            const sexV  = (sourceStep === 5 ? step5Sex : sexSelect).value;
-            const mailV = (sourceStep === 5 ? step5Email : emailInput).value.trim();
+            const fName = firstNameInput.value.trim();
+            const lName = lastNameInput.value.trim();
+            const sexV  = sexSelect.value;
+            const mailV = emailInput.value.trim();
 
             if (!fName || !lName || !sexV || !mailV) {
                 showSweetAlert("Incomplete Information", "Please complete all required personal fields (First Name, Last Name, Sex, and Email Address).", "warning");
@@ -1846,14 +1840,14 @@ if ($db_connect) {
             }
 
             if (vType === 'STUDENT') {
-                const progV = (sourceStep === 5 ? step5Course : courseSelect).value;
-                const yearV = (sourceStep === 5 ? step5Year : yearSelect).value;
+                const progV = courseSelect.value;
+                const yearV = yearSelect.value;
                 if (!progV || !yearV) {
                     showSweetAlert("Incomplete Student Information", "Please select your Course / Program and Year Level.", "warning");
                     return false;
                 }
             } else if (vType === 'EMPLOYEE') {
-                const deptV = (sourceStep === 5 ? step5EmpDept : employeeDeptSelect).value;
+                const deptV = employeeDeptSelect.value;
                 if (!deptV) {
                     showSweetAlert("Incomplete Employee Information", "Please select your Department.", "warning");
                     return false;
@@ -1866,7 +1860,10 @@ if ($db_connect) {
         // STEP 1 CONTINUATION (Manual Entry & Guest)
         if (btnContinue) {
             btnContinue.addEventListener('click', function() {
-                if (!validatePersonalInfoFields(1)) {
+                if (manualRefIdInput && !manualIdRow?.classList.contains('d-none')) {
+                    referenceIdInput.value = manualRefIdInput.value.trim();
+                }
+                if (!validatePersonalInfoFields()) {
                     return;
                 }
                 if (visitorTypeInput.value === 'STUDENT') {
@@ -1874,7 +1871,6 @@ if ($db_connect) {
                 } else if (visitorTypeInput.value === 'EMPLOYEE') {
                     departmentIdInput.value = employeeDeptSelect.value || '0';
                 }
-                syncStep1ToStep5Fields();
                 step1Div.classList.add('d-none');
                 step2Div.classList.remove('d-none');
                 setWizardStep(2);
@@ -1958,8 +1954,8 @@ if ($db_connect) {
                     const pickedSubs = selectedSubConcernsMap[tid] || [];
                     if (pickedSubs.length === 0) {
                         showSweetAlert(
-                            "Sub-Transaction Required",
-                            `Please select at least one specific sub-transaction under "${transObj.transaction_name}".`,
+                            "Transaction Selection Required",
+                            `Please select at least one specific transaction under "${transObj.transaction_name}".`,
                             "warning"
                         );
                         return;
@@ -1973,7 +1969,6 @@ if ($db_connect) {
                 return;
             }
 
-            syncStep1ToStep5Fields();
             renderStep5DynamicDetails();
 
             step4Div.classList.add('d-none');
@@ -1987,6 +1982,113 @@ if ($db_connect) {
             step4Div.classList.remove('d-none');
             setWizardStep(4);
         });
+
+        /**
+         * Build blue-themed window badge HTML for Primary Transactions & Sub-Transactions.
+         * Defaults to "Any Window" when no specific counter is assigned.
+         */
+        function buildWindowBadgeHtml(counterId, counterName) {
+            if (counterId && counterName) {
+                return `
+                    <div>
+                        <span class="window-assign-badge">
+                            <i class="bi bi-window-sidebar"></i> ${escapeHtml(counterName)}
+                        </span>
+                    </div>
+                `;
+            }
+            return `
+                <div>
+                    <span class="window-assign-badge window-default">
+                        <i class="bi bi-window-sidebar"></i> Any Window
+                    </span>
+                </div>
+            `;
+        }
+
+        /**
+         * Determine currently active Window ID and Window Name based on selected primary/sub-transactions.
+         */
+        function getActiveSelectedWindowInfo() {
+            for (const tid of selectedConcernIds) {
+                if (tid === 'OTHERS') continue;
+                const transObj = officeTransactionsMap[tid];
+                if (!transObj) continue;
+
+                const hasSubs = Array.isArray(transObj.sub_concerns) && transObj.sub_concerns.length > 0;
+                if (hasSubs) {
+                    const pickedSubIds = selectedSubConcernsMap[tid] || [];
+                    for (const sid of pickedSubIds) {
+                        const subObj = transObj.sub_concerns.find(s => Number(s.id) === Number(sid));
+                        const subWin = subObj && subObj.counter_id
+                            ? Number(subObj.counter_id)
+                            : (transObj.counter_id ? Number(transObj.counter_id) : null);
+                        if (subWin) {
+                            const winName = (subObj && subObj.counter_name) || transObj.counter_name || `Window ${subWin}`;
+                            return { id: subWin, name: winName };
+                        }
+                    }
+                    if (transObj.counter_id) {
+                        const winId = Number(transObj.counter_id);
+                        return { id: winId, name: transObj.counter_name || `Window ${winId}` };
+                    }
+                } else if (transObj.counter_id) {
+                    const winId = Number(transObj.counter_id);
+                    return { id: winId, name: transObj.counter_name || `Window ${winId}` };
+                }
+            }
+            return { id: null, name: 'Any Window' };
+        }
+
+        function getActiveSelectedWindowId() {
+            return getActiveSelectedWindowInfo().id;
+        }
+
+        /**
+         * Enable/disable primary transaction cards and sub-transaction buttons
+         * so users can only combine services assigned to the same window.
+         */
+        function enforceSameWindowSelectionState() {
+            const activeWindowId = getActiveSelectedWindowId();
+
+            transactionContainer.querySelectorAll('.transaction-card').forEach(card => {
+                const tid = card.dataset.transId;
+                if (tid === 'OTHERS') {
+                    card.classList.remove('window-disabled');
+                    return;
+                }
+
+                const transObj = officeTransactionsMap[tid];
+                if (!transObj) return;
+
+                const hasSubs = Array.isArray(transObj.sub_concerns) && transObj.sub_concerns.length > 0;
+
+                if (!hasSubs) {
+                    const cardWindowId = transObj.counter_id ? Number(transObj.counter_id) : null;
+                    const isConflict = activeWindowId !== null && cardWindowId !== null && cardWindowId !== activeWindowId;
+                    card.classList.toggle('window-disabled', isConflict);
+                } else {
+                    // Check sub-transactions inside this primary transaction
+                    let compatibleSubCount = 0;
+                    card.querySelectorAll('.sub-concern-btn').forEach(subBtn => {
+                        const subWinRaw = subBtn.dataset.counterId;
+                        const subWinId  = subWinRaw ? Number(subWinRaw) : null;
+                        const isSubConflict = activeWindowId !== null && subWinId !== null && subWinId !== activeWindowId;
+
+                        subBtn.disabled = isSubConflict;
+                        subBtn.classList.toggle('window-disabled', isSubConflict);
+
+                        if (!isSubConflict) {
+                            compatibleSubCount++;
+                        }
+                    });
+
+                    // Disable entire parent card if none of its sub-transactions match the active window
+                    const isParentConflict = activeWindowId !== null && compatibleSubCount === 0;
+                    card.classList.toggle('window-disabled', isParentConflict);
+                }
+            });
+        }
 
         function fetchOfficeTransactions(officeId) {
             transactionContainer.innerHTML = '<div class="text-center p-3 text-muted"><span class="spinner-border spinner-border-sm me-2"></span>Loading concerns...</div>';
@@ -2012,6 +2114,8 @@ if ($db_connect) {
                     id: 'OTHERS',
                     transaction_name: 'Others (Please Specify Concern)',
                     estimated_minutes: 10,
+                    counter_id: null,
+                    counter_name: null,
                     is_others: true,
                     direct_details: null,
                     sub_concerns: []
@@ -2023,39 +2127,54 @@ if ($db_connect) {
 
                     const card = document.createElement('div');
                     card.className = 'transaction-card p-3 mb-2';
-                    card.dataset.transId = trans.id;
-                    card.dataset.estMins  = trans.estimated_minutes || 5;
+                    card.dataset.transId   = trans.id;
+                    card.dataset.estMins   = trans.estimated_minutes || 5;
+                    card.dataset.counterId = trans.counter_id || '';
 
                     let subConcernsHtml = '';
                     if (hasSubConcerns) {
                         subConcernsHtml = `
                             <div class="sub-concerns-container d-none mt-3 pt-3 border-top">
-                                <label class="form-label text-muted fw-bold small d-block mb-2">Select Specific Sub-Transaction(s):</label>
-                                <div class="d-flex flex-wrap gap-2">
-                                    ${trans.sub_concerns.map(sub => `
-                                        <button type="button"
-                                                class="btn btn-sm btn-outline-primary sub-concern-btn px-3 py-2"
-                                                data-sub-id="${sub.id}"
-                                                data-sub-est="${sub.estimated_minutes || 5}">
-                                            <span>${escapeHtml(sub.sub_concern_name)}</span>
-                                            <span class="sub-est-badge">Est. ${sub.estimated_minutes || 5} mins</span>
-                                        </button>
-                                    `).join('')}
+                                <label class="form-label text-muted fw-bold small d-block mb-2">Select Specific Transaction(s):</label>
+                                <div class="sub-concerns-grid">
+                                    ${trans.sub_concerns.map(sub => {
+                                        const effectiveSubCounterId   = sub.counter_id || trans.counter_id || null;
+                                        const effectiveSubCounterName = sub.counter_name || trans.counter_name || null;
+                                        return `
+                                            <button type="button"
+                                                    class="btn btn-sm btn-outline-primary sub-concern-btn"
+                                                    data-sub-id="${sub.id}"
+                                                    data-sub-est="${sub.estimated_minutes || 5}"
+                                                    data-counter-id="${effectiveSubCounterId || ''}">
+                                                <div class="w-100">
+                                                    ${buildWindowBadgeHtml(effectiveSubCounterId, effectiveSubCounterName)}
+                                                    <div class="sub-concern-title-text fw-bold">${escapeHtml(sub.sub_concern_name)}</div>
+                                                </div>
+                                                <span class="sub-est-badge">Est. ${sub.estimated_minutes || 5} mins</span>
+                                            </button>
+                                        `;
+                                    }).join('')}
                                 </div>
                             </div>
                         `;
                     }
 
+                    // Show Window Badge above Primary Transaction Name (defaults to Any Window)
+                    const primaryWindowBadgeHtml = (!hasSubConcerns || trans.counter_id)
+                        ? buildWindowBadgeHtml(trans.counter_id, trans.counter_name)
+                        : '';
+
                     // Show Est. Time on primary transaction ONLY when it has NO sub-transactions
                     const primaryEstBadgeHtml = !hasSubConcerns
                         ? `<span class="badge bg-light text-secondary border mt-1 small">Est. Time: ${trans.estimated_minutes || 5} mins</span>`
-                        : `<span class="badge bg-primary-subtle text-primary border border-primary-subtle mt-1 small">${trans.sub_concerns.length} Sub-Transaction Option(s)</span>`;
+                        : '';
 
                     card.innerHTML = `
                         <div class="card-header-row d-flex align-items-center justify-content-between">
                             <div class="d-flex align-items-center gap-3 min-w-0 flex-grow-1">
                                 <i class="bi bi-square text-muted fs-4 select-icon flex-shrink-0"></i>
                                 <div class="min-w-0 flex-grow-1">
+                                    ${primaryWindowBadgeHtml}
                                     <h6 class="fw-bold text-dark mb-0 fs-6">${escapeHtml(trans.transaction_name)}</h6>
                                     ${primaryEstBadgeHtml}
                                 </div>
@@ -2067,6 +2186,10 @@ if ($db_connect) {
                     const cardHeader = card.querySelector('.card-header-row');
                     cardHeader.addEventListener('click', function(e) {
                         e.stopPropagation();
+                        if (card.classList.contains('window-disabled')) {
+                            return;
+                        }
+
                         const icon = card.querySelector('.select-icon');
                         const subContainer = card.querySelector('.sub-concerns-container');
 
@@ -2094,12 +2217,17 @@ if ($db_connect) {
 
                         transactionInput.value = selectedConcernIds.join(',');
                         subConcernInput.value  = JSON.stringify(selectedSubConcernsMap);
+                        enforceSameWindowSelectionState();
                     });
 
                     const subBtns = card.querySelectorAll('.sub-concern-btn');
                     subBtns.forEach(btn => {
                         btn.addEventListener('click', function(e) {
                             e.stopPropagation();
+                            if (this.disabled || this.classList.contains('window-disabled')) {
+                                return;
+                            }
+
                             const subId = parseInt(this.dataset.subId, 10);
                             if (!selectedSubConcernsMap[trans.id]) {
                                 selectedSubConcernsMap[trans.id] = [];
@@ -2117,11 +2245,14 @@ if ($db_connect) {
                             }
 
                             subConcernInput.value = JSON.stringify(selectedSubConcernsMap);
+                            enforceSameWindowSelectionState();
                         });
                     });
 
                     transactionContainer.appendChild(card);
                 });
+
+                enforceSameWindowSelectionState();
             });
         }
 
@@ -2278,17 +2409,19 @@ if ($db_connect) {
                 }
             });
 
+            // Clean up any duplicate asterisk spans while relying on global theme CSS/JS
+            syncRequiredLabelIndicators(step5DynamicDetailsCont);
             step5DynamicDetailsSec.classList.toggle('d-none', totalGroupsRendered === 0);
         }
 
         function submitLogbookForm(triggerBtn) {
-            syncStep5ToStep1Fields();
-
-            if (referenceIdInput.value) {
+            if (manualRefIdInput && !manualIdRow?.classList.contains('d-none')) {
+                referenceIdInput.value = manualRefIdInput.value.trim();
+            } else if (referenceIdInput.value) {
                 referenceIdInput.value = referenceIdInput.value.trim();
             }
 
-            if (!validatePersonalInfoFields(5)) {
+            if (!validatePersonalInfoFields()) {
                 return;
             }
 
@@ -2347,7 +2480,7 @@ if ($db_connect) {
                 if (activeSubBtns.length > 0) {
                     const subNames = Array.from(activeSubBtns).map(b => {
                         totalEstimatedMinutes += parseInt(b.dataset.subEst || '5', 10);
-                        const subName = b.querySelector('span')?.textContent.trim() || b.textContent.trim();
+                        const subName = b.querySelector('.sub-concern-title-text')?.textContent.trim() || b.textContent.trim();
                         return `<div class="mt-1"><span class="receipt-subconcern-tag"><i class="bi bi-tag-fill me-1"></i>${escapeHtml(subName)}</span></div>`;
                     }).join('');
                     subTagsHtml = `<div>${subNames}</div>`;
@@ -2363,6 +2496,8 @@ if ($db_connect) {
                 `;
             });
 
+            const fallbackWindowName = getActiveSelectedWindowInfo().name || 'Any Window';
+
             const activeBtn = triggerBtn || btnFinalSubmit;
             const originalBtnHtml = activeBtn.innerHTML;
             activeBtn.disabled = true;
@@ -2377,6 +2512,7 @@ if ($db_connect) {
                 activeBtn.innerHTML = originalBtnHtml;
 
                 if (result.success) {
+                    document.getElementById('modalWindowName').textContent   = result.window_name || fallbackWindowName;
                     document.getElementById('modalTicketNumber').textContent = result.ticket_number || '---';
                     document.getElementById('modalOfficeName').textContent   = result.office_name || summaryOfficeName.textContent;
                     document.getElementById('modalTransactionContainer').innerHTML = structuredConcernsHtml;

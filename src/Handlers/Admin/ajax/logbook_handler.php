@@ -259,9 +259,10 @@ switch ($action) {
         if (!empty($raw_trans_ids)) {
             $inClause = implode(',', $raw_trans_ids);
             $stmtValidTrans = $db_connect->prepare("
-                SELECT id, transaction_name, estimated_minutes 
-                FROM transaction_types 
-                WHERE office_id = ? AND flag_status = 0 AND id IN ($inClause)
+                SELECT tt.id, tt.transaction_name, tt.estimated_minutes, tt.counter_id, c.counter_name
+                FROM transaction_types tt
+                LEFT JOIN counters c ON tt.counter_id = c.id AND c.flag_status = 0
+                WHERE tt.office_id = ? AND tt.flag_status = 0 AND tt.id IN ($inClause)
             ");
             $stmtValidTrans->bind_param("i", $office_id);
             $stmtValidTrans->execute();
@@ -271,7 +272,9 @@ switch ($action) {
                 $tid = (int)$rowT['id'];
                 $validTransLookup[$tid] = [
                     'name'              => $rowT['transaction_name'],
-                    'estimated_minutes' => (int)($rowT['estimated_minutes'] ?? 5)
+                    'estimated_minutes' => (int)($rowT['estimated_minutes'] ?? 5),
+                    'counter_id'        => $rowT['counter_id'] !== null ? (int)$rowT['counter_id'] : null,
+                    'counter_name'      => $rowT['counter_name'] ?? null
                 ];
             }
 
@@ -287,7 +290,7 @@ switch ($action) {
             exit();
         }
 
-        // Fetch active sub-concerns & their individual estimated_minutes
+        // Fetch active sub-concerns & their individual estimated_minutes + counter_id
         $validated_sub_map = [];
         $transHasActiveSubs = [];
         $validSubInfo = [];
@@ -295,9 +298,10 @@ switch ($action) {
         if (!empty($trans_ids)) {
             $inTrans = implode(',', $trans_ids);
             $stmtValidSubs = $db_connect->query("
-                SELECT id, transaction_type_id, sub_concern_name, estimated_minutes 
-                FROM transaction_sub_concerns 
-                WHERE flag_status = 0 AND transaction_type_id IN ($inTrans)
+                SELECT sc.id, sc.transaction_type_id, sc.sub_concern_name, sc.estimated_minutes, sc.counter_id, c.counter_name
+                FROM transaction_sub_concerns sc
+                LEFT JOIN counters c ON sc.counter_id = c.id AND c.flag_status = 0
+                WHERE sc.flag_status = 0 AND sc.transaction_type_id IN ($inTrans)
             ");
 
             while ($rowS = $stmtValidSubs->fetch_assoc()) {
@@ -306,7 +310,9 @@ switch ($action) {
                 $transHasActiveSubs[$tId] = true;
                 $validSubInfo[$tId][$sId] = [
                     'name'              => $rowS['sub_concern_name'],
-                    'estimated_minutes' => (int)($rowS['estimated_minutes'] ?? 5)
+                    'estimated_minutes' => (int)($rowS['estimated_minutes'] ?? 5),
+                    'counter_id'        => $rowS['counter_id'] !== null ? (int)$rowS['counter_id'] : null,
+                    'counter_name'      => $rowS['counter_name'] ?? null
                 ];
             }
 
@@ -329,16 +335,47 @@ switch ($action) {
                     $tName = $validTransLookup[$tid]['name'] ?? 'Selected service';
                     echo json_encode([
                         'success' => false,
-                        'message' => "Please select at least one sub-transaction under \"{$tName}\"."
+                        'message' => "Please select at least one transaction under \"{$tName}\"."
                     ]);
                     exit();
                 }
             }
         }
 
-        // Calculate total estimated minutes:
-        // - If transaction has sub-concerns: sum selected sub-concerns' estimated_minutes
-        // - If standalone transaction: use transaction_types.estimated_minutes
+        // Enforce Single-Window Rule & Resolve Assigned Window Name
+        $assignedCounterIds = [];
+        $resolvedWindowName = 'Any Window';
+
+        foreach ($trans_ids as $tid) {
+            if (!empty($transHasActiveSubs[$tid])) {
+                foreach ($validated_sub_map[$tid] as $sid) {
+                    $cId   = $validSubInfo[$tid][$sid]['counter_id'] ?? $validTransLookup[$tid]['counter_id'];
+                    $cName = $validSubInfo[$tid][$sid]['counter_name'] ?? $validTransLookup[$tid]['counter_name'];
+                    if ($cId !== null && $cId > 0) {
+                        $assignedCounterIds[] = $cId;
+                        $resolvedWindowName   = $cName ?: "Window {$cId}";
+                    }
+                }
+            } else {
+                $cId   = $validTransLookup[$tid]['counter_id'];
+                $cName = $validTransLookup[$tid]['counter_name'];
+                if ($cId !== null && $cId > 0) {
+                    $assignedCounterIds[] = $cId;
+                    $resolvedWindowName   = $cName ?: "Window {$cId}";
+                }
+            }
+        }
+
+        $distinctWindows = array_values(array_unique($assignedCounterIds));
+        if (count($distinctWindows) > 1) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Multiple transactions can only be combined if they are assigned to the same window.'
+            ]);
+            exit();
+        }
+
+        // Calculate total estimated minutes
         $estimated_minutes = 0;
         foreach ($trans_ids as $tid) {
             if (!empty($transHasActiveSubs[$tid])) {
@@ -370,12 +407,17 @@ switch ($action) {
                     i.detail_mode,
                     i.input_data_type
                 FROM transaction_detail_fields h
+                INNER JOIN (
+                    SELECT MAX(id) AS latest_id
+                    FROM transaction_detail_fields
+                    WHERE transaction_type_id IN ({$inTrans})
+                      AND flag_status = 0
+                    GROUP BY transaction_type_id, COALESCE(sub_concern_id, 0)
+                ) latest_h ON h.id = latest_h.latest_id
                 INNER JOIN transaction_detail_field_items i
                     ON i.detail_field_id = h.id
                    AND i.flag_status = 0
-                WHERE h.transaction_type_id IN ({$inTrans})
-                  AND h.flag_status = 0
-                ORDER BY h.id DESC, i.field_order ASC
+                ORDER BY i.field_order ASC, i.id ASC
             ";
             $resDetails = $db_connect->query($detailSql);
             while ($dRow = $resDetails->fetch_assoc()) {
@@ -440,7 +482,7 @@ switch ($action) {
                 $stmtP = $db_connect->prepare("
                     SELECT department_id, program_code, major 
                     FROM programs 
-                    WHERE program_id = ? AND flag_status = 0
+                    WHERE program_id = ? AND flag_offer = 0
                     LIMIT 1
                 ");
                 $stmtP->bind_param("i", $program_id);
@@ -629,6 +671,7 @@ switch ($action) {
                 'success'           => true,
                 'message'           => 'Check-in successful!',
                 'ticket_number'     => $ticket_number,
+                'window_name'       => $resolvedWindowName,
                 'sequence'          => $sequence,
                 'office_name'       => $office_name,
                 'is_priority'       => $is_priority,
