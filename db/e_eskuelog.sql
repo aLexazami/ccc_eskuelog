@@ -181,7 +181,8 @@ INSERT INTO `office` (`office_id`, `office_code`, `office_name`, `office_logo`, 
 (8, 'DAS', 'Department of Arts and Sciences', NULL, 1, 0, 0, 0, '2026-09-09 17:10:00'),
 (9, 'DBA', 'Department of Business and Accountancy', NULL, 0, 0, 0, 0, '2026-09-09 17:10:00'),
 (10, 'DCI', 'Department of Computing and Informatics', NULL, 3, 0, 0, 0, '2026-09-21 18:07:41'),
-(11, 'LRIC', 'Learning and Resource Information Center', NULL, 0, 2, 0, 0, '2026-09-21 18:25:59');
+(11, 'LRIC', 'Learning and Resource Information Center', NULL, 0, 2, 0, 0, '2026-09-21 18:25:59'),
+(12, 'MISD', 'Management Information System Department', NULL, 0, 0, 0, 0, '2026-09-21 18:25:59');
 
 -- --------------------------------------------------------
 
