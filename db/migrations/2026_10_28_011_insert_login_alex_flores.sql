@@ -57,43 +57,4 @@ ON DUPLICATE KEY UPDATE
     `flag_access` = VALUES(`flag_access`),
     `date_modify` = VALUES(`date_modify`);
 
--- 3. Insert/Update Employee Profile
-INSERT INTO `employee` (
-    `user_id`,
-    `employee_id`,
-    `personnel_classification`,
-    `employment_status`,
-    `employment_basis`,
-    `position`,
-    `profile_pic`,
-    `cover_photo`,
-    `employment_date`,
-    `office_id`,
-    `department_id`,
-    `room_id`,
-    `service_status`,
-    `flag_update`,
-    `date_modify`
-) VALUES (
-    2,
-    'CGC-123457',                  -- Employee ID Code
-    'NON-TEACHING PERSONNEL',       -- Options: 'TEACHING PERSONNEL', 'NON-TEACHING PERSONNEL'
-    'CONTRACT OF SERVICE',          -- Options: 'PERMANENT', 'CONTRACT OF SERVICE', ' JOB ORDER'
-    '',                             -- Options: 'FULL TIME', 'PART TIME', ''
-    '',                             -- Position / Title
-    NULL,
-    NULL,
-    '[""]',
-    0,
-    0,
-    0,
-    0,
-    0,
-    CURRENT_TIMESTAMP()
-) ON DUPLICATE KEY UPDATE 
-    `employee_id`              = VALUES(`employee_id`),
-    `personnel_classification` = VALUES(`personnel_classification`),
-    `employment_status`        = VALUES(`employment_status`),
-    `date_modify`              = VALUES(`date_modify`);
-
 COMMIT;

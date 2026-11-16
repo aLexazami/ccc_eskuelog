@@ -1,0 +1,86 @@
+-- ======================================================================
+-- MIGRATION: Seed Login Credentials for Dummy Users 3 to 60
+-- Passwords are securely hashed matching each user's email address
+-- Target Database: e_eskuelog (and e_eguro)
+-- ======================================================================
+
+START TRANSACTION;
+
+INSERT INTO `login` (
+    `user_id`, 
+    `username`, 
+    `password`, 
+    `recovery_email`, 
+    `status`, 
+    `locked`, 
+    `flag_update`, 
+    `flag_validity`, 
+    `date_modify`, 
+    `date_username`, 
+    `date_password`
+) VALUES 
+('3', 'cmsantos@ccc.edu.ph', '$2y$10$EfNzABNh9lfOwoauPo21uOuG./EPdGEx0w4yoFD2v60/3zPMEKVxm', '', 0, 0, 0, 0, CURRENT_TIMESTAMP(), CURRENT_DATE(), CURRENT_DATE()),
+('4', 'etreyes@ccc.edu.ph', '$2y$10$S3Fbp.gTmvIThijfs3EtMeLKkH0px57GxVCb8sT38osLfT/y/QI4W', '', 0, 0, 0, 0, CURRENT_TIMESTAMP(), CURRENT_DATE(), CURRENT_DATE()),
+('5', 'macruz@ccc.edu.ph', '$2y$10$pFetOq0/Ojz0kbNARZ6sHe9R6CpirV5WET4zts1/lxWAkDC80we5.', '', 0, 0, 0, 0, CURRENT_TIMESTAMP(), CURRENT_DATE(), CURRENT_DATE()),
+('6', 'sdbautista@ccc.edu.ph', '$2y$10$qErqiHNo5oXQvopL/0/CVORqrdbiCB7psWaxd3G/Bdsoa1dr88ROG', '', 0, 0, 0, 0, CURRENT_TIMESTAMP(), CURRENT_DATE(), CURRENT_DATE()),
+('7', 'argarcia@ccc.edu.ph', '$2y$10$Dork.QpeCKYEssnO9XE1nuFLSkKsD05CF0AwSVY/jk0aXJyVC/Vim', '', 0, 0, 0, 0, CURRENT_TIMESTAMP(), CURRENT_DATE(), CURRENT_DATE()),
+('8', 'immendoza@ccc.edu.ph', '$2y$10$VW4J0XGg7E63lxCb8UK7GexCdDXKThqZdIOEavkkJlgvnolBQLm42', '', 0, 0, 0, 0, CURRENT_TIMESTAMP(), CURRENT_DATE(), CURRENT_DATE()),
+('9', 'rctorres@ccc.edu.ph', '$2y$10$9KHPUADa7TdUviOf6RzUA.CAkcak8hiDH4jcGMMOCGdbptWrnJMTW', '', 0, 0, 0, 0, CURRENT_TIMESTAMP(), CURRENT_DATE(), CURRENT_DATE()),
+('10', 'cvramos@ccc.edu.ph', '$2y$10$0YPxP8u6rQq1bhKpMOWhTO1O3MsbhGWWwORwDV2C.bo5a73uKA0xu', '', 0, 0, 0, 0, CURRENT_TIMESTAMP(), CURRENT_DATE(), CURRENT_DATE()),
+('11', 'gfaquino@ccc.edu.ph', '$2y$10$UwF5i9yTsA10DhsxzOjjCeoh/KM3q09Bqx4etiPhqhTcAGAOumNNq', '', 0, 0, 0, 0, CURRENT_TIMESTAMP(), CURRENT_DATE(), CURRENT_DATE()),
+('12', 'vncastillo@ccc.edu.ph', '$2y$10$XvurmFI39kxoxjP9yKoTOulmqDcNBnYuSG0L.jwcWfuKRQra3DC1a', '', 0, 0, 0, 0, CURRENT_TIMESTAMP(), CURRENT_DATE(), CURRENT_DATE()),
+('13', 'dsmorales@ccc.edu.ph', '$2y$10$ttjCyWvYiWWwN3efF3DvuOvOm.VtPiDzkk6CpUqBiqJHMfQTFKJVu', '', 0, 0, 0, 0, CURRENT_TIMESTAMP(), CURRENT_DATE(), CURRENT_DATE()),
+('14', 'ngvillanueva@ccc.edu.ph', '$2y$10$4DvGJqWDCsD0di3sdzJ39eq3yJ6AyTIm4LMtGrQXPA6.m7C88gSZG', '', 0, 0, 0, 0, CURRENT_TIMESTAMP(), CURRENT_DATE(), CURRENT_DATE()),
+('15', 'jhfernandez@ccc.edu.ph', '$2y$10$gv0C/kTYlQojbvP.VhU3D.JNiMc6RZ180TmsgAgwBF7TAmsvtVnJ.', '', 0, 0, 0, 0, CURRENT_TIMESTAMP(), CURRENT_DATE(), CURRENT_DATE()),
+('16', 'apnavarro@ccc.edu.ph', '$2y$10$ZkSuYlThC6H6LqdU3hwBEuIYChni9s7ezDcDIgGJiEb9DltthzBpK', '', 0, 0, 0, 0, CURRENT_TIMESTAMP(), CURRENT_DATE(), CURRENT_DATE()),
+('17', 'ldsalazar@ccc.edu.ph', '$2y$10$.wp/HowC584H5YvpBfaRXemzqdlzax2MxAVb4W5skVvaAaq5HgITK', '', 0, 0, 0, 0, CURRENT_TIMESTAMP(), CURRENT_DATE(), CURRENT_DATE()),
+('18', 'prgonzales@ccc.edu.ph', '$2y$10$ccnhIrZYsNYsnqwRBIIVnen/E1guUT36wMdCSFrvxfm51vhRY9PvO', '', 0, 0, 0, 0, CURRENT_TIMESTAMP(), CURRENT_DATE(), CURRENT_DATE()),
+('19', 'mgherrera@ccc.edu.ph', '$2y$10$dCcfceahU2LM2NlLfQBRyOutbsfjZ5TAUHxYS60fvCUkBhVCKfF66', '', 0, 0, 0, 0, CURRENT_TIMESTAMP(), CURRENT_DATE(), CURRENT_DATE()),
+('20', 'cfperez@ccc.edu.ph', '$2y$10$pSMP0jKpXsma/MUDW4j9/Om6r0hty8ubGHPBkJN3JBgeqNtbXhfKG', '', 0, 0, 0, 0, CURRENT_TIMESTAMP(), CURRENT_DATE(), CURRENT_DATE()),
+('21', 'rcdiaz@ccc.edu.ph', '$2y$10$4bCfSr4gmldSd5BnbuUiZu879MPLB89JKHWYRen580II281YSjm7K', '', 0, 0, 0, 0, CURRENT_TIMESTAMP(), CURRENT_DATE(), CURRENT_DATE()),
+('22', 'borivera@ccc.edu.ph', '$2y$10$87DXwqg397AY./TPNNLV/esFg20Mqvts5uDbe7rixS5M68cuQHf3q', '', 0, 0, 0, 0, CURRENT_TIMESTAMP(), CURRENT_DATE(), CURRENT_DATE()),
+('23', 'fsgomez@ccc.edu.ph', '$2y$10$gS7eo0mif4Fz415WCibrNuuyGKGV5KrRgsO.o4hahTJAPn2Ppvp4O', '', 0, 0, 0, 0, CURRENT_TIMESTAMP(), CURRENT_DATE(), CURRENT_DATE()),
+('24', 'mvcastro@ccc.edu.ph', '$2y$10$XBgRUQKswpLFGP63kF/O1uc5U9EKe.DyStDTnGMm6x4af8h/Boui2', '', 0, 0, 0, 0, CURRENT_TIMESTAMP(), CURRENT_DATE(), CURRENT_DATE()),
+('25', 'erortiz@ccc.edu.ph', '$2y$10$xsG1NbXlKDOCvDk.wsmfoelP8ohmeAcs8KzFMue1JvMJlgkj8JoPa', '', 0, 0, 0, 0, CURRENT_TIMESTAMP(), CURRENT_DATE(), CURRENT_DATE()),
+('26', 'pmsilva@ccc.edu.ph', '$2y$10$hcwi11hcc12q7BkDmJ.i5OsFPBt/K.qJN1e64ZMhsnRQmLif55i1u', '', 0, 0, 0, 0, CURRENT_TIMESTAMP(), CURRENT_DATE(), CURRENT_DATE()),
+('27', 'acvargas@ccc.edu.ph', '$2y$10$Qg7PqRdoU1cP6GZZF.knUu0WL8UFk6jQjClhnSnZo252dHplPocEO', '', 0, 0, 0, 0, CURRENT_TIMESTAMP(), CURRENT_DATE(), CURRENT_DATE()),
+('28', 'drrojas@ccc.edu.ph', '$2y$10$Y9Z7MvHp3sEynKnnwRJHqeV0JPWL8riMV/yLQg/QUK9sJJ6REDAq6', '', 0, 0, 0, 0, CURRENT_TIMESTAMP(), CURRENT_DATE(), CURRENT_DATE()),
+('29', 'rsmendez@ccc.edu.ph', '$2y$10$RxckRKxQZzN1p1RBWm70T.NDE0uyVDmQb4d1LABBfPiKTySEfrgIe', '', 0, 0, 0, 0, CURRENT_TIMESTAMP(), CURRENT_DATE(), CURRENT_DATE()),
+('30', 'gbdelgado@ccc.edu.ph', '$2y$10$625Y2pZ5q5ROTMxPIvr0H.OsTg1p7CaqGbqgod7CgWR.0zBsD0HfG', '', 0, 0, 0, 0, CURRENT_TIMESTAMP(), CURRENT_DATE(), CURRENT_DATE()),
+('31', 'egvega@ccc.edu.ph', '$2y$10$7urzW06ouxibnuFI6nJiCuLtvAICJpPaMzCSSLkUn/ryCvqeOjOFK', '', 0, 0, 0, 0, CURRENT_TIMESTAMP(), CURRENT_DATE(), CURRENT_DATE()),
+('32', 'mmcabrera@ccc.edu.ph', '$2y$10$X07PoALpIACnvEON6qRPX.IIIAAUROV/PE0y8ZsdrW1IkrQKIN68a', '', 0, 0, 0, 0, CURRENT_TIMESTAMP(), CURRENT_DATE(), CURRENT_DATE()),
+('33', 'vtcampos@ccc.edu.ph', '$2y$10$cyFouNBnHkuP9oGf70IUCegyVb2iPrTxgMsKmyBgV3YmCxrTpeQsS', '', 0, 0, 0, 0, CURRENT_TIMESTAMP(), CURRENT_DATE(), CURRENT_DATE()),
+('34', 'lrsolis@ccc.edu.ph', '$2y$10$e1K4k0Etb6wkHDeHmodAQuF6ag6LIFg81ZmWwPsuFdxqt4fvBJFzO', '', 0, 0, 0, 0, CURRENT_TIMESTAMP(), CURRENT_DATE(), CURRENT_DATE()),
+('35', 'haluna@ccc.edu.ph', '$2y$10$zVgVXuBl1rpry0amE2GMqus2qA0zG/NINo8gUscGcxTRC6b5zitq6', '', 0, 0, 0, 0, CURRENT_TIMESTAMP(), CURRENT_DATE(), CURRENT_DATE()),
+('36', 'tcibarra@ccc.edu.ph', '$2y$10$0z9Vu4FJ8zAReG/K0SV8I.g/39F/OaH6G8pK8EhpPDLEEol9Dedka', '', 0, 0, 0, 0, CURRENT_TIMESTAMP(), CURRENT_DATE(), CURRENT_DATE()),
+('37', 'omocampo@ccc.edu.ph', '$2y$10$hBV2h4U.DS34K8WTuRX/WOtI9yOirM8jK7feZCQTvPu5v3/g3raBW', '', 0, 0, 0, 0, CURRENT_TIMESTAMP(), CURRENT_DATE(), CURRENT_DATE()),
+('38', 'vvpineda@ccc.edu.ph', '$2y$10$hFFnlWlGU7OfRaDoRMpnKOguVAIOTPWvF62u08RenGUgmsm1xK.h2', '', 0, 0, 0, 0, CURRENT_TIMESTAMP(), CURRENT_DATE(), CURRENT_DATE()),
+('39', 'sfsoriano@ccc.edu.ph', '$2y$10$b1ZCjTrzDtDYTuQEhHY3/OeATGjxLfuQ1vdGxiMutRqmp53scdyqy', '', 0, 0, 0, 0, CURRENT_TIMESTAMP(), CURRENT_DATE(), CURRENT_DATE()),
+('40', 'lntolentino@ccc.edu.ph', '$2y$10$0tn6WeCZuVUx56KKcOtSD.ZRYk42qu88f6DYSahojVwO9Qld5QFQS', '', 0, 0, 0, 0, CURRENT_TIMESTAMP(), CURRENT_DATE(), CURRENT_DATE()),
+('41', 'asvaldez@ccc.edu.ph', '$2y$10$BfXZZZiE1r8jMn59Ut/MCuVgbH/auM0AwJ8PAxfcaLmDq3d2eAybS', '', 0, 0, 0, 0, CURRENT_TIMESTAMP(), CURRENT_DATE(), CURRENT_DATE()),
+('42', 'cgzamora@ccc.edu.ph', '$2y$10$jAVRsGNBmMwcAqaZSNL4fONQdiNAUXnAM.iHi6wNx9Gi82uSixgny', '', 0, 0, 0, 0, CURRENT_TIMESTAMP(), CURRENT_DATE(), CURRENT_DATE()),
+('43', 'rhalvarez@ccc.edu.ph', '$2y$10$.C1sPpvLAgaT2YTqe0bbj.RX8USv8etWuD3/6ZoD8SvRm9K0NQFNW', '', 0, 0, 0, 0, CURRENT_TIMESTAMP(), CURRENT_DATE(), CURRENT_DATE()),
+('44', 'dpbenitez@ccc.edu.ph', '$2y$10$GUwsvO4i7lX1z4TpJmBHouHFlpmk7GeIB8M6i50OfRwY4TEA/43se', '', 0, 0, 0, 0, CURRENT_TIMESTAMP(), CURRENT_DATE(), CURRENT_DATE()),
+('45', 'edcordova@ccc.edu.ph', '$2y$10$GapkgE05dGF65x2BJPk.COFGNpYtCtos8GeYnD3HNS4GHoAy3vaUe', '', 0, 0, 0, 0, CURRENT_TIMESTAMP(), CURRENT_DATE(), CURRENT_DATE()),
+('46', 'krdelrosario@ccc.edu.ph', '$2y$10$XmUhSj2NAtdVZ73uMUhCKO31EDqjLFJTH5L879OQ9a0s.4iFx/f.6', '', 0, 0, 0, 0, CURRENT_TIMESTAMP(), CURRENT_DATE(), CURRENT_DATE()),
+('47', 'jgespinosa@ccc.edu.ph', '$2y$10$pkd8dWwAWM6Dug55ODAbwuKDaaVtyH442j9deNTazkkTc2N1HdlZK', '', 0, 0, 0, 0, CURRENT_TIMESTAMP(), CURRENT_DATE(), CURRENT_DATE()),
+('48', 'acfajardo@ccc.edu.ph', '$2y$10$X7lEuOwKENyOZJODicB2DuXK5Gig5BPLvGteKEHzChPlRcrJsFuG2', '', 0, 0, 0, 0, CURRENT_TIMESTAMP(), CURRENT_DATE(), CURRENT_DATE()),
+('49', 'cogalang@ccc.edu.ph', '$2y$10$kJq8caJlLUtZPNPLMLGJGO9nBN7wQMtfD3Ssb/DiE7V63yi0RdvFS', '', 0, 0, 0, 0, CURRENT_TIMESTAMP(), CURRENT_DATE(), CURRENT_DATE()),
+('50', 'msignacio@ccc.edu.ph', '$2y$10$1M3TmR27UxV2FvCV8ha2wOCaafbIcQc2WKnOJT3vIop7f0tdzt0Hm', '', 0, 0, 0, 0, CURRENT_TIMESTAMP(), CURRENT_DATE(), CURRENT_DATE()),
+('51', 'kvjacinto@ccc.edu.ph', '$2y$10$JwNTERzPc.T5vgDMz3k6w.L1x7CaLUFWoFMWTBItD1VeTLLiT481O', '', 0, 0, 0, 0, CURRENT_TIMESTAMP(), CURRENT_DATE(), CURRENT_DATE()),
+('52', 'krlaxamana@ccc.edu.ph', '$2y$10$IdpSNamojOT08GAVg/g4I.LGrQr/Xy7TPGTeKGc54HBWny5AfC5q2', '', 0, 0, 0, 0, CURRENT_TIMESTAMP(), CURRENT_DATE(), CURRENT_DATE()),
+('53', 'mmmanalo@ccc.edu.ph', '$2y$10$USOgzizIBwgDyyPNBHwLPuBqlcanFnQf5xgbo2w/Oa3NdFm0hC9xm', '', 0, 0, 0, 0, CURRENT_TIMESTAMP(), CURRENT_DATE(), CURRENT_DATE()),
+('54', 'jdnolasco@ccc.edu.ph', '$2y$10$Wsn7cNBks8SdhgX46BpkXO8Y5ULudJdb4uODS4LlNp0PVbVMkeaK.', '', 0, 0, 0, 0, CURRENT_TIMESTAMP(), CURRENT_DATE(), CURRENT_DATE()),
+('55', 'pvpangilinan@ccc.edu.ph', '$2y$10$fAXWoEn8kbHRC8XSRV029eRTh6Po0cQVph5fqfWwCyaKwpK3cPE.m', '', 0, 0, 0, 0, CURRENT_TIMESTAMP(), CURRENT_DATE(), CURRENT_DATE()),
+('56', 'scquiambao@ccc.edu.ph', '$2y$10$GQzwgymnSQgke.Z6phFBiOH4leggFvz/qX3wfLSwNF8fhVmDA/zN6', '', 0, 0, 0, 0, CURRENT_TIMESTAMP(), CURRENT_DATE(), CURRENT_DATE()),
+('57', 'kcrosales@ccc.edu.ph', '$2y$10$kd0BgSqXpsu4xP1pLPBfO.Yz9ojwb.93aB6cLhEjh0RLdzQU.PdmG', '', 0, 0, 0, 0, CURRENT_TIMESTAMP(), CURRENT_DATE(), CURRENT_DATE()),
+('58', 'mssantiago@ccc.edu.ph', '$2y$10$dEhqosSEoB57lZ0sfdWQV.wtumMO/SUUx3ftODwZ3S.Lxh859ire.', '', 0, 0, 0, 0, CURRENT_TIMESTAMP(), CURRENT_DATE(), CURRENT_DATE()),
+('59', 'bltolentino@ccc.edu.ph', '$2y$10$yeDv80Vozs/ylrhNt9kPUu8ZSv93VMGtLppXew1xNgdzAWE8rVVJS', '', 0, 0, 0, 0, CURRENT_TIMESTAMP(), CURRENT_DATE(), CURRENT_DATE()),
+('60', 'ciumali@ccc.edu.ph', '$2y$10$9FYqS7oqP3d6UdNhSBXvI.msUG9JPGkE13.flTES2OZmFf.s5ftpe', '', 0, 0, 0, 0, CURRENT_TIMESTAMP(), CURRENT_DATE(), CURRENT_DATE())
+ON DUPLICATE KEY UPDATE 
+    `username` = VALUES(`username`),
+    `password` = VALUES(`password`),
+    `status`   = VALUES(`status`),
+    `locked`   = VALUES(`locked`);
+
+COMMIT;
