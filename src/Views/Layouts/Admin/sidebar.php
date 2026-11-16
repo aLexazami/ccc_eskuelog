@@ -241,6 +241,22 @@ function render_action_links($links = [])
                         </a>
                     </li>
 
+                    <!-- OFFICE COUNTERS NAVIGATION -->
+                    <li class="nav-item <?php echo navigation_active("office-counters"); ?>">
+                        <a href="<?php echo BASE_URL . "admin/office-counters"; ?>">
+                            <i class="bi bi-building-gear"></i>
+                            <p>Office Counters</p>
+                        </a>
+                    </li>
+
+                    <!-- UNIFIED SERVICES & SUB-CONCERNS NAVIGATION -->
+                    <li class="nav-item <?php echo navigation_active("transaction-types, sub-concerns"); ?>">
+                        <a href="<?php echo BASE_URL . "admin/transaction-types"; ?>">
+                            <i class="bi bi-card-checklist"></i>
+                            <p>Services & Sub-Concerns</p>
+                        </a>
+                    </li>
+
                     <li class="nav-item <?php echo navigation_active("reports-analytics"); ?>">
                         <a href="<?php echo BASE_URL . "admin/reports-analytics"; ?>">
                             <i class="bi bi-bar-chart-line-fill"></i>
