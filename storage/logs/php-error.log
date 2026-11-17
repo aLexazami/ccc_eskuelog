@@ -1,7 +1,0 @@
-[17-Nov-2026 09:42:02 Asia/Manila] Transaction types handler error: Unknown column 'c.assigned_user_id' in 'on clause'
-[17-Nov-2026 10:25:03 Asia/Manila] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'sa.shift_status' in 'field list' in C:\xampp\htdocs\dev_e_eskuelog\src\Views\Admin\queue_controller.php:86
-Stack trace:
-#0 C:\xampp\htdocs\dev_e_eskuelog\src\Views\Admin\queue_controller.php(86): mysqli->prepare('\r\n        SELEC...')
-#1 C:\xampp\htdocs\dev_e_eskuelog\public\admin\index.php(157): require_once('C:\\xampp\\htdocs...')
-#2 {main}
-  thrown in C:\xampp\htdocs\dev_e_eskuelog\src\Views\Admin\queue_controller.php on line 86
