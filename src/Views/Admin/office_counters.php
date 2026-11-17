@@ -270,6 +270,7 @@ $action_buttons = [
                                                     <h5><strong>Counter Details</strong></h5>
                                                     <hr>
 
+                                                    <!-- Row 1: Office Location & Status -->
                                                     <div class="col-lg-6 mb-3">
                                                         <label class="form-label" for="add_office_id"><b>Office Location</b></label>
                                                         <select name="office_id" id="add_office_id" class="form-select" required <?= $is_admin_staff ? 'disabled' : ''; ?>>
@@ -288,22 +289,24 @@ $action_buttons = [
                                                     </div>
 
                                                     <div class="col-lg-6 mb-3">
-                                                        <label class="form-label" for="add_counter_name"><b>Counter / Window Name</b></label>
-                                                        <input type="text" name="counter_name" class="form-control" id="add_counter_name" placeholder="e.g. Window 1, Counter A, Desk 2" required>
-                                                    </div>
-
-                                                    <div class="col-lg-8 mb-2">
-                                                        <label class="form-label" for="add_assigned_user_ids"><b>Assigned Staff Members</b> <small class="text-muted">(Optional — Multiple allowed)</small></label>
-                                                        <select name="assigned_user_ids[]" id="add_assigned_user_ids" class="form-select" multiple="multiple" style="width: 100%;"></select>
-                                                        <small class="text-muted" id="add_staff_helper">Multiple staff members in the same office can share this window.</small>
-                                                    </div>
-
-                                                    <div class="col-lg-4 mb-2">
                                                         <label class="form-label" for="add_flag_status"><b>Status</b></label>
                                                         <select name="flag_status" id="add_flag_status" class="form-select">
                                                             <option value="0" selected>Active</option>
                                                             <option value="1">Disabled</option>
                                                         </select>
+                                                    </div>
+
+                                                    <!-- Row 2: Counter / Window Name (Solo Column) -->
+                                                    <div class="col-12 mb-3">
+                                                        <label class="form-label" for="add_counter_name"><b>Counter / Window Name</b></label>
+                                                        <input type="text" name="counter_name" class="form-control" id="add_counter_name" placeholder="e.g. Window 1, Counter A, Desk 2" required>
+                                                    </div>
+
+                                                    <!-- Row 3: Assigned Staff Members (Solo Column) -->
+                                                    <div class="col-12 mb-2">
+                                                        <label class="form-label" for="add_assigned_user_ids"><b>Assigned Staff Members</b> <small class="text-muted">(Optional — Multiple allowed)</small></label>
+                                                        <select name="assigned_user_ids[]" id="add_assigned_user_ids" class="form-select" multiple="multiple" style="width: 100%;"></select>
+                                                        <small class="text-muted" id="add_staff_helper">Multiple staff members in the same office can share this window.</small>
                                                     </div>
                                                 </div>
                                             </div>
@@ -336,6 +339,7 @@ $action_buttons = [
 
                                                     <input type="hidden" name="counter_id" id="u_counter_id">
 
+                                                    <!-- Row 1: Office Location & Status -->
                                                     <div class="col-lg-6 mb-3">
                                                         <label class="form-label" for="u_office_id"><b>Office Location</b></label>
                                                         <select name="office_id" id="u_office_id" class="form-select" required <?= $is_admin_staff ? 'disabled' : ''; ?>>
@@ -354,22 +358,24 @@ $action_buttons = [
                                                     </div>
 
                                                     <div class="col-lg-6 mb-3">
-                                                        <label class="form-label" for="u_counter_name"><b>Counter / Window Name</b></label>
-                                                        <input type="text" name="counter_name" class="form-control" id="u_counter_name" placeholder="e.g. Window 1, Counter A, Desk 2" required>
-                                                    </div>
-
-                                                    <div class="col-lg-8 mb-2">
-                                                        <label class="form-label" for="u_assigned_user_ids"><b>Assigned Staff Members</b> <small class="text-muted">(Optional — Multiple allowed)</small></label>
-                                                        <select name="assigned_user_ids[]" id="u_assigned_user_ids" class="form-select" multiple="multiple" style="width: 100%;"></select>
-                                                        <small class="text-muted">Showing eligible staff assigned to this office.</small>
-                                                    </div>
-
-                                                    <div class="col-lg-4 mb-2">
                                                         <label class="form-label" for="u_flag_status"><b>Status</b></label>
                                                         <select name="flag_status" id="u_flag_status" class="form-select">
                                                             <option value="0">Active</option>
                                                             <option value="1">Disabled</option>
                                                         </select>
+                                                    </div>
+
+                                                    <!-- Row 2: Counter / Window Name (Solo Column) -->
+                                                    <div class="col-12 mb-3">
+                                                        <label class="form-label" for="u_counter_name"><b>Counter / Window Name</b></label>
+                                                        <input type="text" name="counter_name" class="form-control" id="u_counter_name" placeholder="e.g. Window 1, Counter A, Desk 2" required>
+                                                    </div>
+
+                                                    <!-- Row 3: Assigned Staff Members (Solo Column) -->
+                                                    <div class="col-12 mb-2">
+                                                        <label class="form-label" for="u_assigned_user_ids"><b>Assigned Staff Members</b> <small class="text-muted">(Optional — Multiple allowed)</small></label>
+                                                        <select name="assigned_user_ids[]" id="u_assigned_user_ids" class="form-select" multiple="multiple" style="width: 100%;"></select>
+                                                        <small class="text-muted">Showing eligible staff assigned to this office.</small>
                                                     </div>
                                                 </div>
                                             </div>
