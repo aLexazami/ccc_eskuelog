@@ -2,7 +2,7 @@
 // src/Views/Admin/office_counters.php
 
 # Core Config Dependencies
-$db_connect = $db_connect ?? null;
+$db_connect  = $db_connect ?? null;
 $g_user_role = $g_user_role ?? '';
 
 require_once HELPER;
@@ -22,39 +22,124 @@ $page_header  = render_page_header((string) $title_page, $active_links) ?? [];
 
 # Validate Access
 $system_auth_login = $session_class->getValue(SYSTEM_ACCESS[SYSTEM_ACCESS_NAME]['auth']);
-if (!($g_user_role == "ADMIN") && !($system_auth_login == $g_public_key)) {
+$allowed_roles = ['ADMIN', 'ADMIN_STAFF'];
+if (!in_array($g_user_role, $allowed_roles, true) && !($system_auth_login == $g_public_key)) {
     header("location: " . SYSTEM_ACCESS[SYSTEM_ACCESS_NAME]['link']['main']);
     exit();
 }
 
-// Fetch active offices and users for dropdowns
+$is_admin_staff     = ($g_user_role === 'ADMIN_STAFF');
+$assigned_office_id = 0;
+
+if ($is_admin_staff && $db_connect) {
+    $current_user_id = (int) ($g_user_id ?? $session_class->getValue('user_id') ?? 0);
+    if ($current_user_id > 0) {
+        $stmtAssign = $db_connect->prepare("
+            SELECT office_id FROM staff_assignments
+            WHERE user_id = ? AND flag_status = 0
+            LIMIT 1
+        ");
+        if ($stmtAssign) {
+            $stmtAssign->bind_param("i", $current_user_id);
+            $stmtAssign->execute();
+            $resAssign = $stmtAssign->get_result()->fetch_assoc();
+            $assigned_office_id = (int) ($resAssign['office_id'] ?? 0);
+            $stmtAssign->close();
+        }
+
+        // Fallback to employee.office_id if not yet in staff_assignments
+        if ($assigned_office_id === 0) {
+            $stmtEmp = $db_connect->prepare("SELECT office_id FROM employee WHERE user_id = ? LIMIT 1");
+            if ($stmtEmp) {
+                $stmtEmp->bind_param("i", $current_user_id);
+                $stmtEmp->execute();
+                $resEmp = $stmtEmp->get_result()->fetch_assoc();
+                $assigned_office_id = (int) ($resEmp['office_id'] ?? 0);
+                $stmtEmp->close();
+            }
+        }
+    }
+}
+
+// Fetch active offices and eligible employee staff for dropdowns
 $offices = [];
 $users   = [];
 
 if ($db_connect) {
-    // Active offices
-    $stmtOffices = $db_connect->query("
-        SELECT office_id, office_code, office_name 
-        FROM office 
-        WHERE flag_status = 0 
-        ORDER BY office_name ASC
-    ");
-    if ($stmtOffices) {
-        while ($row = $stmtOffices->fetch_assoc()) {
-            $offices[] = $row;
-        }
-    }
+    if ($is_admin_staff) {
+        if ($assigned_office_id > 0) {
+            $stmtOffices = $db_connect->prepare("
+                SELECT office_id, office_code, office_name
+                FROM office
+                WHERE flag_status = 0 AND office_id = ?
+                ORDER BY office_name ASC
+            ");
+            $stmtOffices->bind_param("i", $assigned_office_id);
+            $stmtOffices->execute();
+            $resOffices = $stmtOffices->get_result();
+            while ($row = $resOffices->fetch_assoc()) {
+                $offices[] = $row;
+            }
+            $stmtOffices->close();
 
-    // Active staff users
-    $stmtUsers = $db_connect->query("
-        SELECT id, first_name, last_name, email 
-        FROM users 
-        WHERE flag_status = 0 
-        ORDER BY first_name ASC
-    ");
-    if ($stmtUsers) {
-        while ($row = $stmtUsers->fetch_assoc()) {
-            $users[] = $row;
+            // Fetch only active employees assigned to this specific office
+            $stmtUsers = $db_connect->prepare("
+                SELECT DISTINCT
+                    u.id,
+                    u.first_name,
+                    u.last_name,
+                    u.email,
+                    COALESCE(NULLIF(sa.office_id, 0), e.office_id) AS staff_office_id,
+                    o.office_code AS staff_office_code
+                FROM users u
+                INNER JOIN employee e ON e.user_id = u.id AND e.service_status = 0 AND e.office_id > 0
+                LEFT JOIN staff_assignments sa ON sa.user_id = u.id AND sa.flag_status = 0
+                INNER JOIN office o ON o.office_id = COALESCE(NULLIF(sa.office_id, 0), e.office_id)
+                WHERE u.flag_status = 0
+                  AND (sa.office_id = ? OR e.office_id = ?)
+                ORDER BY u.last_name ASC, u.first_name ASC
+            ");
+            $stmtUsers->bind_param("ii", $assigned_office_id, $assigned_office_id);
+            $stmtUsers->execute();
+            $resUsers = $stmtUsers->get_result();
+            while ($row = $resUsers->fetch_assoc()) {
+                $users[] = $row;
+            }
+            $stmtUsers->close();
+        }
+    } else {
+        $stmtOffices = $db_connect->query("
+            SELECT office_id, office_code, office_name 
+            FROM office 
+            WHERE flag_status = 0 
+            ORDER BY office_name ASC
+        ");
+        if ($stmtOffices) {
+            while ($row = $stmtOffices->fetch_assoc()) {
+                $offices[] = $row;
+            }
+        }
+
+        // ADMIN: Fetch all active employees strictly tied to their assigned office_id
+        $stmtUsers = $db_connect->query("
+            SELECT DISTINCT
+                u.id,
+                u.first_name,
+                u.last_name,
+                u.email,
+                COALESCE(NULLIF(sa.office_id, 0), e.office_id) AS staff_office_id,
+                o.office_code AS staff_office_code
+            FROM users u
+            INNER JOIN employee e ON e.user_id = u.id AND e.service_status = 0 AND e.office_id > 0
+            LEFT JOIN staff_assignments sa ON sa.user_id = u.id AND sa.flag_status = 0
+            INNER JOIN office o ON o.office_id = COALESCE(NULLIF(sa.office_id, 0), e.office_id)
+            WHERE u.flag_status = 0
+            ORDER BY o.office_code ASC, u.last_name ASC, u.first_name ASC
+        ");
+        if ($stmtUsers) {
+            while ($row = $stmtUsers->fetch_assoc()) {
+                $users[] = $row;
+            }
         }
     }
 }
@@ -106,7 +191,7 @@ $action_buttons = [
                                                     Office Service Counters & Windows
                                                 </div>
                                                 <div class="d-flex align-items-center text-muted small mt-0.5" style="font-size: 0.75rem;">
-                                                    <i class="bi bi-info-circle me-1"></i> Configure service counters and assign staff workstations per office location
+                                                    <i class="bi bi-info-circle me-1"></i> Configure service counters and assign one or more staff members per window
                                                 </div>
                                             </div>
                                         </div>
@@ -120,10 +205,14 @@ $action_buttons = [
                                 <div class="card-body">
                                     <!-- Row 1: Office selection (left) | Export + Refresh (right) -->
                                     <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
-                                        <select id="filterOffice" class="form-select" style="width: auto; min-width: 320px; max-width: 100%;">
-                                            <option value="0">-- All Offices --</option>
+                                        <select id="filterOffice" class="form-select" style="width: auto; min-width: 320px; max-width: 100%;" <?= $is_admin_staff ? 'disabled' : ''; ?>>
+                                            <?php if (!$is_admin_staff): ?>
+                                                <option value="0">-- All Offices --</option>
+                                            <?php endif; ?>
                                             <?php foreach ($offices as $off): ?>
-                                                <option value="<?= $off['office_id']; ?>"><?= htmlspecialchars($off['office_name']); ?> (<?= htmlspecialchars($off['office_code']); ?>)</option>
+                                                <option value="<?= $off['office_id']; ?>" <?= ($is_admin_staff && (int)$off['office_id'] === $assigned_office_id) ? 'selected' : ''; ?>>
+                                                    <?= htmlspecialchars($off['office_name']); ?> (<?= htmlspecialchars($off['office_code']); ?>)
+                                                </option>
                                             <?php endforeach; ?>
                                         </select>
 
@@ -181,29 +270,32 @@ $action_buttons = [
                                                     <h5><strong>Counter Details</strong></h5>
                                                     <hr>
 
-                                                    <div class="col-lg-6 mb-2">
+                                                    <div class="col-lg-6 mb-3">
                                                         <label class="form-label" for="add_office_id"><b>Office Location</b></label>
-                                                        <select name="office_id" id="add_office_id" class="form-select" required>
-                                                            <option value="" selected disabled>Select Office</option>
+                                                        <select name="office_id" id="add_office_id" class="form-select" required <?= $is_admin_staff ? 'disabled' : ''; ?>>
+                                                            <?php if (!$is_admin_staff): ?>
+                                                                <option value="" selected disabled>Select Office</option>
+                                                            <?php endif; ?>
                                                             <?php foreach ($offices as $off): ?>
-                                                                <option value="<?= $off['office_id']; ?>"><?= htmlspecialchars($off['office_name']); ?> (<?= htmlspecialchars($off['office_code']); ?>)</option>
+                                                                <option value="<?= $off['office_id']; ?>" <?= ($is_admin_staff && (int)$off['office_id'] === $assigned_office_id) ? 'selected' : ''; ?>>
+                                                                    <?= htmlspecialchars($off['office_name']); ?> (<?= htmlspecialchars($off['office_code']); ?>)
+                                                                </option>
                                                             <?php endforeach; ?>
                                                         </select>
+                                                        <?php if ($is_admin_staff): ?>
+                                                            <input type="hidden" name="office_id" id="add_hidden_office_id" value="<?= $assigned_office_id; ?>">
+                                                        <?php endif; ?>
                                                     </div>
 
-                                                    <div class="col-lg-6 mb-2">
+                                                    <div class="col-lg-6 mb-3">
                                                         <label class="form-label" for="add_counter_name"><b>Counter / Window Name</b></label>
                                                         <input type="text" name="counter_name" class="form-control" id="add_counter_name" placeholder="e.g. Window 1, Counter A, Desk 2" required>
                                                     </div>
 
                                                     <div class="col-lg-8 mb-2">
-                                                        <label class="form-label" for="add_assigned_user_id"><b>Assigned Staff Member</b> <small class="text-muted">(Optional)</small></label>
-                                                        <select name="assigned_user_id" id="add_assigned_user_id" class="form-select">
-                                                            <option value="0">-- Unassigned --</option>
-                                                            <?php foreach ($users as $usr): ?>
-                                                                <option value="<?= $usr['id']; ?>"><?= htmlspecialchars($usr['first_name'] . ' ' . $usr['last_name']); ?> (<?= htmlspecialchars($usr['email']); ?>)</option>
-                                                            <?php endforeach; ?>
-                                                        </select>
+                                                        <label class="form-label" for="add_assigned_user_ids"><b>Assigned Staff Members</b> <small class="text-muted">(Optional — Multiple allowed)</small></label>
+                                                        <select name="assigned_user_ids[]" id="add_assigned_user_ids" class="form-select" multiple="multiple" style="width: 100%;"></select>
+                                                        <small class="text-muted" id="add_staff_helper">Multiple staff members in the same office can share this window.</small>
                                                     </div>
 
                                                     <div class="col-lg-4 mb-2">
@@ -244,29 +336,32 @@ $action_buttons = [
 
                                                     <input type="hidden" name="counter_id" id="u_counter_id">
 
-                                                    <div class="col-lg-6 mb-2">
+                                                    <div class="col-lg-6 mb-3">
                                                         <label class="form-label" for="u_office_id"><b>Office Location</b></label>
-                                                        <select name="office_id" id="u_office_id" class="form-select" required>
-                                                            <option value="" selected disabled>Select Office</option>
+                                                        <select name="office_id" id="u_office_id" class="form-select" required <?= $is_admin_staff ? 'disabled' : ''; ?>>
+                                                            <?php if (!$is_admin_staff): ?>
+                                                                <option value="" selected disabled>Select Office</option>
+                                                            <?php endif; ?>
                                                             <?php foreach ($offices as $off): ?>
-                                                                <option value="<?= $off['office_id']; ?>"><?= htmlspecialchars($off['office_name']); ?> (<?= htmlspecialchars($off['office_code']); ?>)</option>
+                                                                <option value="<?= $off['office_id']; ?>" <?= ($is_admin_staff && (int)$off['office_id'] === $assigned_office_id) ? 'selected' : ''; ?>>
+                                                                    <?= htmlspecialchars($off['office_name']); ?> (<?= htmlspecialchars($off['office_code']); ?>)
+                                                                </option>
                                                             <?php endforeach; ?>
                                                         </select>
+                                                        <?php if ($is_admin_staff): ?>
+                                                            <input type="hidden" name="office_id" id="u_hidden_office_id" value="<?= $assigned_office_id; ?>">
+                                                        <?php endif; ?>
                                                     </div>
 
-                                                    <div class="col-lg-6 mb-2">
+                                                    <div class="col-lg-6 mb-3">
                                                         <label class="form-label" for="u_counter_name"><b>Counter / Window Name</b></label>
                                                         <input type="text" name="counter_name" class="form-control" id="u_counter_name" placeholder="e.g. Window 1, Counter A, Desk 2" required>
                                                     </div>
 
                                                     <div class="col-lg-8 mb-2">
-                                                        <label class="form-label" for="u_assigned_user_id"><b>Assigned Staff Member</b> <small class="text-muted">(Optional)</small></label>
-                                                        <select name="assigned_user_id" id="u_assigned_user_id" class="form-select">
-                                                            <option value="0">-- Unassigned --</option>
-                                                            <?php foreach ($users as $usr): ?>
-                                                                <option value="<?= $usr['id']; ?>"><?= htmlspecialchars($usr['first_name'] . ' ' . $usr['last_name']); ?> (<?= htmlspecialchars($usr['email']); ?>)</option>
-                                                            <?php endforeach; ?>
-                                                        </select>
+                                                        <label class="form-label" for="u_assigned_user_ids"><b>Assigned Staff Members</b> <small class="text-muted">(Optional — Multiple allowed)</small></label>
+                                                        <select name="assigned_user_ids[]" id="u_assigned_user_ids" class="form-select" multiple="multiple" style="width: 100%;"></select>
+                                                        <small class="text-muted">Showing eligible staff assigned to this office.</small>
                                                     </div>
 
                                                     <div class="col-lg-4 mb-2">
@@ -301,7 +396,10 @@ $action_buttons = [
 
 <script>
     (function() {
-        const AJAX_HANDLER = "<?php echo BASE_URL; ?>admin/ajax/office-counters";
+        const AJAX_HANDLER       = "<?php echo BASE_URL; ?>admin/ajax/office-counters";
+        const IS_ADMIN_STAFF     = <?php echo $is_admin_staff ? 'true' : 'false'; ?>;
+        const ASSIGNED_OFFICE_ID = <?php echo (int) $assigned_office_id; ?>;
+        const ALL_STAFF_USERS    = <?php echo json_encode($users, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>;
         let tabulator = null;
 
         function escapeHtml(str) {
@@ -313,23 +411,37 @@ $action_buttons = [
                 .replace(/'/g, "&#039;");
         }
 
-        /* Formatters */
-        function officeFormatter(cell) {
-            const row = cell.getRow().getData();
-            return `${escapeHtml(cell.getValue())} (${escapeHtml(row.office_code)})`;
+        function initStaffMultiSelect() {
+            if ($.fn && typeof $.fn.select2 === 'function') {
+                $('#add_assigned_user_ids').select2({
+                    dropdownParent: $('#add_counter_modal'),
+                    placeholder: '-- Select Staff Members (Optional) --',
+                    allowClear: true,
+                    width: '100%'
+                });
+                $('#u_assigned_user_ids').select2({
+                    dropdownParent: $('#update_counter_modal'),
+                    placeholder: '-- Select Staff Members (Optional) --',
+                    allowClear: true,
+                    width: '100%'
+                });
+            }
         }
 
+        /* Formatters */
         function counterNameFormatter(cell) {
             const val = cell.getValue() || '';
             return `<span class="badge bg-light text-dark border font-monospace">${escapeHtml(val)}</span>`;
         }
 
+        // Plain left-aligned list (normal text color, no badge/background)
         function staffFormatter(cell) {
             const val = cell.getValue();
-            if (val && String(val).trim() !== '') {
-                return escapeHtml(val);
+            if (!val || String(val).trim() === '' || val === 'Unassigned') {
+                return 'Unassigned';
             }
-            return 'Unassigned';
+            const names = String(val).split(',').map(s => s.trim()).filter(Boolean);
+            return `<div class="text-start">${names.map(name => `<div>${escapeHtml(name)}</div>`).join('')}</div>`;
         }
 
         function statusFormatter(cell) {
@@ -368,13 +480,13 @@ $action_buttons = [
                 ajaxParams: function() {
                     return {
                         action: 'fetch_counters',
-                        office_id: $('#filterOffice').val()
+                        office_id: IS_ADMIN_STAFF ? ASSIGNED_OFFICE_ID : $('#filterOffice').val()
                     };
                 },
                 ajaxResponse: function(url, params, response) {
                     return (response.data || []).map(r => Object.assign({}, r, {
                         office_label: `${r.office_name || ''} (${r.office_code || ''})`,
-                        staff_label: r.assigned_staff_name && String(r.assigned_staff_name).trim() !== '' ? r.assigned_staff_name : 'Unassigned',
+                        staff_label: r.assigned_staff_names && String(r.assigned_staff_names).trim() !== '' ? r.assigned_staff_names : 'Unassigned',
                         status_label: Number(r.flag_status) === 0 ? 'Active' : 'Disabled'
                     }));
                 },
@@ -437,9 +549,8 @@ $action_buttons = [
                     },
                     Object.assign({ title: "Office Location", field: "office_label", sorter: "string", minWidth: 280, vertAlign: 'middle', hozAlign: 'left',
                         formatter: (cell) => escapeHtml(cell.getValue()) }, colFilter),
-                    Object.assign({ title: "Counter Name", field: "counter_name", formatter: counterNameFormatter, minWidth: 180, vertAlign: 'middle', hozAlign: 'center' }, colFilter),
-                    Object.assign({ title: "Assigned Staff", field: "staff_label", minWidth: 240, vertAlign: 'middle', hozAlign: 'left',
-                        formatter: (cell) => escapeHtml(cell.getValue()) }, colFilter),
+                    Object.assign({ title: "Counter Name", field: "counter_name", formatter: counterNameFormatter, minWidth: 160, vertAlign: 'middle', hozAlign: 'center' }, colFilter),
+                    Object.assign({ title: "Assigned Staff", field: "staff_label", formatter: staffFormatter, minWidth: 260, vertAlign: 'middle', hozAlign: 'left' }, colFilter),
                     { title: "Status", field: "status_label", formatter: statusFormatter, minWidth: 140, vertAlign: 'middle', hozAlign: 'center',
                         headerFilter: statusHeaderFilter, headerFilterFunc: "=" }
                 ]
@@ -489,7 +600,7 @@ $action_buttons = [
                         const office  = (data.office_name || '').toLowerCase();
                         const code    = (data.office_code || '').toLowerCase();
                         const counter = (data.counter_name || '').toLowerCase();
-                        const staff   = (data.assigned_staff_name || '').toLowerCase();
+                        const staff   = (data.assigned_staff_names || '').toLowerCase();
                         const status  = (data.status_label || '').toLowerCase();
                         return office.includes(keyword) || code.includes(keyword) || counter.includes(keyword) || staff.includes(keyword) || status.includes(keyword);
                     });
@@ -501,7 +612,7 @@ $action_buttons = [
             if (refreshBtn) {
                 refreshBtn.addEventListener('click', function() {
                     if (searchInput) searchInput.value = '';
-                    $('#filterOffice').val('0');
+                    $('#filterOffice').val(IS_ADMIN_STAFF ? String(ASSIGNED_OFFICE_ID) : '0');
                     tabulator.clearFilter();
                     tabulator.clearHeaderFilter();
                     tabulator.setData();
@@ -509,47 +620,99 @@ $action_buttons = [
             }
         }
 
-        function syncStaffDropdownAvailability(excludeCounterId = 0) {
+        /**
+         * Rebuild Select2 options based on the target office:
+         * - When targetOfficeId > 0: strictly shows employees assigned to targetOfficeId
+         * - When targetOfficeId === 0 (ADMIN with "-- All Offices --"): shows all eligible employees across offices
+         * - Disables any staff member already assigned to another counter
+         */
+        function populateStaffDropdown(selector, targetOfficeId = 0, excludeCounterId = 0, preselectedIds = null) {
             const rows = tabulator ? tabulator.getData() : [];
             const assignedMap = {};
 
             rows.forEach(r => {
-                const uid = Number(r.assigned_user_id || 0);
                 const cid = Number(r.counter_id || 0);
-                if (uid > 0 && cid !== Number(excludeCounterId)) {
-                    assignedMap[uid] = `${r.office_code} - ${r.counter_name}`;
-                }
-            });
-
-            ['#add_assigned_user_id', '#u_assigned_user_id'].forEach(selector => {
-                $(selector).find('option').each(function() {
-                    const $opt = $(this);
-                    const uid = Number($opt.val() || 0);
-                    if (uid === 0) return;
-
-                    if (!$opt.data('base-label')) {
-                        $opt.data('base-label', $opt.text());
-                    }
-
-                    if (assignedMap[uid]) {
-                        $opt.prop('disabled', true)
-                            .text(`${$opt.data('base-label')} [Assigned: ${assignedMap[uid]}]`);
-                    } else {
-                        $opt.prop('disabled', false)
-                            .text($opt.data('base-label'));
+                const userIds = Array.isArray(r.assigned_user_ids) ? r.assigned_user_ids : [];
+                userIds.forEach(rawUid => {
+                    const uid = Number(rawUid || 0);
+                    if (uid > 0 && cid !== Number(excludeCounterId)) {
+                        assignedMap[uid] = `${r.office_code} - ${r.counter_name}`;
                     }
                 });
             });
+
+            const $select = $(selector);
+            const currentSelected = Array.isArray(preselectedIds)
+                ? preselectedIds.map(String)
+                : ($select.val() || []).map(String);
+
+            $select.empty();
+            const validSelected = [];
+
+            ALL_STAFF_USERS.forEach(usr => {
+                const uid = Number(usr.id || 0);
+                const staffOfficeId = Number(usr.staff_office_id || 0);
+                const isCurrentlyAssignedHere = currentSelected.includes(String(uid));
+
+                // Strictly filter by office when a specific office is selected
+                if (targetOfficeId > 0 && staffOfficeId !== Number(targetOfficeId) && !isCurrentlyAssignedHere) {
+                    return;
+                }
+
+                const fullName = `${usr.first_name || ''} ${usr.last_name || ''}`.trim();
+                const officeTag = (targetOfficeId === 0 && usr.staff_office_code) ? ` [${usr.staff_office_code}]` : '';
+                let label = `${fullName} (${usr.email || ''})${officeTag}`;
+                let isDisabled = false;
+
+                if (assignedMap[uid]) {
+                    label += ` — Assigned: ${assignedMap[uid]}`;
+                    isDisabled = true;
+                } else if (isCurrentlyAssignedHere) {
+                    validSelected.push(String(uid));
+                }
+
+                const option = new Option(label, String(uid), isCurrentlyAssignedHere, isCurrentlyAssignedHere);
+                option.disabled = isDisabled;
+                $select.append(option);
+            });
+
+            $select.val(validSelected).trigger('change');
         }
 
-        /* Initialize Tabulator Table */
+        /* Initialize Select2 & Tabulator Table */
+        initStaffMultiSelect();
         initTabulatorTable();
+
+        // Re-filter eligible staff when Office changes inside Add/Update modals
+        $('#add_office_id').on('change', function() {
+            populateStaffDropdown('#add_assigned_user_ids', Number($(this).val() || 0), 0);
+        });
+
+        $('#u_office_id').on('change', function() {
+            const counterId = Number($('#u_counter_id').val() || 0);
+            populateStaffDropdown('#u_assigned_user_ids', Number($(this).val() || 0), counterId);
+        });
 
         /*** add counter modal ***/
         $('.add-counter-btn').on('click', function() {
             $('#add_counter_modal').modal('show');
             $('#add_counter_modal').find('form').trigger('reset');
-            syncStaffDropdownAvailability(0);
+
+            const filterOfficeId = IS_ADMIN_STAFF
+                ? ASSIGNED_OFFICE_ID
+                : Number($('#filterOffice').val() || 0);
+
+            if (IS_ADMIN_STAFF && ASSIGNED_OFFICE_ID > 0) {
+                $('#add_office_id').val(String(ASSIGNED_OFFICE_ID));
+                $('#add_hidden_office_id').val(String(ASSIGNED_OFFICE_ID));
+            } else if (filterOfficeId > 0) {
+                // Pre-select the office currently chosen in the top filter dropdown
+                $('#add_office_id').val(String(filterOfficeId));
+            } else {
+                $('#add_office_id').val('');
+            }
+
+            populateStaffDropdown('#add_assigned_user_ids', filterOfficeId, 0, []);
         });
 
         /*** submit add counter form ***/
@@ -589,6 +752,9 @@ $action_buttons = [
                     hideLoader();
                     $submitBtn.html($submitBtn.data('orig-text') || 'Submit');
                     $inputs.prop("disabled", false);
+                    if (IS_ADMIN_STAFF) {
+                        $('#add_office_id').prop('disabled', true);
+                    }
                 },
                 success: function(output) {
                     if (output.msg_status === true) {
@@ -609,13 +775,22 @@ $action_buttons = [
 
         /*** open update modal ***/
         function openUpdateModal(data) {
+            const targetOfficeId = IS_ADMIN_STAFF ? ASSIGNED_OFFICE_ID : Number(data.office_id || 0);
+            const assignedIds = Array.isArray(data.assigned_user_ids)
+                ? data.assigned_user_ids.map(String)
+                : [];
+
             document.getElementById("update_counter_modal").querySelector("#u_counter_id").value = data.counter_id;
-            document.getElementById("update_counter_modal").querySelector("#u_office_id").value = data.office_id;
+            document.getElementById("update_counter_modal").querySelector("#u_office_id").value = targetOfficeId;
+            if (IS_ADMIN_STAFF && document.getElementById("u_hidden_office_id")) {
+                document.getElementById("u_hidden_office_id").value = ASSIGNED_OFFICE_ID;
+            }
             document.getElementById("update_counter_modal").querySelector("#u_counter_name").value = data.counter_name;
-            document.getElementById("update_counter_modal").querySelector("#u_assigned_user_id").value = data.assigned_user_id || '0';
             document.getElementById("update_counter_modal").querySelector("#u_flag_status").value = data.flag_status;
 
-            syncStaffDropdownAvailability(data.counter_id);
+            // Populate staff strictly for this row's specific office_id
+            populateStaffDropdown('#u_assigned_user_ids', targetOfficeId, data.counter_id, assignedIds);
+
             $("#update_counter_modal").modal("show");
         }
 
@@ -656,6 +831,9 @@ $action_buttons = [
                     hideLoader();
                     $submitBtn.html($submitBtn.data('orig-text') || 'Update Information');
                     $inputs.prop("disabled", false);
+                    if (IS_ADMIN_STAFF) {
+                        $('#u_office_id').prop('disabled', true);
+                    }
                 },
                 success: function(output) {
                     if (output && output.msg_status === true) {
