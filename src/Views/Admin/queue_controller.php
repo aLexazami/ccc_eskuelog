@@ -125,6 +125,29 @@ if ($db_connect && $user_id > 0) {
             padding: 1.25rem 1.5rem;
         }
 
+        .btn-header-services {
+            background: rgba(255, 255, 255, 0.16);
+            color: #ffffff;
+            border: 1.5px solid rgba(255, 255, 255, 0.35);
+            border-radius: 0.75rem;
+            padding: 0.5rem 0.75rem;
+            font-weight: 700;
+            font-size: 0.85rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(4px);
+        }
+
+        .btn-header-services:hover {
+            background: #ffffff;
+            color: #1e3a8a;
+            border-color: #ffffff;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
         .status-pill-modern {
             display: inline-flex;
             align-items: center;
@@ -354,24 +377,19 @@ if ($db_connect && $user_id > 0) {
             box-shadow: var(--kiosk-shadow-sm);
             overflow: hidden;
             transition: all 0.3s ease;
+            height: 100%;
         }
 
-        /* 4-COLUMN CATEGORY HEADERS */
+        /* 3-COLUMN CATEGORY HEADERS */
         .lineup-header-priority {
             background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
             border-bottom: 1.5px solid #fcd34d;
             padding: 0.85rem 1rem;
         }
 
-        .lineup-header-student {
+        .lineup-header-regular {
             background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
             border-bottom: 1.5px solid #bfdbfe;
-            padding: 0.85rem 1rem;
-        }
-
-        .lineup-header-guest {
-            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
-            border-bottom: 1.5px solid #bbf7d0;
             padding: 0.85rem 1rem;
         }
 
@@ -387,32 +405,6 @@ if ($db_connect && $user_id > 0) {
             padding: 0.28rem 0.7rem;
             border-radius: 50rem;
             letter-spacing: 0.02em;
-        }
-
-        .btn-lineup-collapse {
-            width: 26px;
-            height: 26px;
-            padding: 0;
-            border-radius: 50%;
-            border: 1px solid rgba(15, 23, 42, 0.15);
-            background: rgba(255, 255, 255, 0.8);
-            color: #1e293b;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            transition: transform 0.25s ease, background-color 0.2s ease;
-        }
-
-        .btn-lineup-collapse:hover {
-            background: #ffffff;
-        }
-
-        .btn-lineup-collapse:not(.collapsed) i {
-            transform: rotate(180deg);
-        }
-
-        .btn-lineup-collapse i {
-            transition: transform 0.25s ease;
         }
 
         .btn-global-call-next {
@@ -445,8 +437,7 @@ if ($db_connect && $user_id > 0) {
         }
 
         .btn-call-priority { background: linear-gradient(135deg, #d97706 0%, #b45309 100%); }
-        .btn-call-student  { background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); }
-        .btn-call-guest    { background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); }
+        .btn-call-regular  { background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); }
         .btn-call-employee { background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); }
 
         .ticket-pill-item {
@@ -487,13 +478,43 @@ if ($db_connect && $user_id > 0) {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            margin-right: 0.5rem;
+            margin-right: 0.55rem;
             flex-shrink: 0;
         }
 
         .ticket-pill-item:hover .ticket-pill-pos {
             background: #dbeafe;
             color: #1d4ed8;
+        }
+
+        .visitor-type-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.68rem;
+            font-weight: 700;
+            padding: 0.16rem 0.5rem;
+            border-radius: 0.38rem;
+            letter-spacing: 0.02em;
+            margin-top: 0.22rem;
+        }
+
+        .chip-student {
+            background-color: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #93c5fd;
+        }
+
+        .chip-guest {
+            background-color: #dcfce7;
+            color: #166534;
+            border: 1px solid #86efac;
+        }
+
+        .chip-employee {
+            background-color: #ede9fe;
+            color: #5b21b6;
+            border: 1px solid #c4b5fd;
         }
 
         .btn-preview-visitor {
@@ -507,6 +528,7 @@ if ($db_connect && $user_id > 0) {
             justify-content: center;
             transition: all 0.18s ease;
             line-height: 1;
+            flex-shrink: 0;
         }
 
         .btn-preview-visitor:hover {
@@ -615,7 +637,7 @@ if ($db_connect && $user_id > 0) {
             box-shadow: 0 4px 12px rgba(220, 38, 38, 0.12);
         }
 
-        .additional-details-divider {
+        .modal-section-divider {
             display: flex;
             align-items: center;
             gap: 0.5rem;
@@ -624,8 +646,8 @@ if ($db_connect && $user_id > 0) {
             text-transform: uppercase;
             letter-spacing: 0.06em;
             color: #1e40af;
-            padding-top: 0.35rem;
-            margin-top: 0.25rem;
+            padding-top: 0.45rem;
+            margin-top: 0.15rem;
             border-top: 1.5px dashed #cbd5e1;
         }
     </style>
@@ -650,7 +672,7 @@ if ($db_connect && $user_id > 0) {
                         <div class="col-12 px-0">
                             <div class="card kiosk-main-card border-0">
 
-                                <!-- KIOSK HEADER BANNER WITH ASSIGNED OFFICE AND COUNTER NAME -->
+                                <!-- KIOSK HEADER BANNER WITH ASSIGNED OFFICE, COUNTER NAME & SERVICES MODAL BUTTON -->
                                 <div class="kiosk-header-banner d-flex flex-wrap align-items-center justify-content-between gap-3">
                                     <div class="d-flex align-items-center gap-2 gap-sm-3 min-w-0">
                                         <div class="p-2 rounded-3 text-white d-flex align-items-center justify-content-center flex-shrink-0" style="background-color: rgba(255, 255, 255, 0.2); width: 40px; height: 40px;">
@@ -666,9 +688,12 @@ if ($db_connect && $user_id > 0) {
                                         </div>
                                     </div>
 
-                                    <!-- HIDDEN WORKSTATION INPUTS -->
-                                    <div>
+                                    <!-- RIGHT SIDE: HANDLED SERVICES ICON BUTTON + HIDDEN WORKSTATION INPUTS -->
+                                    <div class="d-flex align-items-center gap-2">
                                         <?php if ($assigned_office): ?>
+                                            <button type="button" class="btn-header-services" id="btnViewWindowServices" onclick="openWindowServicesModal()" title="View Handled Transactions & Sub-Transactions" aria-label="View Handled Transactions & Sub-Transactions">
+                                                <i class="bi bi-list-ul fs-5"></i>
+                                            </button>
                                             <input type="hidden" id="officeSelect" value="<?= (int)$assigned_office['office_id']; ?>">
                                             <input type="hidden" id="counterSelect" value="<?= (int)$assigned_office['counter_id']; ?>">
                                         <?php else: ?>
@@ -781,113 +806,65 @@ if ($db_connect && $user_id > 0) {
                                                 </div>
                                             </div>
 
-                                            <!-- BOTTOM 4-COLUMN CATEGORY LINEUP SECTION (COLLAPSIBLE, DEFAULT COLLAPSED) -->
-                                            <div class="row g-3 align-items-start">
+                                            <!-- BOTTOM 3-COLUMN CATEGORY LINEUP SECTION (ALWAYS VISIBLE: PRIORITY, REGULAR, EMPLOYEE) -->
+                                            <div class="row g-3 align-items-stretch">
                                                 
                                                 <!-- COLUMN 1: PRIORITY -->
-                                                <div class="col-12 col-md-6 col-xl-3">
+                                                <div class="col-12 col-lg-4">
                                                     <div class="card controller-subcard">
                                                         <div class="lineup-header-priority">
                                                             <div class="d-flex align-items-center justify-content-between mb-2">
                                                                 <h6 class="fw-bold text-warning-emphasis mb-0 d-flex align-items-center">
                                                                     <i class="bi bi-star-fill me-2 text-warning"></i>Priority
                                                                 </h6>
-                                                                <div class="d-flex align-items-center gap-1">
-                                                                    <span class="lineup-badge-pill bg-warning text-dark" id="ctrlPriorityBadge">0 Waiting</span>
-                                                                    <button type="button" class="btn-lineup-collapse collapsed" data-bs-toggle="collapse" data-bs-target="#collapsePriorityList" aria-expanded="false" aria-controls="collapsePriorityList" title="Toggle Priority Waiting Line">
-                                                                        <i class="bi bi-chevron-down small"></i>
-                                                                    </button>
-                                                                </div>
+                                                                <span class="lineup-badge-pill bg-warning text-dark" id="ctrlPriorityBadge">0 Waiting</span>
                                                             </div>
                                                             <button type="button" class="btn-global-call-next btn-call-priority" id="btnCallNextPriority" onclick="callNextByCategory('PRIORITY')">
                                                                 <i class="bi bi-megaphone-fill"></i> Call Next
                                                             </button>
                                                         </div>
-                                                        <div class="collapse" id="collapsePriorityList">
-                                                            <div class="card-body p-2 p-sm-3">
-                                                                <div class="d-flex flex-column gap-2" id="ctrlPriorityList"></div>
-                                                            </div>
+                                                        <div class="card-body p-2 p-sm-3">
+                                                            <div class="d-flex flex-column gap-2" id="ctrlPriorityList"></div>
                                                         </div>
                                                     </div>
                                                 </div>
 
-                                                <!-- COLUMN 2: STUDENTS -->
-                                                <div class="col-12 col-md-6 col-xl-3">
+                                                <!-- COLUMN 2: REGULAR (STUDENTS & GUESTS) -->
+                                                <div class="col-12 col-lg-4">
                                                     <div class="card controller-subcard">
-                                                        <div class="lineup-header-student">
+                                                        <div class="lineup-header-regular">
                                                             <div class="d-flex align-items-center justify-content-between mb-2">
                                                                 <h6 class="fw-bold text-primary mb-0 d-flex align-items-center">
-                                                                    <i class="bi bi-mortarboard-fill me-2 text-primary"></i>Students
+                                                                    <i class="bi bi-people-fill me-2 text-primary"></i>Regular
                                                                 </h6>
-                                                                <div class="d-flex align-items-center gap-1">
-                                                                    <span class="lineup-badge-pill bg-primary text-white" id="ctrlStudentBadge">0 Waiting</span>
-                                                                    <button type="button" class="btn-lineup-collapse collapsed" data-bs-toggle="collapse" data-bs-target="#collapseStudentList" aria-expanded="false" aria-controls="collapseStudentList" title="Toggle Students Waiting Line">
-                                                                        <i class="bi bi-chevron-down small"></i>
-                                                                    </button>
-                                                                </div>
+                                                                <span class="lineup-badge-pill bg-primary text-white" id="ctrlRegularBadge">0 Waiting</span>
                                                             </div>
-                                                            <button type="button" class="btn-global-call-next btn-call-student" id="btnCallNextStudent" onclick="callNextByCategory('STUDENT')">
+                                                            <button type="button" class="btn-global-call-next btn-call-regular" id="btnCallNextRegular" onclick="callNextByCategory('REGULAR')">
                                                                 <i class="bi bi-megaphone-fill"></i> Call Next
                                                             </button>
                                                         </div>
-                                                        <div class="collapse" id="collapseStudentList">
-                                                            <div class="card-body p-2 p-sm-3">
-                                                                <div class="d-flex flex-column gap-2" id="ctrlStudentList"></div>
-                                                            </div>
+                                                        <div class="card-body p-2 p-sm-3">
+                                                            <div class="d-flex flex-column gap-2" id="ctrlRegularList"></div>
                                                         </div>
                                                     </div>
                                                 </div>
 
-                                                <!-- COLUMN 3: GUESTS -->
-                                                <div class="col-12 col-md-6 col-xl-3">
-                                                    <div class="card controller-subcard">
-                                                        <div class="lineup-header-guest">
-                                                            <div class="d-flex align-items-center justify-content-between mb-2">
-                                                                <h6 class="fw-bold text-success mb-0 d-flex align-items-center">
-                                                                    <i class="bi bi-person-heart me-2 text-success"></i>Guest
-                                                                </h6>
-                                                                <div class="d-flex align-items-center gap-1">
-                                                                    <span class="lineup-badge-pill bg-success text-white" id="ctrlGuestBadge">0 Waiting</span>
-                                                                    <button type="button" class="btn-lineup-collapse collapsed" data-bs-toggle="collapse" data-bs-target="#collapseGuestList" aria-expanded="false" aria-controls="collapseGuestList" title="Toggle Guest Waiting Line">
-                                                                        <i class="bi bi-chevron-down small"></i>
-                                                                    </button>
-                                                                </div>
-                                                            </div>
-                                                            <button type="button" class="btn-global-call-next btn-call-guest" id="btnCallNextGuest" onclick="callNextByCategory('GUEST')">
-                                                                <i class="bi bi-megaphone-fill"></i> Call Next
-                                                            </button>
-                                                        </div>
-                                                        <div class="collapse" id="collapseGuestList">
-                                                            <div class="card-body p-2 p-sm-3">
-                                                                <div class="d-flex flex-column gap-2" id="ctrlGuestList"></div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                <!-- COLUMN 4: EMPLOYEES -->
-                                                <div class="col-12 col-md-6 col-xl-3">
+                                                <!-- COLUMN 3: EMPLOYEE -->
+                                                <div class="col-12 col-lg-4">
                                                     <div class="card controller-subcard">
                                                         <div class="lineup-header-employee">
                                                             <div class="d-flex align-items-center justify-content-between mb-2">
                                                                 <h6 class="fw-bold mb-0 d-flex align-items-center" style="color: #5b21b6;">
                                                                     <i class="bi bi-person-badge-fill me-2" style="color: #7c3aed;"></i>Employee
                                                                 </h6>
-                                                                <div class="d-flex align-items-center gap-1">
-                                                                    <span class="lineup-badge-pill text-white" style="background-color: #7c3aed;" id="ctrlEmployeeBadge">0 Waiting</span>
-                                                                    <button type="button" class="btn-lineup-collapse collapsed" data-bs-toggle="collapse" data-bs-target="#collapseEmployeeList" aria-expanded="false" aria-controls="collapseEmployeeList" title="Toggle Employee Waiting Line">
-                                                                        <i class="bi bi-chevron-down small"></i>
-                                                                    </button>
-                                                                </div>
+                                                                <span class="lineup-badge-pill text-white" style="background-color: #7c3aed;" id="ctrlEmployeeBadge">0 Waiting</span>
                                                             </div>
                                                             <button type="button" class="btn-global-call-next btn-call-employee" id="btnCallNextEmployee" onclick="callNextByCategory('EMPLOYEE')">
                                                                 <i class="bi bi-megaphone-fill"></i> Call Next
                                                             </button>
                                                         </div>
-                                                        <div class="collapse" id="collapseEmployeeList">
-                                                            <div class="card-body p-2 p-sm-3">
-                                                                <div class="d-flex flex-column gap-2" id="ctrlEmployeeList"></div>
-                                                            </div>
+                                                        <div class="card-body p-2 p-sm-3">
+                                                            <div class="d-flex flex-column gap-2" id="ctrlEmployeeList"></div>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -931,6 +908,29 @@ if ($db_connect && $user_id > 0) {
         </div>
     </div>
 
+    <!-- OFFICE & WINDOW HANDLED SERVICES MODAL -->
+    <div class="modal fade" id="windowServicesModal" tabindex="-1" aria-labelledby="windowServicesModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 1.25rem; overflow: hidden;">
+                <div class="modal-header text-white" style="background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);">
+                    <h5 class="modal-title fw-bold d-flex align-items-center mb-0" id="windowServicesModalLabel">
+                        <i class="bi bi-list-check me-2 fs-4"></i>Handled Transactions & Sub-Transactions
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4 bg-light" id="windowServicesModalContent">
+                    <div class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status"></div>
+                        <p class="small text-muted mt-2 mb-0">Loading assigned transactions...</p>
+                    </div>
+                </div>
+                <div class="modal-footer bg-white border-top">
+                    <button type="button" class="btn btn-secondary fw-semibold px-4 rounded-3" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <?php include_once ADMIN_SCRIPT_PATH; ?>
 
     <script>
@@ -953,22 +953,20 @@ if ($db_connect && $user_id > 0) {
             const ticketDetailsContainer = document.getElementById('ticketDetailsContainer');
 
             const modalUserDetailsContent = document.getElementById('modalUserDetailsContent');
+            const windowServicesModalContent = document.getElementById('windowServicesModalContent');
 
-            // 4-Column Badges & Lists
+            // 3-Column Badges & Lists
             const ctrlPriorityBadge = document.getElementById('ctrlPriorityBadge');
-            const ctrlStudentBadge  = document.getElementById('ctrlStudentBadge');
-            const ctrlGuestBadge    = document.getElementById('ctrlGuestBadge');
+            const ctrlRegularBadge  = document.getElementById('ctrlRegularBadge');
             const ctrlEmployeeBadge = document.getElementById('ctrlEmployeeBadge');
 
             const ctrlPriorityList = document.getElementById('ctrlPriorityList');
-            const ctrlStudentList  = document.getElementById('ctrlStudentList');
-            const ctrlGuestList    = document.getElementById('ctrlGuestList');
+            const ctrlRegularList  = document.getElementById('ctrlRegularList');
             const ctrlEmployeeList = document.getElementById('ctrlEmployeeList');
 
             // Global Category Call Next Buttons
             const btnCallNextPriority = document.getElementById('btnCallNextPriority');
-            const btnCallNextStudent  = document.getElementById('btnCallNextStudent');
-            const btnCallNextGuest    = document.getElementById('btnCallNextGuest');
+            const btnCallNextRegular  = document.getElementById('btnCallNextRegular');
             const btnCallNextEmployee = document.getElementById('btnCallNextEmployee');
 
             // Top Action Controls
@@ -1095,6 +1093,31 @@ if ($db_connect && $user_id > 0) {
                 let html = '';
                 const otherText = ticket.other_concern_text ? ticket.other_concern_text.trim() : '';
 
+                const renderConcernCard = (mainTitle, subs = []) => {
+                    let subSectionHtml = '';
+                    if (Array.isArray(subs) && subs.length > 0) {
+                        const subRows = subs.map(sub => `
+                            <div class="text-dark fw-bold" style="font-size: 0.875rem; line-height: 1.35;">
+                                ${escapeHtml(sub)}
+                            </div>
+                        `).join('');
+
+                        subSectionHtml = `
+                            <div class="mt-2 pt-2 border-top d-flex flex-column gap-1">
+                                <div class="text-muted fw-bold" style="font-size: 0.875rem; line-height: 1.35;">Sub-Transaction</div>
+                                ${subRows}
+                            </div>
+                        `;
+                    }
+
+                    return `
+                        <div class="receipt-concern-item">
+                            <div class="text-dark fw-bold" style="font-size: 0.875rem; line-height: 1.35;">${escapeHtml(mainTitle)}</div>
+                            ${subSectionHtml}
+                        </div>
+                    `;
+                };
+
                 if (Array.isArray(ticket.concerns_list) && ticket.concerns_list.length > 0) {
                     let grouped = {};
 
@@ -1116,22 +1139,7 @@ if ($db_connect && $user_id > 0) {
                     });
 
                     Object.entries(grouped).forEach(([mainTitle, subs]) => {
-                        let subTagsHtml = '';
-                        if (subs && subs.length > 0) {
-                            const tags = subs.map(sub => `
-                                <span class="receipt-subconcern-tag me-1 mb-1">
-                                    <i class="bi bi-tag-fill me-1"></i>${escapeHtml(sub)}
-                                </span>
-                            `).join('');
-                            subTagsHtml = `<div class="mt-1 d-flex flex-wrap align-items-center">${tags}</div>`;
-                        }
-
-                        html += `
-                            <div class="receipt-concern-item">
-                                <div class="receipt-concern-title">${escapeHtml(mainTitle)}</div>
-                                ${subTagsHtml}
-                            </div>
-                        `;
+                        html += renderConcernCard(mainTitle, subs);
                     });
                 } else if (ticket.transaction_name) {
                     const mainConcerns = ticket.transaction_name.split(',').map(s => s.trim()).filter(Boolean);
@@ -1139,41 +1147,26 @@ if ($db_connect && $user_id > 0) {
 
                     mainConcerns.forEach((main, idx) => {
                         if (main.toLowerCase().includes('other') && otherText) return;
-
-                        let subTagsHtml = '';
-                        if (idx === 0 && subConcerns.length > 0) {
-                            const tags = subConcerns.map(sub => `
-                                <span class="receipt-subconcern-tag me-1 mb-1">
-                                    <i class="bi bi-tag-fill me-1"></i>${escapeHtml(sub)}
-                                </span>
-                            `).join('');
-                            subTagsHtml = `<div class="mt-1 d-flex flex-wrap align-items-center">${tags}</div>`;
-                        }
-
-                        html += `
-                            <div class="receipt-concern-item">
-                                <div class="receipt-concern-title">${escapeHtml(main)}</div>
-                                ${subTagsHtml}
-                            </div>
-                        `;
+                        const subs = (idx === 0 && subConcerns.length > 0) ? subConcerns : [];
+                        html += renderConcernCard(main, subs);
                     });
                 }
 
                 if (otherText) {
                     html += `
                         <div class="receipt-concern-item">
-                            <div class="receipt-concern-title"><i class="bi bi-pen me-1 text-primary"></i>Others / Custom Concern</div>
-                            <div class="text-muted small mt-1 fw-semibold" style="word-break: break-word;">${escapeHtml(otherText)}</div>
+                            <div class="text-dark fw-bold" style="font-size: 0.875rem; line-height: 1.35;">
+                                <i class="bi bi-pen me-1 text-primary"></i>Others / Custom Concern
+                            </div>
+                            <div class="text-dark fw-bold mt-1" style="font-size: 0.875rem; line-height: 1.35; word-break: break-word;">
+                                ${escapeHtml(otherText)}
+                            </div>
                         </div>
                     `;
                 }
 
                 if (!html) {
-                    html = `
-                        <div class="receipt-concern-item">
-                            <div class="receipt-concern-title">General Concern</div>
-                        </div>
-                    `;
+                    html = renderConcernCard('General Concern', []);
                 }
 
                 return html;
@@ -1278,7 +1271,7 @@ if ($db_connect && $user_id > 0) {
                             renderEmptyDetailsState();
                         }
 
-                        // Categorize Waiting Tickets into 4 FIFO Lanes: Priority, Student, Guest, Employee
+                        // Categorize Waiting Tickets into 3 FIFO Lanes: Priority, Regular (Student & Guest), Employee
                         const waiting = res.data.up_next || [];
                         waitingTicketsMap = {};
                         waiting.forEach(item => {
@@ -1286,24 +1279,20 @@ if ($db_connect && $user_id > 0) {
                         });
 
                         const priorityList = waiting.filter(t => Number(t.is_priority) === 1);
-                        const studentList  = waiting.filter(t => Number(t.is_priority) !== 1 && (t.visitor_type || '').toUpperCase() === 'STUDENT');
-                        const guestList    = waiting.filter(t => Number(t.is_priority) !== 1 && (t.visitor_type || '').toUpperCase() === 'GUEST');
+                        const regularList  = waiting.filter(t => Number(t.is_priority) !== 1 && ['STUDENT', 'GUEST'].includes((t.visitor_type || '').toUpperCase()));
                         const employeeList = waiting.filter(t => Number(t.is_priority) !== 1 && (t.visitor_type || '').toUpperCase() === 'EMPLOYEE');
 
                         if (ctrlPriorityBadge) ctrlPriorityBadge.textContent = `${priorityList.length} Waiting`;
-                        if (ctrlStudentBadge)  ctrlStudentBadge.textContent  = `${studentList.length} Waiting`;
-                        if (ctrlGuestBadge)    ctrlGuestBadge.textContent    = `${guestList.length} Waiting`;
+                        if (ctrlRegularBadge)  ctrlRegularBadge.textContent  = `${regularList.length} Waiting`;
                         if (ctrlEmployeeBadge) ctrlEmployeeBadge.textContent = `${employeeList.length} Waiting`;
 
                         if (btnCallNextPriority) btnCallNextPriority.disabled = priorityList.length === 0;
-                        if (btnCallNextStudent)  btnCallNextStudent.disabled  = studentList.length === 0;
-                        if (btnCallNextGuest)    btnCallNextGuest.disabled    = guestList.length === 0;
+                        if (btnCallNextRegular)  btnCallNextRegular.disabled  = regularList.length === 0;
                         if (btnCallNextEmployee) btnCallNextEmployee.disabled = employeeList.length === 0;
 
-                        if (ctrlPriorityList) renderCategoryPills(ctrlPriorityList, priorityList, 'No priority visitors waiting.');
-                        if (ctrlStudentList)  renderCategoryPills(ctrlStudentList, studentList, 'No students waiting.');
-                        if (ctrlGuestList)    renderCategoryPills(ctrlGuestList, guestList, 'No guests waiting.');
-                        if (ctrlEmployeeList) renderCategoryPills(ctrlEmployeeList, employeeList, 'No employees waiting.');
+                        if (ctrlPriorityList) renderCategoryPills(ctrlPriorityList, priorityList, 'No priority visitors waiting.', true);
+                        if (ctrlRegularList)  renderCategoryPills(ctrlRegularList, regularList, 'No regular visitors waiting.', true);
+                        if (ctrlEmployeeList) renderCategoryPills(ctrlEmployeeList, employeeList, 'No employees waiting.', false);
 
                     } else if (!res.success) {
                         if (controllerMainContent) controllerMainContent.classList.add('d-none');
@@ -1428,7 +1417,7 @@ if ($db_connect && $user_id > 0) {
 
                 return `
                     <div class="col-12">
-                        <div class="additional-details-divider">
+                        <div class="modal-section-divider">
                             <i class="bi bi-info-circle-fill text-primary"></i>
                             <span>Additional Details</span>
                         </div>
@@ -1498,57 +1487,8 @@ if ($db_connect && $user_id > 0) {
                 const concernsHtml          = buildLogbookStyleConcerns(ticket);
                 const additionalDetailsHtml = buildAdditionalDetailsHtml(ticket);
 
-                let dynamicFieldsHTML = '';
-
-                if (visitorType === 'STUDENT') {
-                    const studentId = ticket.reference_id || ticket.student_id || 'N/A';
-                    const yearLevel = formatYearLevel(ticket.year_level);
-                    
-                    let courseDisplay = 'N/A';
-                    if (ticket.program_code && ticket.program_name) {
-                        courseDisplay = `${ticket.program_code} - ${ticket.program_name}`;
-                    } else if (ticket.program_code) {
-                        courseDisplay = ticket.program_code;
-                    } else if (ticket.program_name) {
-                        courseDisplay = ticket.program_name;
-                    }
-
-                    dynamicFieldsHTML = `
-                        ${renderDetailTile('bi-person-fill', 'Name', fullName, 'fs-6', true)}
-                        ${renderDetailTile('bi-mortarboard-fill', 'Course / Program', courseDisplay, '', true)}
-                        ${renderDetailTile('bi-envelope-fill', 'Email', email, '', true)}
-                        ${renderDetailTile('bi-journal-bookmark-fill', 'Year Level', yearLevel, '', true)}
-                        ${renderDetailTile('bi-card-text', 'Student ID', studentId, '', true)}
-                        ${renderDetailTile('bi-gender-ambiguous', 'Sex', sex, '', true)}
-                        ${renderDetailTile('bi-display', 'Window Number', windowLabel, '', true)}
-                        ${additionalDetailsHtml}
-                    `;
-                } else if (visitorType === 'EMPLOYEE') {
-                    const empId      = ticket.reference_id || 'N/A';
-                    const department = ticket.department_code || ticket.department_name || 'N/A';
-                    const office     = ticket.office_name || ticket.office_code || 'N/A';
-
-                    dynamicFieldsHTML = `
-                        ${renderDetailTile('bi-person-fill', 'Name', fullName, 'fs-6', true)}
-                        ${renderDetailTile('bi-card-text', 'Employee ID', empId, '', true)}
-                        ${renderDetailTile('bi-envelope-fill', 'Email', email, '', true)}
-                        ${renderDetailTile('bi-building', 'Department', department, '', true)}
-                        ${renderDetailTile('bi-geo-alt-fill', 'Office', office, '', true)}
-                        ${renderDetailTile('bi-gender-ambiguous', 'Sex', sex, '', true)}
-                        ${renderDetailTile('bi-display', 'Window Number', windowLabel, '', true)}
-                        ${additionalDetailsHtml}
-                    `;
-                } else {
-                    dynamicFieldsHTML = `
-                        ${renderDetailTile('bi-person-fill', 'Name', fullName, 'fs-6', true)}
-                        ${renderDetailTile('bi-envelope-fill', 'Email', email, '', true)}
-                        ${renderDetailTile('bi-gender-ambiguous', 'Sex', sex, '', true)}
-                        ${renderDetailTile('bi-display', 'Window Number', windowLabel, '', true)}
-                        ${additionalDetailsHtml}
-                    `;
-                }
-
-                let concernsBlockHtml = `
+                // 1. Transaction Concerns & Services (First at Top)
+                const concernsBlockHtml = `
                     <div class="col-12">
                         <div class="detail-tile border-primary-subtle bg-white">
                             <div class="d-flex align-items-center mb-3">
@@ -1566,16 +1506,96 @@ if ($db_connect && $user_id > 0) {
                     </div>
                 `;
 
+                // 2. Personal Details Section
+                let personalDetailsFieldsHTML = '';
+
+                if (visitorType === 'STUDENT') {
+                    const studentId = ticket.reference_id || ticket.student_id || 'N/A';
+                    const yearLevel = formatYearLevel(ticket.year_level);
+                    
+                    let courseDisplay = 'N/A';
+                    if (ticket.program_code && ticket.program_name) {
+                        courseDisplay = `${ticket.program_code} - ${ticket.program_name}`;
+                    } else if (ticket.program_code) {
+                        courseDisplay = ticket.program_code;
+                    } else if (ticket.program_name) {
+                        courseDisplay = ticket.program_name;
+                    }
+
+                    personalDetailsFieldsHTML = `
+                        ${renderDetailTile('bi-person-fill', 'Name', fullName, 'fs-6', true)}
+                        ${renderDetailTile('bi-mortarboard-fill', 'Course / Program', courseDisplay, '', true)}
+                        ${renderDetailTile('bi-envelope-fill', 'Email', email, '', true)}
+                        ${renderDetailTile('bi-journal-bookmark-fill', 'Year Level', yearLevel, '', true)}
+                        ${renderDetailTile('bi-card-text', 'Student ID', studentId, '', true)}
+                        ${renderDetailTile('bi-gender-ambiguous', 'Sex', sex, '', true)}
+                        ${renderDetailTile('bi-display', 'Window Number', windowLabel, '', true)}
+                    `;
+                } else if (visitorType === 'EMPLOYEE') {
+                    const empId      = ticket.reference_id || 'N/A';
+                    const department = ticket.department_code || ticket.department_name || 'N/A';
+                    const office     = ticket.office_name || ticket.office_code || 'N/A';
+
+                    personalDetailsFieldsHTML = `
+                        ${renderDetailTile('bi-person-fill', 'Name', fullName, 'fs-6', true)}
+                        ${renderDetailTile('bi-card-text', 'Employee ID', empId, '', true)}
+                        ${renderDetailTile('bi-envelope-fill', 'Email', email, '', true)}
+                        ${renderDetailTile('bi-building', 'Department', department, '', true)}
+                        ${renderDetailTile('bi-geo-alt-fill', 'Office', office, '', true)}
+                        ${renderDetailTile('bi-gender-ambiguous', 'Sex', sex, '', true)}
+                        ${renderDetailTile('bi-display', 'Window Number', windowLabel, '', true)}
+                    `;
+                } else {
+                    personalDetailsFieldsHTML = `
+                        ${renderDetailTile('bi-person-fill', 'Name', fullName, 'fs-6', true)}
+                        ${renderDetailTile('bi-envelope-fill', 'Email', email, '', true)}
+                        ${renderDetailTile('bi-gender-ambiguous', 'Sex', sex, '', true)}
+                        ${renderDetailTile('bi-display', 'Window Number', windowLabel, '', true)}
+                    `;
+                }
+
+                const personalDetailsSectionHtml = `
+                    <div class="col-12">
+                        <div class="modal-section-divider">
+                            <i class="bi bi-person-vcard-fill text-primary"></i>
+                            <span>Personal Details</span>
+                        </div>
+                    </div>
+                    ${personalDetailsFieldsHTML}
+                `;
+
+                // 3. Additional Details (if present) + 4. Queue Entry Time
                 modalUserDetailsContent.innerHTML = `
                     <div class="row g-3">
-                        ${dynamicFieldsHTML}
                         ${concernsBlockHtml}
+                        ${personalDetailsSectionHtml}
+                        ${additionalDetailsHtml}
+                        <div class="col-12">
+                            <div class="modal-section-divider">
+                                <i class="bi bi-clock-history text-primary"></i>
+                                <span>Queue Entry Time</span>
+                            </div>
+                        </div>
                         ${renderDetailTile('bi-clock-history', 'Queue Entry Time', entryTimeString, '', false)}
                     </div>
                 `;
             }
 
-            function renderCategoryPills(container, list, emptyMsg) {
+            function formatVisitorTypeChip(visitorTypeRaw) {
+                const vType = (visitorTypeRaw || '').toUpperCase().trim();
+                if (vType === 'STUDENT') {
+                    return `<span class="visitor-type-chip chip-student"><i class="bi bi-mortarboard-fill"></i>Student</span>`;
+                }
+                if (vType === 'GUEST') {
+                    return `<span class="visitor-type-chip chip-guest"><i class="bi bi-person-heart"></i>Guest</span>`;
+                }
+                if (vType === 'EMPLOYEE') {
+                    return `<span class="visitor-type-chip chip-employee"><i class="bi bi-person-badge-fill"></i>Employee</span>`;
+                }
+                return '';
+            }
+
+            function renderCategoryPills(container, list, emptyMsg, showVisitorLabel = true) {
                 if (list.length === 0) {
                     container.innerHTML = `
                         <div class="text-center py-4 my-2">
@@ -1589,12 +1609,15 @@ if ($db_connect && $user_id > 0) {
                 }
 
                 container.innerHTML = list.map((item, index) => {
+                    const visitorLabelHtml = showVisitorLabel ? formatVisitorTypeChip(item.visitor_type) : '';
+
                     return `
                         <div class="ticket-pill-item">
                             <div class="d-flex align-items-center min-w-0">
                                 <span class="ticket-pill-pos">${index + 1}</span>
                                 <div class="min-w-0">
                                     <span class="ticket-pill-number d-block lh-1">${escapeHtml(item.ticket_number)}</span>
+                                    ${visitorLabelHtml}
                                 </div>
                             </div>
                             <button type="button" class="btn-preview-visitor" onclick="openVisitorDetailsModal(${item.id})" title="View Visitor Information Details" aria-label="View Visitor Information Details">
@@ -1604,6 +1627,93 @@ if ($db_connect && $user_id > 0) {
                     `;
                 }).join('');
             }
+
+            // Opens the Handled Transactions & Sub-Transactions Modal for the active Office & Window
+            window.openWindowServicesModal = function() {
+                if (!HAS_ASSIGNMENT || !activeOfficeId) return;
+
+                const modalEl = document.getElementById('windowServicesModal');
+                if (modalEl && typeof bootstrap !== 'undefined') {
+                    const modalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
+                    modalInstance.show();
+                }
+
+                if (windowServicesModalContent) {
+                    windowServicesModalContent.innerHTML = `
+                        <div class="text-center py-5">
+                            <div class="spinner-border text-primary" role="status"></div>
+                            <p class="small text-muted mt-2 mb-0">Loading assigned transactions...</p>
+                        </div>
+                    `;
+                }
+
+                const formData = new FormData();
+                formData.append('action', 'fetch_window_services');
+                formData.append('office_id', activeOfficeId);
+                formData.append('counter_id', activeCounterId);
+
+                fetch(HANDLER_URL, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(res => {
+                    if (!windowServicesModalContent) return;
+
+                    if (!res.success || !Array.isArray(res.data) || res.data.length === 0) {
+                        windowServicesModalContent.innerHTML = `
+                            <div class="text-center py-5">
+                                <div class="mx-auto mb-3 d-flex align-items-center justify-content-center rounded-circle bg-white text-muted shadow-sm" style="width: 60px; height: 60px;">
+                                    <i class="bi bi-folder-x fs-3"></i>
+                                </div>
+                                <h6 class="fw-bold text-dark mb-1">No Assigned Services Found</h6>
+                                <p class="small text-muted mb-0">No active transaction types or sub-transactions are configured for this window.</p>
+                            </div>
+                        `;
+                        return;
+                    }
+
+                    windowServicesModalContent.innerHTML = `
+                        <div class="d-flex flex-column gap-3">
+                            ${res.data.map(trans => {
+                                const subs = Array.isArray(trans.sub_concerns) ? trans.sub_concerns : [];
+                                const hasSubs = subs.length > 0;
+
+                                let subsHtml = '';
+                                if (hasSubs) {
+                                    subsHtml = `
+                                        <div class="mt-2 pt-2 border-top d-flex flex-column gap-2">
+                                            <span class="text-uppercase text-muted fw-semibold" style="font-size: 0.72rem; letter-spacing: 0.04em;">Sub-Transactions</span>
+                                            <div class="d-flex flex-column gap-2">
+                                                ${subs.map(sub => `
+                                                    <div class="text-dark fw-normal" style="font-size: 0.875rem; line-height: 1.35;">
+                                                        ${escapeHtml(sub.sub_concern_name)}
+                                                    </div>
+                                                `).join('')}
+                                            </div>
+                                        </div>
+                                    `;
+                                }
+
+                                return `
+                                    <div class="receipt-concern-item p-3 mb-0">
+                                        <div class="text-dark fw-normal" style="font-size: 0.875rem; line-height: 1.35;">${escapeHtml(trans.transaction_name)}</div>
+                                        ${subsHtml}
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    `;
+                })
+                .catch(err => {
+                    console.error('Error fetching window services:', err);
+                    if (windowServicesModalContent) {
+                        windowServicesModalContent.innerHTML = `
+                            <div class="alert alert-danger mb-0">Failed to load assigned transactions. Please try again.</div>
+                        `;
+                    }
+                });
+            };
 
             function startDynamicTimer() {
                 if (dynamicTimerInterval) clearInterval(dynamicTimerInterval);
@@ -1657,7 +1767,7 @@ if ($db_connect && $user_id > 0) {
                 });
             }
 
-            // Global Call Next per Category Lane (FIFO)
+            // Global Call Next per Category Lane (FIFO: PRIORITY, REGULAR, EMPLOYEE)
             window.callNextByCategory = function(category) {
                 if (!category) return;
                 sendQueueAction('call_next_category', { category: category });

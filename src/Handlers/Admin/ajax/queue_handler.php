@@ -342,6 +342,84 @@ switch ($action) {
             exit();
         }
 
+    case 'fetch_window_services':
+        if ($office_id <= 0) {
+            echo json_encode(['success' => false, 'message' => 'No active office assignment detected.']);
+            exit();
+        }
+
+        try {
+            $stmtTrans = $db_connect->prepare("
+                SELECT 
+                    tt.id,
+                    tt.transaction_name,
+                    tt.estimated_minutes,
+                    tt.counter_id
+                FROM transaction_types tt
+                WHERE tt.office_id = ?
+                  AND tt.flag_status = 0
+                ORDER BY tt.id ASC
+            ");
+            $stmtTrans->bind_param("i", $office_id);
+            $stmtTrans->execute();
+            $resTrans = $stmtTrans->get_result();
+
+            $stmtSub = $db_connect->prepare("
+                SELECT 
+                    tsc.id,
+                    tsc.sub_concern_name,
+                    tsc.estimated_minutes,
+                    tsc.counter_id
+                FROM transaction_sub_concerns tsc
+                WHERE tsc.transaction_type_id = ?
+                  AND tsc.flag_status = 0
+                ORDER BY tsc.id ASC
+            ");
+
+            $services = [];
+            while ($tRow = $resTrans->fetch_assoc()) {
+                $transId        = (int)$tRow['id'];
+                $transCounterId = (int)($tRow['counter_id'] ?? 0);
+                $transHandlesWindow = ($counter_id <= 0 || $transCounterId === 0 || $transCounterId === $counter_id);
+
+                $stmtSub->bind_param("i", $transId);
+                $stmtSub->execute();
+                $resSub = $stmtSub->get_result();
+
+                $allSubs     = [];
+                $matchedSubs = [];
+
+                while ($sRow = $resSub->fetch_assoc()) {
+                    $allSubs[] = $sRow;
+                    $subCounterId = (int)($sRow['counter_id'] ?? 0);
+
+                    if ($counter_id <= 0) {
+                        $matchedSubs[] = $sRow;
+                    } elseif ($subCounterId === $counter_id) {
+                        $matchedSubs[] = $sRow;
+                    } elseif ($subCounterId === 0 && $transHandlesWindow) {
+                        $matchedSubs[] = $sRow;
+                    }
+                }
+
+                // Include transaction if it has matched sub-transactions OR if it has no sub-transactions and handles this window
+                if (!empty($matchedSubs) || (empty($allSubs) && $transHandlesWindow)) {
+                    $tRow['sub_concerns'] = $matchedSubs;
+                    $services[] = $tRow;
+                }
+            }
+
+            echo json_encode([
+                'success' => true,
+                'data'    => $services
+            ]);
+            exit();
+
+        } catch (Exception $e) {
+            echo json_encode(['success' => false, 'message' => 'Failed to load window services: ' . $e->getMessage()]);
+            exit();
+        }
+
     case 'call_next_category':
         if ($office_id <= 0) {
             echo json_encode(['success' => false, 'message' => 'No active office assignment detected.']);
@@ -349,7 +427,7 @@ switch ($action) {
         }
 
         $category = strtoupper(trim((string)($_POST['category'] ?? '')));
-        $allowed_categories = ['PRIORITY', 'STUDENT', 'GUEST', 'EMPLOYEE'];
+        $allowed_categories = ['PRIORITY', 'REGULAR', 'EMPLOYEE'];
 
         if (!in_array($category, $allowed_categories, true)) {
             echo json_encode(['success' => false, 'message' => 'Invalid queue category selected.']);
@@ -375,7 +453,7 @@ switch ($action) {
             }
             $stmtCompletePrev->execute();
 
-            // Select next FIFO ticket in the chosen category
+            // Select next FIFO ticket in the chosen category (PRIORITY, REGULAR [STUDENT/GUEST], EMPLOYEE)
             if ($category === 'PRIORITY') {
                 $stmtNextTicket = $db_connect->prepare("
                     SELECT q.id, q.ticket_number 
@@ -389,6 +467,20 @@ switch ($action) {
                     LIMIT 1
                 ");
                 $stmtNextTicket->bind_param("is", $office_id, $today);
+            } elseif ($category === 'REGULAR') {
+                $stmtNextTicket = $db_connect->prepare("
+                    SELECT q.id, q.ticket_number 
+                    FROM queue_tickets q
+                    INNER JOIN logbooks l ON q.logbook_id = l.id
+                    WHERE q.office_id = ? 
+                      AND q.queue_date = ? 
+                      AND q.status = 'WAITING' 
+                      AND q.is_priority = 0
+                      AND UPPER(TRIM(l.visitor_type)) IN ('STUDENT', 'GUEST')
+                    ORDER BY q.queue_sequence ASC 
+                    LIMIT 1
+                ");
+                $stmtNextTicket->bind_param("is", $office_id, $today);
             } else {
                 $stmtNextTicket = $db_connect->prepare("
                     SELECT q.id, q.ticket_number 
@@ -398,11 +490,11 @@ switch ($action) {
                       AND q.queue_date = ? 
                       AND q.status = 'WAITING' 
                       AND q.is_priority = 0
-                      AND UPPER(TRIM(l.visitor_type)) = ?
+                      AND UPPER(TRIM(l.visitor_type)) = 'EMPLOYEE'
                     ORDER BY q.queue_sequence ASC 
                     LIMIT 1
                 ");
-                $stmtNextTicket->bind_param("iss", $office_id, $today, $category);
+                $stmtNextTicket->bind_param("is", $office_id, $today);
             }
 
             $stmtNextTicket->execute();
@@ -488,17 +580,40 @@ switch ($action) {
             exit();
         }
 
-        $now = date('Y-m-d H:i:s');
+        // Preserve original called_at timestamp so the elapsed clock timer does not reset on recall
         if ($counter_id > 0) {
-            $stmtRecall = $db_connect->prepare("UPDATE queue_tickets SET called_at = ? WHERE office_id = ? AND counter_id = ? AND queue_date = ? AND status IN ('CALLED', 'SERVING')");
-            $stmtRecall->bind_param("siis", $now, $office_id, $counter_id, $today);
+            $stmtRecall = $db_connect->prepare("
+                SELECT id, ticket_number 
+                FROM queue_tickets 
+                WHERE office_id = ? AND counter_id = ? AND queue_date = ? AND status IN ('CALLED', 'SERVING') 
+                LIMIT 1
+            ");
+            $stmtRecall->bind_param("iis", $office_id, $counter_id, $today);
         } else {
-            $stmtRecall = $db_connect->prepare("UPDATE queue_tickets SET called_at = ? WHERE office_id = ? AND queue_date = ? AND status IN ('CALLED', 'SERVING')");
-            $stmtRecall->bind_param("sis", $now, $office_id, $today);
+            $stmtRecall = $db_connect->prepare("
+                SELECT id, ticket_number 
+                FROM queue_tickets 
+                WHERE office_id = ? AND queue_date = ? AND status IN ('CALLED', 'SERVING') 
+                LIMIT 1
+            ");
+            $stmtRecall->bind_param("is", $office_id, $today);
         }
         $stmtRecall->execute();
+        $recallRow = $stmtRecall->get_result()->fetch_assoc();
 
-        echo json_encode(['success' => true, 'message' => 'Ticket callout repeated.']);
+        if ($recallRow) {
+            $stmtTouch = $db_connect->prepare("
+                UPDATE queue_tickets 
+                SET called_at = COALESCE(called_at, NOW()) 
+                WHERE id = ?
+            ");
+            $stmtTouch->bind_param("i", $recallRow['id']);
+            $stmtTouch->execute();
+
+            echo json_encode(['success' => true, 'message' => 'Ticket callout repeated.']);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'No active ticket to recall.']);
+        }
         exit();
 
     case 'complete_ticket':
