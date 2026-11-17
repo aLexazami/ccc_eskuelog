@@ -135,7 +135,7 @@ if ($office_id > 0) {
 }
 
 /**
- * Helper: Hydrate full name, sex formatting, multi-concerns list, and additional item details
+ * Helper: Hydrate full name, sex formatting, multi-concerns list, window numbers, and additional item details
  */
 function hydrateTicketDetails(\mysqli $db_connect, array $row): array {
     $m_init = !empty($row['middle_name']) ? ' ' . substr($row['middle_name'], 0, 1) . '.' : '';
@@ -148,16 +148,25 @@ function hydrateTicketDetails(\mysqli $db_connect, array $row): array {
         $row['sex'] = ucfirst(strtolower($row['sex']));
     }
 
-    // 1. Fetch Transaction Items (Concerns & Sub-Concerns)
+    // 1. Fetch Transaction Items (Concerns, Sub-Concerns & Assigned Window/Counter)
     $concerns_list = [];
+    $window_names  = [];
+
+    if (!empty($row['ticket_window_name'])) {
+        $window_names[] = trim((string)$row['ticket_window_name']);
+    }
+
     $stmtItems = $db_connect->prepare("
         SELECT 
             lti.id AS logbook_item_id,
             tt.transaction_name,
-            tsc.sub_concern_name
+            tsc.sub_concern_name,
+            COALESCE(c_sub.counter_name, c_trans.counter_name) AS item_window_name
         FROM logbook_transaction_items lti
         LEFT JOIN transaction_types tt ON lti.transaction_type_id = tt.id
         LEFT JOIN transaction_sub_concerns tsc ON lti.sub_concern_id = tsc.id
+        LEFT JOIN counters c_sub ON tsc.counter_id = c_sub.id
+        LEFT JOIN counters c_trans ON tt.counter_id = c_trans.id
         WHERE lti.logbook_id = ?
         ORDER BY lti.id ASC
     ");
@@ -167,9 +176,21 @@ function hydrateTicketDetails(\mysqli $db_connect, array $row): array {
         $resItems = $stmtItems->get_result();
         while ($itemRow = $resItems->fetch_assoc()) {
             $concerns_list[] = $itemRow;
+            if (!empty($itemRow['item_window_name'])) {
+                $wName = trim((string)$itemRow['item_window_name']);
+                if (!in_array($wName, $window_names, true)) {
+                    $window_names[] = $wName;
+                }
+            }
         }
     }
+
+    if (empty($window_names) && !empty($row['primary_trans_window_name'])) {
+        $window_names[] = trim((string)$row['primary_trans_window_name']);
+    }
+
     $row['concerns_list'] = $concerns_list;
+    $row['window_number'] = !empty($window_names) ? implode(', ', $window_names) : '';
 
     // 2. Fetch Additional Details from logbook_transaction_item_details
     $additional_details = [];
@@ -200,7 +221,6 @@ function hydrateTicketDetails(\mysqli $db_connect, array $row): array {
             }
         }
     } catch (\Throwable $e) {
-        // Silently ignore if table does not exist in older dumps
         $additional_details = [];
     }
     $row['additional_details'] = $additional_details;
@@ -219,7 +239,7 @@ switch ($action) {
         try {
             $shift_status = $_SESSION['shift_status'] ?? 'ON_DUTY';
 
-            // Base SELECT for full visitor & ticket details (contact_no removed)
+            // Base SELECT for full visitor & ticket details including counter/window names
             $baseTicketSelect = "
                 SELECT 
                     q.id,
@@ -228,6 +248,9 @@ switch ($action) {
                     q.queue_sequence,
                     q.status,
                     q.is_priority,
+                    q.counter_id,
+                    c_q.counter_name AS ticket_window_name,
+                    c_tt.counter_name AS primary_trans_window_name,
                     l.id AS logbook_id,
                     l.created_at AS queue_entry_time,
                     q.called_at,
@@ -256,6 +279,8 @@ switch ($action) {
                 LEFT JOIN departments d ON l.department_id = d.department_id
                 LEFT JOIN office o ON q.office_id = o.office_id
                 LEFT JOIN transaction_types tt ON l.transaction_type_id = tt.id
+                LEFT JOIN counters c_q ON q.counter_id = c_q.id
+                LEFT JOIN counters c_tt ON tt.counter_id = c_tt.id
             ";
 
             // 1. Active CALLED or SERVING ticket for assigned office & window

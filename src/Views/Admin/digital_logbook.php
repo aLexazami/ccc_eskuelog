@@ -775,7 +775,7 @@ if ($db_connect) {
                             </div>
                         </div>
 
-                        <div class="priority-card-box mb-4">
+                        <div id="priorityCardBox" class="priority-card-box mb-4">
                             <div class="d-flex align-items-center justify-content-between gap-3">
                                 <label class="form-check-label fw-bold text-dark mb-0 fs-6 cursor-pointer" for="isPrioritySwitch">
                                     <i class="bi bi-person-wheelchair text-primary me-1 fs-5"></i> Priority / Special Assistance Needed?
@@ -962,6 +962,9 @@ if ($db_connect) {
                         </div>
                         <div id="step5DynamicDetailsContainer" class="d-flex flex-column gap-3"></div>
                     </div>
+
+                    <!-- STEP 5 PRIORITY SLOT (MOVED HERE WHEN VISITOR RECORD IS MATCHED) -->
+                    <div id="step5PrioritySlot"></div>
 
                     <!-- DATA PRIVACY AGREEMENT CONTAINER -->
                     <div class="consent-card-box mb-4">
@@ -1244,6 +1247,8 @@ if ($db_connect) {
 
         const prioritySwitch       = document.getElementById('isPrioritySwitch');
         const prioritySection      = document.getElementById('priorityOptionsSection');
+        const priorityCardBox      = document.getElementById('priorityCardBox');
+        const step5PrioritySlot    = document.getElementById('step5PrioritySlot');
 
         // WIZARD STEPS DIVS
         const step1Div             = document.getElementById('step1_visitorInfo');
@@ -1324,10 +1329,25 @@ if ($db_connect) {
             });
         }
 
+        /**
+         * Places the Priority / Special Assistance card inside Step 5 when a matched
+         * visitor record was confirmed, or returns it to Step 1 for manual/guest entry.
+         */
+        function syncPriorityCardPlacement() {
+            if (!priorityCardBox || !step5PrioritySlot || !btnContinue) return;
+            if (visitorRecordFound) {
+                step5PrioritySlot.appendChild(priorityCardBox);
+            } else {
+                btnContinue.parentElement.insertBefore(priorityCardBox, btnContinue);
+            }
+        }
+
         // Keep manual entry ID input synchronized with the hidden/submitted referenceId input
         if (manualRefIdInput) {
             manualRefIdInput.addEventListener('input', function() {
-                referenceIdInput.value = this.value;
+                if (!visitorRecordFound) {
+                    referenceIdInput.value = this.value;
+                }
             });
         }
 
@@ -1433,6 +1453,7 @@ if ($db_connect) {
             referenceIdInput.value = '';
             pendingVisitorData = null;
             visitorRecordFound = false;
+            syncPriorityCardPlacement();
             furthestWizardStep = 1;
             clearVisitorPersonalInputs();
             updateCategoryRequiredAttributes(type);
@@ -1593,6 +1614,9 @@ if ($db_connect) {
 
             clearVisitorPersonalInputs();
 
+            // Ensure manualIdRow is hidden so manualReferenceId never overwrites the verified referenceId
+            if (manualIdRow) manualIdRow.classList.add('d-none');
+
             userIdInput.value       = info.user_id || '';
             firstNameInput.value    = info.first_name || '';
             middleNameInput.value   = info.middle_name || '';
@@ -1620,6 +1644,7 @@ if ($db_connect) {
             }
 
             visitorRecordFound = true;
+            syncPriorityCardPlacement();
             updateConsentState(false);
 
             if (idVerificationModal) idVerificationModal.hide();
@@ -1632,6 +1657,7 @@ if ($db_connect) {
         btnRejectIdentity?.addEventListener('click', function() {
             pendingVisitorData = null;
             visitorRecordFound = false;
+            syncPriorityCardPlacement();
             referenceIdInput.value = '';
             furthestWizardStep = 1;
             clearVisitorPersonalInputs();
@@ -1651,6 +1677,7 @@ if ($db_connect) {
 
             pendingVisitorData = null;
             visitorRecordFound = false;
+            syncPriorityCardPlacement();
             furthestWizardStep = 1;
             clearVisitorPersonalInputs();
             updateConsentState(false);
@@ -1860,7 +1887,7 @@ if ($db_connect) {
         // STEP 1 CONTINUATION (Manual Entry & Guest)
         if (btnContinue) {
             btnContinue.addEventListener('click', function() {
-                if (manualRefIdInput && !manualIdRow?.classList.contains('d-none')) {
+                if (!visitorRecordFound && manualRefIdInput && !manualIdRow?.classList.contains('d-none')) {
                     referenceIdInput.value = manualRefIdInput.value.trim();
                 }
                 if (!validatePersonalInfoFields()) {
@@ -2415,7 +2442,7 @@ if ($db_connect) {
         }
 
         function submitLogbookForm(triggerBtn) {
-            if (manualRefIdInput && !manualIdRow?.classList.contains('d-none')) {
+            if (!visitorRecordFound && manualRefIdInput && !manualIdRow?.classList.contains('d-none')) {
                 referenceIdInput.value = manualRefIdInput.value.trim();
             } else if (referenceIdInput.value) {
                 referenceIdInput.value = referenceIdInput.value.trim();
