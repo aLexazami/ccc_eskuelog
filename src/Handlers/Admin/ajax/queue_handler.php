@@ -82,7 +82,6 @@ $assigned_office_id  = 0;
 $assigned_counter_id = 0;
 
 if ($user_id > 0) {
-    // Priority 1: Direct Workstation Assignment in staff_assignments
     $stmtStaff = $db_connect->prepare("
         SELECT office_id, counter_id 
         FROM staff_assignments 
@@ -101,7 +100,6 @@ if ($user_id > 0) {
         }
     }
 
-    // Priority 2: Fallback check on employee table
     if ($assigned_office_id <= 0) {
         $stmtEmp = $db_connect->prepare("SELECT office_id FROM employee WHERE user_id = ? AND office_id > 0 LIMIT 1");
         if ($stmtEmp) {
@@ -117,7 +115,6 @@ if ($user_id > 0) {
     }
 }
 
-// Security Enforcement: ADMIN can select any office, but ADMIN_STAFF MUST use their database assignment
 if ($g_user_role_upper === 'ADMIN') {
     $office_id  = (int)($_POST['office_id'] ?? $assigned_office_id ?? $_SESSION['assigned_office_id'] ?? 0);
     $counter_id = (int)($_POST['counter_id'] ?? $assigned_counter_id ?? $_SESSION['assigned_counter_id'] ?? 0);
@@ -132,10 +129,83 @@ if ($g_user_role_upper === 'ADMIN') {
     }
 }
 
-// Update Active Session Cache if valid
 if ($office_id > 0) {
     $_SESSION['assigned_office_id']  = $office_id;
     $_SESSION['assigned_counter_id'] = $counter_id;
+}
+
+/**
+ * Helper: Hydrate full name, sex formatting, multi-concerns list, and additional item details
+ */
+function hydrateTicketDetails(\mysqli $db_connect, array $row): array {
+    $m_init = !empty($row['middle_name']) ? ' ' . substr($row['middle_name'], 0, 1) . '.' : '';
+    $suf    = !empty($row['suffix']) ? ' ' . $row['suffix'] : '';
+    $post   = !empty($row['post_nominal']) ? ', ' . $row['post_nominal'] : '';
+    
+    $row['full_name'] = trim($row['first_name'] . $m_init . ' ' . $row['last_name'] . $suf . $post);
+    
+    if (!empty($row['sex'])) {
+        $row['sex'] = ucfirst(strtolower($row['sex']));
+    }
+
+    // 1. Fetch Transaction Items (Concerns & Sub-Concerns)
+    $concerns_list = [];
+    $stmtItems = $db_connect->prepare("
+        SELECT 
+            lti.id AS logbook_item_id,
+            tt.transaction_name,
+            tsc.sub_concern_name
+        FROM logbook_transaction_items lti
+        LEFT JOIN transaction_types tt ON lti.transaction_type_id = tt.id
+        LEFT JOIN transaction_sub_concerns tsc ON lti.sub_concern_id = tsc.id
+        WHERE lti.logbook_id = ?
+        ORDER BY lti.id ASC
+    ");
+    if ($stmtItems) {
+        $stmtItems->bind_param("i", $row['logbook_id']);
+        $stmtItems->execute();
+        $resItems = $stmtItems->get_result();
+        while ($itemRow = $resItems->fetch_assoc()) {
+            $concerns_list[] = $itemRow;
+        }
+    }
+    $row['concerns_list'] = $concerns_list;
+
+    // 2. Fetch Additional Details from logbook_transaction_item_details
+    $additional_details = [];
+    try {
+        $stmtDetails = $db_connect->prepare("
+            SELECT 
+                ltid.id,
+                ltid.logbook_item_id,
+                ltid.field_title,
+                ltid.detail_mode,
+                ltid.answer_value,
+                tt.transaction_name,
+                tsc.sub_concern_name
+            FROM logbook_transaction_item_details ltid
+            INNER JOIN logbook_transaction_items lti ON ltid.logbook_item_id = lti.id
+            LEFT JOIN transaction_types tt ON lti.transaction_type_id = tt.id
+            LEFT JOIN transaction_sub_concerns tsc ON lti.sub_concern_id = tsc.id
+            WHERE lti.logbook_id = ?
+              AND TRIM(ltid.answer_value) != ''
+            ORDER BY lti.id ASC, ltid.id ASC
+        ");
+        if ($stmtDetails) {
+            $stmtDetails->bind_param("i", $row['logbook_id']);
+            $stmtDetails->execute();
+            $resDetails = $stmtDetails->get_result();
+            while ($detRow = $resDetails->fetch_assoc()) {
+                $additional_details[] = $detRow;
+            }
+        }
+    } catch (\Throwable $e) {
+        // Silently ignore if table does not exist in older dumps
+        $additional_details = [];
+    }
+    $row['additional_details'] = $additional_details;
+
+    return $row;
 }
 
 switch ($action) {
@@ -149,11 +219,13 @@ switch ($action) {
         try {
             $shift_status = $_SESSION['shift_status'] ?? 'ON_DUTY';
 
-            // Active CALLED or SERVING ticket for assigned office
-            $stmtServing = $db_connect->prepare("
+            // Base SELECT for full visitor & ticket details (contact_no removed)
+            $baseTicketSelect = "
                 SELECT 
+                    q.id,
                     q.id AS queue_id,
                     q.ticket_number,
+                    q.queue_sequence,
                     q.status,
                     q.is_priority,
                     l.id AS logbook_id,
@@ -169,7 +241,6 @@ switch ($action) {
                     l.suffix,
                     l.post_nominal,
                     l.sex,
-                    u.contact_no,
                     COALESCE(p.program_code, l.program_code) AS program_code,
                     COALESCE(p.program_name, '') AS program_name,
                     l.year_level,
@@ -185,6 +256,11 @@ switch ($action) {
                 LEFT JOIN departments d ON l.department_id = d.department_id
                 LEFT JOIN office o ON q.office_id = o.office_id
                 LEFT JOIN transaction_types tt ON l.transaction_type_id = tt.id
+            ";
+
+            // 1. Active CALLED or SERVING ticket for assigned office & window
+            $stmtServing = $db_connect->prepare("
+                {$baseTicketSelect}
                 WHERE q.office_id = ? 
                   AND (q.counter_id = ? OR q.served_by_user_id = ? OR ? = 0)
                   AND q.queue_date = ? 
@@ -197,56 +273,25 @@ switch ($action) {
             $now_serving = $stmtServing->get_result()->fetch_assoc();
 
             if ($now_serving) {
-                $m_init = !empty($now_serving['middle_name']) ? ' ' . substr($now_serving['middle_name'], 0, 1) . '.' : '';
-                $suf    = !empty($now_serving['suffix']) ? ' ' . $now_serving['suffix'] : '';
-                $post   = !empty($now_serving['post_nominal']) ? ', ' . $now_serving['post_nominal'] : '';
-                
-                $now_serving['full_name'] = trim($now_serving['first_name'] . $m_init . ' ' . $now_serving['last_name'] . $suf . $post);
-                
-                if (!empty($now_serving['sex'])) {
-                    $now_serving['sex'] = ucfirst(strtolower($now_serving['sex']));
-                }
-
-                // Fetch multi-concerns from logbook_transaction_items table
-                $concerns_list = [];
-                $stmtItems = $db_connect->prepare("
-                    SELECT 
-                        tt.transaction_name,
-                        tsc.sub_concern_name
-                    FROM logbook_transaction_items lti
-                    LEFT JOIN transaction_types tt ON lti.transaction_type_id = tt.id
-                    LEFT JOIN transaction_sub_concerns tsc ON lti.sub_concern_id = tsc.id
-                    WHERE lti.logbook_id = ?
-                    ORDER BY lti.id ASC
-                ");
-                if ($stmtItems) {
-                    $stmtItems->bind_param("i", $now_serving['logbook_id']);
-                    $stmtItems->execute();
-                    $resItems = $stmtItems->get_result();
-                    while ($itemRow = $resItems->fetch_assoc()) {
-                        $concerns_list[] = $itemRow;
-                    }
-                }
-                $now_serving['concerns_list'] = $concerns_list;
+                $now_serving = hydrateTicketDetails($db_connect, $now_serving);
             }
 
-            // Waiting tickets lineup
+            // 2. Waiting tickets lineup (Strictly First-Come, First-Served via queue_sequence ASC)
             $up_next = [];
             $stmtNext = $db_connect->prepare("
-                SELECT q.id, q.ticket_number, q.is_priority, l.visitor_type 
-                FROM queue_tickets q
-                INNER JOIN logbooks l ON q.logbook_id = l.id
+                {$baseTicketSelect}
                 WHERE q.office_id = ? AND q.queue_date = ? AND q.status = 'WAITING' 
-                ORDER BY q.is_priority DESC, q.queue_sequence ASC LIMIT 20
+                ORDER BY q.queue_sequence ASC
+                LIMIT 50
             ");
             $stmtNext->bind_param("is", $office_id, $today);
             $stmtNext->execute();
             $resNext = $stmtNext->get_result();
             while ($row = $resNext->fetch_assoc()) {
-                $up_next[] = $row;
+                $up_next[] = hydrateTicketDetails($db_connect, $row);
             }
 
-            // Total waiting count
+            // 3. Total waiting count
             $stmtCount = $db_connect->prepare("
                 SELECT COUNT(*) as cnt 
                 FROM queue_tickets 
@@ -272,13 +317,22 @@ switch ($action) {
             exit();
         }
 
-    case 'call_next':
+    case 'call_next_category':
         if ($office_id <= 0) {
             echo json_encode(['success' => false, 'message' => 'No active office assignment detected.']);
             exit();
         }
 
+        $category = strtoupper(trim((string)($_POST['category'] ?? '')));
+        $allowed_categories = ['PRIORITY', 'STUDENT', 'GUEST', 'EMPLOYEE'];
+
+        if (!in_array($category, $allowed_categories, true)) {
+            echo json_encode(['success' => false, 'message' => 'Invalid queue category selected.']);
+            exit();
+        }
+
         try {
+            // Auto-complete any currently active ticket at this window before calling the next one
             if ($counter_id > 0) {
                 $stmtCompletePrev = $db_connect->prepare("
                     UPDATE queue_tickets 
@@ -296,14 +350,36 @@ switch ($action) {
             }
             $stmtCompletePrev->execute();
 
-            $stmtNextTicket = $db_connect->prepare("
-                SELECT q.id, q.ticket_number 
-                FROM queue_tickets q
-                INNER JOIN logbooks l ON q.logbook_id = l.id
-                WHERE q.office_id = ? AND q.queue_date = ? AND q.status = 'WAITING' AND UPPER(TRIM(l.visitor_type)) != 'EMPLOYEE'
-                ORDER BY q.is_priority DESC, q.queue_sequence ASC LIMIT 1
-            ");
-            $stmtNextTicket->bind_param("is", $office_id, $today);
+            // Select next FIFO ticket in the chosen category
+            if ($category === 'PRIORITY') {
+                $stmtNextTicket = $db_connect->prepare("
+                    SELECT q.id, q.ticket_number 
+                    FROM queue_tickets q
+                    INNER JOIN logbooks l ON q.logbook_id = l.id
+                    WHERE q.office_id = ? 
+                      AND q.queue_date = ? 
+                      AND q.status = 'WAITING' 
+                      AND q.is_priority = 1
+                    ORDER BY q.queue_sequence ASC 
+                    LIMIT 1
+                ");
+                $stmtNextTicket->bind_param("is", $office_id, $today);
+            } else {
+                $stmtNextTicket = $db_connect->prepare("
+                    SELECT q.id, q.ticket_number 
+                    FROM queue_tickets q
+                    INNER JOIN logbooks l ON q.logbook_id = l.id
+                    WHERE q.office_id = ? 
+                      AND q.queue_date = ? 
+                      AND q.status = 'WAITING' 
+                      AND q.is_priority = 0
+                      AND UPPER(TRIM(l.visitor_type)) = ?
+                    ORDER BY q.queue_sequence ASC 
+                    LIMIT 1
+                ");
+                $stmtNextTicket->bind_param("iss", $office_id, $today, $category);
+            }
+
             $stmtNextTicket->execute();
             $nextRes = $stmtNextTicket->get_result();
 
@@ -336,78 +412,12 @@ switch ($action) {
 
                 echo json_encode(['success' => true, 'message' => "Ticket {$ticket['ticket_number']} called."]);
             } else {
-                echo json_encode(['success' => false, 'message' => 'No waiting students or guests in queue.']);
+                echo json_encode(['success' => false, 'message' => "No waiting tickets in the {$category} lane."]);
             }
             exit();
 
         } catch (Exception $e) {
             echo json_encode(['success' => false, 'message' => 'Call next failed: ' . $e->getMessage()]);
-            exit();
-        }
-
-    case 'call_specific_ticket':
-        if ($office_id <= 0) {
-            echo json_encode(['success' => false, 'message' => 'No active office assignment detected.']);
-            exit();
-        }
-
-        $target_ticket_id = (int)($_POST['ticket_id'] ?? 0);
-        if ($target_ticket_id <= 0) {
-            echo json_encode(['success' => false, 'message' => 'Invalid ticket selection.']);
-            exit();
-        }
-
-        try {
-            if ($counter_id > 0) {
-                $stmtCompletePrev = $db_connect->prepare("
-                    UPDATE queue_tickets 
-                    SET status = 'COMPLETED', completed_at = NOW() 
-                    WHERE office_id = ? AND counter_id = ? AND queue_date = ? AND status IN ('CALLED', 'SERVING')
-                ");
-                $stmtCompletePrev->bind_param("iis", $office_id, $counter_id, $today);
-            } else {
-                $stmtCompletePrev = $db_connect->prepare("
-                    UPDATE queue_tickets 
-                    SET status = 'COMPLETED', completed_at = NOW() 
-                    WHERE office_id = ? AND queue_date = ? AND status IN ('CALLED', 'SERVING')
-                ");
-                $stmtCompletePrev->bind_param("is", $office_id, $today);
-            }
-            $stmtCompletePrev->execute();
-
-            $now = date('Y-m-d H:i:s');
-            if ($counter_id > 0) {
-                $stmtUpdate = $db_connect->prepare("
-                    UPDATE queue_tickets 
-                    SET status = 'CALLED', 
-                        called_at = ?, 
-                        counter_id = ?, 
-                        served_by_user_id = ? 
-                    WHERE id = ? AND office_id = ? AND status = 'WAITING'
-                ");
-                $stmtUpdate->bind_param("siiii", $now, $counter_id, $user_id, $target_ticket_id, $office_id);
-            } else {
-                $stmtUpdate = $db_connect->prepare("
-                    UPDATE queue_tickets 
-                    SET status = 'CALLED', 
-                        called_at = ?, 
-                        counter_id = NULL, 
-                        served_by_user_id = ? 
-                    WHERE id = ? AND office_id = ? AND status = 'WAITING'
-                ");
-                $stmtUpdate->bind_param("siii", $now, $user_id, $target_ticket_id, $office_id);
-            }
-            $stmtUpdate->execute();
-
-            if ($stmtUpdate->affected_rows > 0) {
-                echo json_encode(['success' => true, 'message' => 'Selected queue ticket called immediately.']);
-            } else {
-                echo json_encode(['success' => false, 'message' => 'Selected ticket is no longer waiting or invalid.']);
-            }
-            exit();
-
-        } catch (Exception $e) {
-            echo json_encode(['success' => false, 'message' => 'Direct call failed: ' . $e->getMessage()]);
             exit();
         }
 

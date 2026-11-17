@@ -275,6 +275,23 @@ if ($db_connect && $user_id > 0) {
             margin-top: 2px;
         }
 
+        .btn-copy-detail {
+            padding: 0.2rem 0.5rem;
+            font-size: 0.72rem;
+            border-radius: 0.45rem;
+            border: 1px solid #cbd5e1;
+            background: #ffffff;
+            color: #475569;
+            transition: all 0.15s ease;
+            flex-shrink: 0;
+        }
+
+        .btn-copy-detail:hover {
+            background: #eff6ff;
+            color: #1d4ed8;
+            border-color: #93c5fd;
+        }
+
         .concern-hero-box {
             background: linear-gradient(135deg, #f8fafc 0%, #eff6ff 100%);
             border: 1.5px solid #bfdbfe;
@@ -323,65 +340,113 @@ if ($db_connect && $user_id > 0) {
             transition: all 0.3s ease;
         }
 
-        .lineup-header-student,
-        .lineup-header-employee {
-            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
-            border-bottom: 1.5px solid #bfdbfe;
-            padding: 0.95rem 1.25rem;
+        /* 4-COLUMN CATEGORY HEADERS */
+        .lineup-header-priority {
+            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+            border-bottom: 1.5px solid #fcd34d;
+            padding: 0.85rem 1rem;
         }
 
-        .lineup-badge-student,
-        .lineup-badge-employee {
-            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-            color: #ffffff;
+        .lineup-header-student {
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            border-bottom: 1.5px solid #bfdbfe;
+            padding: 0.85rem 1rem;
+        }
+
+        .lineup-header-guest {
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            border-bottom: 1.5px solid #bbf7d0;
+            padding: 0.85rem 1rem;
+        }
+
+        .lineup-header-employee {
+            background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
+            border-bottom: 1.5px solid #ddd6fe;
+            padding: 0.85rem 1rem;
+        }
+
+        .lineup-badge-pill {
             font-weight: 800;
-            font-size: 0.8rem;
-            padding: 0.4rem 1.1rem;
+            font-size: 0.72rem;
+            padding: 0.28rem 0.7rem;
             border-radius: 50rem;
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.22);
             letter-spacing: 0.02em;
         }
+
+        .btn-global-call-next {
+            width: 100%;
+            border: none;
+            padding: 0.5rem 0.85rem;
+            border-radius: 0.6rem;
+            font-weight: 800;
+            font-size: 0.8rem;
+            letter-spacing: 0.02em;
+            color: #ffffff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
+        }
+
+        .btn-global-call-next:hover:not(:disabled) {
+            transform: translateY(-1px);
+            filter: brightness(1.06);
+            color: #ffffff;
+        }
+
+        .btn-global-call-next:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .btn-call-priority { background: linear-gradient(135deg, #d97706 0%, #b45309 100%); }
+        .btn-call-student  { background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); }
+        .btn-call-guest    { background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); }
+        .btn-call-employee { background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); }
 
         .ticket-pill-item {
             background: #f8fafc;
             border: 1.5px solid #e2e8f0;
-            border-radius: 0.85rem;
-            padding: 0.75rem 1.15rem;
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 0.8rem;
+            padding: 0.65rem 0.85rem;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex;
             align-items: center;
             justify-content: space-between;
+            gap: 0.5rem;
         }
 
         .ticket-pill-item:hover {
             border-color: #3b82f6;
             background-color: #ffffff;
-            transform: translateX(4px);
-            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.08);
+            transform: translateX(3px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.08);
         }
 
         .ticket-pill-number {
             font-family: 'Courier New', SFMono-Regular, Consolas, Monaco, monospace;
-            font-size: 1.25rem;
+            font-size: 1.05rem;
             font-weight: 900;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.04em;
             color: #0f172a;
         }
 
         .ticket-pill-pos {
-            width: 28px;
-            height: 28px;
+            width: 24px;
+            height: 24px;
             border-radius: 50%;
             background: #e2e8f0;
             color: #475569;
             font-weight: 800;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            margin-right: 0.75rem;
+            margin-right: 0.5rem;
             flex-shrink: 0;
-            transition: all 0.2s ease;
         }
 
         .ticket-pill-item:hover .ticket-pill-pos {
@@ -389,25 +454,25 @@ if ($db_connect && $user_id > 0) {
             color: #1d4ed8;
         }
 
-        .btn-call-employee-direct {
-            background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
-            color: #ffffff;
-            border: none;
-            padding: 0.35rem 0.85rem;
-            border-radius: 0.5rem;
+        .btn-preview-visitor {
+            background: #ffffff;
+            color: #1d4ed8;
+            border: 1px solid #bfdbfe;
+            padding: 0.28rem 0.6rem;
+            border-radius: 0.45rem;
             font-weight: 700;
-            font-size: 0.75rem;
-            letter-spacing: 0.02em;
-            box-shadow: 0 2px 6px rgba(22, 163, 74, 0.25);
-            transition: all 0.2s ease;
-            cursor: pointer;
+            font-size: 0.72rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            transition: all 0.18s ease;
+            white-space: nowrap;
         }
 
-        .btn-call-employee-direct:hover {
-            background: linear-gradient(135deg, #15803d 0%, #166534 100%);
+        .btn-preview-visitor:hover {
+            background: #2563eb;
             color: #ffffff;
-            box-shadow: 0 4px 10px rgba(22, 163, 74, 0.38);
-            transform: translateY(-1px);
+            border-color: #1d4ed8;
         }
 
         .action-bar-card {
@@ -424,10 +489,10 @@ if ($db_connect && $user_id > 0) {
             align-items: center;
             justify-content: center;
             gap: 0.55rem;
-            padding: 0.75rem 1rem;
+            padding: 0.85rem 1rem;
             border-radius: 0.75rem;
             font-weight: 800;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             letter-spacing: 0.02em;
             transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
             border: 1.5px solid transparent;
@@ -456,19 +521,6 @@ if ($db_connect && $user_id > 0) {
             line-height: 1;
         }
 
-        .btn-ctrl-call {
-            background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
-            color: #ffffff;
-            border-color: #15803d;
-            box-shadow: 0 4px 14px rgba(22, 163, 74, 0.28);
-        }
-
-        .btn-ctrl-call:hover {
-            background: linear-gradient(135deg, #15803d 0%, #166534 100%);
-            color: #ffffff;
-            box-shadow: 0 6px 20px rgba(22, 163, 74, 0.38);
-        }
-
         .btn-ctrl-serve {
             background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
             color: #ffffff;
@@ -480,6 +532,19 @@ if ($db_connect && $user_id > 0) {
             background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
             color: #ffffff;
             box-shadow: 0 6px 20px rgba(37, 99, 235, 0.38);
+        }
+
+        .btn-ctrl-complete {
+            background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+            color: #ffffff;
+            border-color: #15803d;
+            box-shadow: 0 4px 14px rgba(22, 163, 74, 0.28);
+        }
+
+        .btn-ctrl-complete:hover {
+            background: linear-gradient(135deg, #15803d 0%, #166534 100%);
+            color: #ffffff;
+            box-shadow: 0 6px 20px rgba(22, 163, 74, 0.38);
         }
 
         .btn-ctrl-recall {
@@ -496,20 +561,6 @@ if ($db_connect && $user_id > 0) {
             box-shadow: 0 4px 12px rgba(234, 88, 12, 0.12);
         }
 
-        .btn-ctrl-complete {
-            background: #ffffff;
-            color: #16a34a;
-            border-color: #bbf7d0;
-            box-shadow: 0 2px 8px rgba(22, 163, 74, 0.06);
-        }
-
-        .btn-ctrl-complete:hover {
-            background: #f0fdf4;
-            color: #15803d;
-            border-color: #4ade80;
-            box-shadow: 0 4px 12px rgba(22, 163, 74, 0.12);
-        }
-
         .btn-ctrl-skip {
             background: #ffffff;
             color: #dc2626;
@@ -522,6 +573,20 @@ if ($db_connect && $user_id > 0) {
             color: #b91c1c;
             border-color: #f87171;
             box-shadow: 0 4px 12px rgba(220, 38, 38, 0.12);
+        }
+
+        .additional-details-divider {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.78rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #1e40af;
+            padding-top: 0.35rem;
+            margin-top: 0.25rem;
+            border-top: 1.5px dashed #cbd5e1;
         }
     </style>
 </head>
@@ -580,29 +645,20 @@ if ($db_connect && $user_id > 0) {
                                         <!-- UNASSIGNED STAFF FALLBACK CARD -->
                                         <div class="card border-0 shadow-sm rounded-4 overflow-hidden my-2" id="unassignedFallbackCard">
                                             <div class="card-body p-4 p-md-5 text-center">
-                                                
-                                                <!-- ICON BADGE -->
                                                 <div class="mx-auto mb-3 d-flex align-items-center justify-content-center rounded-circle" 
                                                      style="width: 88px; height: 88px; background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border: 2px dashed #93c5fd;">
                                                     <i class="bi bi-person-workspace text-primary" style="font-size: 2.6rem;"></i>
                                                 </div>
-                                                
-                                                <!-- TITLE -->
                                                 <h4 class="fw-bold text-dark mb-2">Workstation Not Assigned</h4>
-                                                
-                                                <!-- DESCRIPTION COPY -->
                                                 <p class="text-muted mx-auto mb-4" style="max-width: 500px; font-size: 0.95rem; line-height: 1.65;">
                                                     Your account is active, but you have not been assigned to both an office and a service counter for today's shift. Please coordinate with your station manager or administrator to configure your workstation assignment.
                                                 </p>
-
-                                                <!-- RE-CHECK ASSIGNMENT BUTTON -->
                                                 <div>
                                                     <button type="button" class="btn btn-primary fw-bold px-4 py-2 rounded-3 shadow-sm d-inline-flex align-items-center gap-2" onclick="window.location.reload();">
                                                         <i class="bi bi-arrow-clockwise fs-5"></i>
                                                         <span>Check Assignment Status</span>
                                                     </button>
                                                 </div>
-
                                             </div>
                                         </div>
                                     <?php else: ?>
@@ -610,7 +666,6 @@ if ($db_connect && $user_id > 0) {
                                             
                                             <!-- GRID TOP BAR: STATUS BADGE & TIMER -->
                                             <div class="row g-0 align-items-center mb-3">
-                                                
                                                 <div class="col-lg-4 col-md-5 d-flex justify-content-center">
                                                     <div id="counterStatusContainer" class="status-pill-modern status-on-duty">
                                                         <span id="counterStatusText">READY TO SERVE</span>
@@ -623,13 +678,11 @@ if ($db_connect && $user_id > 0) {
                                                         <span id="digitalElapsedTimer">00:00</span>
                                                     </div>
                                                 </div>
-
                                             </div>
 
                                             <!-- TOP SECTION: 2-COLUMN SERVING HERO BOX -->
                                             <div class="card serving-hero-card mb-4">
                                                 <div class="row g-0">
-                                                    
                                                     <div class="col-lg-4 col-md-5 ticket-hero-left">
                                                         <div class="text-info text-uppercase fw-bold small tracking-wider mb-2 text-center">
                                                             <i class="bi bi-ticket-perforated-fill slant-ticket-icon"></i>QUEUE NUMBER
@@ -645,40 +698,36 @@ if ($db_connect && $user_id > 0) {
 
                                                     <div class="col-lg-8 col-md-7 ticket-hero-right" id="ticketDetailsContainer">
                                                     </div>
-
                                                 </div>
                                             </div>
 
-                                            <!-- HIGHLIGHTED ACTION CONTROLS BAR CONTAINER -->
+                                            <!-- HIGHLIGHTED ACTION CONTROLS BAR CONTAINER (2x2 GRID: Serve & Complete / Recall & Skip) -->
                                             <div class="card action-bar-card mb-4">
                                                 <div class="card-body p-3">
                                                     <div class="d-flex flex-column gap-2 gap-sm-3">
                                                         
+                                                        <!-- ROW 1: SERVE & COMPLETE -->
                                                         <div class="row g-2 g-sm-3">
-                                                            <div class="col-12 col-sm-6">
-                                                                <button type="button" class="btn btn-action-modern btn-action-hero btn-ctrl-call" id="btnCallNext">
-                                                                    <i class="bi bi-megaphone-fill"></i> Call Next
-                                                                </button>
-                                                            </div>
                                                             <div class="col-12 col-sm-6">
                                                                 <button type="button" class="btn btn-action-modern btn-action-hero btn-ctrl-serve" id="btnStartServe">
                                                                     <i class="bi bi-play-circle-fill"></i> Serve
                                                                 </button>
                                                             </div>
+                                                            <div class="col-12 col-sm-6">
+                                                                <button type="button" class="btn btn-action-modern btn-action-hero btn-ctrl-complete" id="btnCompleteTicket">
+                                                                    <i class="bi bi-check-circle-fill"></i> Complete
+                                                                </button>
+                                                            </div>
                                                         </div>
 
+                                                        <!-- ROW 2: RECALL & SKIP -->
                                                         <div class="row g-2 g-sm-3">
-                                                            <div class="col-12 col-sm-4">
+                                                            <div class="col-12 col-sm-6">
                                                                 <button type="button" class="btn btn-action-modern btn-ctrl-recall" id="btnRecallVoice">
                                                                     <i class="bi bi-arrow-counterclockwise"></i> Recall
                                                                 </button>
                                                             </div>
-                                                            <div class="col-12 col-sm-4">
-                                                                <button type="button" class="btn btn-action-modern btn-ctrl-complete" id="btnCompleteTicket">
-                                                                    <i class="bi bi-check-circle-fill"></i> Complete
-                                                                </button>
-                                                            </div>
-                                                            <div class="col-12 col-sm-4">
+                                                            <div class="col-12 col-sm-6">
                                                                 <button type="button" class="btn btn-action-modern btn-ctrl-skip" id="btnSkipTicket">
                                                                     <i class="bi bi-dash-circle"></i> Skip
                                                                 </button>
@@ -689,47 +738,85 @@ if ($db_connect && $user_id > 0) {
                                                 </div>
                                             </div>
 
-                                            <!-- BOTTOM 2-COLUMN LINEUP SECTION -->
+                                            <!-- BOTTOM 4-COLUMN CATEGORY LINEUP SECTION -->
                                             <div class="row g-3">
                                                 
-                                                <div class="col-lg-6">
+                                                <!-- COLUMN 1: PRIORITY -->
+                                                <div class="col-12 col-md-6 col-xl-3">
                                                     <div class="card controller-subcard h-100">
-                                                        <div class="lineup-header-student d-flex align-items-center justify-content-between">
-                                                            <h6 class="fw-bold text-primary mb-0 d-flex align-items-center">
-                                                                <i class="bi bi-people-fill me-2 fs-5 text-primary"></i>Students & Guests Queue
-                                                            </h6>
-                                                            <span class="lineup-badge-student" id="ctrlStudentBadge">0 Waiting</span>
-                                                        </div>
-                                                        <div class="card-body p-3">
-                                                            <div class="d-flex flex-column gap-2" id="ctrlStudentList">
-                                                                <div class="text-center py-4 my-2">
-                                                                    <div class="mx-auto mb-2 d-flex align-items-center justify-content-center rounded-circle bg-light text-muted" style="width: 48px; height: 48px; border: 1.5px dashed #cbd5e1;">
-                                                                        <i class="bi bi-inbox fs-4 opacity-50"></i>
-                                                                    </div>
-                                                                    <span class="small fw-semibold text-muted">No students currently waiting.</span>
-                                                                </div>
+                                                        <div class="lineup-header-priority">
+                                                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                                                <h6 class="fw-bold text-warning-emphasis mb-0 d-flex align-items-center">
+                                                                    <i class="bi bi-star-fill me-2 text-warning"></i>Priority
+                                                                </h6>
+                                                                <span class="lineup-badge-pill bg-warning text-dark" id="ctrlPriorityBadge">0 Waiting</span>
                                                             </div>
+                                                            <button type="button" class="btn-global-call-next btn-call-priority" id="btnCallNextPriority" onclick="callNextByCategory('PRIORITY')">
+                                                                <i class="bi bi-megaphone-fill"></i> Call Next
+                                                            </button>
+                                                        </div>
+                                                        <div class="card-body p-2 p-sm-3">
+                                                            <div class="d-flex flex-column gap-2" id="ctrlPriorityList"></div>
                                                         </div>
                                                     </div>
                                                 </div>
 
-                                                <div class="col-lg-6">
+                                                <!-- COLUMN 2: STUDENTS -->
+                                                <div class="col-12 col-md-6 col-xl-3">
                                                     <div class="card controller-subcard h-100">
-                                                        <div class="lineup-header-employee d-flex align-items-center justify-content-between">
-                                                            <h6 class="fw-bold text-primary mb-0 d-flex align-items-center">
-                                                                <i class="bi bi-person-badge-fill me-2 fs-5 text-primary"></i>Employees Queue
-                                                            </h6>
-                                                            <span class="lineup-badge-employee" id="ctrlEmployeeBadge">0 Waiting</span>
-                                                        </div>
-                                                        <div class="card-body p-3">
-                                                            <div class="d-flex flex-column gap-2" id="ctrlEmployeeList">
-                                                                <div class="text-center py-4 my-2">
-                                                                    <div class="mx-auto mb-2 d-flex align-items-center justify-content-center rounded-circle bg-light text-muted" style="width: 48px; height: 48px; border: 1.5px dashed #cbd5e1;">
-                                                                        <i class="bi bi-inbox fs-4 opacity-50"></i>
-                                                                    </div>
-                                                                    <span class="small fw-semibold text-muted">No employees currently waiting.</span>
-                                                                </div>
+                                                        <div class="lineup-header-student">
+                                                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                                                <h6 class="fw-bold text-primary mb-0 d-flex align-items-center">
+                                                                    <i class="bi bi-mortarboard-fill me-2 text-primary"></i>Students
+                                                                </h6>
+                                                                <span class="lineup-badge-pill bg-primary text-white" id="ctrlStudentBadge">0 Waiting</span>
                                                             </div>
+                                                            <button type="button" class="btn-global-call-next btn-call-student" id="btnCallNextStudent" onclick="callNextByCategory('STUDENT')">
+                                                                <i class="bi bi-megaphone-fill"></i> Call Next
+                                                            </button>
+                                                        </div>
+                                                        <div class="card-body p-2 p-sm-3">
+                                                            <div class="d-flex flex-column gap-2" id="ctrlStudentList"></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- COLUMN 3: GUESTS -->
+                                                <div class="col-12 col-md-6 col-xl-3">
+                                                    <div class="card controller-subcard h-100">
+                                                        <div class="lineup-header-guest">
+                                                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                                                <h6 class="fw-bold text-success mb-0 d-flex align-items-center">
+                                                                    <i class="bi bi-person-heart me-2 text-success"></i>Guest
+                                                                </h6>
+                                                                <span class="lineup-badge-pill bg-success text-white" id="ctrlGuestBadge">0 Waiting</span>
+                                                            </div>
+                                                            <button type="button" class="btn-global-call-next btn-call-guest" id="btnCallNextGuest" onclick="callNextByCategory('GUEST')">
+                                                                <i class="bi bi-megaphone-fill"></i> Call Next
+                                                            </button>
+                                                        </div>
+                                                        <div class="card-body p-2 p-sm-3">
+                                                            <div class="d-flex flex-column gap-2" id="ctrlGuestList"></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- COLUMN 4: EMPLOYEES -->
+                                                <div class="col-12 col-md-6 col-xl-3">
+                                                    <div class="card controller-subcard h-100">
+                                                        <div class="lineup-header-employee">
+                                                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                                                <h6 class="fw-bold mb-0 d-flex align-items-center" style="color: #5b21b6;">
+                                                                    <i class="bi bi-person-badge-fill me-2" style="color: #7c3aed;"></i>Employee
+                                                                </h6>
+                                                                <span class="lineup-badge-pill text-white" style="background-color: #7c3aed;" id="ctrlEmployeeBadge">0 Waiting</span>
+                                                            </div>
+                                                            <button type="button" class="btn-global-call-next btn-call-employee" id="btnCallNextEmployee" onclick="callNextByCategory('EMPLOYEE')">
+                                                                <i class="bi bi-megaphone-fill"></i> Call Next
+                                                            </button>
+                                                        </div>
+                                                        <div class="card-body p-2 p-sm-3">
+                                                            <div class="d-flex flex-column gap-2" id="ctrlEmployeeList"></div>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -757,9 +844,12 @@ if ($db_connect && $user_id > 0) {
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content border-0 shadow-lg" style="border-radius: 1.25rem; overflow: hidden;">
                 <div class="modal-header text-white" style="background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);">
-                    <h5 class="modal-title fw-bold d-flex align-items-center" id="userDetailsModalLabel">
-                        <i class="bi bi-person-lines-fill me-2 fs-4"></i>Visitor Information Details
-                    </h5>
+                    <div class="d-flex align-items-center gap-2">
+                        <h5 class="modal-title fw-bold d-flex align-items-center mb-0" id="userDetailsModalLabel">
+                            <i class="bi bi-person-lines-fill me-2 fs-4"></i>Visitor Information Details
+                        </h5>
+                        <span id="modalTicketContextBadge" class="badge bg-white text-primary fw-bold px-2 py-1"></span>
+                    </div>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body p-4 bg-light" id="modalUserDetailsContent">
@@ -791,17 +881,30 @@ if ($db_connect && $user_id > 0) {
             const ticketDetailsContainer = document.getElementById('ticketDetailsContainer');
 
             const modalUserDetailsContent = document.getElementById('modalUserDetailsContent');
+            const modalTicketContextBadge = document.getElementById('modalTicketContextBadge');
 
-            const ctrlStudentBadge = document.getElementById('ctrlStudentBadge');
+            // 4-Column Badges & Lists
+            const ctrlPriorityBadge = document.getElementById('ctrlPriorityBadge');
+            const ctrlStudentBadge  = document.getElementById('ctrlStudentBadge');
+            const ctrlGuestBadge    = document.getElementById('ctrlGuestBadge');
             const ctrlEmployeeBadge = document.getElementById('ctrlEmployeeBadge');
-            const ctrlStudentList = document.getElementById('ctrlStudentList');
+
+            const ctrlPriorityList = document.getElementById('ctrlPriorityList');
+            const ctrlStudentList  = document.getElementById('ctrlStudentList');
+            const ctrlGuestList    = document.getElementById('ctrlGuestList');
             const ctrlEmployeeList = document.getElementById('ctrlEmployeeList');
 
-            const btnCallNext = document.getElementById('btnCallNext');
-            const btnStartServe = document.getElementById('btnStartServe');
-            const btnRecallVoice = document.getElementById('btnRecallVoice');
+            // Global Category Call Next Buttons
+            const btnCallNextPriority = document.getElementById('btnCallNextPriority');
+            const btnCallNextStudent  = document.getElementById('btnCallNextStudent');
+            const btnCallNextGuest    = document.getElementById('btnCallNextGuest');
+            const btnCallNextEmployee = document.getElementById('btnCallNextEmployee');
+
+            // Top Action Controls
+            const btnStartServe     = document.getElementById('btnStartServe');
             const btnCompleteTicket = document.getElementById('btnCompleteTicket');
-            const btnSkipTicket = document.getElementById('btnSkipTicket');
+            const btnRecallVoice    = document.getElementById('btnRecallVoice');
+            const btnSkipTicket     = document.getElementById('btnSkipTicket');
 
             const HANDLER_URL = '<?= BASE_URL; ?>admin/ajax/queue';
 
@@ -811,14 +914,57 @@ if ($db_connect && $user_id > 0) {
             let dynamicTimerInterval = null;
             let currentTimerBaseTime = null;
 
+            // Cache tickets for modal previewing (active + waiting)
+            let currentActiveTicket = null;
+            let waitingTicketsMap = {};
+
             function escapeHtml(str) {
-                if (!str) return '';
+                if (str === null || str === undefined) return '';
                 return String(str)
                     .replace(/&/g, '&amp;')
                     .replace(/</g, '&lt;')
                     .replace(/>/g, '&gt;')
                     .replace(/"/g, '&quot;')
                     .replace(/'/g, '&#039;');
+            }
+
+            // One-click Copy Utility
+            window.copyDetailValue = function(btnEl, encodedValue) {
+                const textToCopy = decodeURIComponent(encodedValue || '');
+                if (!textToCopy || textToCopy === 'N/A' || textToCopy === '---') return;
+
+                const onCopySuccess = () => {
+                    const originalHtml = btnEl.innerHTML;
+                    btnEl.innerHTML = '<i class="bi bi-check2 text-success fw-bold"></i> Copied';
+                    btnEl.classList.add('border-success', 'bg-success-subtle');
+                    setTimeout(() => {
+                        btnEl.innerHTML = originalHtml;
+                        btnEl.classList.remove('border-success', 'bg-success-subtle');
+                    }, 1500);
+                };
+
+                if (navigator.clipboard && window.isSecureContext) {
+                    navigator.clipboard.writeText(textToCopy).then(onCopySuccess).catch(() => fallbackCopy(textToCopy, onCopySuccess));
+                } else {
+                    fallbackCopy(textToCopy, onCopySuccess);
+                }
+            };
+
+            function fallbackCopy(text, callback) {
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                textArea.style.position = 'fixed';
+                textArea.style.left = '-9999px';
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    if (callback) callback();
+                } catch (err) {
+                    console.error('Fallback copy failed:', err);
+                }
+                document.body.removeChild(textArea);
             }
 
             function showSwalAlert(title, message, iconType = 'info') {
@@ -979,6 +1125,7 @@ if ($db_connect && $user_id > 0) {
                 .then(res => {
                     if (res.success && res.data) {
                         const ticket = res.data.now_serving;
+                        currentActiveTicket = ticket || null;
 
                         if (counterStatusText && counterStatusContainer) {
                             if (ticket && ticket.status === 'CALLED') {
@@ -1017,17 +1164,7 @@ if ($db_connect && $user_id > 0) {
                                 ctrlVisitorTypeTag.innerHTML = `<span class="visitor-badge-modern"><i class="bi ${visitorIcon}"></i> ${visitorType}</span>`;
                             }
 
-                            let entryTimeString = '---';
-                            if (ticket.queue_entry_time) {
-                                const entryDate = new Date(ticket.queue_entry_time);
-                                const timeFormatted = entryDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-                                const calledDate = ticket.called_at ? new Date(ticket.called_at) : new Date();
-                                const waitSecs = Math.max(0, Math.floor((calledDate - entryDate) / 1000));
-                                const waitMins = Math.floor(waitSecs / 60);
-                                entryTimeString = `${timeFormatted} (Waited: ${waitMins} min${waitMins !== 1 ? 's' : ''})`;
-                            }
-
-                            renderDynamicTicketDetails(ticket, entryTimeString);
+                            renderDynamicTicketDetails(ticket);
 
                             if (ticket.status === 'CALLED' && ticket.called_at) {
                                 currentTimerBaseTime = new Date(ticket.called_at);
@@ -1049,15 +1186,33 @@ if ($db_connect && $user_id > 0) {
                             renderEmptyDetailsState();
                         }
 
+                        // Categorize Waiting Tickets into 4 FIFO Lanes: Priority, Student, Guest, Employee
                         const waiting = res.data.up_next || [];
-                        const students = waiting.filter(t => t.visitor_type !== 'EMPLOYEE');
-                        const employees = waiting.filter(t => t.visitor_type === 'EMPLOYEE');
+                        waitingTicketsMap = {};
+                        waiting.forEach(item => {
+                            waitingTicketsMap[item.id] = item;
+                        });
 
-                        if (ctrlStudentBadge) ctrlStudentBadge.textContent = `${students.length} Waiting`;
-                        if (ctrlEmployeeBadge) ctrlEmployeeBadge.textContent = `${employees.length} Waiting`;
+                        const priorityList = waiting.filter(t => Number(t.is_priority) === 1);
+                        const studentList  = waiting.filter(t => Number(t.is_priority) !== 1 && (t.visitor_type || '').toUpperCase() === 'STUDENT');
+                        const guestList    = waiting.filter(t => Number(t.is_priority) !== 1 && (t.visitor_type || '').toUpperCase() === 'GUEST');
+                        const employeeList = waiting.filter(t => Number(t.is_priority) !== 1 && (t.visitor_type || '').toUpperCase() === 'EMPLOYEE');
 
-                        if (ctrlStudentList) renderStudentPills(ctrlStudentList, students, 'No students currently waiting.');
-                        if (ctrlEmployeeList) renderEmployeePills(ctrlEmployeeList, employees, 'No employees currently waiting.');
+                        if (ctrlPriorityBadge) ctrlPriorityBadge.textContent = `${priorityList.length} Waiting`;
+                        if (ctrlStudentBadge)  ctrlStudentBadge.textContent  = `${studentList.length} Waiting`;
+                        if (ctrlGuestBadge)    ctrlGuestBadge.textContent    = `${guestList.length} Waiting`;
+                        if (ctrlEmployeeBadge) ctrlEmployeeBadge.textContent = `${employeeList.length} Waiting`;
+
+                        if (btnCallNextPriority) btnCallNextPriority.disabled = priorityList.length === 0;
+                        if (btnCallNextStudent)  btnCallNextStudent.disabled  = studentList.length === 0;
+                        if (btnCallNextGuest)    btnCallNextGuest.disabled    = guestList.length === 0;
+                        if (btnCallNextEmployee) btnCallNextEmployee.disabled = employeeList.length === 0;
+
+                        if (ctrlPriorityList) renderCategoryPills(ctrlPriorityList, priorityList, 'No priority visitors waiting.');
+                        if (ctrlStudentList)  renderCategoryPills(ctrlStudentList, studentList, 'No students waiting.');
+                        if (ctrlGuestList)    renderCategoryPills(ctrlGuestList, guestList, 'No guests waiting.');
+                        if (ctrlEmployeeList) renderCategoryPills(ctrlEmployeeList, employeeList, 'No employees waiting.');
+
                     } else if (!res.success) {
                         if (controllerMainContent) controllerMainContent.classList.add('d-none');
                     }
@@ -1065,6 +1220,16 @@ if ($db_connect && $user_id > 0) {
                 .catch(err => {
                     console.error("Counter status error:", err);
                 });
+            }
+
+            function computeEntryTimeString(ticket) {
+                if (!ticket || !ticket.queue_entry_time) return '---';
+                const entryDate = new Date(ticket.queue_entry_time);
+                const timeFormatted = entryDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+                const refDate = ticket.called_at ? new Date(ticket.called_at) : new Date();
+                const waitSecs = Math.max(0, Math.floor((refDate - entryDate) / 1000));
+                const waitMins = Math.floor(waitSecs / 60);
+                return `${timeFormatted} (${ticket.called_at ? 'Waited' : 'Waiting'}: ${waitMins} min${waitMins !== 1 ? 's' : ''})`;
             }
 
             function renderEmptyDetailsState() {
@@ -1075,17 +1240,9 @@ if ($db_connect && $user_id > 0) {
                             <i class="bi bi-ticket-detailed fs-2 text-primary opacity-75"></i>
                         </div>
                         <h6 class="fw-bold text-dark mb-1">No Active Ticket Selected</h6>
-                        <p class="small text-muted mb-0">Click <span class="badge bg-success-subtle text-success border border-success-subtle fw-semibold px-2 py-1"><i class="bi bi-megaphone-fill me-1"></i>Call Next</span> to proceed with the next visitor in queue.</p>
+                        <p class="small text-muted mb-0">Click <span class="badge bg-primary-subtle text-primary border border-primary-subtle fw-semibold px-2 py-1"><i class="bi bi-megaphone-fill me-1"></i>Call Next</span> on any category lane below to call the next visitor.</p>
                     </div>
                 `;
-                if (modalUserDetailsContent) {
-                    modalUserDetailsContent.innerHTML = `
-                        <div class="text-center py-4">
-                            <i class="bi bi-exclamation-circle text-muted fs-1 mb-2"></i>
-                            <p class="text-muted fw-semibold mb-0">No active ticket available to display details.</p>
-                        </div>
-                    `;
-                }
             }
 
             function formatYearLevel(year) {
@@ -1121,7 +1278,21 @@ if ($db_connect && $user_id > 0) {
                 return toTitleCase(baseName);
             }
 
-            function renderDetailTile(iconClass, label, value, customClass = '') {
+            function renderDetailTile(iconClass, label, value, customClass = '', allowCopy = true, subtitle = '') {
+                const safeVal = value || 'N/A';
+                const canCopy = allowCopy && safeVal !== 'N/A' && safeVal !== '---';
+                const copyBtnHtml = canCopy ? `
+                    <button type="button" class="btn-copy-detail ms-2" onclick="copyDetailValue(this, '${encodeURIComponent(safeVal)}')" title="Copy ${escapeHtml(label)}">
+                        <i class="bi bi-clipboard"></i>
+                    </button>
+                ` : '';
+
+                const subtitleHtml = subtitle ? `
+                    <span class="text-primary fw-semibold d-block mt-1" style="font-size: 0.7rem;">
+                        <i class="bi bi-tag me-1"></i>${escapeHtml(subtitle)}
+                    </span>
+                ` : '';
+
                 return `
                     <div class="col-12 col-sm-6">
                         <div class="detail-tile d-flex align-items-start">
@@ -1129,15 +1300,52 @@ if ($db_connect && $user_id > 0) {
                                 <i class="bi ${iconClass} fs-5"></i>
                             </div>
                             <div class="min-w-0 flex-grow-1">
-                                <span class="fw-semibold text-muted d-block mb-1" style="font-size: 0.75rem;">${label}</span>
-                                <strong class="text-dark d-block text-break ${customClass}" style="font-size: 0.875rem; line-height: 1.35; word-break: break-word;" title="${escapeHtml(value)}">${escapeHtml(value)}</strong>
+                                <div class="d-flex align-items-center justify-content-between mb-1">
+                                    <span class="fw-semibold text-muted d-block" style="font-size: 0.75rem;">${escapeHtml(label)}</span>
+                                    ${copyBtnHtml}
+                                </div>
+                                <strong class="text-dark d-block text-break ${customClass}" style="font-size: 0.875rem; line-height: 1.35; word-break: break-word;" title="${escapeHtml(safeVal)}">${escapeHtml(safeVal)}</strong>
+                                ${subtitleHtml}
                             </div>
                         </div>
                     </div>
                 `;
             }
 
-            function renderDynamicTicketDetails(ticket, entryTimeString) {
+            function buildAdditionalDetailsHtml(ticket) {
+                if (!Array.isArray(ticket.additional_details) || ticket.additional_details.length === 0) {
+                    return '';
+                }
+
+                const tilesHtml = ticket.additional_details.map(item => {
+                    const fieldTitle = (item.field_title || 'Additional Detail').trim();
+                    const answerVal  = (item.answer_value || '').trim();
+                    if (!answerVal) return '';
+
+                    const iconClass = item.detail_mode === 'SELECT' ? 'bi-list-check' : 'bi-input-cursor-text';
+                    const contextLabel = item.sub_concern_name 
+                        ? `${item.transaction_name || ''} • ${item.sub_concern_name}`
+                        : (item.transaction_name || '');
+
+                    return renderDetailTile(iconClass, fieldTitle, answerVal, '', true, contextLabel);
+                }).join('');
+
+                if (!tilesHtml) {
+                    return '';
+                }
+
+                return `
+                    <div class="col-12">
+                        <div class="additional-details-divider">
+                            <i class="bi bi-info-circle-fill text-primary"></i>
+                            <span>Additional Details</span>
+                        </div>
+                    </div>
+                    ${tilesHtml}
+                `;
+            }
+
+            function renderDynamicTicketDetails(ticket) {
                 if (!ticketDetailsContainer) return;
                 
                 const concernsHtml = buildLogbookStyleConcerns(ticket);
@@ -1159,25 +1367,46 @@ if ($db_connect && $user_id > 0) {
                         </div>
 
                         <div class="pt-3 text-end">
-                            <button type="button" class="btn btn-outline-primary fw-bold d-inline-flex align-items-center gap-2 px-4 py-2 rounded-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#userDetailsModal">
+                            <button type="button" class="btn btn-outline-primary fw-bold d-inline-flex align-items-center gap-2 px-4 py-2 rounded-3 shadow-sm" onclick="openVisitorDetailsModal(null)">
                                 <i class="bi bi-person-bounding-box fs-5"></i>
                                 <span>View Visitor Full Details</span>
                             </button>
                         </div>
                     </div>
                 `;
-
-                populateVisitorModal(ticket, entryTimeString);
             }
+
+            // Opens the Visitor Full Details Modal for either the active ticket (null) or a waiting ticket (ticketId)
+            window.openVisitorDetailsModal = function(ticketId = null) {
+                const targetTicket = ticketId ? waitingTicketsMap[ticketId] : currentActiveTicket;
+                if (!targetTicket) {
+                    showSwalAlert("Notice", "Ticket details are no longer available.", "info");
+                    return;
+                }
+
+                populateVisitorModal(targetTicket, computeEntryTimeString(targetTicket));
+
+                const modalEl = document.getElementById('userDetailsModal');
+                if (modalEl && typeof bootstrap !== 'undefined') {
+                    const modalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
+                    modalInstance.show();
+                }
+            };
 
             function populateVisitorModal(ticket, entryTimeString) {
                 if (!modalUserDetailsContent) return;
-                const visitorType = (ticket.visitor_type || 'VISITOR').toUpperCase();
-                const fullName    = buildFormattedName(ticket);
-                const email       = ticket.email || 'N/A';
-                const sex         = ticket.sex ? ticket.sex.charAt(0).toUpperCase() + ticket.sex.slice(1).toLowerCase() : 'N/A';
-                
-                const concernsHtml = buildLogbookStyleConcerns(ticket);
+
+                if (modalTicketContextBadge) {
+                    const statusLabel = ticket.status ? ` • ${ticket.status}` : '';
+                    modalTicketContextBadge.textContent = `${ticket.ticket_number || ''}${statusLabel}`;
+                }
+
+                const visitorType           = (ticket.visitor_type || 'VISITOR').toUpperCase();
+                const fullName              = buildFormattedName(ticket);
+                const email                 = ticket.email || 'N/A';
+                const sex                   = ticket.sex ? ticket.sex.charAt(0).toUpperCase() + ticket.sex.slice(1).toLowerCase() : 'N/A';
+                const concernsHtml          = buildLogbookStyleConcerns(ticket);
+                const additionalDetailsHtml = buildAdditionalDetailsHtml(ticket);
 
                 let dynamicFieldsHTML = '';
 
@@ -1195,32 +1424,35 @@ if ($db_connect && $user_id > 0) {
                     }
 
                     dynamicFieldsHTML = `
-                        ${renderDetailTile('bi-person-fill', 'Name', fullName, 'fs-6')}
-                        ${renderDetailTile('bi-mortarboard-fill', 'Course / Program', courseDisplay)}
-                        ${renderDetailTile('bi-envelope-fill', 'Email', email)}
-                        ${renderDetailTile('bi-journal-bookmark-fill', 'Year Level', yearLevel)}
-                        ${renderDetailTile('bi-card-text', 'Student ID', studentId)}
-                        ${renderDetailTile('bi-gender-ambiguous', 'Sex', sex)}
+                        ${renderDetailTile('bi-person-fill', 'Name', fullName, 'fs-6', true)}
+                        ${renderDetailTile('bi-mortarboard-fill', 'Course / Program', courseDisplay, '', true)}
+                        ${renderDetailTile('bi-envelope-fill', 'Email', email, '', true)}
+                        ${renderDetailTile('bi-journal-bookmark-fill', 'Year Level', yearLevel, '', true)}
+                        ${renderDetailTile('bi-card-text', 'Student ID', studentId, '', true)}
+                        ${renderDetailTile('bi-gender-ambiguous', 'Sex', sex, '', true)}
+                        ${additionalDetailsHtml}
                     `;
                 } else if (visitorType === 'EMPLOYEE') {
+                    const empId      = ticket.reference_id || 'N/A';
                     const department = ticket.department_code || ticket.department_name || 'N/A';
                     const office     = ticket.office_name || ticket.office_code || 'N/A';
 
                     dynamicFieldsHTML = `
-                        ${renderDetailTile('bi-person-fill', 'Name', fullName, 'fs-6')}
-                        ${renderDetailTile('bi-envelope-fill', 'Email', email)}
-                        ${renderDetailTile('bi-building', 'Department', department)}
-                        ${renderDetailTile('bi-geo-alt-fill', 'Office', office)}
-                        ${renderDetailTile('bi-gender-ambiguous', 'Sex', sex)}
+                        ${renderDetailTile('bi-person-fill', 'Name', fullName, 'fs-6', true)}
+                        ${renderDetailTile('bi-card-text', 'Employee ID', empId, '', true)}
+                        ${renderDetailTile('bi-envelope-fill', 'Email', email, '', true)}
+                        ${renderDetailTile('bi-building', 'Department', department, '', true)}
+                        ${renderDetailTile('bi-geo-alt-fill', 'Office', office, '', true)}
+                        ${renderDetailTile('bi-gender-ambiguous', 'Sex', sex, '', true)}
+                        ${additionalDetailsHtml}
                     `;
                 } else {
-                    const contactNo = ticket.contact_no || 'N/A';
-
+                    // Guest / Visitor (Contact Number removed)
                     dynamicFieldsHTML = `
-                        ${renderDetailTile('bi-person-fill', 'Name', fullName, 'fs-6')}
-                        ${renderDetailTile('bi-envelope-fill', 'Email', email)}
-                        ${renderDetailTile('bi-telephone-fill', 'Contact Number', contactNo)}
-                        ${renderDetailTile('bi-gender-ambiguous', 'Sex', sex)}
+                        ${renderDetailTile('bi-person-fill', 'Name', fullName, 'fs-6', true)}
+                        ${renderDetailTile('bi-envelope-fill', 'Email', email, '', true)}
+                        ${renderDetailTile('bi-gender-ambiguous', 'Sex', sex, '', true)}
+                        ${additionalDetailsHtml}
                     `;
                 }
 
@@ -1246,60 +1478,44 @@ if ($db_connect && $user_id > 0) {
                     <div class="row g-3">
                         ${dynamicFieldsHTML}
                         ${concernsBlockHtml}
-                        ${renderDetailTile('bi-clock-history', 'Queue Entry Time', entryTimeString)}
+                        ${renderDetailTile('bi-clock-history', 'Queue Entry Time', entryTimeString, '', false)}
                     </div>
                 `;
             }
 
-            function renderStudentPills(container, list, emptyMsg) {
+            function renderCategoryPills(container, list, emptyMsg) {
                 if (list.length === 0) {
                     container.innerHTML = `
                         <div class="text-center py-4 my-2">
-                            <div class="mx-auto mb-2 d-flex align-items-center justify-content-center rounded-circle bg-light text-muted" style="width: 48px; height: 48px; border: 1.5px dashed #cbd5e1;">
-                                <i class="bi bi-inbox fs-4 opacity-50"></i>
+                            <div class="mx-auto mb-2 d-flex align-items-center justify-content-center rounded-circle bg-light text-muted" style="width: 44px; height: 44px; border: 1.5px dashed #cbd5e1;">
+                                <i class="bi bi-inbox fs-5 opacity-50"></i>
                             </div>
-                            <span class="small fw-semibold text-muted">${emptyMsg}</span>
+                            <span class="small fw-semibold text-muted d-block">${emptyMsg}</span>
                         </div>
                     `;
                     return;
                 }
 
-                container.innerHTML = list.map((item, index) => `
-                    <div class="ticket-pill-item">
-                        <div class="d-flex align-items-center">
-                            <span class="ticket-pill-pos">${index + 1}</span>
-                            <span class="ticket-pill-number">${item.ticket_number}</span>
-                        </div>
-                        ${item.is_priority == 1 ? '<span class="badge bg-warning text-dark fw-bold px-3 py-1.5 rounded-pill"><i class="bi bi-star-fill text-danger me-1"></i>Priority</span>' : '<span class="badge bg-light text-secondary border fw-semibold px-3 py-1 rounded-pill small">Waiting</span>'}
-                    </div>
-                `).join('');
-            }
+                container.innerHTML = list.map((item, index) => {
+                    const visitorTypeBadge = Number(item.is_priority) === 1
+                        ? `<span class="badge bg-warning-subtle text-dark border border-warning-subtle px-2 py-0.5" style="font-size: 0.65rem;">${escapeHtml(item.visitor_type)}</span>`
+                        : '';
 
-            function renderEmployeePills(container, list, emptyMsg) {
-                if (list.length === 0) {
-                    container.innerHTML = `
-                        <div class="text-center py-4 my-2">
-                            <div class="mx-auto mb-2 d-flex align-items-center justify-content-center rounded-circle bg-light text-muted" style="width: 48px; height: 48px; border: 1.5px dashed #cbd5e1;">
-                                <i class="bi bi-inbox fs-4 opacity-50"></i>
+                    return `
+                        <div class="ticket-pill-item">
+                            <div class="d-flex align-items-center min-w-0">
+                                <span class="ticket-pill-pos">${index + 1}</span>
+                                <div class="min-w-0">
+                                    <span class="ticket-pill-number d-block lh-1">${escapeHtml(item.ticket_number)}</span>
+                                    ${visitorTypeBadge}
+                                </div>
                             </div>
-                            <span class="small fw-semibold text-muted">${emptyMsg}</span>
+                            <button type="button" class="btn-preview-visitor" onclick="openVisitorDetailsModal(${item.id})" title="Preview Visitor Full Details">
+                                <i class="bi bi-eye-fill"></i> Details
+                            </button>
                         </div>
                     `;
-                    return;
-                }
-
-                container.innerHTML = list.map((item, index) => `
-                    <div class="ticket-pill-item">
-                        <div class="d-flex align-items-center">
-                            <span class="ticket-pill-pos">${index + 1}</span>
-                            <span class="ticket-pill-number me-2">${item.ticket_number}</span>
-                            ${item.is_priority == 1 ? '<span class="badge bg-warning text-dark fw-bold px-2 py-1 rounded-pill small ms-1"><i class="bi bi-star-fill text-danger me-1"></i>Priority</span>' : ''}
-                        </div>
-                        <button type="button" class="btn-call-employee-direct" onclick="callSpecificTicket(${item.id})">
-                            <i class="bi bi-megaphone-fill me-1"></i> Call Next
-                        </button>
-                    </div>
-                `).join('');
+                }).join('');
             }
 
             function startDynamicTimer() {
@@ -1354,16 +1570,16 @@ if ($db_connect && $user_id > 0) {
                 });
             }
 
-            window.callSpecificTicket = function(ticketId) {
-                if (!ticketId) return;
-                sendQueueAction('call_specific_ticket', { ticket_id: ticketId });
+            // Global Call Next per Category Lane (FIFO)
+            window.callNextByCategory = function(category) {
+                if (!category) return;
+                sendQueueAction('call_next_category', { category: category });
             };
 
-            if (btnCallNext) btnCallNext.addEventListener('click', () => sendQueueAction('call_next'));
-            if (btnStartServe) btnStartServe.addEventListener('click', () => sendQueueAction('serve_ticket'));
-            if (btnRecallVoice) btnRecallVoice.addEventListener('click', () => sendQueueAction('recall_ticket'));
+            if (btnStartServe)     btnStartServe.addEventListener('click', () => sendQueueAction('serve_ticket'));
             if (btnCompleteTicket) btnCompleteTicket.addEventListener('click', () => sendQueueAction('complete_ticket'));
-            if (btnSkipTicket) btnSkipTicket.addEventListener('click', () => sendQueueAction('skip_ticket'));
+            if (btnRecallVoice)    btnRecallVoice.addEventListener('click', () => sendQueueAction('recall_ticket'));
+            if (btnSkipTicket)     btnSkipTicket.addEventListener('click', () => sendQueueAction('skip_ticket'));
 
             if (HAS_ASSIGNMENT && activeOfficeId && parseInt(activeCounterId, 10) > 0) {
                 setInterval(loadCounterData, 4000);
