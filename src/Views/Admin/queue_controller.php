@@ -9,16 +9,6 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-# Page Helpers
-require_once ADMIN_PAGE_HEADER_PATH;
-
-# Page Header Initialization
-$title_page   = "Service Counter";
-$active_links = [
-    ['label' => $title_page, 'url' => '']
-];
-$page_header = render_page_header((string) $title_page, $active_links) ?? '';
-
 // 1. Resolve User ID using $session_class wrapper or raw session
 $user_id = 0;
 if (isset($session_class) && method_exists($session_class, 'getValue')) {
@@ -92,22 +82,36 @@ if ($db_connect && $user_id > 0) {
     <?php include_once ADMIN_META_DATA_PATH; ?>
     <?php include_once ADMIN_LINK_PATH; ?>
 
-    <!-- WORKSTATION CUSTOM THEME STYLES -->
+    <!-- WORKSTATION CUSTOM KIOSK THEME STYLES -->
     <style>
         :root {
-            --bg-wrapper: linear-gradient(135deg, rgba(11, 32, 117, 0.25) 0%, rgba(0, 10, 76, 0.45) 100%), url('<?= BASE_URL; ?>public/assets/main/css/bg-template.png');
-            --bg-header: rgba(0, 16, 77, 0.88);
-            --border-header: 1px solid rgba(255, 255, 255, 0.15);
-            --header-title-color: #ffffff;
-            
             --kiosk-primary: #1d4ed8;
             --kiosk-primary-hover: #1e40af;
             --kiosk-primary-light: #eff6ff;
             --kiosk-border: #e2e8f0;
             --kiosk-bg-subtle: #f8fafc;
             --kiosk-shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
-            --kiosk-shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+            --kiosk-shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.06);
             --kiosk-radius: 1rem;
+        }
+
+        body.kiosk-standalone-body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, rgba(11, 32, 117, 0.85) 0%, rgba(0, 10, 76, 0.92) 100%), url('<?= BASE_URL; ?>public/assets/main/css/bg-template.png');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            margin: 0;
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+        }
+
+        .kiosk-standalone-container {
+            width: 100%;
+            max-width: 1440px;
+            margin: 0 auto;
         }
 
         .kiosk-main-card {
@@ -653,237 +657,214 @@ if ($db_connect && $user_id > 0) {
     </style>
 </head>
 
-<body>
-    <div class="wrapper">
-        <?php include_once ADMIN_SIDEBAR_PATH; ?>
-        <div class="main-panel">
+<body class="kiosk-standalone-body">
+    <div class="kiosk-standalone-container">
+        <div class="card kiosk-main-card border-0">
 
-            <?php include_once ADMIN_HEADER_PATH; ?>
-
-            <div class="container">
-                <div class="page-inner">
-
-                    <!-- Page Header -->
-                    <div>
-                        <?php echo is_array($page_header) ? '' : $page_header; ?>
+            <!-- KIOSK HEADER BANNER WITH ASSIGNED OFFICE, COUNTER NAME & SERVICES MODAL BUTTON -->
+            <div class="kiosk-header-banner d-flex flex-wrap align-items-center justify-content-between gap-3">
+                <div class="d-flex align-items-center gap-2 gap-sm-3 min-w-0">
+                    <div class="p-2 rounded-3 text-white d-flex align-items-center justify-content-center flex-shrink-0" style="background-color: rgba(255, 255, 255, 0.2); width: 40px; height: 40px;">
+                        <i class="bi bi-building fs-4"></i>
                     </div>
-
-                    <div class="row justify-content-center w-100 mx-0">
-                        <div class="col-12 px-0">
-                            <div class="card kiosk-main-card border-0">
-
-                                <!-- KIOSK HEADER BANNER WITH ASSIGNED OFFICE, COUNTER NAME & SERVICES MODAL BUTTON -->
-                                <div class="kiosk-header-banner d-flex flex-wrap align-items-center justify-content-between gap-3">
-                                    <div class="d-flex align-items-center gap-2 gap-sm-3 min-w-0">
-                                        <div class="p-2 rounded-3 text-white d-flex align-items-center justify-content-center flex-shrink-0" style="background-color: rgba(255, 255, 255, 0.2); width: 40px; height: 40px;">
-                                            <i class="bi bi-building fs-4"></i>
-                                        </div>
-                                        <div class="min-w-0">
-                                            <h4 class="fw-bold text-white mb-0 tracking-wide text-truncate fs-6 fs-sm-5" id="headerOfficeName">
-                                                <?= $assigned_office ? htmlspecialchars($assigned_office['office_name']) . ' (' . htmlspecialchars($assigned_office['office_code']) . ')' : 'No Workstation Assigned'; ?>
-                                            </h4>
-                                            <p class="text-white-50 small mb-0" id="headerCounterName">
-                                                <?= $assigned_office ? htmlspecialchars($assigned_office['counter_label']) : 'Service Counter Workstation'; ?>
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    <!-- RIGHT SIDE: HANDLED SERVICES ICON BUTTON + HIDDEN WORKSTATION INPUTS -->
-                                    <div class="d-flex align-items-center gap-2">
-                                        <?php if ($assigned_office): ?>
-                                            <button type="button" class="btn-header-services" id="btnViewWindowServices" onclick="openWindowServicesModal()" title="View Handled Transactions & Sub-Transactions" aria-label="View Handled Transactions & Sub-Transactions">
-                                                <i class="bi bi-list-ul fs-5"></i>
-                                            </button>
-                                            <input type="hidden" id="officeSelect" value="<?= (int)$assigned_office['office_id']; ?>">
-                                            <input type="hidden" id="counterSelect" value="<?= (int)$assigned_office['counter_id']; ?>">
-                                        <?php else: ?>
-                                            <input type="hidden" id="officeSelect" value="">
-                                            <input type="hidden" id="counterSelect" value="0">
-                                        <?php endif; ?>
-                                    </div>
-                                </div>
-
-                                <!-- CONTROLLER MAIN BODY -->
-                                <div class="card-body p-3 p-sm-4">
-                                    
-                                    <?php if (!$assigned_office): ?>
-                                        <!-- UNASSIGNED STAFF FALLBACK CARD -->
-                                        <div class="card border-0 shadow-sm rounded-4 overflow-hidden my-2" id="unassignedFallbackCard">
-                                            <div class="card-body p-4 p-md-5 text-center">
-                                                <div class="mx-auto mb-3 d-flex align-items-center justify-content-center rounded-circle" 
-                                                     style="width: 88px; height: 88px; background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border: 2px dashed #93c5fd;">
-                                                    <i class="bi bi-person-workspace text-primary" style="font-size: 2.6rem;"></i>
-                                                </div>
-                                                <h4 class="fw-bold text-dark mb-2">Workstation Not Assigned</h4>
-                                                <p class="text-muted mx-auto mb-4" style="max-width: 500px; font-size: 0.95rem; line-height: 1.65;">
-                                                    Your account is active, but you have not been assigned to both an office and a service counter for today's shift. Please coordinate with your station manager or administrator to configure your workstation assignment.
-                                                </p>
-                                                <div>
-                                                    <button type="button" class="btn btn-primary fw-bold px-4 py-2 rounded-3 shadow-sm d-inline-flex align-items-center gap-2" onclick="window.location.reload();">
-                                                        <i class="bi bi-arrow-clockwise fs-5"></i>
-                                                        <span>Check Assignment Status</span>
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    <?php else: ?>
-                                        <div class="d-none" id="controllerMainContent">
-                                            
-                                            <!-- GRID TOP BAR: STATUS BADGE & TIMER -->
-                                            <div class="row g-0 align-items-center mb-3">
-                                                <div class="col-lg-4 col-md-5 d-flex justify-content-center">
-                                                    <div id="counterStatusContainer" class="status-pill-modern status-on-duty">
-                                                        <span id="counterStatusText">READY TO SERVE</span>
-                                                    </div>
-                                                </div>
-
-                                                <div class="col-lg-8 col-md-7 d-flex justify-content-center mt-2 mt-md-0">
-                                                    <div class="digital-timer-card">
-                                                        <i class="bi bi-stopwatch fs-5"></i>
-                                                        <span id="digitalElapsedTimer">00:00</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <!-- TOP SECTION: 2-COLUMN SERVING HERO BOX -->
-                                            <div class="card serving-hero-card mb-4">
-                                                <div class="row g-0">
-                                                    <div class="col-lg-4 col-md-5 ticket-hero-left">
-                                                        <div class="d-flex flex-column align-items-center text-center">
-                                                            <div class="text-info text-uppercase fw-bold small tracking-wider">
-                                                                <i class="bi bi-ticket-perforated-fill slant-ticket-icon"></i>QUEUE NUMBER
-                                                            </div>
-                                                            <div id="ctrlWindowNumberTag" class="mt-2"></div>
-                                                        </div>
-
-                                                        <div class="d-flex flex-column align-items-center my-4">
-                                                            <div class="ticket-hero-number" id="ctrlServingTicket">---</div>
-                                                            <div id="ctrlPriorityTag" class="mt-2"></div>
-                                                        </div>
-
-                                                        <div id="ctrlVisitorTypeTag" class="mt-2"></div>
-                                                    </div>
-
-                                                    <div class="col-lg-8 col-md-7 ticket-hero-right" id="ticketDetailsContainer">
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <!-- HIGHLIGHTED ACTION CONTROLS BAR CONTAINER (2x2 GRID: Serve & Complete / Recall & Skip) -->
-                                            <div class="card action-bar-card mb-4">
-                                                <div class="card-body p-3">
-                                                    <div class="d-flex flex-column gap-2 gap-sm-3">
-                                                        
-                                                        <!-- ROW 1: SERVE & COMPLETE -->
-                                                        <div class="row g-2 g-sm-3">
-                                                            <div class="col-12 col-sm-6">
-                                                                <button type="button" class="btn btn-action-modern btn-action-hero btn-ctrl-serve" id="btnStartServe">
-                                                                    <i class="bi bi-play-circle-fill"></i> Serve
-                                                                </button>
-                                                            </div>
-                                                            <div class="col-12 col-sm-6">
-                                                                <button type="button" class="btn btn-action-modern btn-action-hero btn-ctrl-complete" id="btnCompleteTicket">
-                                                                    <i class="bi bi-check-circle-fill"></i> Complete
-                                                                </button>
-                                                            </div>
-                                                        </div>
-
-                                                        <!-- ROW 2: RECALL & SKIP -->
-                                                        <div class="row g-2 g-sm-3">
-                                                            <div class="col-12 col-sm-6">
-                                                                <button type="button" class="btn btn-action-modern btn-ctrl-recall" id="btnRecallVoice">
-                                                                    <i class="bi bi-arrow-counterclockwise"></i> Recall
-                                                                </button>
-                                                            </div>
-                                                            <div class="col-12 col-sm-6">
-                                                                <button type="button" class="btn btn-action-modern btn-ctrl-skip" id="btnSkipTicket">
-                                                                    <i class="bi bi-dash-circle"></i> Skip
-                                                                </button>
-                                                            </div>
-                                                        </div>
-
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <!-- BOTTOM 3-COLUMN CATEGORY LINEUP SECTION (ALWAYS VISIBLE: PRIORITY, REGULAR, EMPLOYEE) -->
-                                            <div class="row g-3 align-items-stretch">
-                                                
-                                                <!-- COLUMN 1: PRIORITY -->
-                                                <div class="col-12 col-lg-4">
-                                                    <div class="card controller-subcard">
-                                                        <div class="lineup-header-priority">
-                                                            <div class="d-flex align-items-center justify-content-between mb-2">
-                                                                <h6 class="fw-bold text-warning-emphasis mb-0 d-flex align-items-center">
-                                                                    <i class="bi bi-star-fill me-2 text-warning"></i>Priority
-                                                                </h6>
-                                                                <span class="lineup-badge-pill bg-warning text-dark" id="ctrlPriorityBadge">0 Waiting</span>
-                                                            </div>
-                                                            <button type="button" class="btn-global-call-next btn-call-priority" id="btnCallNextPriority" onclick="callNextByCategory('PRIORITY')">
-                                                                <i class="bi bi-megaphone-fill"></i> Call Next
-                                                            </button>
-                                                        </div>
-                                                        <div class="card-body p-2 p-sm-3">
-                                                            <div class="d-flex flex-column gap-2" id="ctrlPriorityList"></div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                <!-- COLUMN 2: REGULAR (STUDENTS & GUESTS) -->
-                                                <div class="col-12 col-lg-4">
-                                                    <div class="card controller-subcard">
-                                                        <div class="lineup-header-regular">
-                                                            <div class="d-flex align-items-center justify-content-between mb-2">
-                                                                <h6 class="fw-bold text-primary mb-0 d-flex align-items-center">
-                                                                    <i class="bi bi-people-fill me-2 text-primary"></i>Regular
-                                                                </h6>
-                                                                <span class="lineup-badge-pill bg-primary text-white" id="ctrlRegularBadge">0 Waiting</span>
-                                                            </div>
-                                                            <button type="button" class="btn-global-call-next btn-call-regular" id="btnCallNextRegular" onclick="callNextByCategory('REGULAR')">
-                                                                <i class="bi bi-megaphone-fill"></i> Call Next
-                                                            </button>
-                                                        </div>
-                                                        <div class="card-body p-2 p-sm-3">
-                                                            <div class="d-flex flex-column gap-2" id="ctrlRegularList"></div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                <!-- COLUMN 3: EMPLOYEE -->
-                                                <div class="col-12 col-lg-4">
-                                                    <div class="card controller-subcard">
-                                                        <div class="lineup-header-employee">
-                                                            <div class="d-flex align-items-center justify-content-between mb-2">
-                                                                <h6 class="fw-bold mb-0 d-flex align-items-center" style="color: #5b21b6;">
-                                                                    <i class="bi bi-person-badge-fill me-2" style="color: #7c3aed;"></i>Employee
-                                                                </h6>
-                                                                <span class="lineup-badge-pill text-white" style="background-color: #7c3aed;" id="ctrlEmployeeBadge">0 Waiting</span>
-                                                            </div>
-                                                            <button type="button" class="btn-global-call-next btn-call-employee" id="btnCallNextEmployee" onclick="callNextByCategory('EMPLOYEE')">
-                                                                <i class="bi bi-megaphone-fill"></i> Call Next
-                                                            </button>
-                                                        </div>
-                                                        <div class="card-body p-2 p-sm-3">
-                                                            <div class="d-flex flex-column gap-2" id="ctrlEmployeeList"></div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                            </div>
-
-                                        </div>
-                                    <?php endif; ?>
-
-                                </div>
-
-                            </div>
-                        </div>
+                    <div class="min-w-0">
+                        <h4 class="fw-bold text-white mb-0 tracking-wide text-truncate fs-6 fs-sm-5" id="headerOfficeName">
+                            <?= $assigned_office ? htmlspecialchars($assigned_office['office_name']) . ' (' . htmlspecialchars($assigned_office['office_code']) . ')' : 'No Workstation Assigned'; ?>
+                        </h4>
+                        <p class="text-white-50 small mb-0" id="headerCounterName">
+                            <?= $assigned_office ? htmlspecialchars($assigned_office['counter_label']) : 'Service Counter Workstation'; ?>
+                        </p>
                     </div>
+                </div>
 
+                <!-- RIGHT SIDE: HANDLED SERVICES ICON BUTTON + HIDDEN WORKSTATION INPUTS -->
+                <div class="d-flex align-items-center gap-2">
+                    <?php if ($assigned_office): ?>
+                        <button type="button" class="btn-header-services" id="btnViewWindowServices" onclick="openWindowServicesModal()" title="View Handled Transactions & Sub-Transactions" aria-label="View Handled Transactions & Sub-Transactions">
+                            <i class="bi bi-list-ul fs-5"></i>
+                        </button>
+                        <input type="hidden" id="officeSelect" value="<?= (int)$assigned_office['office_id']; ?>">
+                        <input type="hidden" id="counterSelect" value="<?= (int)$assigned_office['counter_id']; ?>">
+                    <?php else: ?>
+                        <input type="hidden" id="officeSelect" value="">
+                        <input type="hidden" id="counterSelect" value="0">
+                    <?php endif; ?>
                 </div>
             </div>
 
-            <?php include_once ADMIN_FOOTER_PATH; ?>
+            <!-- CONTROLLER MAIN BODY -->
+            <div class="card-body p-3 p-sm-4">
+                
+                <?php if (!$assigned_office): ?>
+                    <!-- UNASSIGNED STAFF FALLBACK CARD -->
+                    <div class="card border-0 shadow-sm rounded-4 overflow-hidden my-2" id="unassignedFallbackCard">
+                        <div class="card-body p-4 p-md-5 text-center">
+                            <div class="mx-auto mb-3 d-flex align-items-center justify-content-center rounded-circle" 
+                                 style="width: 88px; height: 88px; background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border: 2px dashed #93c5fd;">
+                                <i class="bi bi-person-workspace text-primary" style="font-size: 2.6rem;"></i>
+                            </div>
+                            <h4 class="fw-bold text-dark mb-2">Workstation Not Assigned</h4>
+                            <p class="text-muted mx-auto mb-4" style="max-width: 500px; font-size: 0.95rem; line-height: 1.65;">
+                                Your account is active, but you have not been assigned to both an office and a service counter for today's shift. Please coordinate with your station manager or administrator to configure your workstation assignment.
+                            </p>
+                            <div>
+                                <button type="button" class="btn btn-primary fw-bold px-4 py-2 rounded-3 shadow-sm d-inline-flex align-items-center gap-2" onclick="window.location.reload();">
+                                    <i class="bi bi-arrow-clockwise fs-5"></i>
+                                    <span>Check Assignment Status</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                <?php else: ?>
+                    <div class="d-none" id="controllerMainContent">
+                        
+                        <!-- GRID TOP BAR: STATUS BADGE & TIMER -->
+                        <div class="row g-0 align-items-center mb-3">
+                            <div class="col-lg-4 col-md-5 d-flex justify-content-center">
+                                <div id="counterStatusContainer" class="status-pill-modern status-on-duty">
+                                    <span id="counterStatusText">READY TO SERVE</span>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-8 col-md-7 d-flex justify-content-center mt-2 mt-md-0">
+                                <div class="digital-timer-card">
+                                    <i class="bi bi-stopwatch fs-5"></i>
+                                    <span id="digitalElapsedTimer">00:00</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- TOP SECTION: 2-COLUMN SERVING HERO BOX -->
+                        <div class="card serving-hero-card mb-4">
+                            <div class="row g-0">
+                                <div class="col-lg-4 col-md-5 ticket-hero-left">
+                                    <div class="d-flex flex-column align-items-center text-center">
+                                        <div class="text-info text-uppercase fw-bold small tracking-wider">
+                                            <i class="bi bi-ticket-perforated-fill slant-ticket-icon"></i>QUEUE NUMBER
+                                        </div>
+                                        <div id="ctrlWindowNumberTag" class="mt-2"></div>
+                                    </div>
+
+                                    <div class="d-flex flex-column align-items-center my-4">
+                                        <div class="ticket-hero-number" id="ctrlServingTicket">---</div>
+                                        <div id="ctrlPriorityTag" class="mt-2"></div>
+                                    </div>
+
+                                    <div id="ctrlVisitorTypeTag" class="mt-2"></div>
+                                </div>
+
+                                <div class="col-lg-8 col-md-7 ticket-hero-right" id="ticketDetailsContainer">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- HIGHLIGHTED ACTION CONTROLS BAR CONTAINER (2x2 GRID: Serve & Complete / Recall & Skip) -->
+                        <div class="card action-bar-card mb-4">
+                            <div class="card-body p-3">
+                                <div class="d-flex flex-column gap-2 gap-sm-3">
+                                    
+                                    <!-- ROW 1: SERVE & COMPLETE -->
+                                    <div class="row g-2 g-sm-3">
+                                        <div class="col-12 col-sm-6">
+                                            <button type="button" class="btn btn-action-modern btn-action-hero btn-ctrl-serve" id="btnStartServe">
+                                                <i class="bi bi-play-circle-fill"></i> Serve
+                                            </button>
+                                        </div>
+                                        <div class="col-12 col-sm-6">
+                                            <button type="button" class="btn btn-action-modern btn-action-hero btn-ctrl-complete" id="btnCompleteTicket">
+                                                <i class="bi bi-check-circle-fill"></i> Complete
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- ROW 2: RECALL & SKIP -->
+                                    <div class="row g-2 g-sm-3">
+                                        <div class="col-12 col-sm-6">
+                                            <button type="button" class="btn btn-action-modern btn-ctrl-recall" id="btnRecallVoice">
+                                                <i class="bi bi-arrow-counterclockwise"></i> Recall
+                                            </button>
+                                        </div>
+                                        <div class="col-12 col-sm-6">
+                                            <button type="button" class="btn btn-action-modern btn-ctrl-skip" id="btnSkipTicket">
+                                                <i class="bi bi-dash-circle"></i> Skip
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- BOTTOM 3-COLUMN CATEGORY LINEUP SECTION (ALWAYS VISIBLE: PRIORITY, REGULAR, EMPLOYEE) -->
+                        <div class="row g-3 align-items-stretch">
+                            
+                            <!-- COLUMN 1: PRIORITY -->
+                            <div class="col-12 col-lg-4">
+                                <div class="card controller-subcard">
+                                    <div class="lineup-header-priority">
+                                        <div class="d-flex align-items-center justify-content-between mb-2">
+                                            <h6 class="fw-bold text-warning-emphasis mb-0 d-flex align-items-center">
+                                                <i class="bi bi-star-fill me-2 text-warning"></i>Priority
+                                            </h6>
+                                            <span class="lineup-badge-pill bg-warning text-dark" id="ctrlPriorityBadge">0 Waiting</span>
+                                        </div>
+                                        <button type="button" class="btn-global-call-next btn-call-priority" id="btnCallNextPriority" onclick="callNextByCategory('PRIORITY')">
+                                            <i class="bi bi-megaphone-fill"></i> Call Next
+                                        </button>
+                                    </div>
+                                    <div class="card-body p-2 p-sm-3">
+                                        <div class="d-flex flex-column gap-2" id="ctrlPriorityList"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- COLUMN 2: REGULAR (STUDENTS & GUESTS) -->
+                            <div class="col-12 col-lg-4">
+                                <div class="card controller-subcard">
+                                    <div class="lineup-header-regular">
+                                        <div class="d-flex align-items-center justify-content-between mb-2">
+                                            <h6 class="fw-bold text-primary mb-0 d-flex align-items-center">
+                                                <i class="bi bi-people-fill me-2 text-primary"></i>Regular
+                                            </h6>
+                                            <span class="lineup-badge-pill bg-primary text-white" id="ctrlRegularBadge">0 Waiting</span>
+                                        </div>
+                                        <button type="button" class="btn-global-call-next btn-call-regular" id="btnCallNextRegular" onclick="callNextByCategory('REGULAR')">
+                                            <i class="bi bi-megaphone-fill"></i> Call Next
+                                        </button>
+                                    </div>
+                                    <div class="card-body p-2 p-sm-3">
+                                        <div class="d-flex flex-column gap-2" id="ctrlRegularList"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- COLUMN 3: EMPLOYEE -->
+                            <div class="col-12 col-lg-4">
+                                <div class="card controller-subcard">
+                                    <div class="lineup-header-employee">
+                                        <div class="d-flex align-items-center justify-content-between mb-2">
+                                            <h6 class="fw-bold mb-0 d-flex align-items-center" style="color: #5b21b6;">
+                                                <i class="bi bi-person-badge-fill me-2" style="color: #7c3aed;"></i>Employee
+                                            </h6>
+                                            <span class="lineup-badge-pill text-white" style="background-color: #7c3aed;" id="ctrlEmployeeBadge">0 Waiting</span>
+                                        </div>
+                                        <button type="button" class="btn-global-call-next btn-call-employee" id="btnCallNextEmployee" onclick="callNextByCategory('EMPLOYEE')">
+                                            <i class="bi bi-megaphone-fill"></i> Call Next
+                                        </button>
+                                    </div>
+                                    <div class="card-body p-2 p-sm-3">
+                                        <div class="d-flex flex-column gap-2" id="ctrlEmployeeList"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+                <?php endif; ?>
+
+            </div>
+
         </div>
     </div>
 

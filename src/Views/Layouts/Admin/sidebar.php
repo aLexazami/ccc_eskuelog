@@ -220,7 +220,7 @@ function render_action_links($links = [])
                     </li>
 
                     <li class="nav-item <?php echo navigation_active("queue-controller"); ?>">
-                        <a href="<?php echo BASE_URL . "admin/queue-controller"; ?>">
+                        <a href="<?php echo BASE_URL . "admin/queue-controller"; ?>" target="_blank">
                             <i class="bi bi-person-workspace"></i>
                             <p>Service Counter</p>
                         </a>
