@@ -14,18 +14,140 @@ $title_page   = "Services & Sub-Transactions Management";
 $active_links = [['label' => $title_page, 'url' => '']];
 $page_header  = render_page_header((string) $title_page, $active_links) ?? [];
 
+if (!function_exists('tt_resolve_user_id')) {
+    /**
+     * Resolve the logged-in user's ID. The session wrapper does not always
+     * expose it under the same key, so every known key is tried before the
+     * user_log fallback (same strategy as queue_handler.php).
+     */
+    function tt_resolve_user_id($session_class, $db_connect, $hint = 0): int
+    {
+        $userId = (int)$hint;
+        $keys = ['user_id', 'id', 'sys_user_id'];
+
+        if ($userId <= 0 && is_object($session_class) && method_exists($session_class, 'getValue')) {
+            foreach ($keys as $key) {
+                try {
+                    $userId = (int)$session_class->getValue($key);
+                } catch (Throwable $e) {
+                    $userId = 0;
+                }
+                if ($userId > 0) {
+                    break;
+                }
+            }
+        }
+
+        if ($userId <= 0) {
+            foreach ($keys as $key) {
+                $userId = (int)($_SESSION[$key] ?? 0);
+                if ($userId > 0) {
+                    break;
+                }
+            }
+        }
+
+        if ($userId <= 0 && $db_connect instanceof mysqli && session_id() !== '') {
+            try {
+                $sessionId = session_id();
+                $like = '%' . $sessionId . '%';
+                $stmt = $db_connect->prepare("
+                    SELECT user_id FROM user_log
+                    WHERE session_id = ? OR token_id LIKE ?
+                    ORDER BY user_log_id DESC LIMIT 1
+                ");
+                $stmt->bind_param('ss', $sessionId, $like);
+                $stmt->execute();
+                $row = $stmt->get_result()->fetch_assoc();
+                $stmt->close();
+                $userId = (int)($row['user_id'] ?? 0);
+            } catch (Throwable $e) {
+                $userId = 0;
+            }
+        }
+
+        return max(0, $userId);
+    }
+}
+
+if (!function_exists('tt_normalize_role')) {
+    /**
+     * Role names may arrive as text in any case, or as the numeric code.
+     */
+    function tt_normalize_role($role): string
+    {
+        $map  = ['1' => 'ADMIN', '2' => 'ADMIN_STAFF', '3' => 'STATION_ADMIN', '4' => 'USER'];
+        $role = strtoupper(trim((string)$role));
+
+        return $map[$role] ?? $role;
+    }
+}
+
 $system_auth_login = $session_class->getValue(SYSTEM_ACCESS[SYSTEM_ACCESS_NAME]['auth']);
-if (!($g_user_role == "ADMIN") && !($system_auth_login == $g_public_key)) {
+$current_role  = tt_normalize_role($g_user_role);
+$allowed_roles = ['ADMIN', 'ADMIN_STAFF'];
+if (!in_array($current_role, $allowed_roles, true) && !($system_auth_login == $g_public_key)) {
     header("location: " . SYSTEM_ACCESS[SYSTEM_ACCESS_NAME]['link']['main']);
     exit();
 }
 
+$is_admin_staff     = ($current_role === 'ADMIN_STAFF');
+$assigned_office_id = 0;
+
+if ($is_admin_staff && $db_connect) {
+    $current_user_id = tt_resolve_user_id($session_class, $db_connect, $g_user_id ?? 0);
+    if ($current_user_id > 0) {
+        $stmtAssign = $db_connect->prepare("
+            SELECT office_id FROM staff_assignments
+            WHERE user_id = ? AND flag_status = 0
+            LIMIT 1
+        ");
+        if ($stmtAssign) {
+            $stmtAssign->bind_param("i", $current_user_id);
+            $stmtAssign->execute();
+            $resAssign = $stmtAssign->get_result()->fetch_assoc();
+            $assigned_office_id = (int) ($resAssign['office_id'] ?? 0);
+            $stmtAssign->close();
+        }
+
+        // Fallback to employee.office_id if not yet in staff_assignments
+        if ($assigned_office_id === 0) {
+            $stmtEmp = $db_connect->prepare("SELECT office_id FROM employee WHERE user_id = ? LIMIT 1");
+            if ($stmtEmp) {
+                $stmtEmp->bind_param("i", $current_user_id);
+                $stmtEmp->execute();
+                $resEmp = $stmtEmp->get_result()->fetch_assoc();
+                $assigned_office_id = (int) ($resEmp['office_id'] ?? 0);
+                $stmtEmp->close();
+            }
+        }
+    }
+}
+
 $offices = [];
 if ($db_connect) {
-    $stmtOffices = $db_connect->query("SELECT office_id, office_code, office_name FROM office WHERE flag_status = 0 ORDER BY office_name ASC");
-    if ($stmtOffices) {
-        while ($row = $stmtOffices->fetch_assoc()) {
-            $offices[] = $row;
+    if ($is_admin_staff) {
+        if ($assigned_office_id > 0) {
+            $stmtOffices = $db_connect->prepare("
+                SELECT office_id, office_code, office_name
+                FROM office
+                WHERE flag_status = 0 AND office_id = ?
+                ORDER BY office_name ASC
+            ");
+            $stmtOffices->bind_param("i", $assigned_office_id);
+            $stmtOffices->execute();
+            $resOffices = $stmtOffices->get_result();
+            while ($row = $resOffices->fetch_assoc()) {
+                $offices[] = $row;
+            }
+            $stmtOffices->close();
+        }
+    } else {
+        $stmtOffices = $db_connect->query("SELECT office_id, office_code, office_name FROM office WHERE flag_status = 0 ORDER BY office_name ASC");
+        if ($stmtOffices) {
+            while ($row = $stmtOffices->fetch_assoc()) {
+                $offices[] = $row;
+            }
         }
     }
 }
@@ -129,7 +251,6 @@ $action_buttons = [
             line-height: 1.3;
         }
         .window-cell-name { font-weight: 600; color: #1e293b; }
-        .window-cell-staff { font-size: 0.75rem; color: #64748b; }
     </style>
 </head>
 
@@ -170,10 +291,14 @@ $action_buttons = [
                                 <div class="card-body">
                                     <!-- Row 1: Office selection (left) | Export + Refresh (right) -->
                                     <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
-                                        <select id="filterOffice" class="form-select" style="width: auto; min-width: 250px; max-width: 100%;">
-                                            <option value="0">-- All Campus Offices --</option>
+                                        <select id="filterOffice" class="form-select" style="width: auto; min-width: 250px; max-width: 100%;" <?= $is_admin_staff ? 'disabled' : ''; ?>>
+                                            <?php if (!$is_admin_staff): ?>
+                                                <option value="0">-- All Campus Offices --</option>
+                                            <?php endif; ?>
                                             <?php foreach ($offices as $off): ?>
-                                                <option value="<?= $off['office_id']; ?>"><?= htmlspecialchars($off['office_name']); ?> (<?= htmlspecialchars($off['office_code']); ?>)</option>
+                                                <option value="<?= $off['office_id']; ?>" <?= ($is_admin_staff && (int)$off['office_id'] === $assigned_office_id) ? 'selected' : ''; ?>>
+                                                    <?= htmlspecialchars($off['office_name']); ?> (<?= htmlspecialchars($off['office_code']); ?>)
+                                                </option>
                                             <?php endforeach; ?>
                                         </select>
                                         <div class="d-flex align-items-center gap-2">
@@ -231,12 +356,19 @@ $action_buttons = [
                                                 <!-- Row 1: Selection of Office | Service Status -->
                                                 <div class="col-lg-6">
                                                     <label class="form-label fw-bold" for="form_office_id">Selection of Office</label>
-                                                    <select name="office_id" id="form_office_id" class="form-select" required>
-                                                        <option value="" selected disabled>-- Select Campus Office --</option>
+                                                    <select name="office_id" id="form_office_id" class="form-select" required <?= $is_admin_staff ? 'disabled' : ''; ?>>
+                                                        <?php if (!$is_admin_staff): ?>
+                                                            <option value="" selected disabled>-- Select Campus Office --</option>
+                                                        <?php endif; ?>
                                                         <?php foreach ($offices as $off): ?>
-                                                            <option value="<?= $off['office_id']; ?>"><?= htmlspecialchars($off['office_name']); ?> (<?= htmlspecialchars($off['office_code']); ?>)</option>
+                                                            <option value="<?= $off['office_id']; ?>" <?= ($is_admin_staff && (int)$off['office_id'] === $assigned_office_id) ? 'selected' : ''; ?>>
+                                                                <?= htmlspecialchars($off['office_name']); ?> (<?= htmlspecialchars($off['office_code']); ?>)
+                                                            </option>
                                                         <?php endforeach; ?>
                                                     </select>
+                                                    <?php if ($is_admin_staff): ?>
+                                                        <input type="hidden" name="office_id" id="hidden_assigned_office_id" value="<?= $assigned_office_id; ?>">
+                                                    <?php endif; ?>
                                                 </div>
 
                                                 <div class="col-lg-6">
@@ -357,7 +489,9 @@ $action_buttons = [
 
 <script>
     (function () {
-        const AJAX_HANDLER = "<?php echo BASE_URL; ?>admin/ajax/transaction-types";
+        const AJAX_HANDLER       = "<?php echo BASE_URL; ?>admin/ajax/transaction-types";
+        const IS_ADMIN_STAFF     = <?php echo $is_admin_staff ? 'true' : 'false'; ?>;
+        const ASSIGNED_OFFICE_ID = <?php echo (int) $assigned_office_id; ?>;
         let tabulator = null;
         let isEditMode = false;
 
@@ -377,12 +511,13 @@ $action_buttons = [
         let counterRequestSeq = 0;
 
         function counterLabel(c) {
-            return c.staff_name ? `${c.counter_name} — ${c.staff_name}` : `${c.counter_name} (Unassigned)`;
+            return c.counter_name || '';
         }
 
         function counterOptionsHtml(selectedId) {
             const sel = parseInt(selectedId, 10) || 0;
-            if (!$('#form_office_id').val()) {
+            const effectiveOfficeId = IS_ADMIN_STAFF ? ASSIGNED_OFFICE_ID : (parseInt($('#form_office_id').val(), 10) || 0);
+            if (!effectiveOfficeId) {
                 return '<option value="">-- Select Office First --</option>';
             }
             if (!officeCounters.length) {
@@ -398,7 +533,8 @@ $action_buttons = [
             $('#unified_service_modal .counter-select').each(function () {
                 $(this).html(counterOptionsHtml($(this).val()));
             });
-            const noWin = $('#form_office_id').val() && !officeCounters.length;
+            const effectiveOfficeId = IS_ADMIN_STAFF ? ASSIGNED_OFFICE_ID : (parseInt($('#form_office_id').val(), 10) || 0);
+            const noWin = effectiveOfficeId && !officeCounters.length;
             $('#primary_window_hint').text(noWin
                 ? 'This office has no active Window yet. Create one in Office Service Counters first.'
                 : 'Windows come from Office Service Counters.')
@@ -407,7 +543,7 @@ $action_buttons = [
 
         function loadOfficeCounters(officeId) {
             const seq = ++counterRequestSeq;
-            officeId = parseInt(officeId, 10) || 0;
+            officeId = IS_ADMIN_STAFF ? ASSIGNED_OFFICE_ID : (parseInt(officeId, 10) || 0);
             if (!officeId) {
                 officeCounters = [];
                 refreshCounterSelects();
@@ -452,8 +588,6 @@ $action_buttons = [
 
         // =====================================================================
         // REUSABLE DETAIL BUILDER COMPONENT (Works for Direct & Sub-Transactions)
-        // Improvement 1: Every detail field card owns its aligned column headings
-        // Improvement 2: Distinct Dropdown Choices container underneath SELECT fields
         // =====================================================================
         const DETAIL_FORMATS = {
             INPUT: [
@@ -693,7 +827,6 @@ $action_buttons = [
             return $box;
         }
 
-        // Rename every row field so indexes are 0..n-1 and badges match the position
         function reindexDetailRows($box) {
             const prefix = $box.attr('data-name-prefix');
             $box.find('.detail-item-row').each(function (i) {
@@ -709,7 +842,6 @@ $action_buttons = [
             $box.find('.detail-count-input').val($box.find('.detail-item-row').length);
         }
 
-        // Grow / shrink rows to match the stepper (existing rows keep their values)
         function syncDetailRows($box, target) {
             target = Math.max(1, Math.min(DETAIL_MAX, parseInt(target, 10) || 1));
             const prefix = $box.attr('data-name-prefix');
@@ -845,7 +977,6 @@ $action_buttons = [
                 $(this).find('input[type="hidden"][name*="[id]"]')
                     .attr('name', `sub_concerns[${newIdx}][id]`);
                 
-                // Re-index detail builder box names if present
                 $(this).find('.detail-builder-box').each(function () {
                     const detailPrefix = `sub_concerns[${newIdx}][details]`;
                     $(this).attr('data-name-prefix', detailPrefix);
@@ -910,10 +1041,8 @@ $action_buttons = [
         });
         $('#sub_concern_count').on('change input', () => syncSubConcernBlocks());
 
-        // Delegated handlers for ALL detail builders and sub-transaction duration steppers
         const $modalBody = $('#unified_service_modal .modal-body');
 
-        // Delegated listener for deleting a specific sub-transaction card
         $modalBody.on('click', '.remove-sub-card-btn', function () {
             const $card = $(this).closest('.sub-concern-card');
             const totalCards = $('#dynamic_sub_concerns_list .sub-concern-card').length;
@@ -929,7 +1058,6 @@ $action_buttons = [
             });
         });
 
-        // Delegated listener for removing an individual detail row
         $modalBody.on('click', '.remove-detail-row-btn', function () {
             const $box = $(this).closest('.detail-builder-box');
             const $row = $(this).closest('.detail-item-row');
@@ -976,7 +1104,6 @@ $action_buttons = [
             }
         });
 
-        // Data Type Option changes -> update Input Format Type options and toggle Dropdown Choices box
         $modalBody.on('change', '.detail-mode-select', function () {
             const mode = $(this).val() === 'SELECT' ? 'SELECT' : 'INPUT';
             const $row = $(this).closest('.detail-item-row');
@@ -1063,7 +1190,6 @@ $action_buttons = [
 
         // =====================================================================
         // TABULATOR TABLE
-        // Improvement 3: Render each detail field as its own block with choices underneath
         // =====================================================================
         function buildDetailsPlainText(pd) {
             if (!pd || !Array.isArray(pd.formatted_items) || !pd.formatted_items.length) return '';
@@ -1106,8 +1232,6 @@ $action_buttons = [
             return `<div class="detail-cell-list">${blocks}</div>`;
         }
 
-        // One table row per line item: a standalone service = 1 row,
-        // a service with sub-transactions = 1 row per sub-transaction.
         function flattenServices(list) {
             const rows = [];
             (list || []).forEach(svc => {
@@ -1122,11 +1246,8 @@ $action_buttons = [
                 };
                 const win = (src) => ({
                     window_name: src.counter_id ? (src.counter_name || '') : '',
-                    window_staff: src.counter_id ? (src.staff_name || '') : '',
                     window_disabled: src.counter_id && String(src.counter_flag_status) !== '0',
-                    window_text: src.counter_id
-                        ? [src.counter_name, src.staff_name || 'Unassigned'].filter(Boolean).join(' ')
-                        : ''
+                    window_text: src.counter_id ? (src.counter_name || '') : ''
                 });
                 if (svc.sub_concerns && svc.sub_concerns.length > 0) {
                     svc.sub_concerns.forEach(sub => rows.push(Object.assign({}, base, {
@@ -1151,7 +1272,6 @@ $action_buttons = [
             return rows;
         }
 
-        // True when the previous visible row belongs to the same primary service
         function isContinuationRow(row) {
             const prev = row.getPrevRow();
             return !!(prev && prev.getData().id === row.getData().id);
@@ -1163,7 +1283,6 @@ $action_buttons = [
             headerFilterParams: { allowEmpty: true }
         };
 
-        // Dropdown header filter for the Status column (All / Active / Disabled)
         function statusHeaderFilter(cell, onRendered, success, cancel) {
             const select = document.createElement('select');
             select.className = 'form-select form-select-sm';
@@ -1184,7 +1303,10 @@ $action_buttons = [
                 ajaxLoader: true,
                 ajaxConfig: "POST",
                 ajaxContentType: "form",
-                ajaxParams: () => ({ action: 'fetch_transaction_types', office_id: $('#filterOffice').val() }),
+                ajaxParams: () => ({
+                    action: 'fetch_transaction_types',
+                    office_id: IS_ADMIN_STAFF ? ASSIGNED_OFFICE_ID : $('#filterOffice').val()
+                }),
                 ajaxResponse: (url, params, response) => {
                     if (response && response.msg_status === false) {
                         showError(response.msg_response || 'Unable to load transaction services.');
@@ -1292,7 +1414,6 @@ $action_buttons = [
                             if (!d.window_name) return '<span class="text-muted">Not assigned</span>';
                             return `<div style="white-space:normal;">
                                         <div class="window-cell-name">${escapeHtml(d.window_name)}${d.window_disabled ? ' <span class="text-danger small">(Disabled)</span>' : ''}</div>
-                                        <div class="window-cell-staff">${escapeHtml(d.window_staff || 'Unassigned')}</div>
                                     </div>`;
                         }
                     }, colFilter),
@@ -1336,7 +1457,7 @@ $action_buttons = [
             // --- REFRESH DATA HANDLER ---
             $('#btn-refresh').on('click', function () {
                 $('#global-search').val('');
-                $('#filterOffice').val('0');
+                $('#filterOffice').val(IS_ADMIN_STAFF ? String(ASSIGNED_OFFICE_ID) : '0');
                 tabulator.clearFilter();
                 tabulator.clearHeaderFilter();
                 tabulator.setData();
@@ -1348,7 +1469,7 @@ $action_buttons = [
         // =====================================================================
         // OPEN CREATE / EDIT / PREVIEW MODALS
         // =====================================================================
-        $('.add-type-btn').on('click', function () {
+        $('.add-type-btn').on('click', async function () {
             isEditMode = false;
             $('#unifiedModalTitle').html('<i class="bi bi-plus-circle text-primary me-2"></i>Create Transaction Service');
             $('#unified_service_form')[0].reset();
@@ -1362,28 +1483,39 @@ $action_buttons = [
             $('#direct_details_wrapper').removeClass('d-none');
             resetDirectDetails(null);
 
-            officeCounters = [];
-            counterRequestSeq++;
-            refreshCounterSelects();
-
             $('#sub_concerns_section').addClass('d-none');
             $('#dynamic_sub_concerns_list').empty();
             $('#sub_concern_count').val('1');
+
+            if (IS_ADMIN_STAFF && ASSIGNED_OFFICE_ID > 0) {
+                $('#form_office_id').val(String(ASSIGNED_OFFICE_ID));
+                $('#hidden_assigned_office_id').val(String(ASSIGNED_OFFICE_ID));
+                await loadOfficeCounters(ASSIGNED_OFFICE_ID);
+            } else {
+                officeCounters = [];
+                counterRequestSeq++;
+                refreshCounterSelects();
+            }
+
             $('#unified_service_modal').modal('show');
         });
 
         async function openEditModal(data) {
             isEditMode = true;
+            const effectiveOfficeId = IS_ADMIN_STAFF ? ASSIGNED_OFFICE_ID : data.office_id;
             $('#unifiedModalTitle').html('<i class="bi bi-pencil-square text-primary me-2"></i>Manage Service & Sub-Transactions');
             $('#form_type_id').val(data.id);
-            $('#form_office_id').val(data.office_id);
+            $('#form_office_id').val(effectiveOfficeId);
+            if (IS_ADMIN_STAFF) {
+                $('#hidden_assigned_office_id').val(effectiveOfficeId);
+            }
             $('#form_transaction_name').val(data.transaction_name);
             $('#form_flag_status').val(data.flag_status);
 
             // Windows must be loaded for this office before any dropdown is built
             showLoader('Loading Windows...');
             try {
-                await loadOfficeCounters(data.office_id);
+                await loadOfficeCounters(effectiveOfficeId);
             } finally {
                 hideLoader();
             }
@@ -1472,7 +1604,6 @@ $action_buttons = [
         $('#unified_service_form').on('submit', async function (e) {
             e.preventDefault();
 
-            // Every visible detail field needs a title
             let missingTitle = null;
             $('#unified_service_modal .detail-builder-box:not(.d-none) .detail-title-field').each(function () {
                 if (!$(this).val().trim()) { missingTitle = $(this); return false; }
@@ -1484,7 +1615,6 @@ $action_buttons = [
             }
             $('#unified_service_modal .detail-title-field').removeClass('is-invalid');
 
-            // Every standalone service / every sub-transaction needs a Window
             $('#unified_service_modal .counter-select').removeClass('is-invalid');
             const hasSubs = $('#form_has_sub_concerns').val() === 'yes';
             const $windowSelects = hasSubs

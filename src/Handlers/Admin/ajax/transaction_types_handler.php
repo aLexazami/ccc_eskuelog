@@ -2,7 +2,11 @@
 // src/Handlers/Admin/ajax/transaction_types_handler.php
 
 /** @var mysqli|null $db_connect */
-global $db_connect;
+global $db_connect, $session_class, $g_user_role, $g_user_id;
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 header('Content-Type: application/json; charset=utf-8');
 
@@ -59,23 +63,6 @@ function normalizeDetailFormat(string $mode, $format): string
 
 /**
  * Validate and normalize a detail configuration.
- *
- * Existing field payload:
- *
- * [
- *     'id' => 10,
- *     'mode' => 'SELECT',
- *     'format' => 'numeric',
- *     'title' => 'Category',
- *     'choices' => [
- *         ['id' => 20, 'value' => 'Option A'],
- *         ['id' => 21, 'value' => 'Option B']
- *     ]
- * ]
- *
- * New fields and choices may omit their IDs.
- *
- * Returns null when details are disabled.
  */
 function prepareDetailRecord(
     $detailPayload,
@@ -181,10 +168,6 @@ function prepareDetailRecord(
         $choiceIds = [];
 
         if ($mode === 'SELECT') {
-            /*
-             * Prefer choices because they can contain existing choice IDs.
-             * choices_text remains supported for older payload formats.
-             */
             $rawChoices = $field['choices']
                 ?? ($field['choices_text'] ?? []);
 
@@ -206,19 +189,8 @@ function prepareDetailRecord(
             foreach ($rawChoices as $rawChoice) {
                 $choiceId = 0;
 
-                /*
-                 * Existing choice:
-                 * ['id' => 20, 'value' => 'Option A']
-                 *
-                 * New choice:
-                 * ['value' => 'Option C']
-                 *
-                 * Legacy choice:
-                 * 'Option A'
-                 */
                 if (is_array($rawChoice)) {
                     $choiceId = (int)($rawChoice['id'] ?? 0);
-
                     $rawChoice = $rawChoice['value'] ?? '';
                 }
 
@@ -384,9 +356,6 @@ function validateServiceInput(
 
 /**
  * Delete an existing detail header.
- *
- * Its field items and choices are automatically deleted by the
- * configured ON DELETE CASCADE foreign keys.
  */
 function deleteDetailFieldRow(
     mysqli $db,
@@ -418,9 +387,6 @@ function deleteDetailFieldRow(
 /**
  * Synchronize a detail configuration without unnecessarily
  * deleting and recreating existing records.
- *
- * Existing header IDs, field item IDs, and choice IDs are preserved
- * whenever their IDs are submitted and belong to the current parent.
  */
 function syncDetailFieldRow(
     mysqli $db,
@@ -431,9 +397,6 @@ function syncDetailFieldRow(
 ): void {
     $fields = prepareDetailRecord($detailPayload, $label);
 
-    /*
-     * Lock and locate the existing header.
-     */
     if ($subConcernId === null) {
         $headerStmt = $db->prepare("
             SELECT id
@@ -461,14 +424,9 @@ function syncDetailFieldRow(
     }
 
     $headerStmt->execute();
-
     $existingHeader = $headerStmt->get_result()->fetch_assoc();
-
     $headerStmt->close();
 
-    /*
-     * Details disabled: remove the existing configuration.
-     */
     if ($fields === null) {
         deleteDetailFieldRow(
             $db,
@@ -479,12 +437,6 @@ function syncDetailFieldRow(
         return;
     }
 
-    /*
-     * Preserve the existing header.
-     * Insert only when no header exists.
-     *
-     * Use a separate INSERT for NULL sub_concern_id.
-     */
     if ($existingHeader) {
         $detailFieldId = (int)$existingHeader['id'];
     } else {
@@ -519,15 +471,10 @@ function syncDetailFieldRow(
         }
 
         $headerInsert->execute();
-
         $detailFieldId = (int)$headerInsert->insert_id;
-
         $headerInsert->close();
     }
 
-    /*
-     * Fetch existing field item IDs belonging to this header.
-     */
     $existingItems = [];
 
     $itemFetch = $db->prepare("
@@ -538,9 +485,7 @@ function syncDetailFieldRow(
     ");
 
     $itemFetch->bind_param('i', $detailFieldId);
-
     $itemFetch->execute();
-
     $itemResult = $itemFetch->get_result();
 
     while ($row = $itemResult->fetch_assoc()) {
@@ -551,9 +496,6 @@ function syncDetailFieldRow(
 
     $keptItemIds = [];
 
-    /*
-     * Field operations.
-     */
     $itemUpdate = $db->prepare("
         UPDATE transaction_detail_field_items
         SET
@@ -580,9 +522,6 @@ function syncDetailFieldRow(
         VALUES (?, ?, ?, ?, ?, ?, 0)
     ");
 
-    /*
-     * Choice operations.
-     */
     $choiceFetch = $db->prepare("
         SELECT id, choice_value
         FROM transaction_detail_field_choices
@@ -631,9 +570,6 @@ function syncDetailFieldRow(
 
         $requestedItemId = (int)($field['id'] ?? 0);
 
-        /*
-         * Verify ownership before updating an existing item.
-         */
         if (
             $requestedItemId > 0 &&
             in_array($requestedItemId, $existingItems, true)
@@ -653,10 +589,6 @@ function syncDetailFieldRow(
 
             $itemUpdate->execute();
         } else {
-            /*
-             * Unknown or missing IDs are never trusted.
-             * Insert a new field instead.
-             */
             $itemInsert->bind_param(
                 'iissss',
                 $detailFieldId,
@@ -674,15 +606,10 @@ function syncDetailFieldRow(
 
         $keptItemIds[] = $itemId;
 
-        /*
-         * Fetch existing choices for this field.
-         */
         $existingChoices = [];
 
         $choiceFetch->bind_param('i', $itemId);
-
         $choiceFetch->execute();
-
         $choiceResult = $choiceFetch->get_result();
 
         while ($choiceRow = $choiceResult->fetch_assoc()) {
@@ -692,17 +619,10 @@ function syncDetailFieldRow(
 
         $keptChoiceIds = [];
 
-        /*
-         * Synchronize SELECT choices.
-         */
         if ($mode === 'SELECT') {
             foreach ($field['choices'] as $choiceIndex => $choiceValue) {
                 $choiceOrder = $choiceIndex + 1;
 
-                /*
-                 * The IDs are kept in a parallel array by
-                 * prepareDetailRecord().
-                 */
                 $choiceId = (int)(
                     $field['choice_ids'][$choiceIndex] ?? 0
                 );
@@ -711,9 +631,6 @@ function syncDetailFieldRow(
                     continue;
                 }
 
-                /*
-                 * Update only choices that belong to this field.
-                 */
                 if (
                     $choiceId > 0 &&
                     array_key_exists($choiceId, $existingChoices)
@@ -730,9 +647,6 @@ function syncDetailFieldRow(
 
                     $keptChoiceIds[] = $choiceId;
                 } else {
-                    /*
-                     * New choice or unrecognized choice ID.
-                     */
                     $choiceInsert->bind_param(
                         'iis',
                         $itemId,
@@ -747,10 +661,6 @@ function syncDetailFieldRow(
             }
         }
 
-        /*
-         * Delete removed choices only.
-         * Switching SELECT to INPUT removes its choices.
-         */
         foreach (array_keys($existingChoices) as $existingChoiceId) {
             if (!in_array($existingChoiceId, $keptChoiceIds, true)) {
                 $choiceDelete->bind_param(
@@ -764,10 +674,6 @@ function syncDetailFieldRow(
         }
     }
 
-    /*
-     * Delete removed field items only.
-     * Their choices are removed through ON DELETE CASCADE.
-     */
     $itemDelete = $db->prepare("
         DELETE FROM transaction_detail_field_items
         WHERE id = ?
@@ -799,9 +705,6 @@ function syncDetailFieldRow(
 
 /**
  * Build the frontend-compatible parsed detail structure.
- *
- * Field IDs and choice IDs are included so the frontend can submit
- * them again during an update.
  */
 function buildParsedDetail(
     int $headerId,
@@ -905,12 +808,6 @@ function buildParsedDetail(
 
 /**
  * Fetch normalized detail configurations for a list of transaction types.
- *
- * Returns:
- * [
- *     'direct' => [transaction_type_id => parsed details],
- *     'sub'    => [sub_concern_id => parsed details]
- * ]
  */
 function fetchNormalizedDetailMaps(
     mysqli $db,
@@ -923,7 +820,6 @@ function fetchNormalizedDetailMaps(
         ];
     }
 
-    // IDs originate from database results and are cast to integers.
     $inList = implode(
         ',',
         array_map('intval', $typeIds)
@@ -982,10 +878,6 @@ function fetchNormalizedDetailMaps(
 
         $headerId = (int)$row['header_id'];
 
-        /*
-         * If duplicate headers exist for the same service/sub-transaction,
-         * use the newest header (highest ID).
-         */
         if (!isset($selectedHeaders[$scopeKey])) {
             $selectedHeaders[$scopeKey] = $headerId;
 
@@ -996,7 +888,6 @@ function fetchNormalizedDetailMaps(
             ];
         }
 
-        // Ignore older duplicate headers.
         if ($selectedHeaders[$scopeKey] !== $headerId) {
             continue;
         }
@@ -1055,7 +946,6 @@ function fetchNormalizedDetailMaps(
             }
         );
 
-        // Remove the internal ordering value.
         foreach ($fields as &$field) {
             unset($field['order']);
         }
@@ -1120,18 +1010,6 @@ function deleteRemovedSubConcerns(
 
     $stmt->close();
 }
-
-/**
- * SQL expression: the staff user currently bound to a counter row aliased `c`.
- * Mirrors office_counters_handler.php (active staff_assignments first,
- * then counters.assigned_user_id).
- */
-const COUNTER_STAFF_USER_SQL = "COALESCE(
-    (SELECT sa.user_id FROM staff_assignments sa
-      WHERE sa.counter_id = c.id AND sa.flag_status = 0
-      ORDER BY sa.id DESC LIMIT 1),
-    c.assigned_user_id
-)";
 
 /**
  * IDs of the active windows that belong to an office.
@@ -1216,9 +1094,78 @@ function validateCounterAssignments(
     }
 }
 
+if (!function_exists('tt_resolve_user_id')) {
+    /**
+     * Resolve the logged-in user's ID. The session wrapper does not always
+     * expose it under the same key, so every known key is tried before the
+     * user_log fallback (same strategy as queue_handler.php).
+     */
+    function tt_resolve_user_id($session_class, $db_connect, $hint = 0): int
+    {
+        $userId = (int)$hint;
+        $keys = ['user_id', 'id', 'sys_user_id'];
+
+        if ($userId <= 0 && is_object($session_class) && method_exists($session_class, 'getValue')) {
+            foreach ($keys as $key) {
+                try {
+                    $userId = (int)$session_class->getValue($key);
+                } catch (Throwable $e) {
+                    $userId = 0;
+                }
+                if ($userId > 0) {
+                    break;
+                }
+            }
+        }
+
+        if ($userId <= 0) {
+            foreach ($keys as $key) {
+                $userId = (int)($_SESSION[$key] ?? 0);
+                if ($userId > 0) {
+                    break;
+                }
+            }
+        }
+
+        if ($userId <= 0 && $db_connect instanceof mysqli && session_id() !== '') {
+            try {
+                $sessionId = session_id();
+                $like = '%' . $sessionId . '%';
+                $stmt = $db_connect->prepare("
+                    SELECT user_id FROM user_log
+                    WHERE session_id = ? OR token_id LIKE ?
+                    ORDER BY user_log_id DESC LIMIT 1
+                ");
+                $stmt->bind_param('ss', $sessionId, $like);
+                $stmt->execute();
+                $row = $stmt->get_result()->fetch_assoc();
+                $stmt->close();
+                $userId = (int)($row['user_id'] ?? 0);
+            } catch (Throwable $e) {
+                $userId = 0;
+            }
+        }
+
+        return max(0, $userId);
+    }
+}
+
+if (!function_exists('tt_normalize_role')) {
+    /**
+     * Role names may arrive as text in any case, or as the numeric code.
+     */
+    function tt_normalize_role($role): string
+    {
+        $map  = ['1' => 'ADMIN', '2' => 'ADMIN_STAFF', '3' => 'STATION_ADMIN', '4' => 'USER'];
+        $role = strtoupper(trim((string)$role));
+
+        return $map[$role] ?? $role;
+    }
+}
+
 /*
 |--------------------------------------------------------------------------
-| DATABASE CHECK
+| DATABASE & ROLE / OFFICE ACCESS CHECK
 |--------------------------------------------------------------------------
 */
 
@@ -1228,6 +1175,66 @@ if (!$db_connect instanceof mysqli) {
         'msg_status' => false,
         'msg_response' => 'Database connection unavailable.'
     ]);
+}
+
+// Resolve session user role & ID
+$currentRole = tt_normalize_role($g_user_role ?? '');
+
+if ($currentRole === '' && isset($session_class) && method_exists($session_class, 'getValue')) {
+    $currentRole = tt_normalize_role($session_class->getValue('user_role') ?? $session_class->getValue('role') ?? '');
+}
+if ($currentRole === '') {
+    $currentRole = tt_normalize_role($_SESSION['user_role'] ?? $_SESSION['role'] ?? '');
+}
+
+$currentUserId = tt_resolve_user_id($session_class ?? null, $db_connect, $g_user_id ?? 0);
+
+if (!in_array($currentRole, ['ADMIN', 'ADMIN_STAFF'], true)) {
+    transactionTypesJsonResponse([
+        'success' => false,
+        'msg_status' => false,
+        'msg_response' => 'Unauthorized access.'
+    ]);
+}
+
+$isAdminStaff   = ($currentRole === 'ADMIN_STAFF');
+$lockedOfficeId = 0;
+
+if ($isAdminStaff) {
+    if ($currentUserId > 0) {
+        $stmtAssign = $db_connect->prepare("
+            SELECT office_id
+            FROM staff_assignments
+            WHERE user_id = ? AND flag_status = 0
+            LIMIT 1
+        ");
+        $stmtAssign->bind_param('i', $currentUserId);
+        $stmtAssign->execute();
+        $resAssign = $stmtAssign->get_result()->fetch_assoc();
+        $lockedOfficeId = (int)($resAssign['office_id'] ?? 0);
+        $stmtAssign->close();
+
+        if ($lockedOfficeId === 0) {
+            $stmtEmp = $db_connect->prepare("SELECT office_id FROM employee WHERE user_id = ? LIMIT 1");
+            $stmtEmp->bind_param('i', $currentUserId);
+            $stmtEmp->execute();
+            $resEmp = $stmtEmp->get_result()->fetch_assoc();
+            $lockedOfficeId = (int)($resEmp['office_id'] ?? 0);
+            $stmtEmp->close();
+        }
+    }
+
+    if ($lockedOfficeId <= 0) {
+        transactionTypesJsonResponse([
+            'success' => false,
+            'msg_status' => false,
+            'msg_response' => 'No office assignment found for your account.',
+            'data' => []
+        ]);
+    }
+
+    // Force office_id on all incoming requests so ADMIN_STAFF cannot bypass via DevTools
+    $_POST['office_id'] = $lockedOfficeId;
 }
 
 $action = $_POST['action']
@@ -1240,13 +1247,13 @@ try {
 
         /*
         |--------------------------------------------------------------------------
-        | FETCH TRANSACTION TYPES
+        | FETCH OFFICE COUNTERS (WINDOWS)
         |--------------------------------------------------------------------------
         */
 
         case 'fetch_office_counters':
 
-            $officeId = (int)($_POST['office_id'] ?? 0);
+            $officeId = $isAdminStaff ? $lockedOfficeId : (int)($_POST['office_id'] ?? 0);
 
             if ($officeId <= 0) {
                 transactionTypesJsonResponse([
@@ -1255,16 +1262,11 @@ try {
                 ]);
             }
 
-            $staffSql = COUNTER_STAFF_USER_SQL;
-
             $stmt = $db_connect->prepare("
                 SELECT
                     c.id,
-                    c.counter_name,
-                    TRIM(CONCAT(IFNULL(u.first_name, ''), ' ', IFNULL(u.last_name, ''))) AS staff_name
+                    c.counter_name
                 FROM counters c
-                LEFT JOIN users u
-                    ON u.id = {$staffSql}
                 WHERE c.office_id = ?
                   AND c.flag_status = 0
                 ORDER BY c.counter_name ASC
@@ -1279,8 +1281,7 @@ try {
             while ($row = $result->fetch_assoc()) {
                 $counters[] = [
                     'id' => (int)$row['id'],
-                    'counter_name' => (string)$row['counter_name'],
-                    'staff_name' => trim((string)($row['staff_name'] ?? ''))
+                    'counter_name' => (string)$row['counter_name']
                 ];
             }
 
@@ -1291,15 +1292,19 @@ try {
                 'data' => $counters
             ]);
 
+        /*
+        |--------------------------------------------------------------------------
+        | FETCH TRANSACTION TYPES
+        |--------------------------------------------------------------------------
+        */
+
         case 'fetch_transaction_types':
 
-            $officeId = (int)($_POST['office_id'] ?? 0);
+            $officeId = $isAdminStaff ? $lockedOfficeId : (int)($_POST['office_id'] ?? 0);
 
             $whereClause = $officeId > 0
                 ? ' WHERE tt.office_id = ? '
                 : '';
-
-            $staffSql = COUNTER_STAFF_USER_SQL;
 
             $sql = "
                 SELECT
@@ -1312,7 +1317,6 @@ try {
                     tt.counter_id,
                     c.counter_name,
                     c.flag_status AS counter_flag_status,
-                    TRIM(CONCAT(IFNULL(u.first_name, ''), ' ', IFNULL(u.last_name, ''))) AS staff_name,
                     tt.flag_status,
                     tt.date_modify
 
@@ -1323,9 +1327,6 @@ try {
 
                 LEFT JOIN counters c
                     ON c.id = tt.counter_id
-
-                LEFT JOIN users u
-                    ON u.id = {$staffSql}
 
                 {$whereClause}
 
@@ -1353,7 +1354,6 @@ try {
                 $row['counter_id'] = $row['counter_id'] !== null
                     ? (int)$row['counter_id']
                     : null;
-                $row['staff_name'] = trim((string)($row['staff_name'] ?? ''));
                 $row['direct_details'] = null;
                 $row['sub_concerns'] = [];
                 $row['sub_concerns_count'] = 0;
@@ -1365,20 +1365,17 @@ try {
             $stmt->close();
 
             if (!empty($typeIds)) {
-                // Fetch all normalized detail configurations.
                 $detailMaps = fetchNormalizedDetailMaps(
                     $db_connect,
                     $typeIds
                 );
 
-                // Attach direct details.
                 foreach ($detailMaps['direct'] as $typeId => $details) {
                     if (isset($types[$typeId])) {
                         $types[$typeId]['direct_details'] = $details;
                     }
                 }
 
-                // Fetch sub-transactions.
                 $inList = implode(
                     ',',
                     array_map('intval', $typeIds)
@@ -1393,16 +1390,12 @@ try {
                         s.counter_id,
                         c.counter_name,
                         c.flag_status AS counter_flag_status,
-                        TRIM(CONCAT(IFNULL(u.first_name, ''), ' ', IFNULL(u.last_name, ''))) AS staff_name,
                         s.flag_status
 
                     FROM transaction_sub_concerns s
 
                     LEFT JOIN counters c
                         ON c.id = s.counter_id
-
-                    LEFT JOIN users u
-                        ON u.id = {$staffSql}
 
                     WHERE s.transaction_type_id IN ({$inList})
 
@@ -1422,7 +1415,6 @@ try {
                     $sub['counter_id'] = $sub['counter_id'] !== null
                         ? (int)$sub['counter_id']
                         : null;
-                    $sub['staff_name'] = trim((string)($sub['staff_name'] ?? ''));
                     $sub['estimated_minutes'] = (int)(
                         $sub['estimated_minutes'] ?? 5
                     );
@@ -1450,7 +1442,7 @@ try {
 
         case 'submitUnifiedType':
 
-            $officeId = (int)($_POST['office_id'] ?? 0);
+            $officeId = $isAdminStaff ? $lockedOfficeId : (int)($_POST['office_id'] ?? 0);
 
             $transactionName = trim(
                 (string)($_POST['transaction_name'] ?? '')
@@ -1499,7 +1491,6 @@ try {
                 $subConcerns
             );
 
-            // A service with sub-transactions has no Window of its own.
             $primaryCounterId = $hasSubConcerns === 'yes'
                 ? null
                 : (int)$primaryCounter;
@@ -1507,7 +1498,6 @@ try {
             $db_connect->begin_transaction();
             $transactionOpen = true;
 
-            // Create the primary transaction type.
             $stmtType = $db_connect->prepare("
                 INSERT INTO transaction_types
                     (
@@ -1586,7 +1576,6 @@ try {
 
                 $stmtSub->close();
             } else {
-                // Standalone service: details belong directly to the type.
                 syncDetailFieldRow(
                     $db_connect,
                     $newTypeId,
@@ -1614,7 +1603,7 @@ try {
         case 'submitUpdateUnifiedType':
 
             $typeId = (int)($_POST['type_id'] ?? 0);
-            $officeId = (int)($_POST['office_id'] ?? 0);
+            $officeId = $isAdminStaff ? $lockedOfficeId : (int)($_POST['office_id'] ?? 0);
 
             $transactionName = trim(
                 (string)($_POST['transaction_name'] ?? '')
@@ -1674,9 +1663,9 @@ try {
             $db_connect->begin_transaction();
             $transactionOpen = true;
 
-            // Lock and verify the target transaction type.
+            // Lock and verify the target transaction type & office ownership.
             $checkType = $db_connect->prepare("
-                SELECT id
+                SELECT id, office_id
                 FROM transaction_types
                 WHERE id = ?
                 FOR UPDATE
@@ -1695,7 +1684,12 @@ try {
                 );
             }
 
-            // Update the primary transaction type.
+            if ($isAdminStaff && (int)$typeExists['office_id'] !== $lockedOfficeId) {
+                throw new TransactionTypesValidationException(
+                    'You are not authorized to modify services from another office.'
+                );
+            }
+
             $stmtUpdate = $db_connect->prepare("
                 UPDATE transaction_types
                 SET
@@ -1721,7 +1715,6 @@ try {
             $stmtUpdate->execute();
             $stmtUpdate->close();
 
-            // Fetch existing sub-transaction IDs belonging to this type.
             $existingIds = [];
 
             $stmtExisting = $db_connect->prepare("
@@ -1745,10 +1738,6 @@ try {
             $keptIds = [];
 
             if ($hasSubConcerns === 'yes') {
-                /*
-                 * Remove direct details because this service now uses
-                 * sub-transaction-specific detail configurations.
-                 */
                 syncDetailFieldRow(
                     $db_connect,
                     $typeId,
@@ -1795,10 +1784,6 @@ try {
 
                     $subCounterId = (int)($subItem['counter_id'] ?? 0);
 
-                    /*
-                     * Only update IDs that belong to this transaction type.
-                     * An unknown or foreign ID is treated as a new sub-transaction.
-                     */
                     if (
                         $subId > 0 &&
                         in_array($subId, $existingIds, true)
@@ -1831,7 +1816,6 @@ try {
 
                     $keptIds[] = $targetSubId;
 
-                    // Synchronize this sub-transaction's details.
                     syncDetailFieldRow(
                         $db_connect,
                         $typeId,
@@ -1844,8 +1828,6 @@ try {
                 $stmtSubInsert->close();
                 $stmtSubUpdate->close();
 
-                // Remove sub-transactions omitted from the update payload.
-                // Their detail records are removed through FK cascades.
                 deleteRemovedSubConcerns(
                     $db_connect,
                     $typeId,
@@ -1853,10 +1835,6 @@ try {
                     $keptIds
                 );
             } else {
-                /*
-                 * Switching to standalone service:
-                 * remove all previous sub-transactions and their details.
-                 */
                 $stmtDeleteSubs = $db_connect->prepare("
                     DELETE FROM transaction_sub_concerns
                     WHERE transaction_type_id = ?
@@ -1866,7 +1844,6 @@ try {
                 $stmtDeleteSubs->execute();
                 $stmtDeleteSubs->close();
 
-                // Synchronize optional direct details.
                 syncDetailFieldRow(
                     $db_connect,
                     $typeId,
@@ -1900,6 +1877,21 @@ try {
                     'msg_status' => false,
                     'msg_response' => 'Invalid transaction type ID.'
                 ]);
+            }
+
+            if ($isAdminStaff) {
+                $stmtOwner = $db_connect->prepare("SELECT office_id FROM transaction_types WHERE id = ? LIMIT 1");
+                $stmtOwner->bind_param('i', $id);
+                $stmtOwner->execute();
+                $ownerRow = $stmtOwner->get_result()->fetch_assoc();
+                $stmtOwner->close();
+
+                if (!$ownerRow || (int)$ownerRow['office_id'] !== $lockedOfficeId) {
+                    transactionTypesJsonResponse([
+                        'msg_status' => false,
+                        'msg_response' => 'You are not authorized to delete services from another office.'
+                    ]);
+                }
             }
 
             $stmtDelete = $db_connect->prepare("
@@ -1959,7 +1951,6 @@ try {
         $transactionOpen = false;
     }
 
-    // Keep database and internal exception details out of the response.
     error_log(
         'Transaction types handler error: ' .
         $e->getMessage()
