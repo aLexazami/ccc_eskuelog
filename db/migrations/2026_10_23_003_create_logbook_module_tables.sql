@@ -22,15 +22,14 @@ CREATE TABLE IF NOT EXISTS `counters` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
     `office_id` INT NOT NULL,                          -- References office.office_id
     `counter_name` VARCHAR(100) NOT NULL,              -- e.g., 'Window 1', 'Counter A', 'Desk 2'
-    `assigned_user_id` INT DEFAULT NULL,               -- FK to users.id (staff currently logged in)
     `flag_status` INT NOT NULL DEFAULT 0,              -- 0 = active, 1 = inactive
-    
+
     -- Foreign Key Constraints
     CONSTRAINT `fk_counter_office` FOREIGN KEY (`office_id`) REFERENCES `office`(`office_id`) ON DELETE CASCADE,
-    
+
     -- Unique Constraint (Prevents duplicate counter names per office)
     UNIQUE KEY `uk_office_counter_name` (`office_id`, `counter_name`),
-    
+
     -- Indexes
     INDEX `idx_office_counter` (`office_id`, `flag_status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
