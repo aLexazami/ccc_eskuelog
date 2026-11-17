@@ -24,7 +24,7 @@ $kpiConfig = $fetchOne("
         (SELECT COUNT(*) FROM counters WHERE flag_status = 0) AS total_counters,
         (SELECT COUNT(*) FROM transaction_types WHERE flag_status = 0) AS total_services,
         (SELECT COUNT(*) FROM transaction_sub_concerns WHERE flag_status = 0) AS total_sub_concerns,
-        (SELECT COUNT(*) FROM staff_assignments WHERE flag_status = 0 AND shift_status = 'ON_DUTY') AS on_duty_staff
+        (SELECT COUNT(*) FROM staff_assignments WHERE flag_status = 0) AS on_duty_staff
 ");
 
 // 2. Today's Operational Queue KPIs
@@ -46,14 +46,14 @@ $officeOverview = $fetchAll("
         o.office_code,
         o.office_name,
         COUNT(DISTINCT c.id) AS counter_count,
-        COUNT(DISTINCT CASE WHEN sa.shift_status = 'ON_DUTY' AND sa.flag_status = 0 THEN sa.id END) AS active_staff,
+        COUNT(DISTINCT CASE WHEN sa.flag_status = 0 THEN sa.id END) AS active_staff,
         COUNT(DISTINCT CASE WHEN qt.queue_date = CURDATE() AND qt.status = 'WAITING' THEN qt.id END) AS waiting_today,
         COUNT(DISTINCT CASE WHEN qt.queue_date = CURDATE() AND qt.status = 'COMPLETED' THEN qt.id END) AS completed_today,
         COUNT(DISTINCT CASE WHEN qt.queue_date = CURDATE() THEN qt.id END) AS total_today
     FROM office o
     LEFT JOIN counters c ON c.office_id = o.office_id AND c.flag_status = 0
     LEFT JOIN staff_assignments sa ON sa.office_id = o.office_id
-    LEFT JOIN queue_tickets qt ON qt.office_id = o.office_id
+    LEFT JOIN queue_tickets qt ON qt.office_id = o.office_id AND qt.queue_date = CURDATE()
     WHERE o.flag_status = 0
     GROUP BY o.office_id, o.office_code, o.office_name
     ORDER BY total_today DESC, o.office_code ASC
