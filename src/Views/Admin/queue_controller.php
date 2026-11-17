@@ -48,54 +48,26 @@ if ($user_id <= 0 && $db_connect && session_id()) {
     }
 }
 
-// 2. Resolve User Role (1=ADMIN, 2=ADMIN_STAFF, 3=STATION_ADMIN, 4=USER)
-$g_user_role = '';
-if (isset($session_class) && method_exists($session_class, 'getValue')) {
-    $g_user_role = $session_class->getValue('user_role') ?? $session_class->getValue('system_role') ?? '';
-}
-if (empty($g_user_role)) {
-    $g_user_role = $_SESSION['user_role'] ?? $_SESSION['g_user_role'] ?? $_SESSION['role'] ?? '';
-}
-
-$role_map = ['1' => 'ADMIN', '2' => 'ADMIN_STAFF', '3' => 'STATION_ADMIN', '4' => 'USER'];
-
-if (isset($role_map[(string)$g_user_role])) {
-    $g_user_role = $role_map[(string)$g_user_role];
-}
-
-// Only query system_access if role is completely missing
-if (empty($g_user_role) && $db_connect && $user_id > 0) {
-    $stmtSysRole = $db_connect->prepare("SELECT system_role FROM system_access WHERE user_id = ? AND system_type = 'E-SKUELOG' ORDER BY system_role ASC LIMIT 1");
-    if ($stmtSysRole) {
-        $stmtSysRole->bind_param("i", $user_id);
-        $stmtSysRole->execute();
-        $roleRes = $stmtSysRole->get_result()->fetch_assoc();
-        if ($roleRes && isset($role_map[(string)$roleRes['system_role']])) {
-            $g_user_role = $role_map[(string)$roleRes['system_role']];
-        }
-    }
-}
-
-$g_user_role_upper = strtoupper(trim((string)$g_user_role));
-
 $assigned_office = null;
-$offices         = [];
 
 if ($db_connect && $user_id > 0) {
-    // 1. ALWAYS priority-check staff_assignments table first for direct workstation assignment
+    // STRICT Priority 1 ONLY: Require active staff_assignments row with BOTH office_id and counter_id
     $stmtAssign = $db_connect->prepare("
         SELECT 
             sa.office_id, 
             sa.counter_id, 
-            sa.shift_status,
             o.office_code, 
             o.office_name, 
-            COALESCE(c.counter_name, CONCAT('Counter ', sa.counter_id), 'Service Counter Workstation') AS counter_label
+            c.counter_name AS counter_label
         FROM staff_assignments sa
-        INNER JOIN office o ON sa.office_id = o.office_id
-        LEFT JOIN counters c ON sa.counter_id = c.id
-        WHERE sa.user_id = ? AND sa.flag_status = 0
-        ORDER BY (sa.shift_status = 'ON_DUTY') DESC, sa.id DESC
+        INNER JOIN office o ON sa.office_id = o.office_id AND o.flag_status = 0
+        INNER JOIN counters c ON sa.counter_id = c.id AND c.flag_status = 0
+        WHERE sa.user_id = ? 
+          AND sa.flag_status = 0
+          AND sa.office_id > 0
+          AND sa.counter_id IS NOT NULL
+          AND sa.counter_id > 0
+        ORDER BY sa.id DESC
         LIMIT 1
     ");
     if ($stmtAssign) {
@@ -104,44 +76,10 @@ if ($db_connect && $user_id > 0) {
         $assigned_office = $stmtAssign->get_result()->fetch_assoc();
     }
 
-    // 2. Fallback check on employee table if no staff_assignments record exists
-    if (!$assigned_office) {
-        $stmtEmp = $db_connect->prepare("
-            SELECT e.office_id, o.office_code, o.office_name 
-            FROM employee e
-            INNER JOIN office o ON e.office_id = o.office_id
-            WHERE e.user_id = ? LIMIT 1
-        ");
-        if ($stmtEmp) {
-            $stmtEmp->bind_param("i", $user_id);
-            $stmtEmp->execute();
-            $empOffice = $stmtEmp->get_result()->fetch_assoc();
-            if ($empOffice) {
-                $assigned_office = [
-                    'office_id'     => (int)$empOffice['office_id'],
-                    'counter_id'    => 0,
-                    'shift_status'  => 'ON_DUTY',
-                    'office_code'   => $empOffice['office_code'],
-                    'office_name'   => $empOffice['office_name'],
-                    'counter_label' => 'Service Counter Workstation'
-                ];
-            }
-        }
-    }
-
-    // Update active session values
+    // Update or clear active session values strictly based on staff_assignments
     if ($assigned_office) {
         $_SESSION['assigned_office_id']  = (int)$assigned_office['office_id'];
-        $_SESSION['assigned_counter_id'] = (int)($assigned_office['counter_id'] ?? 0);
-        $_SESSION['shift_status']        = $assigned_office['shift_status'] ?? 'ON_DUTY';
-    } else if ($g_user_role_upper === 'ADMIN') {
-        // If user is ADMIN and has no specific assignment, populate dropdown options
-        $stmt = $db_connect->query("SELECT office_id, office_code, office_name FROM office WHERE flag_status = 0 ORDER BY office_name ASC");
-        if ($stmt) {
-            while ($row = $stmt->fetch_assoc()) {
-                $offices[] = $row;
-            }
-        }
+        $_SESSION['assigned_counter_id'] = (int)$assigned_office['counter_id'];
     } else {
         unset($_SESSION['assigned_office_id'], $_SESSION['assigned_counter_id']);
     }
@@ -218,12 +156,6 @@ if ($db_connect && $user_id > 0) {
             background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
             color: #065f46;
             border-color: #6ee7b7;
-        }
-
-        .status-on-break {
-            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
-            color: #991b1b;
-            border-color: #fca5a5;
         }
 
         .digital-timer-card {
@@ -351,7 +283,7 @@ if ($db_connect && $user_id > 0) {
             box-shadow: 0 4px 12px rgba(37, 99, 235, 0.05);
         }
 
-        /* RECEIPT CONCERN STYLES (MATCHED EXACTLY FROM STUDENT LOGBOOK) */
+        /* RECEIPT CONCERN STYLES */
         .receipt-concern-item {
             background-color: #ffffff;
             border: 1px solid #e2e8f0;
@@ -476,13 +408,6 @@ if ($db_connect && $user_id > 0) {
             color: #ffffff;
             box-shadow: 0 4px 10px rgba(22, 163, 74, 0.38);
             transform: translateY(-1px);
-        }
-
-        .form-select-kiosk {
-            border: 1.5px solid #cbd5e1;
-            border-radius: 0.65rem;
-            padding: 0.45rem 0.85rem;
-            font-size: 0.9rem;
         }
 
         .action-bar-card {
@@ -628,30 +553,19 @@ if ($db_connect && $user_id > 0) {
                                         </div>
                                         <div class="min-w-0">
                                             <h4 class="fw-bold text-white mb-0 tracking-wide text-truncate fs-6 fs-sm-5" id="headerOfficeName">
-                                                <?= $assigned_office ? htmlspecialchars($assigned_office['office_name']) . ' (' . htmlspecialchars($assigned_office['office_code']) . ')' : ($g_user_role_upper === 'ADMIN' ? 'Select Active Office' : 'No Workstation Assigned'); ?>
+                                                <?= $assigned_office ? htmlspecialchars($assigned_office['office_name']) . ' (' . htmlspecialchars($assigned_office['office_code']) . ')' : 'No Workstation Assigned'; ?>
                                             </h4>
                                             <p class="text-white-50 small mb-0" id="headerCounterName">
-                                                <?= $assigned_office ? htmlspecialchars($assigned_office['counter_label'] ?? 'Service Counter Workstation') : 'Service Counter Workstation'; ?>
+                                                <?= $assigned_office ? htmlspecialchars($assigned_office['counter_label']) : 'Service Counter Workstation'; ?>
                                             </p>
                                         </div>
                                     </div>
 
-                                    <!-- OFFICE / COUNTER SELECTOR OR HIDDEN INPUTS -->
+                                    <!-- HIDDEN WORKSTATION INPUTS -->
                                     <div>
                                         <?php if ($assigned_office): ?>
                                             <input type="hidden" id="officeSelect" value="<?= (int)$assigned_office['office_id']; ?>">
-                                            <input type="hidden" id="counterSelect" value="<?= (int)($assigned_office['counter_id'] ?? 0); ?>">
-                                        <?php elseif ($g_user_role_upper === 'ADMIN'): ?>
-                                            <div class="d-flex align-items-center gap-2">
-                                                <label for="officeSelect" class="fw-bold text-white text-nowrap mb-0 small">Active Office:</label>
-                                                <select id="officeSelect" class="form-select form-select-kiosk fw-bold text-dark border-0 shadow-sm" style="min-width: 220px;">
-                                                    <option value="">-- Select Office --</option>
-                                                    <?php foreach ($offices as $off): ?>
-                                                        <option value="<?= $off['office_id']; ?>"><?= htmlspecialchars($off['office_name']); ?> (<?= htmlspecialchars($off['office_code']); ?>)</option>
-                                                    <?php endforeach; ?>
-                                                </select>
-                                                <input type="hidden" id="counterSelect" value="0">
-                                            </div>
+                                            <input type="hidden" id="counterSelect" value="<?= (int)$assigned_office['counter_id']; ?>">
                                         <?php else: ?>
                                             <input type="hidden" id="officeSelect" value="">
                                             <input type="hidden" id="counterSelect" value="0">
@@ -662,7 +576,7 @@ if ($db_connect && $user_id > 0) {
                                 <!-- CONTROLLER MAIN BODY -->
                                 <div class="card-body p-3 p-sm-4">
                                     
-                                    <?php if (!$assigned_office && $g_user_role_upper !== 'ADMIN'): ?>
+                                    <?php if (!$assigned_office): ?>
                                         <!-- UNASSIGNED STAFF FALLBACK CARD -->
                                         <div class="card border-0 shadow-sm rounded-4 overflow-hidden my-2" id="unassignedFallbackCard">
                                             <div class="card-body p-4 p-md-5 text-center">
@@ -678,7 +592,7 @@ if ($db_connect && $user_id > 0) {
                                                 
                                                 <!-- DESCRIPTION COPY -->
                                                 <p class="text-muted mx-auto mb-4" style="max-width: 500px; font-size: 0.95rem; line-height: 1.65;">
-                                                    Your account is active, but you have not been assigned to a service counter for today's shift. Please coordinate with your station manager or administrator to configure your workstation assignment.
+                                                    Your account is active, but you have not been assigned to both an office and a service counter for today's shift. Please coordinate with your station manager or administrator to configure your workstation assignment.
                                                 </p>
 
                                                 <!-- RE-CHECK ASSIGNMENT BUTTON -->
@@ -699,7 +613,7 @@ if ($db_connect && $user_id > 0) {
                                                 
                                                 <div class="col-lg-4 col-md-5 d-flex justify-content-center">
                                                     <div id="counterStatusContainer" class="status-pill-modern status-on-duty">
-                                                        <span id="counterStatusText">ON DUTY</span>
+                                                        <span id="counterStatusText">READY TO SERVE</span>
                                                     </div>
                                                 </div>
 
@@ -861,15 +775,11 @@ if ($db_connect && $user_id > 0) {
 
     <script>
         (function() {
-            const IS_ADMIN = <?= json_encode($g_user_role_upper === 'ADMIN'); ?>;
             const HAS_ASSIGNMENT = <?= json_encode(!empty($assigned_office)); ?>;
 
             const officeSelect = document.getElementById('officeSelect');
             const counterSelect = document.getElementById('counterSelect');
-            
             const controllerMainContent = document.getElementById('controllerMainContent');
-            const headerOfficeName = document.getElementById('headerOfficeName');
-            const headerCounterName = document.getElementById('headerCounterName');
             
             const counterStatusContainer = document.getElementById('counterStatusContainer');
             const counterStatusText = document.getElementById('counterStatusText');
@@ -895,7 +805,6 @@ if ($db_connect && $user_id > 0) {
 
             const HANDLER_URL = '<?= BASE_URL; ?>admin/ajax/queue';
 
-            const isSelectDropdown = officeSelect && officeSelect.tagName === 'SELECT';
             let activeOfficeId = officeSelect ? officeSelect.value : '';
             let activeCounterId = counterSelect ? counterSelect.value : '0';
 
@@ -947,17 +856,6 @@ if ($db_connect && $user_id > 0) {
                 }
             }
 
-            function updateHeaderBannerText() {
-                if (isSelectDropdown && officeSelect.selectedIndex > 0) {
-                    const selectedText = officeSelect.options[officeSelect.selectedIndex].text;
-                    if (headerOfficeName) headerOfficeName.textContent = selectedText;
-                    if (headerCounterName) headerCounterName.textContent = 'Service Counter Workstation';
-                } else if (isSelectDropdown && !officeSelect.value) {
-                    if (headerOfficeName) headerOfficeName.textContent = 'Select Active Office';
-                    if (headerCounterName) headerCounterName.textContent = 'Service Counter Workstation';
-                }
-            }
-
             function toTitleCase(str) {
                 if (!str) return '';
                 return str.toLowerCase().replace(/\b\w/g, function(char) {
@@ -965,7 +863,6 @@ if ($db_connect && $user_id > 0) {
                 });
             }
 
-            // Build exact Student Logbook Receipt Style for Multiple Primary Transactions & Sub Concerns
             function buildLogbookStyleConcerns(ticket) {
                 let html = '';
                 const otherText = ticket.other_concern_text ? ticket.other_concern_text.trim() : '';
@@ -1054,33 +951,12 @@ if ($db_connect && $user_id > 0) {
                 return html;
             }
 
-            if (HAS_ASSIGNMENT && officeSelect && officeSelect.value) {
-                activeOfficeId = officeSelect.value;
-                activeCounterId = counterSelect ? counterSelect.value : '0';
+            if (HAS_ASSIGNMENT && activeOfficeId && parseInt(activeCounterId, 10) > 0) {
                 loadCounterData();
-            } else if (IS_ADMIN && isSelectDropdown) {
-                const storedOffice = localStorage.getItem('ctrl_active_office') || '';
-                if (storedOffice) {
-                    officeSelect.value = storedOffice;
-                    activeOfficeId = storedOffice;
-                    updateHeaderBannerText();
-                }
-                
-                officeSelect.addEventListener('change', function() {
-                    activeOfficeId = this.value;
-                    localStorage.setItem('ctrl_active_office', activeOfficeId);
-                    updateHeaderBannerText();
-                    loadCounterData();
-                });
-
-                if (activeOfficeId) {
-                    updateHeaderBannerText();
-                    loadCounterData();
-                }
             }
 
             function loadCounterData() {
-                if (!activeOfficeId || (!HAS_ASSIGNMENT && !IS_ADMIN)) {
+                if (!HAS_ASSIGNMENT || !activeOfficeId || parseInt(activeCounterId, 10) <= 0) {
                     if (controllerMainContent) controllerMainContent.classList.add('d-none');
                     return;
                 }
@@ -1103,7 +979,6 @@ if ($db_connect && $user_id > 0) {
                 .then(res => {
                     if (res.success && res.data) {
                         const ticket = res.data.now_serving;
-                        const shiftStatus = res.data.shift_status || 'ON_DUTY';
 
                         if (counterStatusText && counterStatusContainer) {
                             if (ticket && ticket.status === 'CALLED') {
@@ -1112,11 +987,8 @@ if ($db_connect && $user_id > 0) {
                             } else if (ticket && ticket.status === 'SERVING') {
                                 counterStatusText.textContent = 'NOW SERVING';
                                 counterStatusContainer.className = 'status-pill-modern status-now-serving';
-                            } else if (shiftStatus === 'ON_BREAK') {
-                                counterStatusText.textContent = 'ON BREAK';
-                                counterStatusContainer.className = 'status-pill-modern status-on-break';
                             } else {
-                                counterStatusText.textContent = 'ON DUTY';
+                                counterStatusText.textContent = 'READY TO SERVE';
                                 counterStatusContainer.className = 'status-pill-modern status-on-duty';
                             }
                         }
@@ -1453,7 +1325,7 @@ if ($db_connect && $user_id > 0) {
             }
 
             function sendQueueAction(actionName, additionalParams = {}) {
-                if (!activeOfficeId || (!HAS_ASSIGNMENT && !IS_ADMIN)) return;
+                if (!HAS_ASSIGNMENT || !activeOfficeId || parseInt(activeCounterId, 10) <= 0) return;
 
                 const formData = new FormData();
                 formData.append('action', actionName);
@@ -1493,7 +1365,7 @@ if ($db_connect && $user_id > 0) {
             if (btnCompleteTicket) btnCompleteTicket.addEventListener('click', () => sendQueueAction('complete_ticket'));
             if (btnSkipTicket) btnSkipTicket.addEventListener('click', () => sendQueueAction('skip_ticket'));
 
-            if (HAS_ASSIGNMENT || IS_ADMIN) {
+            if (HAS_ASSIGNMENT && activeOfficeId && parseInt(activeCounterId, 10) > 0) {
                 setInterval(loadCounterData, 4000);
             }
         })();

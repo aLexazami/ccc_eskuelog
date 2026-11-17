@@ -84,10 +84,10 @@ $assigned_counter_id = 0;
 if ($user_id > 0) {
     // Priority 1: Direct Workstation Assignment in staff_assignments
     $stmtStaff = $db_connect->prepare("
-        SELECT office_id, counter_id, shift_status 
+        SELECT office_id, counter_id 
         FROM staff_assignments 
         WHERE user_id = ? AND flag_status = 0 
-        ORDER BY (shift_status = 'ON_DUTY') DESC, id DESC 
+        ORDER BY id DESC 
         LIMIT 1
     ");
     if ($stmtStaff) {
@@ -96,14 +96,14 @@ if ($user_id > 0) {
         $staffRow = $stmtStaff->get_result()->fetch_assoc();
         if ($staffRow) {
             $assigned_office_id  = (int)$staffRow['office_id'];
-            $assigned_counter_id = (int)$staffRow['counter_id'];
-            $_SESSION['shift_status'] = $staffRow['shift_status'] ?? 'ON_DUTY';
+            $assigned_counter_id = (int)($staffRow['counter_id'] ?? 0);
+            $_SESSION['shift_status'] = 'ON_DUTY';
         }
     }
 
     // Priority 2: Fallback check on employee table
     if ($assigned_office_id <= 0) {
-        $stmtEmp = $db_connect->prepare("SELECT office_id FROM employee WHERE user_id = ? LIMIT 1");
+        $stmtEmp = $db_connect->prepare("SELECT office_id FROM employee WHERE user_id = ? AND office_id > 0 LIMIT 1");
         if ($stmtEmp) {
             $stmtEmp->bind_param("i", $user_id);
             $stmtEmp->execute();
@@ -111,6 +111,7 @@ if ($user_id > 0) {
             if ($empRow) {
                 $assigned_office_id  = (int)$empRow['office_id'];
                 $assigned_counter_id = 0;
+                $_SESSION['shift_status'] = 'ON_DUTY';
             }
         }
     }
@@ -161,14 +162,14 @@ switch ($action) {
                     q.served_at,
                     l.visitor_type,
                     l.reference_id,
-                    u.email,
+                    COALESCE(l.email, u.email) AS email,
                     l.first_name,
                     l.middle_name,
                     l.last_name,
                     l.suffix,
                     l.post_nominal,
                     l.sex,
-                    l.contact_no,
+                    u.contact_no,
                     COALESCE(p.program_code, l.program_code) AS program_code,
                     COALESCE(p.program_name, '') AS program_name,
                     l.year_level,
@@ -206,7 +207,7 @@ switch ($action) {
                     $now_serving['sex'] = ucfirst(strtolower($now_serving['sex']));
                 }
 
-                // Fetch multi-concerns from logbook_transaction_items table (including item-level other_concern_text if available)
+                // Fetch multi-concerns from logbook_transaction_items table
                 $concerns_list = [];
                 $stmtItems = $db_connect->prepare("
                     SELECT 
