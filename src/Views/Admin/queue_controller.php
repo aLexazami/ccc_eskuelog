@@ -454,6 +454,9 @@ if ($db_connect && $user_id > 0) {
             align-items: center;
             justify-content: space-between;
             gap: 0.5rem;
+            width: 100%;
+            min-width: 0;
+            overflow: hidden;
         }
 
         .ticket-pill-item:hover {
@@ -519,6 +522,61 @@ if ($db_connect && $user_id > 0) {
             background-color: #ede9fe;
             color: #5b21b6;
             border: 1px solid #c4b5fd;
+        }
+
+        /* SINGLE-LINE RIGHT-TO-LEFT CONCERN TICKER ON WAITING PILLS */
+        .pill-concern-ticker {
+            position: relative;
+            overflow: hidden;
+            height: 1.25rem;
+            margin-top: 0.25rem;
+            width: 100%;
+            max-width: 100%;
+            min-width: 0;
+            display: block;
+        }
+
+        .pill-concern-text {
+            display: block;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: 100%;
+            max-width: 100%;
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: #475569;
+            line-height: 1.25rem;
+        }
+
+        .pill-concern-slide-in {
+            animation: pillSlideFromRight 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+
+        .pill-concern-slide-out {
+            animation: pillSlideToLeft 0.3s ease-in forwards;
+        }
+
+        @keyframes pillSlideFromRight {
+            0% {
+                opacity: 0;
+                transform: translateX(24px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes pillSlideToLeft {
+            0% {
+                opacity: 1;
+                transform: translateX(0);
+            }
+            100% {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
         }
 
         .btn-preview-visitor {
@@ -914,855 +972,991 @@ if ($db_connect && $user_id > 0) {
 
     <?php include_once ADMIN_SCRIPT_PATH; ?>
 
-    <script>
-        (function() {
-            const HAS_ASSIGNMENT = <?= json_encode(!empty($assigned_office)); ?>;
-            const ASSIGNED_COUNTER_LABEL = <?= json_encode($assigned_office['counter_label'] ?? ''); ?>;
+<script>
+    (function() {
+        const HAS_ASSIGNMENT = <?= json_encode(!empty($assigned_office)); ?>;
+        const ASSIGNED_COUNTER_LABEL = <?= json_encode($assigned_office['counter_label'] ?? ''); ?>;
 
-            const officeSelect = document.getElementById('officeSelect');
-            const counterSelect = document.getElementById('counterSelect');
-            const controllerMainContent = document.getElementById('controllerMainContent');
-            
-            const counterStatusContainer = document.getElementById('counterStatusContainer');
-            const counterStatusText = document.getElementById('counterStatusText');
-            const digitalElapsedTimer = document.getElementById('digitalElapsedTimer');
+        const officeSelect = document.getElementById('officeSelect');
+        const counterSelect = document.getElementById('counterSelect');
+        const controllerMainContent = document.getElementById('controllerMainContent');
+        
+        const counterStatusContainer = document.getElementById('counterStatusContainer');
+        const counterStatusText = document.getElementById('counterStatusText');
+        const digitalElapsedTimer = document.getElementById('digitalElapsedTimer');
 
-            const ctrlServingTicket = document.getElementById('ctrlServingTicket');
-            const ctrlWindowNumberTag = document.getElementById('ctrlWindowNumberTag');
-            const ctrlPriorityTag = document.getElementById('ctrlPriorityTag');
-            const ctrlVisitorTypeTag = document.getElementById('ctrlVisitorTypeTag');
-            const ticketDetailsContainer = document.getElementById('ticketDetailsContainer');
+        const ctrlServingTicket = document.getElementById('ctrlServingTicket');
+        const ctrlWindowNumberTag = document.getElementById('ctrlWindowNumberTag');
+        const ctrlPriorityTag = document.getElementById('ctrlPriorityTag');
+        const ctrlVisitorTypeTag = document.getElementById('ctrlVisitorTypeTag');
+        const ticketDetailsContainer = document.getElementById('ticketDetailsContainer');
 
-            const modalUserDetailsContent = document.getElementById('modalUserDetailsContent');
-            const windowServicesModalContent = document.getElementById('windowServicesModalContent');
+        const modalUserDetailsContent = document.getElementById('modalUserDetailsContent');
+        const windowServicesModalContent = document.getElementById('windowServicesModalContent');
 
-            // 3-Column Badges & Lists
-            const ctrlPriorityBadge = document.getElementById('ctrlPriorityBadge');
-            const ctrlRegularBadge  = document.getElementById('ctrlRegularBadge');
-            const ctrlEmployeeBadge = document.getElementById('ctrlEmployeeBadge');
+        // 3-Column Badges & Lists
+        const ctrlPriorityBadge = document.getElementById('ctrlPriorityBadge');
+        const ctrlRegularBadge  = document.getElementById('ctrlRegularBadge');
+        const ctrlEmployeeBadge = document.getElementById('ctrlEmployeeBadge');
 
-            const ctrlPriorityList = document.getElementById('ctrlPriorityList');
-            const ctrlRegularList  = document.getElementById('ctrlRegularList');
-            const ctrlEmployeeList = document.getElementById('ctrlEmployeeList');
+        const ctrlPriorityList = document.getElementById('ctrlPriorityList');
+        const ctrlRegularList  = document.getElementById('ctrlRegularList');
+        const ctrlEmployeeList = document.getElementById('ctrlEmployeeList');
 
-            // Global Category Call Next Buttons
-            const btnCallNextPriority = document.getElementById('btnCallNextPriority');
-            const btnCallNextRegular  = document.getElementById('btnCallNextRegular');
-            const btnCallNextEmployee = document.getElementById('btnCallNextEmployee');
+        // Global Category Call Next Buttons
+        const btnCallNextPriority = document.getElementById('btnCallNextPriority');
+        const btnCallNextRegular  = document.getElementById('btnCallNextRegular');
+        const btnCallNextEmployee = document.getElementById('btnCallNextEmployee');
 
-            // Top Action Controls
-            const btnStartServe     = document.getElementById('btnStartServe');
-            const btnCompleteTicket = document.getElementById('btnCompleteTicket');
-            const btnRecallVoice    = document.getElementById('btnRecallVoice');
-            const btnSkipTicket     = document.getElementById('btnSkipTicket');
+        // Top Action Controls
+        const btnStartServe     = document.getElementById('btnStartServe');
+        const btnCompleteTicket = document.getElementById('btnCompleteTicket');
+        const btnRecallVoice    = document.getElementById('btnRecallVoice');
+        const btnSkipTicket     = document.getElementById('btnSkipTicket');
 
-            const HANDLER_URL = '<?= BASE_URL; ?>admin/ajax/queue';
+        const HANDLER_URL = '<?= BASE_URL; ?>admin/ajax/queue';
 
-            let activeOfficeId = officeSelect ? officeSelect.value : '';
-            let activeCounterId = counterSelect ? counterSelect.value : '0';
+        let activeOfficeId = officeSelect ? officeSelect.value : '';
+        let activeCounterId = counterSelect ? counterSelect.value : '0';
 
-            let dynamicTimerInterval = null;
-            let currentTimerBaseTime = null;
+        let dynamicTimerInterval = null;
+        let currentTimerBaseTime = null;
 
-            // Cache tickets for modal previewing (active + waiting)
-            let currentActiveTicket = null;
-            let waitingTicketsMap = {};
+        // Cache tickets for modal previewing (active + waiting)
+        let currentActiveTicket = null;
+        let waitingTicketsMap = {};
 
-            function escapeHtml(str) {
-                if (str === null || str === undefined) return '';
-                return String(str)
-                    .replace(/&/g, '&amp;')
-                    .replace(/</g, '&lt;')
-                    .replace(/>/g, '&gt;')
-                    .replace(/"/g, '&quot;')
-                    .replace(/'/g, '&#039;');
-            }
+        // Track active per-pill concern tickers, current indices & rendered tickets across 4-second polling refreshes
+        let pillTickerIntervals = {};
+        let pillTickerIndices = {};
+        let renderedPillTicketIds = new Set();
 
-            // One-click Copy Utility
-            window.copyDetailValue = function(btnEl, encodedValue) {
-                const textToCopy = decodeURIComponent(encodedValue || '');
-                if (!textToCopy || textToCopy === 'N/A' || textToCopy === '---') return;
+        function escapeHtml(str) {
+            if (str === null || str === undefined) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
 
-                const onCopySuccess = () => {
-                    const originalHtml = btnEl.innerHTML;
-                    btnEl.innerHTML = '<i class="bi bi-check2 text-success fw-bold"></i> Copied';
-                    btnEl.classList.add('border-success', 'bg-success-subtle');
-                    setTimeout(() => {
-                        btnEl.innerHTML = originalHtml;
-                        btnEl.classList.remove('border-success', 'bg-success-subtle');
-                    }, 1500);
-                };
+        // One-click Copy Utility
+        window.copyDetailValue = function(btnEl, encodedValue) {
+            const textToCopy = decodeURIComponent(encodedValue || '');
+            if (!textToCopy || textToCopy === 'N/A' || textToCopy === '---') return;
 
-                if (navigator.clipboard && window.isSecureContext) {
-                    navigator.clipboard.writeText(textToCopy).then(onCopySuccess).catch(() => fallbackCopy(textToCopy, onCopySuccess));
-                } else {
-                    fallbackCopy(textToCopy, onCopySuccess);
-                }
+            const onCopySuccess = () => {
+                const originalHtml = btnEl.innerHTML;
+                btnEl.innerHTML = '<i class="bi bi-check2 text-success fw-bold"></i> Copied';
+                btnEl.classList.add('border-success', 'bg-success-subtle');
+                setTimeout(() => {
+                    btnEl.innerHTML = originalHtml;
+                    btnEl.classList.remove('border-success', 'bg-success-subtle');
+                }, 1500);
             };
 
-            function fallbackCopy(text, callback) {
-                const textArea = document.createElement('textarea');
-                textArea.value = text;
-                textArea.style.position = 'fixed';
-                textArea.style.left = '-9999px';
-                document.body.appendChild(textArea);
-                textArea.focus();
-                textArea.select();
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(textToCopy).then(onCopySuccess).catch(() => fallbackCopy(textToCopy, onCopySuccess));
+            } else {
+                fallbackCopy(textToCopy, onCopySuccess);
+            }
+        };
+
+        function fallbackCopy(text, callback) {
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.position = 'fixed';
+            textArea.style.left = '-9999px';
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                if (callback) callback();
+            } catch (err) {
+                console.error('Fallback copy failed:', err);
+            }
+            document.body.removeChild(textArea);
+        }
+
+        function showSwalAlert(title, message, iconType = 'info') {
+            const swalObj = typeof swal !== 'undefined' ? swal : (typeof Swal !== 'undefined' ? Swal : null);
+            if (!swalObj) {
+                alert(`${title}: ${message}`);
+                return;
+            }
+
+            if (typeof swalObj === 'function') {
                 try {
-                    document.execCommand('copy');
-                    if (callback) callback();
-                } catch (err) {
-                    console.error('Fallback copy failed:', err);
-                }
-                document.body.removeChild(textArea);
-            }
-
-            function showSwalAlert(title, message, iconType = 'info') {
-                const swalObj = typeof swal !== 'undefined' ? swal : (typeof Swal !== 'undefined' ? Swal : null);
-                if (!swalObj) {
-                    alert(`${title}: ${message}`);
+                    swalObj(title, message, iconType);
                     return;
-                }
-
-                if (typeof swalObj === 'function') {
+                } catch (e) {
                     try {
-                        swalObj(title, message, iconType);
-                        return;
-                    } catch (e) {
-                        try {
-                            new swalObj({
-                                title: title,
-                                text: message,
-                                icon: iconType,
-                                buttons: {
-                                    confirm: {
-                                        className: iconType === 'error' || iconType === 'warning' ? 'btn btn-danger' : 'btn btn-primary'
-                                    }
+                        new swalObj({
+                            title: title,
+                            text: message,
+                            icon: iconType,
+                            buttons: {
+                                confirm: {
+                                    className: iconType === 'error' || iconType === 'warning' ? 'btn btn-danger' : 'btn btn-primary'
                                 }
-                            });
-                            return;
-                        } catch (e2) {}
-                    }
-                }
-
-                if (typeof swalObj.fire === 'function') {
-                    swalObj.fire({ title: title, text: message, icon: iconType });
-                } else {
-                    alert(`${title}: ${message}`);
+                            }
+                        });
+                        return;
+                    } catch (e2) {}
                 }
             }
 
-            function toTitleCase(str) {
-                if (!str) return '';
-                return str.toLowerCase().replace(/\b\w/g, function(char) {
-                    return char.toUpperCase();
+            if (typeof swalObj.fire === 'function') {
+                swalObj.fire({ title: title, text: message, icon: iconType });
+            } else {
+                alert(`${title}: ${message}`);
+            }
+        }
+
+        function toTitleCase(str) {
+            if (!str) return '';
+            return str.toLowerCase().replace(/\b\w/g, function(char) {
+                return char.toUpperCase();
+            });
+        }
+
+        function resolveTicketWindow(ticket) {
+            if (!ticket) return '';
+            if (ticket.window_number && String(ticket.window_number).trim() !== '') {
+                return String(ticket.window_number).trim();
+            }
+            if (ticket.ticket_window_name && String(ticket.ticket_window_name).trim() !== '') {
+                return String(ticket.ticket_window_name).trim();
+            }
+            return ASSIGNED_COUNTER_LABEL || 'N/A';
+        }
+
+        function buildLogbookStyleConcerns(ticket) {
+            let html = '';
+            const otherText = ticket.other_concern_text ? ticket.other_concern_text.trim() : '';
+
+            const renderConcernCard = (mainTitle, subs = []) => {
+                let subSectionHtml = '';
+                if (Array.isArray(subs) && subs.length > 0) {
+                    const subRows = subs.map(sub => `
+                        <div class="text-dark fw-bold" style="font-size: 0.875rem; line-height: 1.35;">
+                            ${escapeHtml(sub)}
+                        </div>
+                    `).join('');
+
+                    subSectionHtml = `
+                        <div class="mt-2 pt-2 border-top d-flex flex-column gap-1">
+                            <div class="text-muted fw-bold" style="font-size: 0.875rem; line-height: 1.35;">Sub-Transaction</div>
+                            ${subRows}
+                        </div>
+                    `;
+                }
+
+                return `
+                    <div class="receipt-concern-item">
+                        <div class="text-dark fw-bold" style="font-size: 0.875rem; line-height: 1.35;">${escapeHtml(mainTitle)}</div>
+                        ${subSectionHtml}
+                    </div>
+                `;
+            };
+
+            if (Array.isArray(ticket.concerns_list) && ticket.concerns_list.length > 0) {
+                let grouped = {};
+
+                ticket.concerns_list.forEach(item => {
+                    const main = (item.transaction_name || 'General Concern').trim();
+                    const sub = item.sub_concern_name ? item.sub_concern_name.trim() : null;
+
+                    if (main.toLowerCase().includes('other') && otherText) {
+                        return;
+                    }
+
+                    if (!grouped[main]) {
+                        grouped[main] = [];
+                    }
+
+                    if (sub && !grouped[main].includes(sub)) {
+                        grouped[main].push(sub);
+                    }
+                });
+
+                Object.entries(grouped).forEach(([mainTitle, subs]) => {
+                    html += renderConcernCard(mainTitle, subs);
+                });
+            } else if (ticket.transaction_name) {
+                const mainConcerns = ticket.transaction_name.split(',').map(s => s.trim()).filter(Boolean);
+                const subConcerns = (ticket.sub_concern_name || '').split(',').map(s => s.trim()).filter(Boolean);
+
+                mainConcerns.forEach((main, idx) => {
+                    if (main.toLowerCase().includes('other') && otherText) return;
+                    const subs = (idx === 0 && subConcerns.length > 0) ? subConcerns : [];
+                    html += renderConcernCard(main, subs);
                 });
             }
 
-            function resolveTicketWindow(ticket) {
-                if (!ticket) return '';
-                if (ticket.window_number && String(ticket.window_number).trim() !== '') {
-                    return String(ticket.window_number).trim();
-                }
-                if (ticket.ticket_window_name && String(ticket.ticket_window_name).trim() !== '') {
-                    return String(ticket.ticket_window_name).trim();
-                }
-                return ASSIGNED_COUNTER_LABEL || 'N/A';
+            if (otherText) {
+                html += `
+                    <div class="receipt-concern-item">
+                        <div class="text-dark fw-bold" style="font-size: 0.875rem; line-height: 1.35;">
+                            <i class="bi bi-pen me-1 text-primary"></i>Others / Custom Concern
+                        </div>
+                        <div class="text-dark fw-bold mt-1" style="font-size: 0.875rem; line-height: 1.35; word-break: break-word;">
+                            ${escapeHtml(otherText)}
+                        </div>
+                    </div>
+                `;
             }
 
-            function buildLogbookStyleConcerns(ticket) {
-                let html = '';
-                const otherText = ticket.other_concern_text ? ticket.other_concern_text.trim() : '';
+            if (!html) {
+                html = renderConcernCard('General Concern', []);
+            }
 
-                const renderConcernCard = (mainTitle, subs = []) => {
-                    let subSectionHtml = '';
-                    if (Array.isArray(subs) && subs.length > 0) {
-                        const subRows = subs.map(sub => `
-                            <div class="text-dark fw-bold" style="font-size: 0.875rem; line-height: 1.35;">
-                                ${escapeHtml(sub)}
-                            </div>
-                        `).join('');
+            return html;
+        }
 
-                        subSectionHtml = `
-                            <div class="mt-2 pt-2 border-top d-flex flex-column gap-1">
-                                <div class="text-muted fw-bold" style="font-size: 0.875rem; line-height: 1.35;">Sub-Transaction</div>
-                                ${subRows}
-                            </div>
-                        `;
+        if (HAS_ASSIGNMENT && activeOfficeId && parseInt(activeCounterId, 10) > 0) {
+            loadCounterData();
+        }
+
+        function loadCounterData() {
+            if (!HAS_ASSIGNMENT || !activeOfficeId || parseInt(activeCounterId, 10) <= 0) {
+                if (controllerMainContent) controllerMainContent.classList.add('d-none');
+                return;
+            }
+
+            if (controllerMainContent) controllerMainContent.classList.remove('d-none');
+
+            const formData = new FormData();
+            formData.append('action', 'fetch_counter_status');
+            formData.append('office_id', activeOfficeId);
+            formData.append('counter_id', activeCounterId);
+
+            fetch(HANDLER_URL, {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => {
+                if (!res.ok) throw new Error(`HTTP ${res.status} (${res.statusText})`);
+                return res.json();
+            })
+            .then(res => {
+                if (res.success && res.data) {
+                    const ticket = res.data.now_serving;
+                    currentActiveTicket = ticket || null;
+
+                    if (counterStatusText && counterStatusContainer) {
+                        if (ticket && ticket.status === 'CALLED') {
+                            counterStatusText.textContent = 'NOW CALLING';
+                            counterStatusContainer.className = 'status-pill-modern status-now-calling';
+                        } else if (ticket && ticket.status === 'SERVING') {
+                            counterStatusText.textContent = 'NOW SERVING';
+                            counterStatusContainer.className = 'status-pill-modern status-now-serving';
+                        } else {
+                            counterStatusText.textContent = 'READY TO SERVE';
+                            counterStatusContainer.className = 'status-pill-modern status-on-duty';
+                        }
                     }
 
-                    return `
-                        <div class="receipt-concern-item">
-                            <div class="text-dark fw-bold" style="font-size: 0.875rem; line-height: 1.35;">${escapeHtml(mainTitle)}</div>
-                            ${subSectionHtml}
-                        </div>
-                    `;
-                };
+                    if (ticket && ticket.ticket_number) {
+                        if (ctrlServingTicket) ctrlServingTicket.textContent = ticket.ticket_number;
 
-                if (Array.isArray(ticket.concerns_list) && ticket.concerns_list.length > 0) {
-                    let grouped = {};
-
-                    ticket.concerns_list.forEach(item => {
-                        const main = (item.transaction_name || 'General Concern').trim();
-                        const sub = item.sub_concern_name ? item.sub_concern_name.trim() : null;
-
-                        if (main.toLowerCase().includes('other') && otherText) {
-                            return;
-                        }
-
-                        if (!grouped[main]) {
-                            grouped[main] = [];
-                        }
-
-                        if (sub && !grouped[main].includes(sub)) {
-                            grouped[main].push(sub);
-                        }
-                    });
-
-                    Object.entries(grouped).forEach(([mainTitle, subs]) => {
-                        html += renderConcernCard(mainTitle, subs);
-                    });
-                } else if (ticket.transaction_name) {
-                    const mainConcerns = ticket.transaction_name.split(',').map(s => s.trim()).filter(Boolean);
-                    const subConcerns = (ticket.sub_concern_name || '').split(',').map(s => s.trim()).filter(Boolean);
-
-                    mainConcerns.forEach((main, idx) => {
-                        if (main.toLowerCase().includes('other') && otherText) return;
-                        const subs = (idx === 0 && subConcerns.length > 0) ? subConcerns : [];
-                        html += renderConcernCard(main, subs);
-                    });
-                }
-
-                if (otherText) {
-                    html += `
-                        <div class="receipt-concern-item">
-                            <div class="text-dark fw-bold" style="font-size: 0.875rem; line-height: 1.35;">
-                                <i class="bi bi-pen me-1 text-primary"></i>Others / Custom Concern
-                            </div>
-                            <div class="text-dark fw-bold mt-1" style="font-size: 0.875rem; line-height: 1.35; word-break: break-word;">
-                                ${escapeHtml(otherText)}
-                            </div>
-                        </div>
-                    `;
-                }
-
-                if (!html) {
-                    html = renderConcernCard('General Concern', []);
-                }
-
-                return html;
-            }
-
-            if (HAS_ASSIGNMENT && activeOfficeId && parseInt(activeCounterId, 10) > 0) {
-                loadCounterData();
-            }
-
-            function loadCounterData() {
-                if (!HAS_ASSIGNMENT || !activeOfficeId || parseInt(activeCounterId, 10) <= 0) {
-                    if (controllerMainContent) controllerMainContent.classList.add('d-none');
-                    return;
-                }
-
-                if (controllerMainContent) controllerMainContent.classList.remove('d-none');
-
-                const formData = new FormData();
-                formData.append('action', 'fetch_counter_status');
-                formData.append('office_id', activeOfficeId);
-                formData.append('counter_id', activeCounterId);
-
-                fetch(HANDLER_URL, {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(res => {
-                    if (!res.ok) throw new Error(`HTTP ${res.status} (${res.statusText})`);
-                    return res.json();
-                })
-                .then(res => {
-                    if (res.success && res.data) {
-                        const ticket = res.data.now_serving;
-                        currentActiveTicket = ticket || null;
-
-                        if (counterStatusText && counterStatusContainer) {
-                            if (ticket && ticket.status === 'CALLED') {
-                                counterStatusText.textContent = 'NOW CALLING';
-                                counterStatusContainer.className = 'status-pill-modern status-now-calling';
-                            } else if (ticket && ticket.status === 'SERVING') {
-                                counterStatusText.textContent = 'NOW SERVING';
-                                counterStatusContainer.className = 'status-pill-modern status-now-serving';
+                        if (ctrlWindowNumberTag) {
+                            const windowLabel = resolveTicketWindow(ticket);
+                            if (windowLabel && windowLabel !== 'N/A') {
+                                ctrlWindowNumberTag.innerHTML = `<span class="window-badge-hero"><i class="bi bi-display"></i> ${escapeHtml(windowLabel)}</span>`;
                             } else {
-                                counterStatusText.textContent = 'READY TO SERVE';
-                                counterStatusContainer.className = 'status-pill-modern status-on-duty';
+                                ctrlWindowNumberTag.innerHTML = '';
                             }
                         }
 
-                        if (ticket && ticket.ticket_number) {
-                            if (ctrlServingTicket) ctrlServingTicket.textContent = ticket.ticket_number;
-
-                            if (ctrlWindowNumberTag) {
-                                const windowLabel = resolveTicketWindow(ticket);
-                                if (windowLabel && windowLabel !== 'N/A') {
-                                    ctrlWindowNumberTag.innerHTML = `<span class="window-badge-hero"><i class="bi bi-display"></i> ${escapeHtml(windowLabel)}</span>`;
-                                } else {
-                                    ctrlWindowNumberTag.innerHTML = '';
-                                }
-                            }
-
-                            if (ctrlPriorityTag) {
-                                if (ticket.is_priority == 1) {
-                                    ctrlPriorityTag.innerHTML = '<span class="badge bg-warning text-dark fw-bold px-3 py-1.5 border-0"><i class="bi bi-star-fill text-danger me-1"></i>Priority</span>';
-                                } else {
-                                    ctrlPriorityTag.innerHTML = '';
-                                }
-                            }
-
-                            if (ctrlVisitorTypeTag) {
-                                const visitorType = (ticket.visitor_type || 'VISITOR').toUpperCase();
-                                let visitorIcon = 'bi-person-heart';
-
-                                if (visitorType === 'STUDENT') {
-                                    visitorIcon = 'bi-mortarboard-fill';
-                                } else if (visitorType === 'EMPLOYEE') {
-                                    visitorIcon = 'bi-person-badge-fill';
-                                }
-
-                                ctrlVisitorTypeTag.innerHTML = `<span class="visitor-badge-modern"><i class="bi ${visitorIcon}"></i> ${visitorType}</span>`;
-                            }
-
-                            renderDynamicTicketDetails(ticket);
-
-                            if (ticket.status === 'CALLED' && ticket.called_at) {
-                                currentTimerBaseTime = new Date(ticket.called_at);
-                                startDynamicTimer();
-                            } else if (ticket.status === 'SERVING' && ticket.served_at) {
-                                currentTimerBaseTime = new Date(ticket.served_at);
-                                startDynamicTimer();
+                        if (ctrlPriorityTag) {
+                            if (ticket.is_priority == 1) {
+                                ctrlPriorityTag.innerHTML = '<span class="badge bg-warning text-dark fw-bold px-3 py-1.5 border-0"><i class="bi bi-star-fill text-danger me-1"></i>Priority</span>';
                             } else {
-                                stopDynamicTimer();
-                                if (digitalElapsedTimer) digitalElapsedTimer.textContent = '00:00';
+                                ctrlPriorityTag.innerHTML = '';
+                            }
+                        }
+
+                        if (ctrlVisitorTypeTag) {
+                            const visitorType = (ticket.visitor_type || 'VISITOR').toUpperCase();
+                            let visitorIcon = 'bi-person-heart';
+
+                            if (visitorType === 'STUDENT') {
+                                visitorIcon = 'bi-mortarboard-fill';
+                            } else if (visitorType === 'EMPLOYEE') {
+                                visitorIcon = 'bi-person-badge-fill';
                             }
 
+                            ctrlVisitorTypeTag.innerHTML = `<span class="visitor-badge-modern"><i class="bi ${visitorIcon}"></i> ${visitorType}</span>`;
+                        }
+
+                        renderDynamicTicketDetails(ticket);
+
+                        if (ticket.status === 'CALLED' && ticket.called_at) {
+                            currentTimerBaseTime = new Date(ticket.called_at);
+                            startDynamicTimer();
+                        } else if (ticket.status === 'SERVING' && ticket.served_at) {
+                            currentTimerBaseTime = new Date(ticket.served_at);
+                            startDynamicTimer();
                         } else {
-                            if (ctrlServingTicket) ctrlServingTicket.textContent = '---';
-                            if (ctrlWindowNumberTag) ctrlWindowNumberTag.innerHTML = '';
-                            if (ctrlPriorityTag) ctrlPriorityTag.innerHTML = '';
-                            if (ctrlVisitorTypeTag) ctrlVisitorTypeTag.innerHTML = '';
                             stopDynamicTimer();
                             if (digitalElapsedTimer) digitalElapsedTimer.textContent = '00:00';
-                            renderEmptyDetailsState();
                         }
 
-                        // Categorize Waiting Tickets into 3 FIFO Lanes: Priority, Regular (Student & Guest), Employee
-                        const waiting = res.data.up_next || [];
-                        waitingTicketsMap = {};
-                        waiting.forEach(item => {
-                            waitingTicketsMap[item.id] = item;
-                        });
-
-                        const priorityList = waiting.filter(t => Number(t.is_priority) === 1);
-                        const regularList  = waiting.filter(t => Number(t.is_priority) !== 1 && ['STUDENT', 'GUEST'].includes((t.visitor_type || '').toUpperCase()));
-                        const employeeList = waiting.filter(t => Number(t.is_priority) !== 1 && (t.visitor_type || '').toUpperCase() === 'EMPLOYEE');
-
-                        if (ctrlPriorityBadge) ctrlPriorityBadge.textContent = `${priorityList.length} Waiting`;
-                        if (ctrlRegularBadge)  ctrlRegularBadge.textContent  = `${regularList.length} Waiting`;
-                        if (ctrlEmployeeBadge) ctrlEmployeeBadge.textContent = `${employeeList.length} Waiting`;
-
-                        if (btnCallNextPriority) btnCallNextPriority.disabled = priorityList.length === 0;
-                        if (btnCallNextRegular)  btnCallNextRegular.disabled  = regularList.length === 0;
-                        if (btnCallNextEmployee) btnCallNextEmployee.disabled = employeeList.length === 0;
-
-                        if (ctrlPriorityList) renderCategoryPills(ctrlPriorityList, priorityList, 'No priority visitors waiting.', true);
-                        if (ctrlRegularList)  renderCategoryPills(ctrlRegularList, regularList, 'No regular visitors waiting.', true);
-                        if (ctrlEmployeeList) renderCategoryPills(ctrlEmployeeList, employeeList, 'No employees waiting.', false);
-
-                    } else if (!res.success) {
-                        if (controllerMainContent) controllerMainContent.classList.add('d-none');
-                    }
-                })
-                .catch(err => {
-                    console.error("Counter status error:", err);
-                });
-            }
-
-            function computeEntryTimeString(ticket) {
-                if (!ticket || !ticket.queue_entry_time) return '---';
-                const entryDate = new Date(ticket.queue_entry_time);
-                const timeFormatted = entryDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-                const refDate = ticket.called_at ? new Date(ticket.called_at) : new Date();
-                const waitSecs = Math.max(0, Math.floor((refDate - entryDate) / 1000));
-                const waitMins = Math.floor(waitSecs / 60);
-                return `${timeFormatted} (${ticket.called_at ? 'Waited' : 'Waiting'}: ${waitMins} min${waitMins !== 1 ? 's' : ''})`;
-            }
-
-            function renderEmptyDetailsState() {
-                if (!ticketDetailsContainer) return;
-                ticketDetailsContainer.innerHTML = `
-                    <div class="text-center py-4 my-auto">
-                        <div class="mx-auto mb-3 d-flex align-items-center justify-content-center rounded-circle bg-light text-primary" style="width: 60px; height: 60px; border: 2px dashed #cbd5e1;">
-                            <i class="bi bi-ticket-detailed fs-2 text-primary opacity-75"></i>
-                        </div>
-                        <h6 class="fw-bold text-dark mb-1">No Active Ticket Selected</h6>
-                        <p class="small text-muted mb-0">Click <span class="badge bg-primary-subtle text-primary border border-primary-subtle fw-semibold px-2 py-1"><i class="bi bi-megaphone-fill me-1"></i>Call Next</span> on any category lane below to call the next visitor.</p>
-                    </div>
-                `;
-            }
-
-            function formatYearLevel(year) {
-                if (!year) return 'N/A';
-                const strYear = String(year).trim();
-                if (strYear.toLowerCase().includes('year')) return strYear;
-
-                const yearMap = { '1': '1st Year', '2': '2nd Year', '3': '3rd Year', '4': '4th Year', '5': '5th Year' };
-                return yearMap[strYear] || `${strYear} Year`;
-            }
-
-            function buildFormattedName(ticket) {
-                if (ticket.full_name && ticket.full_name.trim() !== '') {
-                    return toTitleCase(ticket.full_name);
-                }
-
-                let firstName   = (ticket.first_name || '').trim();
-                let middleName  = (ticket.middle_name || '').trim();
-                let lastName    = (ticket.last_name || '').trim();
-                let suffix      = (ticket.suffix || '').trim();
-                let postNominal = (ticket.post_nominal || '').trim();
-
-                let nameParts = [];
-                if (firstName) nameParts.push(firstName);
-                if (middleName) nameParts.push(middleName);
-                if (lastName) nameParts.push(lastName);
-
-                let baseName = nameParts.length > 0 ? nameParts.join(' ') : 'N/A';
-
-                if (suffix) baseName += ' ' + suffix;
-                if (postNominal) baseName += ', ' + postNominal;
-
-                return toTitleCase(baseName);
-            }
-
-            function renderDetailTile(iconClass, label, value, customClass = '', allowCopy = true, subtitle = '') {
-                const safeVal = value || 'N/A';
-                const canCopy = allowCopy && safeVal !== 'N/A' && safeVal !== '---';
-                const copyBtnHtml = canCopy ? `
-                    <button type="button" class="btn-copy-detail ms-2" onclick="copyDetailValue(this, '${encodeURIComponent(safeVal)}')" title="Copy ${escapeHtml(label)}">
-                        <i class="bi bi-clipboard"></i>
-                    </button>
-                ` : '';
-
-                const subtitleHtml = subtitle ? `
-                    <span class="text-primary fw-semibold d-block mt-1" style="font-size: 0.7rem;">
-                        <i class="bi bi-tag me-1"></i>${escapeHtml(subtitle)}
-                    </span>
-                ` : '';
-
-                return `
-                    <div class="col-12 col-sm-6">
-                        <div class="detail-tile d-flex align-items-start">
-                            <div class="tile-icon flex-shrink-0">
-                                <i class="bi ${iconClass} fs-5"></i>
-                            </div>
-                            <div class="min-w-0 flex-grow-1">
-                                <div class="d-flex align-items-center justify-content-between mb-1">
-                                    <span class="fw-semibold text-muted d-block" style="font-size: 0.75rem;">${escapeHtml(label)}</span>
-                                    ${copyBtnHtml}
-                                </div>
-                                <strong class="text-dark d-block text-break ${customClass}" style="font-size: 0.875rem; line-height: 1.35; word-break: break-word;" title="${escapeHtml(safeVal)}">${escapeHtml(safeVal)}</strong>
-                                ${subtitleHtml}
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }
-
-            function buildAdditionalDetailsHtml(ticket) {
-                if (!Array.isArray(ticket.additional_details) || ticket.additional_details.length === 0) {
-                    return '';
-                }
-
-                const tilesHtml = ticket.additional_details.map(item => {
-                    const fieldTitle = (item.field_title || 'Additional Detail').trim();
-                    const answerVal  = (item.answer_value || '').trim();
-                    if (!answerVal) return '';
-
-                    const iconClass = item.detail_mode === 'SELECT' ? 'bi-list-check' : 'bi-input-cursor-text';
-                    const contextLabel = item.sub_concern_name 
-                        ? `${item.transaction_name || ''} • ${item.sub_concern_name}`
-                        : (item.transaction_name || '');
-
-                    return renderDetailTile(iconClass, fieldTitle, answerVal, '', true, contextLabel);
-                }).join('');
-
-                if (!tilesHtml) {
-                    return '';
-                }
-
-                return `
-                    <div class="col-12">
-                        <div class="modal-section-divider">
-                            <i class="bi bi-info-circle-fill text-primary"></i>
-                            <span>Additional Details</span>
-                        </div>
-                    </div>
-                    ${tilesHtml}
-                `;
-            }
-
-            function renderDynamicTicketDetails(ticket) {
-                if (!ticketDetailsContainer) return;
-                
-                const concernsHtml = buildLogbookStyleConcerns(ticket);
-
-                ticketDetailsContainer.innerHTML = `
-                    <div class="d-flex flex-column justify-content-between h-100 py-1">
-                        <div class="concern-hero-box my-auto">
-                            <div class="d-flex align-items-start gap-3">
-                                <div class="p-2 bg-primary text-white rounded-3 flex-shrink-0 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
-                                    <i class="bi bi-clipboard-check-fill fs-4"></i>
-                                </div>
-                                <div class="min-w-0 flex-grow-1">
-                                    <div class="mb-2">
-                                        <span class="text-uppercase text-muted fw-bold tracking-wider" style="font-size: 0.75rem;">Transaction Concern(s)</span>
-                                    </div>
-                                    <div class="d-flex flex-column gap-1">
-                                        ${concernsHtml}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="pt-3 text-end">
-                            <button type="button" class="btn btn-outline-primary fw-bold d-inline-flex align-items-center gap-2 px-4 py-2 rounded-3 shadow-sm" onclick="openVisitorDetailsModal(null)">
-                                <i class="bi bi-person-bounding-box fs-5"></i>
-                                <span>View Visitor Full Details</span>
-                            </button>
-                        </div>
-                    </div>
-                `;
-            }
-
-            // Opens the Visitor Full Details Modal for either the active ticket (null) or a waiting ticket (ticketId)
-            window.openVisitorDetailsModal = function(ticketId = null) {
-                const targetTicket = ticketId ? waitingTicketsMap[ticketId] : currentActiveTicket;
-                if (!targetTicket) {
-                    showSwalAlert("Notice", "Ticket details are no longer available.", "info");
-                    return;
-                }
-
-                populateVisitorModal(targetTicket, computeEntryTimeString(targetTicket));
-
-                const modalEl = document.getElementById('userDetailsModal');
-                if (modalEl && typeof bootstrap !== 'undefined') {
-                    const modalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
-                    modalInstance.show();
-                }
-            };
-
-            function populateVisitorModal(ticket, entryTimeString) {
-                if (!modalUserDetailsContent) return;
-
-                const visitorType           = (ticket.visitor_type || 'VISITOR').toUpperCase();
-                const fullName              = buildFormattedName(ticket);
-                const email                 = ticket.email || 'N/A';
-                const sex                   = ticket.sex ? ticket.sex.charAt(0).toUpperCase() + ticket.sex.slice(1).toLowerCase() : 'N/A';
-                const windowLabel           = resolveTicketWindow(ticket);
-                const concernsHtml          = buildLogbookStyleConcerns(ticket);
-                const additionalDetailsHtml = buildAdditionalDetailsHtml(ticket);
-
-                // 1. Transaction Concerns & Services (First at Top)
-                const concernsBlockHtml = `
-                    <div class="col-12">
-                        <div class="detail-tile border-primary-subtle bg-white">
-                            <div class="d-flex align-items-center mb-3">
-                                <div class="tile-icon flex-shrink-0 bg-primary text-white" style="width: 36px; height: 36px; min-width: 36px; margin-top:0;">
-                                    <i class="bi bi-clipboard-check-fill fs-6"></i>
-                                </div>
-                                <div>
-                                    <span class="fw-bold text-dark d-block" style="font-size: 0.875rem;">Transaction Concerns & Services</span>
-                                </div>
-                            </div>
-                            <div class="ps-1">
-                                ${concernsHtml}
-                            </div>
-                        </div>
-                    </div>
-                `;
-
-                // 2. Personal Details Section
-                let personalDetailsFieldsHTML = '';
-
-                if (visitorType === 'STUDENT') {
-                    const studentId = ticket.reference_id || ticket.student_id || 'N/A';
-                    const yearLevel = formatYearLevel(ticket.year_level);
-                    
-                    let courseDisplay = 'N/A';
-                    if (ticket.program_code && ticket.program_name) {
-                        courseDisplay = `${ticket.program_code} - ${ticket.program_name}`;
-                    } else if (ticket.program_code) {
-                        courseDisplay = ticket.program_code;
-                    } else if (ticket.program_name) {
-                        courseDisplay = ticket.program_name;
+                    } else {
+                        if (ctrlServingTicket) ctrlServingTicket.textContent = '---';
+                        if (ctrlWindowNumberTag) ctrlWindowNumberTag.innerHTML = '';
+                        if (ctrlPriorityTag) ctrlPriorityTag.innerHTML = '';
+                        if (ctrlVisitorTypeTag) ctrlVisitorTypeTag.innerHTML = '';
+                        stopDynamicTimer();
+                        if (digitalElapsedTimer) digitalElapsedTimer.textContent = '00:00';
+                        renderEmptyDetailsState();
                     }
 
-                    personalDetailsFieldsHTML = `
-                        ${renderDetailTile('bi-person-fill', 'Name', fullName, 'fs-6', true)}
-                        ${renderDetailTile('bi-mortarboard-fill', 'Course / Program', courseDisplay, '', true)}
-                        ${renderDetailTile('bi-envelope-fill', 'Email', email, '', true)}
-                        ${renderDetailTile('bi-journal-bookmark-fill', 'Year Level', yearLevel, '', true)}
-                        ${renderDetailTile('bi-card-text', 'Student ID', studentId, '', true)}
-                        ${renderDetailTile('bi-gender-ambiguous', 'Sex', sex, '', true)}
-                        ${renderDetailTile('bi-display', 'Window Number', windowLabel, '', true)}
-                    `;
-                } else if (visitorType === 'EMPLOYEE') {
-                    const empId      = ticket.reference_id || 'N/A';
-                    const department = ticket.department_code || ticket.department_name || 'N/A';
-                    const office     = ticket.office_name || ticket.office_code || 'N/A';
+                    // Categorize Waiting Tickets into 3 FIFO Lanes: Priority, Regular (Student & Guest), Employee
+                    const waiting = res.data.up_next || [];
+                    waitingTicketsMap = {};
+                    const activeWaitingIds = new Set();
+                    waiting.forEach(item => {
+                        waitingTicketsMap[item.id] = item;
+                        activeWaitingIds.add(String(item.id));
+                    });
 
-                    personalDetailsFieldsHTML = `
-                        ${renderDetailTile('bi-person-fill', 'Name', fullName, 'fs-6', true)}
-                        ${renderDetailTile('bi-card-text', 'Employee ID', empId, '', true)}
-                        ${renderDetailTile('bi-envelope-fill', 'Email', email, '', true)}
-                        ${renderDetailTile('bi-building', 'Department', department, '', true)}
-                        ${renderDetailTile('bi-geo-alt-fill', 'Office', office, '', true)}
-                        ${renderDetailTile('bi-gender-ambiguous', 'Sex', sex, '', true)}
-                        ${renderDetailTile('bi-display', 'Window Number', windowLabel, '', true)}
-                    `;
-                } else {
-                    personalDetailsFieldsHTML = `
-                        ${renderDetailTile('bi-person-fill', 'Name', fullName, 'fs-6', true)}
-                        ${renderDetailTile('bi-envelope-fill', 'Email', email, '', true)}
-                        ${renderDetailTile('bi-gender-ambiguous', 'Sex', sex, '', true)}
-                        ${renderDetailTile('bi-display', 'Window Number', windowLabel, '', true)}
-                    `;
+                    // Clean up stored ticker indices & seen IDs for tickets no longer waiting
+                    Object.keys(pillTickerIndices).forEach(tid => {
+                        if (!activeWaitingIds.has(tid)) {
+                            delete pillTickerIndices[tid];
+                        }
+                    });
+                    renderedPillTicketIds.forEach(tid => {
+                        if (!activeWaitingIds.has(tid)) {
+                            renderedPillTicketIds.delete(tid);
+                        }
+                    });
+
+                    const priorityList = waiting.filter(t => Number(t.is_priority) === 1);
+                    const regularList  = waiting.filter(t => Number(t.is_priority) !== 1 && ['STUDENT', 'GUEST'].includes((t.visitor_type || '').toUpperCase()));
+                    const employeeList = waiting.filter(t => Number(t.is_priority) !== 1 && (t.visitor_type || '').toUpperCase() === 'EMPLOYEE');
+
+                    if (ctrlPriorityBadge) ctrlPriorityBadge.textContent = `${priorityList.length} Waiting`;
+                    if (ctrlRegularBadge)  ctrlRegularBadge.textContent  = `${regularList.length} Waiting`;
+                    if (ctrlEmployeeBadge) ctrlEmployeeBadge.textContent = `${employeeList.length} Waiting`;
+
+                    if (btnCallNextPriority) btnCallNextPriority.disabled = priorityList.length === 0;
+                    if (btnCallNextRegular)  btnCallNextRegular.disabled  = regularList.length === 0;
+                    if (btnCallNextEmployee) btnCallNextEmployee.disabled = employeeList.length === 0;
+
+                    if (ctrlPriorityList) renderCategoryPills(ctrlPriorityList, priorityList, 'No priority visitors waiting.', true);
+                    if (ctrlRegularList)  renderCategoryPills(ctrlRegularList, regularList, 'No regular visitors waiting.', true);
+                    if (ctrlEmployeeList) renderCategoryPills(ctrlEmployeeList, employeeList, 'No employees waiting.', false);
+
+                } else if (!res.success) {
+                    if (controllerMainContent) controllerMainContent.classList.add('d-none');
                 }
+            })
+            .catch(err => {
+                console.error("Counter status error:", err);
+            });
+        }
 
-                const personalDetailsSectionHtml = `
-                    <div class="col-12">
-                        <div class="modal-section-divider">
-                            <i class="bi bi-person-vcard-fill text-primary"></i>
-                            <span>Personal Details</span>
-                        </div>
-                    </div>
-                    ${personalDetailsFieldsHTML}
-                `;
+        function computeEntryTimeString(ticket) {
+            if (!ticket || !ticket.queue_entry_time) return '---';
+            const entryDate = new Date(ticket.queue_entry_time);
+            const timeFormatted = entryDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+            const refDate = ticket.called_at ? new Date(ticket.called_at) : new Date();
+            const waitSecs = Math.max(0, Math.floor((refDate - entryDate) / 1000));
+            const waitMins = Math.floor(waitSecs / 60);
+            return `${timeFormatted} (${ticket.called_at ? 'Waited' : 'Waiting'}: ${waitMins} min${waitMins !== 1 ? 's' : ''})`;
+        }
 
-                // 3. Additional Details (if present) + 4. Queue Entry Time
-                modalUserDetailsContent.innerHTML = `
-                    <div class="row g-3">
-                        ${concernsBlockHtml}
-                        ${personalDetailsSectionHtml}
-                        ${additionalDetailsHtml}
-                        <div class="col-12">
-                            <div class="modal-section-divider">
-                                <i class="bi bi-clock-history text-primary"></i>
-                                <span>Queue Entry Time</span>
-                            </div>
-                        </div>
-                        ${renderDetailTile('bi-clock-history', 'Queue Entry Time', entryTimeString, '', false)}
+        function renderEmptyDetailsState() {
+            if (!ticketDetailsContainer) return;
+            ticketDetailsContainer.innerHTML = `
+                <div class="text-center py-4 my-auto">
+                    <div class="mx-auto mb-3 d-flex align-items-center justify-content-center rounded-circle bg-light text-primary" style="width: 60px; height: 60px; border: 2px dashed #cbd5e1;">
+                        <i class="bi bi-ticket-detailed fs-2 text-primary opacity-75"></i>
                     </div>
-                `;
+                    <h6 class="fw-bold text-dark mb-1">No Active Ticket Selected</h6>
+                    <p class="small text-muted mb-0">Click <span class="badge bg-primary-subtle text-primary border border-primary-subtle fw-semibold px-2 py-1"><i class="bi bi-megaphone-fill me-1"></i>Call Next</span> on any category lane below to call the next visitor.</p>
+                </div>
+            `;
+        }
+
+        function formatYearLevel(year) {
+            if (!year) return 'N/A';
+            const strYear = String(year).trim();
+            if (strYear.toLowerCase().includes('year')) return strYear;
+
+            const yearMap = { '1': '1st Year', '2': '2nd Year', '3': '3rd Year', '4': '4th Year', '5': '5th Year' };
+            return yearMap[strYear] || `${strYear} Year`;
+        }
+
+        function buildFormattedName(ticket) {
+            if (ticket.full_name && ticket.full_name.trim() !== '') {
+                return toTitleCase(ticket.full_name);
             }
 
-            function formatVisitorTypeChip(visitorTypeRaw) {
-                const vType = (visitorTypeRaw || '').toUpperCase().trim();
-                if (vType === 'STUDENT') {
-                    return `<span class="visitor-type-chip chip-student"><i class="bi bi-mortarboard-fill"></i>Student</span>`;
-                }
-                if (vType === 'GUEST') {
-                    return `<span class="visitor-type-chip chip-guest"><i class="bi bi-person-heart"></i>Guest</span>`;
-                }
-                if (vType === 'EMPLOYEE') {
-                    return `<span class="visitor-type-chip chip-employee"><i class="bi bi-person-badge-fill"></i>Employee</span>`;
-                }
+            let firstName   = (ticket.first_name || '').trim();
+            let middleName  = (ticket.middle_name || '').trim();
+            let lastName    = (ticket.last_name || '').trim();
+            let suffix      = (ticket.suffix || '').trim();
+            let postNominal = (ticket.post_nominal || '').trim();
+
+            let nameParts = [];
+            if (firstName) nameParts.push(firstName);
+            if (middleName) nameParts.push(middleName);
+            if (lastName) nameParts.push(lastName);
+
+            let baseName = nameParts.length > 0 ? nameParts.join(' ') : 'N/A';
+
+            if (suffix) baseName += ' ' + suffix;
+            if (postNominal) baseName += ', ' + postNominal;
+
+            return toTitleCase(baseName);
+        }
+
+        function renderDetailTile(iconClass, label, value, customClass = '', allowCopy = true, subtitle = '') {
+            const safeVal = value || 'N/A';
+            const canCopy = allowCopy && safeVal !== 'N/A' && safeVal !== '---';
+            const copyBtnHtml = canCopy ? `
+                <button type="button" class="btn-copy-detail ms-2" onclick="copyDetailValue(this, '${encodeURIComponent(safeVal)}')" title="Copy ${escapeHtml(label)}">
+                    <i class="bi bi-clipboard"></i>
+                </button>
+            ` : '';
+
+            const subtitleHtml = subtitle ? `
+                <span class="text-primary fw-semibold d-block mt-1" style="font-size: 0.7rem;">
+                    <i class="bi bi-tag me-1"></i>${escapeHtml(subtitle)}
+                </span>
+            ` : '';
+
+            return `
+                <div class="col-12 col-sm-6">
+                    <div class="detail-tile d-flex align-items-start">
+                        <div class="tile-icon flex-shrink-0">
+                            <i class="bi ${iconClass} fs-5"></i>
+                        </div>
+                        <div class="min-w-0 flex-grow-1">
+                            <div class="d-flex align-items-center justify-content-between mb-1">
+                                <span class="fw-semibold text-muted d-block" style="font-size: 0.75rem;">${escapeHtml(label)}</span>
+                                ${copyBtnHtml}
+                            </div>
+                            <strong class="text-dark d-block text-break ${customClass}" style="font-size: 0.875rem; line-height: 1.35; word-break: break-word;" title="${escapeHtml(safeVal)}">${escapeHtml(safeVal)}</strong>
+                            ${subtitleHtml}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function buildAdditionalDetailsHtml(ticket) {
+            if (!Array.isArray(ticket.additional_details) || ticket.additional_details.length === 0) {
                 return '';
             }
 
-            function renderCategoryPills(container, list, emptyMsg, showVisitorLabel = true) {
-                if (list.length === 0) {
-                    container.innerHTML = `
-                        <div class="text-center py-4 my-2">
-                            <div class="mx-auto mb-2 d-flex align-items-center justify-content-center rounded-circle bg-light text-muted" style="width: 44px; height: 44px; border: 1.5px dashed #cbd5e1;">
-                                <i class="bi bi-inbox fs-5 opacity-50"></i>
+            const tilesHtml = ticket.additional_details.map(item => {
+                const fieldTitle = (item.field_title || 'Additional Detail').trim();
+                const answerVal  = (item.answer_value || '').trim();
+                if (!answerVal) return '';
+
+                const iconClass = item.detail_mode === 'SELECT' ? 'bi-list-check' : 'bi-input-cursor-text';
+                const contextLabel = item.sub_concern_name 
+                    ? `${item.transaction_name || ''} • ${item.sub_concern_name}`
+                    : (item.transaction_name || '');
+
+                return renderDetailTile(iconClass, fieldTitle, answerVal, '', true, contextLabel);
+            }).join('');
+
+            if (!tilesHtml) {
+                return '';
+            }
+
+            return `
+                <div class="col-12">
+                    <div class="modal-section-divider">
+                        <i class="bi bi-info-circle-fill text-primary"></i>
+                        <span>Additional Details</span>
+                    </div>
+                </div>
+                ${tilesHtml}
+            `;
+        }
+
+        function renderDynamicTicketDetails(ticket) {
+            if (!ticketDetailsContainer) return;
+            
+            const concernsHtml = buildLogbookStyleConcerns(ticket);
+
+            ticketDetailsContainer.innerHTML = `
+                <div class="d-flex flex-column justify-content-between h-100 py-1">
+                    <div class="concern-hero-box my-auto">
+                        <div class="d-flex align-items-start gap-3">
+                            <div class="p-2 bg-primary text-white rounded-3 flex-shrink-0 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
+                                <i class="bi bi-clipboard-check-fill fs-4"></i>
                             </div>
-                            <span class="small fw-semibold text-muted d-block">${emptyMsg}</span>
+                            <div class="min-w-0 flex-grow-1">
+                                <div class="mb-2">
+                                    <span class="text-uppercase text-muted fw-bold tracking-wider" style="font-size: 0.75rem;">Transaction Concern(s)</span>
+                                </div>
+                                <div class="d-flex flex-column gap-1">
+                                    ${concernsHtml}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-3 text-end">
+                        <button type="button" class="btn btn-outline-primary fw-bold d-inline-flex align-items-center gap-2 px-4 py-2 rounded-3 shadow-sm" onclick="openVisitorDetailsModal(null)">
+                            <i class="bi bi-person-bounding-box fs-5"></i>
+                            <span>View Visitor Full Details</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Opens the Visitor Full Details Modal for either the active ticket (null) or a waiting ticket (ticketId)
+        window.openVisitorDetailsModal = function(ticketId = null) {
+            const targetTicket = ticketId ? waitingTicketsMap[ticketId] : currentActiveTicket;
+            if (!targetTicket) {
+                showSwalAlert("Notice", "Ticket details are no longer available.", "info");
+                return;
+            }
+
+            populateVisitorModal(targetTicket, computeEntryTimeString(targetTicket));
+
+            const modalEl = document.getElementById('userDetailsModal');
+            if (modalEl && typeof bootstrap !== 'undefined') {
+                const modalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
+                modalInstance.show();
+            }
+        };
+
+        function populateVisitorModal(ticket, entryTimeString) {
+            if (!modalUserDetailsContent) return;
+
+            const visitorType           = (ticket.visitor_type || 'VISITOR').toUpperCase();
+            const fullName              = buildFormattedName(ticket);
+            const email                 = ticket.email || 'N/A';
+            const sex                   = ticket.sex ? ticket.sex.charAt(0).toUpperCase() + ticket.sex.slice(1).toLowerCase() : 'N/A';
+            const windowLabel           = resolveTicketWindow(ticket);
+            const concernsHtml          = buildLogbookStyleConcerns(ticket);
+            const additionalDetailsHtml = buildAdditionalDetailsHtml(ticket);
+
+            // 1. Transaction Concerns & Services (First at Top)
+            const concernsBlockHtml = `
+                <div class="col-12">
+                    <div class="detail-tile border-primary-subtle bg-white">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="tile-icon flex-shrink-0 bg-primary text-white" style="width: 36px; height: 36px; min-width: 36px; margin-top:0;">
+                                <i class="bi bi-clipboard-check-fill fs-6"></i>
+                            </div>
+                            <div>
+                                <span class="fw-bold text-dark d-block" style="font-size: 0.875rem;">Transaction Concerns & Services</span>
+                            </div>
+                        </div>
+                        <div class="ps-1">
+                            ${concernsHtml}
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // 2. Personal Details Section
+            let personalDetailsFieldsHTML = '';
+
+            if (visitorType === 'STUDENT') {
+                const studentId = ticket.reference_id || ticket.student_id || 'N/A';
+                const yearLevel = formatYearLevel(ticket.year_level);
+                
+                let courseDisplay = 'N/A';
+                if (ticket.program_code && ticket.program_name) {
+                    courseDisplay = `${ticket.program_code} - ${ticket.program_name}`;
+                } else if (ticket.program_code) {
+                    courseDisplay = ticket.program_code;
+                } else if (ticket.program_name) {
+                    courseDisplay = ticket.program_name;
+                }
+
+                personalDetailsFieldsHTML = `
+                    ${renderDetailTile('bi-person-fill', 'Name', fullName, 'fs-6', true)}
+                    ${renderDetailTile('bi-mortarboard-fill', 'Course / Program', courseDisplay, '', true)}
+                    ${renderDetailTile('bi-envelope-fill', 'Email', email, '', true)}
+                    ${renderDetailTile('bi-journal-bookmark-fill', 'Year Level', yearLevel, '', true)}
+                    ${renderDetailTile('bi-card-text', 'Student ID', studentId, '', true)}
+                    ${renderDetailTile('bi-gender-ambiguous', 'Sex', sex, '', true)}
+                    ${renderDetailTile('bi-display', 'Window Number', windowLabel, '', true)}
+                `;
+            } else if (visitorType === 'EMPLOYEE') {
+                const empId      = ticket.reference_id || 'N/A';
+                const department = ticket.department_code || ticket.department_name || 'N/A';
+                const office     = ticket.office_name || ticket.office_code || 'N/A';
+
+                personalDetailsFieldsHTML = `
+                    ${renderDetailTile('bi-person-fill', 'Name', fullName, 'fs-6', true)}
+                    ${renderDetailTile('bi-card-text', 'Employee ID', empId, '', true)}
+                    ${renderDetailTile('bi-envelope-fill', 'Email', email, '', true)}
+                    ${renderDetailTile('bi-building', 'Department', department, '', true)}
+                    ${renderDetailTile('bi-geo-alt-fill', 'Office', office, '', true)}
+                    ${renderDetailTile('bi-gender-ambiguous', 'Sex', sex, '', true)}
+                    ${renderDetailTile('bi-display', 'Window Number', windowLabel, '', true)}
+                `;
+            } else {
+                personalDetailsFieldsHTML = `
+                    ${renderDetailTile('bi-person-fill', 'Name', fullName, 'fs-6', true)}
+                    ${renderDetailTile('bi-envelope-fill', 'Email', email, '', true)}
+                    ${renderDetailTile('bi-gender-ambiguous', 'Sex', sex, '', true)}
+                    ${renderDetailTile('bi-display', 'Window Number', windowLabel, '', true)}
+                `;
+            }
+
+            const personalDetailsSectionHtml = `
+                <div class="col-12">
+                    <div class="modal-section-divider">
+                        <i class="bi bi-person-vcard-fill text-primary"></i>
+                        <span>Personal Details</span>
+                    </div>
+                </div>
+                ${personalDetailsFieldsHTML}
+            `;
+
+            // 3. Additional Details (if present) + 4. Queue Entry Time
+            modalUserDetailsContent.innerHTML = `
+                <div class="row g-3">
+                    ${concernsBlockHtml}
+                    ${personalDetailsSectionHtml}
+                    ${additionalDetailsHtml}
+                    <div class="col-12">
+                        <div class="modal-section-divider">
+                            <i class="bi bi-clock-history text-primary"></i>
+                            <span>Queue Entry Time</span>
+                        </div>
+                    </div>
+                    ${renderDetailTile('bi-clock-history', 'Queue Entry Time', entryTimeString, '', false)}
+                </div>
+            `;
+        }
+
+        function formatVisitorTypeChip(visitorTypeRaw) {
+            const vType = (visitorTypeRaw || '').toUpperCase().trim();
+            if (vType === 'STUDENT') {
+                return `<span class="visitor-type-chip chip-student"><i class="bi bi-mortarboard-fill"></i>Student</span>`;
+            }
+            if (vType === 'GUEST') {
+                return `<span class="visitor-type-chip chip-guest"><i class="bi bi-person-heart"></i>Guest</span>`;
+            }
+            if (vType === 'EMPLOYEE') {
+                return `<span class="visitor-type-chip chip-employee"><i class="bi bi-person-badge-fill"></i>Employee</span>`;
+            }
+            return '';
+        }
+
+        function clearPillTickersForContainer(container) {
+            if (!container) return;
+            container.querySelectorAll('[data-ticker-ticket-id]').forEach(el => {
+                const tid = el.getAttribute('data-ticker-ticket-id');
+                if (pillTickerIntervals[tid]) {
+                    clearInterval(pillTickerIntervals[tid]);
+                    delete pillTickerIntervals[tid];
+                }
+            });
+        }
+
+        function buildSingleLineConcernLabels(ticket) {
+            const labels = [];
+            const otherText = ticket.other_concern_text ? ticket.other_concern_text.trim() : '';
+
+            if (Array.isArray(ticket.concerns_list) && ticket.concerns_list.length > 0) {
+                ticket.concerns_list.forEach(item => {
+                    const main = (item.transaction_name || '').trim();
+                    const sub  = (item.sub_concern_name || '').trim();
+
+                    if (main.toLowerCase().includes('other') && otherText) {
+                        return;
+                    }
+
+                    if (main && sub) {
+                        labels.push(`${main} — ${sub}`);
+                    } else if (main) {
+                        labels.push(main);
+                    }
+                });
+            } else if (ticket.transaction_name) {
+                const mains = ticket.transaction_name.split(',').map(s => s.trim()).filter(Boolean);
+                mains.forEach(m => {
+                    if (!(m.toLowerCase().includes('other') && otherText)) {
+                        labels.push(m);
+                    }
+                });
+            }
+
+            if (otherText) {
+                labels.push(`Others: ${otherText}`);
+            }
+
+            // Deduplicate while preserving order
+            return [...new Set(labels)];
+        }
+
+        function initPillConcernTickers(container, list) {
+            if (!container) return;
+
+            list.forEach(item => {
+                const ticketId = String(item.id);
+                const tickerEl = container.querySelector(`[data-ticker-ticket-id="${ticketId}"]`);
+                if (!tickerEl) return;
+
+                const labels = buildSingleLineConcernLabels(item);
+                if (labels.length === 0) return;
+
+                // Preserve current index across 4s refreshes if valid, otherwise start at 0
+                let currentIndex = (pillTickerIndices[ticketId] !== undefined && pillTickerIndices[ticketId] < labels.length)
+                    ? pillTickerIndices[ticketId]
+                    : 0;
+
+                const isNewTicket = !renderedPillTicketIds.has(ticketId);
+                renderedPillTicketIds.add(ticketId);
+
+                const renderLabel = (idx, animate = true) => {
+                    const textSpan = tickerEl.querySelector('.pill-concern-text');
+                    if (!textSpan) return;
+
+                    const labelText = labels[idx];
+                    textSpan.textContent = labelText;
+                    textSpan.title = labelText;
+
+                    if (animate) {
+                        textSpan.classList.remove('pill-concern-slide-out', 'pill-concern-slide-in');
+                        void textSpan.offsetWidth; // Force reflow to restart CSS keyframe animation
+                        textSpan.classList.add('pill-concern-slide-in');
+                    }
+                };
+
+                // Animate only when the ticket first enters the queue; keep static across 4s polls
+                renderLabel(currentIndex, isNewTicket);
+
+                // Cycle one-by-one from right to left and loop back to 0 after all items are previewed
+                if (labels.length > 1) {
+                    pillTickerIntervals[ticketId] = setInterval(() => {
+                        const textSpan = tickerEl.querySelector('.pill-concern-text');
+                        if (!textSpan) return;
+
+                        textSpan.classList.remove('pill-concern-slide-in');
+                        textSpan.classList.add('pill-concern-slide-out');
+
+                        setTimeout(() => {
+                            currentIndex = (currentIndex + 1) % labels.length;
+                            pillTickerIndices[ticketId] = currentIndex;
+                            renderLabel(currentIndex, true);
+                        }, 280);
+                    }, 2800);
+                }
+            });
+        }
+
+        function renderCategoryPills(container, list, emptyMsg, showVisitorLabel = true) {
+            clearPillTickersForContainer(container);
+
+            if (list.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-4 my-2">
+                        <div class="mx-auto mb-2 d-flex align-items-center justify-content-center rounded-circle bg-light text-muted" style="width: 44px; height: 44px; border: 1.5px dashed #cbd5e1;">
+                            <i class="bi bi-inbox fs-5 opacity-50"></i>
+                        </div>
+                        <span class="small fw-semibold text-muted d-block">${emptyMsg}</span>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = list.map((item, index) => {
+                const visitorLabelHtml = showVisitorLabel ? formatVisitorTypeChip(item.visitor_type) : '';
+                const concernLabels = buildSingleLineConcernLabels(item);
+                const initialIdx = (pillTickerIndices[String(item.id)] !== undefined && pillTickerIndices[String(item.id)] < concernLabels.length)
+                    ? pillTickerIndices[String(item.id)]
+                    : 0;
+                const tickerHtml = concernLabels.length > 0 ? `
+                    <div class="pill-concern-ticker" data-ticker-ticket-id="${item.id}">
+                        <span class="pill-concern-text">${escapeHtml(concernLabels[initialIdx])}</span>
+                    </div>
+                ` : '';
+
+                return `
+                    <div class="ticket-pill-item">
+                        <div class="d-flex align-items-center min-w-0 overflow-hidden" style="flex: 1 1 0%;">
+                            <span class="ticket-pill-pos">${index + 1}</span>
+                            <div class="min-w-0 overflow-hidden" style="flex: 1 1 0%;">
+                                <span class="ticket-pill-number d-block lh-1">${escapeHtml(item.ticket_number)}</span>
+                                ${visitorLabelHtml}
+                                ${tickerHtml}
+                            </div>
+                        </div>
+                        <button type="button" class="btn-preview-visitor" onclick="openVisitorDetailsModal(${item.id})" title="View Visitor Information Details" aria-label="View Visitor Information Details">
+                            <i class="bi bi-person-bounding-box fs-5"></i>
+                        </button>
+                    </div>
+                `;
+            }).join('');
+
+            initPillConcernTickers(container, list);
+        }
+
+        // Opens the Handled Transactions & Sub-Transactions Modal for the active Office & Window
+        window.openWindowServicesModal = function() {
+            if (!HAS_ASSIGNMENT || !activeOfficeId) return;
+
+            const modalEl = document.getElementById('windowServicesModal');
+            if (modalEl && typeof bootstrap !== 'undefined') {
+                const modalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
+                modalInstance.show();
+            }
+
+            if (windowServicesModalContent) {
+                windowServicesModalContent.innerHTML = `
+                    <div class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status"></div>
+                        <p class="small text-muted mt-2 mb-0">Loading assigned transactions...</p>
+                    </div>
+                `;
+            }
+
+            const formData = new FormData();
+            formData.append('action', 'fetch_window_services');
+            formData.append('office_id', activeOfficeId);
+            formData.append('counter_id', activeCounterId);
+
+            fetch(HANDLER_URL, {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(res => {
+                if (!windowServicesModalContent) return;
+
+                if (!res.success || !Array.isArray(res.data) || res.data.length === 0) {
+                    windowServicesModalContent.innerHTML = `
+                        <div class="text-center py-5">
+                            <div class="mx-auto mb-3 d-flex align-items-center justify-content-center rounded-circle bg-white text-muted shadow-sm" style="width: 60px; height: 60px;">
+                                <i class="bi bi-folder-x fs-3"></i>
+                            </div>
+                            <h6 class="fw-bold text-dark mb-1">No Assigned Services Found</h6>
+                            <p class="small text-muted mb-0">No active transaction types or sub-transactions are configured for this window.</p>
                         </div>
                     `;
                     return;
                 }
 
-                container.innerHTML = list.map((item, index) => {
-                    const visitorLabelHtml = showVisitorLabel ? formatVisitorTypeChip(item.visitor_type) : '';
+                windowServicesModalContent.innerHTML = `
+                    <div class="d-flex flex-column gap-3">
+                        ${res.data.map(trans => {
+                            const subs = Array.isArray(trans.sub_concerns) ? trans.sub_concerns : [];
+                            const hasSubs = subs.length > 0;
 
-                    return `
-                        <div class="ticket-pill-item">
-                            <div class="d-flex align-items-center min-w-0">
-                                <span class="ticket-pill-pos">${index + 1}</span>
-                                <div class="min-w-0">
-                                    <span class="ticket-pill-number d-block lh-1">${escapeHtml(item.ticket_number)}</span>
-                                    ${visitorLabelHtml}
-                                </div>
-                            </div>
-                            <button type="button" class="btn-preview-visitor" onclick="openVisitorDetailsModal(${item.id})" title="View Visitor Information Details" aria-label="View Visitor Information Details">
-                                <i class="bi bi-person-bounding-box fs-5"></i>
-                            </button>
-                        </div>
-                    `;
-                }).join('');
-            }
-
-            // Opens the Handled Transactions & Sub-Transactions Modal for the active Office & Window
-            window.openWindowServicesModal = function() {
-                if (!HAS_ASSIGNMENT || !activeOfficeId) return;
-
-                const modalEl = document.getElementById('windowServicesModal');
-                if (modalEl && typeof bootstrap !== 'undefined') {
-                    const modalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
-                    modalInstance.show();
-                }
-
-                if (windowServicesModalContent) {
-                    windowServicesModalContent.innerHTML = `
-                        <div class="text-center py-5">
-                            <div class="spinner-border text-primary" role="status"></div>
-                            <p class="small text-muted mt-2 mb-0">Loading assigned transactions...</p>
-                        </div>
-                    `;
-                }
-
-                const formData = new FormData();
-                formData.append('action', 'fetch_window_services');
-                formData.append('office_id', activeOfficeId);
-                formData.append('counter_id', activeCounterId);
-
-                fetch(HANDLER_URL, {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(res => res.json())
-                .then(res => {
-                    if (!windowServicesModalContent) return;
-
-                    if (!res.success || !Array.isArray(res.data) || res.data.length === 0) {
-                        windowServicesModalContent.innerHTML = `
-                            <div class="text-center py-5">
-                                <div class="mx-auto mb-3 d-flex align-items-center justify-content-center rounded-circle bg-white text-muted shadow-sm" style="width: 60px; height: 60px;">
-                                    <i class="bi bi-folder-x fs-3"></i>
-                                </div>
-                                <h6 class="fw-bold text-dark mb-1">No Assigned Services Found</h6>
-                                <p class="small text-muted mb-0">No active transaction types or sub-transactions are configured for this window.</p>
-                            </div>
-                        `;
-                        return;
-                    }
-
-                    windowServicesModalContent.innerHTML = `
-                        <div class="d-flex flex-column gap-3">
-                            ${res.data.map(trans => {
-                                const subs = Array.isArray(trans.sub_concerns) ? trans.sub_concerns : [];
-                                const hasSubs = subs.length > 0;
-
-                                let subsHtml = '';
-                                if (hasSubs) {
-                                    subsHtml = `
-                                        <div class="mt-2 pt-2 border-top d-flex flex-column gap-2">
-                                            <span class="text-uppercase text-muted fw-semibold" style="font-size: 0.72rem; letter-spacing: 0.04em;">Sub-Transactions</span>
-                                            <div class="d-flex flex-column gap-2">
-                                                ${subs.map(sub => `
-                                                    <div class="text-dark fw-normal" style="font-size: 0.875rem; line-height: 1.35;">
-                                                        ${escapeHtml(sub.sub_concern_name)}
-                                                    </div>
-                                                `).join('')}
-                                            </div>
+                            let subsHtml = '';
+                            if (hasSubs) {
+                                subsHtml = `
+                                    <div class="mt-2 pt-2 border-top d-flex flex-column gap-2">
+                                        <span class="text-uppercase text-muted fw-semibold" style="font-size: 0.72rem; letter-spacing: 0.04em;">Sub-Transactions</span>
+                                        <div class="d-flex flex-column gap-2">
+                                            ${subs.map(sub => `
+                                                <div class="text-dark fw-normal" style="font-size: 0.875rem; line-height: 1.35;">
+                                                    ${escapeHtml(sub.sub_concern_name)}
+                                                </div>
+                                            `).join('')}
                                         </div>
-                                    `;
-                                }
-
-                                return `
-                                    <div class="receipt-concern-item p-3 mb-0">
-                                        <div class="text-dark fw-normal" style="font-size: 0.875rem; line-height: 1.35;">${escapeHtml(trans.transaction_name)}</div>
-                                        ${subsHtml}
                                     </div>
                                 `;
-                            }).join('')}
-                        </div>
+                            }
+
+                            return `
+                                <div class="receipt-concern-item p-3 mb-0">
+                                    <div class="text-dark fw-normal" style="font-size: 0.875rem; line-height: 1.35;">${escapeHtml(trans.transaction_name)}</div>
+                                    ${subsHtml}
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                `;
+            })
+            .catch(err => {
+                console.error('Error fetching window services:', err);
+                if (windowServicesModalContent) {
+                    windowServicesModalContent.innerHTML = `
+                        <div class="alert alert-danger mb-0">Failed to load assigned transactions. Please try again.</div>
                     `;
-                })
-                .catch(err => {
-                    console.error('Error fetching window services:', err);
-                    if (windowServicesModalContent) {
-                        windowServicesModalContent.innerHTML = `
-                            <div class="alert alert-danger mb-0">Failed to load assigned transactions. Please try again.</div>
-                        `;
-                    }
-                });
-            };
-
-            function startDynamicTimer() {
-                if (dynamicTimerInterval) clearInterval(dynamicTimerInterval);
-
-                dynamicTimerInterval = setInterval(() => {
-                    if (!currentTimerBaseTime) return;
-                    const now = new Date();
-                    const elapsedSecs = Math.max(0, Math.floor((now - currentTimerBaseTime) / 1000));
-                    
-                    const mins = String(Math.floor(elapsedSecs / 60)).padStart(2, '0');
-                    const secs = String(elapsedSecs % 60).padStart(2, '0');
-                    
-                    if (digitalElapsedTimer) digitalElapsedTimer.textContent = `${mins}:${secs}`;
-                }, 1000);
-            }
-
-            function stopDynamicTimer() {
-                if (dynamicTimerInterval) {
-                    clearInterval(dynamicTimerInterval);
-                    dynamicTimerInterval = null;
                 }
+            });
+        };
+
+        function startDynamicTimer() {
+            if (dynamicTimerInterval) clearInterval(dynamicTimerInterval);
+
+            dynamicTimerInterval = setInterval(() => {
+                if (!currentTimerBaseTime) return;
+                const now = new Date();
+                const elapsedSecs = Math.max(0, Math.floor((now - currentTimerBaseTime) / 1000));
+                
+                const mins = String(Math.floor(elapsedSecs / 60)).padStart(2, '0');
+                const secs = String(elapsedSecs % 60).padStart(2, '0');
+                
+                if (digitalElapsedTimer) digitalElapsedTimer.textContent = `${mins}:${secs}`;
+            }, 1000);
+        }
+
+        function stopDynamicTimer() {
+            if (dynamicTimerInterval) {
+                clearInterval(dynamicTimerInterval);
+                dynamicTimerInterval = null;
+            }
+        }
+
+        function sendQueueAction(actionName, additionalParams = {}) {
+            if (!HAS_ASSIGNMENT || !activeOfficeId || parseInt(activeCounterId, 10) <= 0) return;
+
+            const formData = new FormData();
+            formData.append('action', actionName);
+            formData.append('office_id', activeOfficeId);
+            formData.append('counter_id', activeCounterId);
+
+            for (const key in additionalParams) {
+                formData.append(key, additionalParams[key]);
             }
 
-            function sendQueueAction(actionName, additionalParams = {}) {
-                if (!HAS_ASSIGNMENT || !activeOfficeId || parseInt(activeCounterId, 10) <= 0) return;
-
-                const formData = new FormData();
-                formData.append('action', actionName);
-                formData.append('office_id', activeOfficeId);
-                formData.append('counter_id', activeCounterId);
-
-                for (const key in additionalParams) {
-                    formData.append(key, additionalParams[key]);
+            fetch(HANDLER_URL, {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(res => {
+                if (res.success) {
+                    loadCounterData();
+                } else {
+                    showSwalAlert("Notice", res.message || 'Failed to process request.', 'warning');
                 }
+            })
+            .catch(err => {
+                console.error(`Queue Action (${actionName}) Error:`, err);
+                showSwalAlert("Error", "An unexpected error occurred while communicating with the server.", "error");
+            });
+        }
 
-                fetch(HANDLER_URL, {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(res => res.json())
-                .then(res => {
-                    if (res.success) {
-                        loadCounterData();
-                    } else {
-                        showSwalAlert("Notice", res.message || 'Failed to process request.', 'warning');
-                    }
-                })
-                .catch(err => {
-                    console.error(`Queue Action (${actionName}) Error:`, err);
-                    showSwalAlert("Error", "An unexpected error occurred while communicating with the server.", "error");
-                });
-            }
+        // Global Call Next per Category Lane (FIFO: PRIORITY, REGULAR, EMPLOYEE)
+        window.callNextByCategory = function(category) {
+            if (!category) return;
+            sendQueueAction('call_next_category', { category: category });
+        };
 
-            // Global Call Next per Category Lane (FIFO: PRIORITY, REGULAR, EMPLOYEE)
-            window.callNextByCategory = function(category) {
-                if (!category) return;
-                sendQueueAction('call_next_category', { category: category });
-            };
+        if (btnStartServe)     btnStartServe.addEventListener('click', () => sendQueueAction('serve_ticket'));
+        if (btnCompleteTicket) btnCompleteTicket.addEventListener('click', () => sendQueueAction('complete_ticket'));
+        if (btnRecallVoice)    btnRecallVoice.addEventListener('click', () => sendQueueAction('recall_ticket'));
+        if (btnSkipTicket)     btnSkipTicket.addEventListener('click', () => sendQueueAction('skip_ticket'));
 
-            if (btnStartServe)     btnStartServe.addEventListener('click', () => sendQueueAction('serve_ticket'));
-            if (btnCompleteTicket) btnCompleteTicket.addEventListener('click', () => sendQueueAction('complete_ticket'));
-            if (btnRecallVoice)    btnRecallVoice.addEventListener('click', () => sendQueueAction('recall_ticket'));
-            if (btnSkipTicket)     btnSkipTicket.addEventListener('click', () => sendQueueAction('skip_ticket'));
-
-            if (HAS_ASSIGNMENT && activeOfficeId && parseInt(activeCounterId, 10) > 0) {
-                setInterval(loadCounterData, 4000);
-            }
-        })();
-    </script>
+        if (HAS_ASSIGNMENT && activeOfficeId && parseInt(activeCounterId, 10) > 0) {
+            setInterval(loadCounterData, 4000);
+        }
+    })();
+</script>
 </body>
 </html>
