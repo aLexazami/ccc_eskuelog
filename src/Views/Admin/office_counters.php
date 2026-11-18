@@ -191,7 +191,7 @@ $action_buttons = [
                                                     Office Service Counters & Windows
                                                 </div>
                                                 <div class="d-flex align-items-center text-muted small mt-0.5" style="font-size: 0.75rem;">
-                                                    <i class="bi bi-info-circle me-1"></i> Configure service counters and assign one or more staff members per window
+                                                    <i class="bi bi-info-circle me-1"></i> Configure service counters; assign many staff per window and one staff to many windows
                                                 </div>
                                             </div>
                                         </div>
@@ -306,7 +306,7 @@ $action_buttons = [
                                                     <div class="col-12 mb-2">
                                                         <label class="form-label" for="add_assigned_user_ids"><b>Assigned Staff Members</b> <small class="text-muted">(Optional — Multiple allowed)</small></label>
                                                         <select name="assigned_user_ids[]" id="add_assigned_user_ids" class="form-select" multiple="multiple" style="width: 100%;"></select>
-                                                        <small class="text-muted" id="add_staff_helper">Multiple staff members in the same office can share this window.</small>
+                                                        <small class="text-muted" id="add_staff_helper">Multiple staff can share this window, and one staff member can serve multiple windows.</small>
                                                     </div>
                                                 </div>
                                             </div>
@@ -375,7 +375,7 @@ $action_buttons = [
                                                     <div class="col-12 mb-2">
                                                         <label class="form-label" for="u_assigned_user_ids"><b>Assigned Staff Members</b> <small class="text-muted">(Optional — Multiple allowed)</small></label>
                                                         <select name="assigned_user_ids[]" id="u_assigned_user_ids" class="form-select" multiple="multiple" style="width: 100%;"></select>
-                                                        <small class="text-muted">Showing eligible staff assigned to this office.</small>
+                                                        <small class="text-muted">Showing eligible staff of this office. A staff member can serve multiple windows.</small>
                                                     </div>
                                                 </div>
                                             </div>
@@ -630,23 +630,9 @@ $action_buttons = [
          * Rebuild Select2 options based on the target office:
          * - When targetOfficeId > 0: strictly shows employees assigned to targetOfficeId
          * - When targetOfficeId === 0 (ADMIN with "-- All Offices --"): shows all eligible employees across offices
-         * - Disables any staff member already assigned to another counter
+         * - Staff already serving other windows stay selectable
          */
         function populateStaffDropdown(selector, targetOfficeId = 0, excludeCounterId = 0, preselectedIds = null) {
-            const rows = tabulator ? tabulator.getData() : [];
-            const assignedMap = {};
-
-            rows.forEach(r => {
-                const cid = Number(r.counter_id || 0);
-                const userIds = Array.isArray(r.assigned_user_ids) ? r.assigned_user_ids : [];
-                userIds.forEach(rawUid => {
-                    const uid = Number(rawUid || 0);
-                    if (uid > 0 && cid !== Number(excludeCounterId)) {
-                        assignedMap[uid] = `${r.office_code} - ${r.counter_name}`;
-                    }
-                });
-            });
-
             const $select = $(selector);
             const currentSelected = Array.isArray(preselectedIds)
                 ? preselectedIds.map(String)
@@ -667,19 +653,12 @@ $action_buttons = [
 
                 const fullName = `${usr.first_name || ''} ${usr.last_name || ''}`.trim();
                 const officeTag = (targetOfficeId === 0 && usr.staff_office_code) ? ` [${usr.staff_office_code}]` : '';
-                let label = `${fullName} (${usr.email || ''})${officeTag}`;
-                let isDisabled = false;
-
-                if (assignedMap[uid]) {
-                    label += ` — Assigned: ${assignedMap[uid]}`;
-                    isDisabled = true;
-                } else if (isCurrentlyAssignedHere) {
+                const label = `${fullName} (${usr.email || ''})${officeTag}`;
+                if (isCurrentlyAssignedHere) {
                     validSelected.push(String(uid));
                 }
 
-                const option = new Option(label, String(uid), isCurrentlyAssignedHere, isCurrentlyAssignedHere);
-                option.disabled = isDisabled;
-                $select.append(option);
+                $select.append(new Option(label, String(uid), isCurrentlyAssignedHere, isCurrentlyAssignedHere));
             });
 
             $select.val(validSelected).trigger('change');

@@ -107,44 +107,6 @@ function parseAssignedUserIds(array $source): array
 }
 
 /**
- * Check if a staff member is already actively assigned to another counter in `staff_assignments`.
- */
-function findExistingStaffAssignment(mysqli $db, int $userId, int $excludeCounterId = 0): ?array
-{
-    if ($userId <= 0) {
-        return null;
-    }
-
-    $sql = "
-        SELECT 
-            c.id AS counter_id,
-            c.counter_name,
-            o.office_name,
-            o.office_code,
-            CONCAT(u.first_name, ' ', IFNULL(u.last_name, '')) AS staff_name
-        FROM staff_assignments sa
-        INNER JOIN counters c ON c.id = sa.counter_id
-        INNER JOIN office o ON o.office_id = sa.office_id
-        INNER JOIN users u ON u.id = sa.user_id
-        WHERE sa.user_id = ?
-          AND sa.flag_status = 0
-          AND sa.counter_id IS NOT NULL
-          AND sa.counter_id != ?
-        LIMIT 1
-    ";
-    $stmt = $db->prepare($sql);
-    if (!$stmt) {
-        return null;
-    }
-    $stmt->bind_param("ii", $userId, $excludeCounterId);
-    $stmt->execute();
-    $conflict = $stmt->get_result()->fetch_assoc();
-    $stmt->close();
-
-    return $conflict ?: null;
-}
-
-/**
  * Verify that an active employee belongs to the target office.
  */
 function isStaffInOffice(mysqli $db, int $userId, int $officeId): bool
@@ -173,56 +135,66 @@ function isStaffInOffice(mysqli $db, int $userId, int $officeId): bool
 }
 
 /**
- * Synchronize multiple staff members assigned to a single counter in the same office.
+ * Synchronize the staff members of ONE counter. Only this counter's rows are touched,
+ * so a staff member's assignments to other windows are left alone.
  */
 function syncCounterStaffAssignments(mysqli $db, int $counterId, int $officeId, array $userIds, int $counterFlagStatus, ?int $assignerId): void
 {
-    // 1. Deactivate/unassign staff who were removed from this counter
+    // 1. Remove the rows of staff no longer on this window (other windows are untouched)
     if (empty($userIds)) {
-        $stmtUnassign = $db->prepare("
-            UPDATE staff_assignments 
-            SET flag_status = 1, counter_id = NULL, assigned_by_user_id = ? 
-            WHERE counter_id = ?
-        ");
-        $stmtUnassign->bind_param("ii", $assignerId, $counterId);
-        $stmtUnassign->execute();
-        $stmtUnassign->close();
+        $stmtRemove = $db->prepare("DELETE FROM staff_assignments WHERE counter_id = ?");
+        $stmtRemove->bind_param("i", $counterId);
+        $stmtRemove->execute();
+        $stmtRemove->close();
         return;
     }
 
     $placeholders = implode(',', array_fill(0, count($userIds), '?'));
-    $types = 'ii' . str_repeat('i', count($userIds));
-    $params = array_merge([$assignerId, $counterId], $userIds);
-
-    $stmtClearRemoved = $db->prepare("
-        UPDATE staff_assignments 
-        SET flag_status = 1, counter_id = NULL, assigned_by_user_id = ? 
+    $stmtRemove = $db->prepare("
+        DELETE FROM staff_assignments
         WHERE counter_id = ? AND user_id NOT IN ({$placeholders})
     ");
-    $stmtClearRemoved->bind_param($types, ...$params);
-    $stmtClearRemoved->execute();
-    $stmtClearRemoved->close();
+    $stmtRemove->bind_param('i' . str_repeat('i', count($userIds)), $counterId, ...$userIds);
+    $stmtRemove->execute();
+    $stmtRemove->close();
 
-    // 2. Upsert all assigned staff to share this counter_id
+    // 2. One row per (staff, window): UPDATE when it exists, INSERT otherwise.
+    //    (Avoids INSERT ... ON DUPLICATE KEY UPDATE, which burns an AUTO_INCREMENT id on every save.)
     $saFlagStatus = ($counterFlagStatus === 0) ? 0 : 1;
-    $stmtSa = $db->prepare("
+
+    $stmtFind = $db->prepare("SELECT id FROM staff_assignments WHERE user_id = ? AND counter_id = ? LIMIT 1");
+    $stmtUpd  = $db->prepare("
+        UPDATE staff_assignments
+        SET office_id = ?, flag_status = ?, assigned_by_user_id = ?
+        WHERE id = ?
+    ");
+    $stmtIns  = $db->prepare("
         INSERT INTO staff_assignments (user_id, office_id, counter_id, flag_status, assigned_by_user_id)
         VALUES (?, ?, ?, ?, ?)
-        ON DUPLICATE KEY UPDATE 
-            office_id = VALUES(office_id),
-            counter_id = VALUES(counter_id),
-            flag_status = VALUES(flag_status),
-            assigned_by_user_id = VALUES(assigned_by_user_id)
     ");
 
     foreach ($userIds as $uid) {
-        $stmtSa->bind_param("iiiii", $uid, $officeId, $counterId, $saFlagStatus, $assignerId);
-        if (!$stmtSa->execute()) {
-            $stmtSa->close();
+        $stmtFind->bind_param("ii", $uid, $counterId);
+        $stmtFind->execute();
+        $existing = $stmtFind->get_result()->fetch_assoc();
+
+        if ($existing) {
+            $rowId = (int) $existing['id'];
+            $stmtUpd->bind_param("iiii", $officeId, $saFlagStatus, $assignerId, $rowId);
+            $ok = $stmtUpd->execute();
+        } else {
+            $stmtIns->bind_param("iiiii", $uid, $officeId, $counterId, $saFlagStatus, $assignerId);
+            $ok = $stmtIns->execute();
+        }
+
+        if (!$ok) {
             throw new Exception('Failed to synchronize staff assignment for user ID ' . $uid . '.');
         }
     }
-    $stmtSa->close();
+
+    $stmtFind->close();
+    $stmtUpd->close();
+    $stmtIns->close();
 }
 
 $action = $_REQUEST['action'] ?? $_REQUEST['actionSubmit'] ?? $_REQUEST['actionUpdate'] ?? '';
@@ -301,7 +273,7 @@ switch ($action) {
             exit();
         }
 
-        // Validate every selected staff member belongs to the target office & is not assigned elsewhere
+        // Validate every selected staff member belongs to the target office (a staff member may serve several windows)
         foreach ($assigned_user_ids as $uid) {
             if (!isStaffInOffice($db_connect, $uid, $office_id)) {
                 echo json_encode([
@@ -311,14 +283,6 @@ switch ($action) {
                 exit();
             }
 
-            $conflict = findExistingStaffAssignment($db_connect, $uid, 0);
-            if ($conflict) {
-                echo json_encode([
-                    'msg_status'   => false,
-                    'msg_response' => htmlspecialchars(trim($conflict['staff_name'])) . ' is already assigned to ' . htmlspecialchars($conflict['office_name']) . ' (' . htmlspecialchars($conflict['counter_name']) . '). Please unassign them there first.'
-                ]);
-                exit();
-            }
         }
 
         // Check for duplicate counter name in the same office
@@ -393,7 +357,7 @@ switch ($action) {
             }
         }
 
-        // Validate every selected staff member belongs to the target office & is not assigned to another counter
+        // Validate every selected staff member belongs to the target office (a staff member may serve several windows)
         foreach ($assigned_user_ids as $uid) {
             if (!isStaffInOffice($db_connect, $uid, $office_id)) {
                 echo json_encode([
@@ -403,14 +367,6 @@ switch ($action) {
                 exit();
             }
 
-            $conflict = findExistingStaffAssignment($db_connect, $uid, $counter_id);
-            if ($conflict) {
-                echo json_encode([
-                    'msg_status'   => false,
-                    'msg_response' => htmlspecialchars(trim($conflict['staff_name'])) . ' is already assigned to ' . htmlspecialchars($conflict['office_name']) . ' (' . htmlspecialchars($conflict['counter_name']) . '). Please unassign them there first.'
-                ]);
-                exit();
-            }
         }
 
         // Check for duplicate counter name in the same office (excluding current counter)
@@ -478,10 +434,9 @@ switch ($action) {
         $db_connect->begin_transaction();
 
         try {
-            // Soft-unassign staff rows linked to this counter before deleting the counter
-            $assigner = $admin_user_id > 0 ? $admin_user_id : null;
-            $stmtSaClean = $db_connect->prepare("UPDATE staff_assignments SET flag_status = 1, counter_id = NULL, assigned_by_user_id = ? WHERE counter_id = ?");
-            $stmtSaClean->bind_param("ii", $assigner, $counter_id);
+            // Remove the staff assignment rows of this window before deleting it
+            $stmtSaClean = $db_connect->prepare("DELETE FROM staff_assignments WHERE counter_id = ?");
+            $stmtSaClean->bind_param("i", $counter_id);
             $stmtSaClean->execute();
             $stmtSaClean->close();
 
