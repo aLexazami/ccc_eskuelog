@@ -654,12 +654,16 @@ switch ($action) {
             $sequence      = (int)($resSeq['next_seq'] ?? 1);
             $ticket_number = sprintf("%s-%03d", $prefix, $sequence);
 
+            // Designated window: all selected items share ONE window (single-window rule above).
+            // NULL = "Any Window" -> every window of this office may call the ticket.
+            $ticket_counter_id = !empty($distinctWindows) ? (int)$distinctWindows[0] : null;
+
             $stmtQueue = $db_connect->prepare("
                 INSERT INTO queue_tickets (
-                    logbook_id, ticket_number, queue_sequence, queue_date, office_id, status, is_priority
-                ) VALUES (?, ?, ?, ?, ?, 'WAITING', ?)
+                    logbook_id, ticket_number, queue_sequence, queue_date, office_id, status, is_priority, counter_id
+                ) VALUES (?, ?, ?, ?, ?, 'WAITING', ?, ?)
             ");
-            $stmtQueue->bind_param("isisii", $logbook_id, $ticket_number, $sequence, $today, $office_id, $is_priority);
+            $stmtQueue->bind_param("isisiii", $logbook_id, $ticket_number, $sequence, $today, $office_id, $is_priority, $ticket_counter_id);
             $stmtQueue->execute();
 
             $db_connect->commit();

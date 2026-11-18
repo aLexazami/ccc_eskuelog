@@ -356,11 +356,13 @@ switch ($action) {
             $up_next = [];
             $stmtNext = $db_connect->prepare("
                 {$baseTicketSelect}
-                WHERE q.office_id = ? AND q.queue_date = ? AND q.status = 'WAITING' 
+                WHERE q.office_id = ? AND q.queue_date = ? AND q.status = 'WAITING'
+                  AND (? = 0 OR q.counter_id IS NULL OR q.counter_id = ?)
                 ORDER BY q.queue_sequence ASC
                 LIMIT 50
             ");
-            $stmtNext->bind_param("is", $office_id, $today);
+            // Only this window's tickets (+ "Any Window" tickets with no designated window)
+            $stmtNext->bind_param("isii", $office_id, $today, $counter_id, $counter_id);
             $stmtNext->execute();
             $resNext = $stmtNext->get_result();
             while ($row = $resNext->fetch_assoc()) {
@@ -372,8 +374,9 @@ switch ($action) {
                 SELECT COUNT(*) as cnt 
                 FROM queue_tickets 
                 WHERE office_id = ? AND queue_date = ? AND status = 'WAITING'
+                  AND (? = 0 OR counter_id IS NULL OR counter_id = ?)
             ");
-            $stmtCount->bind_param("is", $office_id, $today);
+            $stmtCount->bind_param("isii", $office_id, $today, $counter_id, $counter_id);
             $stmtCount->execute();
             $waiting_count = (int)($stmtCount->get_result()->fetch_assoc()['cnt'] ?? 0);
 
@@ -512,12 +515,13 @@ switch ($action) {
                     INNER JOIN logbooks l ON q.logbook_id = l.id
                     WHERE q.office_id = ? 
                       AND q.queue_date = ? 
-                      AND q.status = 'WAITING' 
+                      AND q.status = 'WAITING'
+                      AND (? = 0 OR q.counter_id IS NULL OR q.counter_id = ?)
                       AND q.is_priority = 1
                     ORDER BY q.queue_sequence ASC 
                     LIMIT 1
                 ");
-                $stmtNextTicket->bind_param("is", $office_id, $today);
+                $stmtNextTicket->bind_param("isii", $office_id, $today, $counter_id, $counter_id);
             } elseif ($category === 'REGULAR') {
                 $stmtNextTicket = $db_connect->prepare("
                     SELECT q.id, q.ticket_number 
@@ -525,13 +529,14 @@ switch ($action) {
                     INNER JOIN logbooks l ON q.logbook_id = l.id
                     WHERE q.office_id = ? 
                       AND q.queue_date = ? 
-                      AND q.status = 'WAITING' 
+                      AND q.status = 'WAITING'
+                      AND (? = 0 OR q.counter_id IS NULL OR q.counter_id = ?)
                       AND q.is_priority = 0
                       AND UPPER(TRIM(l.visitor_type)) IN ('STUDENT', 'GUEST')
                     ORDER BY q.queue_sequence ASC 
                     LIMIT 1
                 ");
-                $stmtNextTicket->bind_param("is", $office_id, $today);
+                $stmtNextTicket->bind_param("isii", $office_id, $today, $counter_id, $counter_id);
             } else {
                 $stmtNextTicket = $db_connect->prepare("
                     SELECT q.id, q.ticket_number 
@@ -539,13 +544,14 @@ switch ($action) {
                     INNER JOIN logbooks l ON q.logbook_id = l.id
                     WHERE q.office_id = ? 
                       AND q.queue_date = ? 
-                      AND q.status = 'WAITING' 
+                      AND q.status = 'WAITING'
+                      AND (? = 0 OR q.counter_id IS NULL OR q.counter_id = ?)
                       AND q.is_priority = 0
                       AND UPPER(TRIM(l.visitor_type)) = 'EMPLOYEE'
                     ORDER BY q.queue_sequence ASC 
                     LIMIT 1
                 ");
-                $stmtNextTicket->bind_param("is", $office_id, $today);
+                $stmtNextTicket->bind_param("isii", $office_id, $today, $counter_id, $counter_id);
             }
 
             $stmtNextTicket->execute();
@@ -555,28 +561,37 @@ switch ($action) {
                 $ticket_id = (int)$ticket['id'];
                 $now       = date('Y-m-d H:i:s');
 
+                // Atomic claim: only succeeds if the ticket is still WAITING and still callable by this window,
+                // so two windows pressing "Call Next" at the same time can never take the same ticket.
                 if ($counter_id > 0) {
                     $stmtUpdate = $db_connect->prepare("
-                        UPDATE queue_tickets 
-                        SET status = 'CALLED', 
-                            called_at = ?, 
-                            counter_id = ?, 
-                            served_by_user_id = ? 
+                        UPDATE queue_tickets
+                        SET status = 'CALLED',
+                            called_at = ?,
+                            counter_id = ?,
+                            served_by_user_id = ?
                         WHERE id = ?
+                          AND status = 'WAITING'
+                          AND (counter_id IS NULL OR counter_id = ?)
                     ");
-                    $stmtUpdate->bind_param("siii", $now, $counter_id, $user_id, $ticket_id);
+                    $stmtUpdate->bind_param("siiii", $now, $counter_id, $user_id, $ticket_id, $counter_id);
                 } else {
                     $stmtUpdate = $db_connect->prepare("
-                        UPDATE queue_tickets 
-                        SET status = 'CALLED', 
-                            called_at = ?, 
-                            counter_id = NULL, 
-                            served_by_user_id = ? 
+                        UPDATE queue_tickets
+                        SET status = 'CALLED',
+                            called_at = ?,
+                            served_by_user_id = ?
                         WHERE id = ?
+                          AND status = 'WAITING'
                     ");
                     $stmtUpdate->bind_param("sii", $now, $user_id, $ticket_id);
                 }
                 $stmtUpdate->execute();
+
+                if ($stmtUpdate->affected_rows < 1) {
+                    echo json_encode(['success' => false, 'message' => 'That ticket was just taken. Please press Call Next again.']);
+                    exit();
+                }
 
                 echo json_encode(['success' => true, 'message' => "Ticket {$ticket['ticket_number']} called."]);
             } else {
