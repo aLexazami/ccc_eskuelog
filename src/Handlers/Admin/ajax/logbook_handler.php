@@ -220,10 +220,7 @@ switch ($action) {
                 exit();
             }
         } elseif ($visitor_type === 'EMPLOYEE') {
-            if ($department_id <= 0) {
-                echo json_encode(['success' => false, 'message' => 'Department is required for Employee visitors.']);
-                exit();
-            }
+            // Office is required on the manual form (checked client side); Department is optional.
         }
 
         if ($data_consent !== 1) {

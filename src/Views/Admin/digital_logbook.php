@@ -878,26 +878,26 @@ if ($db_connect) {
 
                         <div id="employeeFieldsContainer" class="row g-2 g-sm-3 mb-3 d-none">
                             <div class="col-12 col-sm-6">
-                                <label for="employeeDepartment" class="form-label fw-bold text-dark small">Department</label>
-                                <select class="form-select form-select-kiosk" id="employeeDepartment" name="department_id_select">
-                                    <option value="" selected disabled>Select department</option>
-                                    <?php foreach ($departments_list as $dept): ?>
-                                        <option value="<?= htmlspecialchars($dept['department_id']); ?>">
-                                            <?= htmlspecialchars($dept['department_code'] . ' - ' . $dept['department_name']); ?>
+                                <label for="employeeOfficeId" class="form-label fw-bold text-dark small">Office</label>
+                                <select class="form-select form-select-kiosk" id="employeeOfficeId" name="employee_office_id">
+                                    <option value="" selected disabled>Select office</option>
+                                    <?php foreach ($offices_list as $off): ?>
+                                        <option value="<?= htmlspecialchars($off['office_id']); ?>">
+                                            <?= htmlspecialchars($off['office_code'] . ' - ' . $off['office_name']); ?>
                                         </option>
                                     <?php endforeach; ?>
                                 </select>
                             </div>
 
                             <div class="col-12 col-sm-6">
-                                <label for="employeeOfficeId" class="form-label fw-bold text-dark small">
-                                    Office <span class="text-muted fw-normal fs-8">(Optional)</span>
+                                <label for="employeeDepartment" class="form-label fw-bold text-dark small">
+                                    Department <span class="text-muted fw-normal fs-8">(Optional)</span>
                                 </label>
-                                <select class="form-select form-select-kiosk" id="employeeOfficeId" name="employee_office_id">
-                                    <option value="" selected>Select office</option>
-                                    <?php foreach ($offices_list as $off): ?>
-                                        <option value="<?= htmlspecialchars($off['office_id']); ?>">
-                                            <?= htmlspecialchars($off['office_code'] . ' - ' . $off['office_name']); ?>
+                                <select class="form-select form-select-kiosk" id="employeeDepartment" name="department_id_select">
+                                    <option value="" selected>Select department</option>
+                                    <?php foreach ($departments_list as $dept): ?>
+                                        <option value="<?= htmlspecialchars($dept['department_id']); ?>">
+                                            <?= htmlspecialchars($dept['department_code'] . ' - ' . $dept['department_name']); ?>
                                         </option>
                                     <?php endforeach; ?>
                                 </select>
@@ -1523,7 +1523,7 @@ if ($db_connect) {
 
             if (courseSelect) courseSelect.required = isStudent;
             if (yearSelect) yearSelect.required = isStudent;
-            if (employeeDeptSelect) employeeDeptSelect.required = isEmployee;
+            if (employeeOfficeSelect) employeeOfficeSelect.required = isEmployee;
 
             syncRequiredLabelIndicators(personalDetailsSec);
         }
@@ -2010,9 +2010,10 @@ if ($db_connect) {
                     return false;
                 }
             } else if (vType === 'EMPLOYEE') {
-                const deptV = employeeDeptSelect.value;
-                if (!deptV) {
-                    showSweetAlert("Incomplete Employee Information", "Please select your Department.", "warning");
+                const officeV = employeeOfficeSelect ? employeeOfficeSelect.value : '';
+                // A verified employee record ("Yes, This Is Me") hides these fields, so only enforce on manual entry
+                if (!officeV && !visitorRecordFound) {
+                    showSweetAlert("Incomplete Employee Information", "Please select your Office.", "warning");
                     return false;
                 }
             }
@@ -2750,17 +2751,17 @@ if ($db_connect) {
                         </div>
                     `;
                 } else if (isEmployee) {
-                    const deptDisplay   = getSelectDisplayText(employeeDeptSelect, '---');
-                    const officeDisplay = getSelectDisplayText(employeeOfficeSelect, 'None');
+                    const officeDisplay = getSelectDisplayText(employeeOfficeSelect, '---');
+                    const deptDisplay   = getSelectDisplayText(employeeDeptSelect, 'None');
                     categorySpecificRowHtml = `
                         <div class="row g-2 g-sm-3 mb-0">
                             <div class="col-12 col-sm-6">
-                                <label class="form-label fw-normal text-dark small">Department</label>
-                                <input type="text" class="form-control form-control-kiosk kiosk-locked-field" value="${escapeHtml(deptDisplay)}" readonly disabled>
-                            </div>
-                            <div class="col-12 col-sm-6">
                                 <label class="form-label fw-normal text-dark small">Office</label>
                                 <input type="text" class="form-control form-control-kiosk kiosk-locked-field" value="${escapeHtml(officeDisplay)}" readonly disabled>
+                            </div>
+                            <div class="col-12 col-sm-6">
+                                <label class="form-label fw-normal text-dark small">Department</label>
+                                <input type="text" class="form-control form-control-kiosk kiosk-locked-field" value="${escapeHtml(deptDisplay)}" readonly disabled>
                             </div>
                         </div>
                     `;
