@@ -212,6 +212,20 @@ if ($db_connect) {
             outline: none;
         }
 
+        /* LOCKED / READ-ONLY KIOSK FORM INPUTS IN STEP 5 */
+        .form-control-kiosk:disabled,
+        .form-control-kiosk[readonly],
+        .form-select-kiosk:disabled,
+        .kiosk-locked-field {
+            background-color: #f1f5f9 !important;
+            border-color: #cbd5e1 !important;
+            color: #1e293b !important;
+            font-weight: 600;
+            cursor: not-allowed;
+            opacity: 1 !important;
+            box-shadow: none !important;
+        }
+
         .building-card, .office-card, .transaction-card {
             cursor: pointer;
             transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
@@ -223,7 +237,7 @@ if ($db_connect) {
             width: 100%;
         }
 
-        .building-card:hover, .office-card:hover, .transaction-card:hover:not(.window-disabled) {
+        .building-card:hover, .office-card:hover, .transaction-card:hover:not(.window-disabled):not(.direct-selected) {
             border-color: #93c5fd;
             background-color: var(--kiosk-bg-subtle);
             transform: translateY(-2px);
@@ -233,6 +247,38 @@ if ($db_connect) {
             border-color: var(--kiosk-primary);
             background-color: var(--kiosk-primary-light);
             box-shadow: 0 10px 15px -3px rgba(29, 78, 216, 0.1);
+        }
+
+        /* SOLID BLUE HIGHLIGHT FOR SELECTED PRIMARY TRANSACTIONS WITHOUT SUB-TRANSACTIONS */
+        .transaction-card.active.direct-selected,
+        .sub-concern-item-wrapper.sub-selected {
+            background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%) !important;
+            border-color: #1e3a8a !important;
+            color: #ffffff !important;
+            box-shadow: 0 10px 20px -4px rgba(29, 78, 216, 0.28);
+        }
+
+        .transaction-card.active.direct-selected .transaction-title-highlight,
+        .sub-concern-item-wrapper.sub-selected .sub-concern-title-text {
+            color: #ffffff !important;
+        }
+
+        .transaction-card.active.direct-selected .select-icon {
+            color: #ffffff !important;
+        }
+
+        .transaction-card.active.direct-selected .window-assign-badge,
+        .sub-concern-item-wrapper.sub-selected .window-assign-badge {
+            background: rgba(255, 255, 255, 0.2) !important;
+            color: #ffffff !important;
+            border-color: rgba(255, 255, 255, 0.45) !important;
+        }
+
+        .transaction-card.active.direct-selected .est-time-subtle,
+        .sub-concern-item-wrapper.sub-selected .sub-est-badge {
+            background-color: rgba(255, 255, 255, 0.2) !important;
+            border-color: rgba(255, 255, 255, 0.35) !important;
+            color: #ffffff !important;
         }
 
         /* DISABLED STATE WHEN ANOTHER WINDOW IS SELECTED */
@@ -249,45 +295,69 @@ if ($db_connect) {
             pointer-events: none;
         }
 
-        .sub-concern-btn.window-disabled,
-        .sub-concern-btn:disabled {
-            opacity: 0.45 !important;
-            cursor: not-allowed !important;
-            pointer-events: none;
+        .sub-concern-item-wrapper.sub-disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
             background-color: #f1f5f9 !important;
             border-color: #cbd5e1 !important;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        .sub-concern-btn.window-disabled,
+        .sub-concern-btn:disabled {
+            cursor: not-allowed !important;
+            pointer-events: none;
             color: #64748b !important;
         }
 
-        /* BLUE-THEMED HIGHLIGHTED WINDOW BADGE ABOVE SERVICE NAMES */
+        /* SUBTLE WINDOW BADGE */
         .window-assign-badge {
             display: inline-flex;
             align-items: center;
-            gap: 0.35rem;
-            font-size: 0.72rem;
-            font-weight: 800;
-            letter-spacing: 0.35px;
-            padding: 0.22rem 0.65rem;
-            border-radius: 0.45rem;
-            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            gap: 0.3rem;
+            font-size: 0.68rem;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            padding: 0.15rem 0.55rem;
+            border-radius: 0.4rem;
+            background-color: #eff6ff;
             color: #1e40af;
-            border: 1px solid #60a5fa;
-            box-shadow: 0 1px 2px rgba(29, 78, 216, 0.16);
+            border: 1px solid #bfdbfe;
             text-transform: uppercase;
-            margin-bottom: 0.35rem;
+            margin-bottom: 0.3rem;
         }
 
         .window-assign-badge.window-default {
-            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
-            color: #1d4ed8;
-            border-color: #93c5fd;
-            box-shadow: 0 1px 2px rgba(37, 99, 235, 0.14);
+            background-color: #f1f5f9;
+            color: #475569;
+            border-color: #cbd5e1;
         }
 
-        .sub-concern-btn.btn-primary .window-assign-badge {
-            background: rgba(255, 255, 255, 0.95);
-            color: #1e3a8a;
-            border-color: #ffffff;
+        /* REDUCED FONT WEIGHT FOR PRIMARY & SUB TRANSACTION NAMES */
+        .transaction-title-highlight {
+            font-size: 0.98rem;
+            font-weight: 500;
+            color: #1e293b;
+            line-height: 1.4;
+            margin-bottom: 0.3rem;
+        }
+
+        .transaction-card.active:not(.direct-selected) .transaction-title-highlight {
+            color: #1d4ed8;
+        }
+
+        .est-time-subtle {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: #64748b;
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 0.15rem 0.55rem;
+            border-radius: 0.4rem;
         }
 
         /* SAME-WINDOW RULE HIGHLIGHT NOTICE */
@@ -302,42 +372,109 @@ if ($db_connect) {
             line-height: 1.45;
         }
 
-        /* DYNAMIC FULL-WIDTH SUB-TRANSACTIONS GRID */
+        /* SINGLE-COLUMN VERTICAL SUB-TRANSACTIONS LIST */
         .sub-concerns-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 0.65rem;
+            grid-template-columns: 1fr;
+            gap: 0.75rem;
             width: 100%;
+        }
+
+        /* Each sub-transaction is its own card (same look as a primary transaction without sub-transactions).
+           When selected, the card turns blue and its Additional Details container sits inside it. */
+        .sub-concern-item-wrapper {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            cursor: pointer;
+            border: 2px solid #e2e8f0;
+            background: #ffffff;
+            border-radius: 0.875rem;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .sub-concern-item-wrapper:hover:not(.sub-selected):not(.sub-disabled) {
+            border-color: #93c5fd;
+            background-color: var(--kiosk-bg-subtle);
+            transform: translateY(-2px);
+        }
+
+        .sub-concern-item-wrapper.sub-selected {
+            border-color: #1e3a8a !important;
+            box-shadow: 0 10px 20px -4px rgba(29, 78, 216, 0.28);
         }
 
         .sub-concern-btn {
             width: 100%;
-            border-radius: 0.65rem;
-            font-weight: 600;
-            font-size: 0.875rem;
-            transition: all 0.2s ease;
+            border-radius: 0.875rem;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
             display: flex;
             flex-direction: column;
             align-items: flex-start;
-            justify-content: space-between;
+            justify-content: center;
             text-align: left;
-            gap: 0.35rem;
-            padding: 0.75rem 0.95rem;
-            border-width: 1.5px;
+            gap: 0.25rem;
+            padding: 0.95rem 1.15rem;
+            border: 0 !important;
+            background: transparent !important;
+            box-shadow: none !important;
+            transform: none !important;
+        }
+
+        .sub-concern-btn.btn-outline-primary,
+        .sub-concern-btn.btn-primary {
+            color: #1e293b;
+        }
+
+        .sub-concern-item-wrapper.sub-selected .sub-concern-btn {
+            color: #ffffff;
+        }
+
+        .sub-concern-title-text {
+            font-size: 0.94rem;
+            font-weight: 500;
+            line-height: 1.4;
+            color: #1e293b;
+        }
+
+        .sub-concern-item-wrapper:hover:not(.sub-selected):not(.sub-disabled) .sub-concern-title-text {
+            color: #1d4ed8;
         }
 
         .sub-concern-btn .sub-est-badge {
-            font-size: 0.72rem;
-            padding: 0.18rem 0.5rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            font-size: 0.74rem;
+            padding: 0.15rem 0.55rem;
             border-radius: 0.4rem;
-            background-color: rgba(29, 78, 216, 0.1);
-            color: #1d4ed8;
-            font-weight: 700;
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            color: #64748b;
+            font-weight: 500;
+            margin-top: 0.15rem;
         }
 
-        .sub-concern-btn.btn-primary .sub-est-badge {
-            background-color: rgba(255, 255, 255, 0.22);
-            color: #ffffff;
+        /* IDENTICAL INLINE ADDITIONAL DETAILS DRAWER FOR BOTH PRIMARY & SUB-TRANSACTIONS */
+        .inline-detail-drawer,
+        .sub-concern-item-wrapper .inline-detail-drawer {
+            background-color: #ffffff;
+            color: #0f172a;
+            border: 1.5px solid #93c5fd;
+            border-left: 4px solid var(--kiosk-primary);
+            border-radius: 0.75rem;
+            padding: 1rem 1.15rem;
+            margin-top: 0.75rem;
+            margin-left: 0;
+            width: 100%;
+            cursor: default;
+            box-shadow: 0 4px 10px -2px rgba(29, 78, 216, 0.08);
+        }
+
+        /* inside a selected (blue) sub-transaction card: same inset white container as the primary card */
+        .sub-concern-item-wrapper .inline-detail-drawer {
+            width: auto;
+            margin: 0 1.15rem 1.15rem;
         }
 
         .office-logo-img {
@@ -513,14 +650,6 @@ if ($db_connect) {
             border-radius: 0.875rem;
             padding: 1.25rem;
             margin-bottom: 1.25rem;
-        }
-
-        .detail-group-card {
-            background-color: #f8fafc;
-            border: 1.5px solid #cbd5e1;
-            border-left: 4px solid var(--kiosk-primary);
-            border-radius: 0.75rem;
-            padding: 1rem 1.15rem;
         }
 
         /* BLUE-THEMED RECEIPT REMINDER HIGHLIGHT */
@@ -898,7 +1027,7 @@ if ($db_connect) {
                 </div>
 
                 <!-- ========================================================== -->
-                <!-- STEP 4: TRANSACTION CONCERNS SELECTION                     -->
+                <!-- STEP 4: TRANSACTION CONCERNS & INLINE REQUIRED DETAILS     -->
                 <!-- ========================================================== -->
                 <div id="step4_purposeSelection" class="d-none">
                     <div class="p-3 bg-light rounded-3 border d-flex align-items-center justify-content-between mb-3">
@@ -943,25 +1072,17 @@ if ($db_connect) {
                 </div>
 
                 <!-- ========================================================== -->
-                <!-- STEP 5: FINAL LOGBOOK SUMMARY & DATA PRIVACY AGREEMENT    -->
+                <!-- STEP 5: LOCKED FORM PREVIEW & AGREEMENT                    -->
                 <!-- ========================================================== -->
                 <div id="step5_summaryReview" class="d-none">
                     
                     <div class="mb-4">
                         <h3 class="fw-bold text-dark mb-1 fs-4">Review Logbook Summary</h3>
-                        <p class="text-muted small mb-0">Please complete any required transaction details and accept the data privacy agreement before submitting.</p>
+                        <p class="text-muted small mb-0">Please review your locked logbook form details below and accept the data privacy agreement before submitting.</p>
                     </div>
 
-                    <!-- DYNAMIC TRANSACTION ADDITIONAL DETAILS (SHOWN WHEN SELECTED CONCERNS HAVE DETAIL FIELDS) -->
-                    <div id="step5DynamicDetailsSection" class="summary-section-box d-none">
-                        <div class="mb-3">
-                            <h6 class="fw-bold text-primary mb-1">
-                                <i class="bi bi-ui-checks-grid me-1"></i> Required Transaction Details
-                            </h6>
-                            <p class="text-muted small mb-0">Please provide the required additional information for your selected service(s).</p>
-                        </div>
-                        <div id="step5DynamicDetailsContainer" class="d-flex flex-column gap-3"></div>
-                    </div>
+                    <!-- LOCKED FORM PREVIEW (EXACT STEP 1–4 FORM STYLE, READ-ONLY / DISABLED) -->
+                    <div id="step5LockedFormContainer" class="d-flex flex-column gap-3 mb-4"></div>
 
                     <!-- STEP 5 PRIORITY SLOT (MOVED HERE WHEN VISITOR RECORD IS MATCHED) -->
                     <div id="step5PrioritySlot"></div>
@@ -1216,10 +1337,6 @@ if ($db_connect) {
         const employeeDeptSelect   = document.getElementById('employeeDepartment');
         const employeeOfficeSelect = document.getElementById('employeeOfficeId');
 
-        // STEP 5 DYNAMIC DETAILS ELEMENTS
-        const step5DynamicDetailsSec  = document.getElementById('step5DynamicDetailsSection');
-        const step5DynamicDetailsCont = document.getElementById('step5DynamicDetailsContainer');
-
         // IDENTITY VERIFICATION MODAL ELEMENTS
         const idVerificationModalEl = document.getElementById('idVerificationModal');
         const idVerificationModal   = idVerificationModalEl ? new bootstrap.Modal(idVerificationModalEl) : null;
@@ -1288,6 +1405,7 @@ if ($db_connect) {
         const otherConcernBox      = document.getElementById('otherConcernInputContainer');
         const otherConcernText     = document.getElementById('otherConcernText');
 
+        const step5LockedFormCont  = document.getElementById('step5LockedFormContainer');
         const kioskForm            = document.getElementById('kioskForm');
 
         let selectedConcernIds     = [];
@@ -1307,11 +1425,10 @@ if ($db_connect) {
 
         /**
          * Ensures every <label for="..."> linked to a [required] field displays
-         * exactly one red asterisk (*), including dynamically rendered Step 5 fields.
+         * exactly one red asterisk (*), including dynamically rendered Step 4 fields.
          */
         function syncRequiredLabelIndicators(scopeEl = document) {
             scopeEl.querySelectorAll('label[for]').forEach(label => {
-                // Remove any existing JS-injected asterisk first to prevent duplicates
                 label.querySelectorAll('.req-asterisk-mark').forEach(m => m.remove());
                 label.classList.remove('has-js-asterisk');
 
@@ -1544,6 +1661,25 @@ if ($db_connect) {
 
             let parts = [fname, middleFormatted, lname, sfix].filter(p => p !== '');
             return parts.join(' ');
+        }
+
+        /**
+         * Builds the full visitor name (First Name, Middle Name, Last Name, Suffix, and Post Nominal if available)
+         * for matched-record Step 5 preview.
+         */
+        function buildReviewFullName() {
+            const fname = (firstNameInput.value || '').trim();
+            const mname = (middleNameInput.value || '').trim();
+            const lname = (lastNameInput.value || '').trim();
+            const sfix  = (suffixSelect.value || '').trim();
+            const post  = (postNominalInput.value || '').trim();
+
+            const baseParts = [fname, mname, lname, sfix].filter(p => p !== '');
+            let fullName = baseParts.join(' ');
+            if (post !== '') {
+                fullName += (fullName ? ', ' : '') + post;
+            }
+            return fullName || '---';
         }
 
         function normalizeSexValue(val) {
@@ -1828,7 +1964,7 @@ if ($db_connect) {
             wizardStepContainers[stepNum].classList.remove('d-none');
 
             if (stepNum === 5) {
-                renderStep5DynamicDetails();
+                renderStep5LockedFormSummary();
             }
 
             setWizardStep(stepNum);
@@ -1881,6 +2017,67 @@ if ($db_connect) {
                 }
             }
 
+            return true;
+        }
+
+        /**
+         * Single source of truth: is this Additional Details scope (type_X / sub_Y) currently selected?
+         */
+        function isDetailScopeSelected(scopeKey) {
+            const key = String(scopeKey || '');
+            if (key.startsWith('type_')) {
+                return selectedConcernIds.map(String).includes(key.slice(5));
+            }
+            if (key.startsWith('sub_')) {
+                const subId = Number(key.slice(4));
+                return Object.entries(selectedSubConcernsMap).some(([parentId, subs]) =>
+                    selectedConcernIds.map(String).includes(String(parentId)) &&
+                    (subs || []).map(Number).includes(subId)
+                );
+            }
+            return false;
+        }
+
+        /**
+         * Re-sync every sub-transaction card and every Additional Details drawer with the real
+         * selection state, so an unselected item can never keep an active/required drawer.
+         */
+        function syncDetailDrawersWithSelection() {
+            transactionContainer.querySelectorAll('.sub-concern-item-wrapper').forEach(wrap => {
+                const isSel = isDetailScopeSelected(`sub_${wrap.dataset.subWrapperId}`);
+                wrap.classList.toggle('sub-selected', isSel);
+                const btn = wrap.querySelector('.sub-concern-btn');
+                if (btn) {
+                    btn.classList.toggle('btn-primary', isSel);
+                    btn.classList.toggle('btn-outline-primary', !isSel);
+                }
+            });
+            transactionContainer.querySelectorAll('.inline-detail-drawer').forEach(drawer => {
+                setInlineDrawerActive(drawer, isDetailScopeSelected(drawer.dataset.scopeKey));
+            });
+        }
+
+        function validateStep4DynamicDetails() {
+            syncDetailDrawersWithSelection();
+            const activeDrawers = Array.from(transactionContainer.querySelectorAll('.inline-detail-drawer:not(.d-none)'))
+                .filter(d => isDetailScopeSelected(d.dataset.scopeKey));
+            for (const drawer of activeDrawers) {
+                const dynamicInputs = drawer.querySelectorAll('.dynamic-detail-input:not(:disabled)');
+                for (const inp of dynamicInputs) {
+                    const val = inp.value.trim();
+                    const fieldTitle = inp.dataset.fieldTitle || 'Additional Detail';
+                    if (!val) {
+                        inp.focus();
+                        showSweetAlert("Required Detail Missing", `Please fill out "${fieldTitle}".`, "warning");
+                        return false;
+                    }
+                    if (inp.dataset.format === 'INT' && !/^-?\d+$/.test(val)) {
+                        inp.focus();
+                        showSweetAlert("Invalid Number", `"${fieldTitle}" must be a whole number.`, "warning");
+                        return false;
+                    }
+                }
+            }
             return true;
         }
 
@@ -1966,7 +2163,7 @@ if ($db_connect) {
             setWizardStep(3);
         });
 
-        // STEP 4 -> STEP 5 (LOGBOOK SUMMARY, ADDITIONAL DETAILS & AGREEMENT)
+        // STEP 4 -> STEP 5 (VALIDATE CONCERNS & REQUIRED DETAILS, THEN RENDER LOCKED FORM SUMMARY)
         btnContinueTo5.addEventListener('click', function() {
             if (!transactionInput.value && !otherConcernText.value.trim()) {
                 showSweetAlert("Transaction Concern Required", "Please select at least one transaction concern or specify your concern under Others.", "warning");
@@ -1990,13 +2187,18 @@ if ($db_connect) {
                 }
             }
 
+            // Validate required inline dynamic transaction detail fields right in Step 4
+            if (!validateStep4DynamicDetails()) {
+                return;
+            }
+
             if (selectedConcernIds.includes('OTHERS') && !otherConcernText.value.trim()) {
                 showSweetAlert("Specify Concern", "Please describe your specific concern under Others.", "warning");
                 otherConcernText.focus();
                 return;
             }
 
-            renderStep5DynamicDetails();
+            renderStep5LockedFormSummary();
 
             step4Div.classList.add('d-none');
             step5Div.classList.remove('d-none');
@@ -2011,7 +2213,7 @@ if ($db_connect) {
         });
 
         /**
-         * Build blue-themed window badge HTML for Primary Transactions & Sub-Transactions.
+         * Build subtle window badge HTML for Primary Transactions & Sub-Transactions.
          * Defaults to "Any Window" when no specific counter is assigned.
          */
         function buildWindowBadgeHtml(counterId, counterName) {
@@ -2095,7 +2297,6 @@ if ($db_connect) {
                     const isConflict = activeWindowId !== null && cardWindowId !== null && cardWindowId !== activeWindowId;
                     card.classList.toggle('window-disabled', isConflict);
                 } else {
-                    // Check sub-transactions inside this primary transaction
                     let compatibleSubCount = 0;
                     card.querySelectorAll('.sub-concern-btn').forEach(subBtn => {
                         const subWinRaw = subBtn.dataset.counterId;
@@ -2104,186 +2305,22 @@ if ($db_connect) {
 
                         subBtn.disabled = isSubConflict;
                         subBtn.classList.toggle('window-disabled', isSubConflict);
+                        subBtn.closest('.sub-concern-item-wrapper')?.classList.toggle('sub-disabled', isSubConflict);
 
                         if (!isSubConflict) {
                             compatibleSubCount++;
                         }
                     });
 
-                    // Disable entire parent card if none of its sub-transactions match the active window
                     const isParentConflict = activeWindowId !== null && compatibleSubCount === 0;
                     card.classList.toggle('window-disabled', isParentConflict);
                 }
             });
         }
 
-        function fetchOfficeTransactions(officeId) {
-            transactionContainer.innerHTML = '<div class="text-center p-3 text-muted"><span class="spinner-border spinner-border-sm me-2"></span>Loading concerns...</div>';
-            transactionInput.value = '';
-            subConcernInput.value = '';
-            selectedConcernIds = [];
-            selectedSubConcernsMap = {};
-            officeTransactionsMap = {};
-            otherConcernBox.classList.add('d-none');
-            otherConcernText.value = '';
-
-            const formData = new FormData();
-            formData.append('action', 'fetch_office_transactions');
-            formData.append('office_id', officeId);
-
-            fetch('<?= BASE_URL; ?>admin/ajax/office', { method: 'POST', body: formData })
-            .then(res => res.json())
-            .then(result => {
-                transactionContainer.innerHTML = '';
-                let dataList = (result.success && result.data) ? result.data : [];
-                
-                dataList.push({
-                    id: 'OTHERS',
-                    transaction_name: 'Others (Please Specify Concern)',
-                    estimated_minutes: 10,
-                    counter_id: null,
-                    counter_name: null,
-                    is_others: true,
-                    direct_details: null,
-                    sub_concerns: []
-                });
-
-                dataList.forEach(trans => {
-                    officeTransactionsMap[trans.id] = trans;
-                    const hasSubConcerns = Array.isArray(trans.sub_concerns) && trans.sub_concerns.length > 0;
-
-                    const card = document.createElement('div');
-                    card.className = 'transaction-card p-3 mb-2';
-                    card.dataset.transId   = trans.id;
-                    card.dataset.estMins   = trans.estimated_minutes || 5;
-                    card.dataset.counterId = trans.counter_id || '';
-
-                    let subConcernsHtml = '';
-                    if (hasSubConcerns) {
-                        subConcernsHtml = `
-                            <div class="sub-concerns-container d-none mt-3 pt-3 border-top">
-                                <label class="form-label text-muted fw-bold small d-block mb-2">Select Specific Transaction(s):</label>
-                                <div class="sub-concerns-grid">
-                                    ${trans.sub_concerns.map(sub => {
-                                        const effectiveSubCounterId   = sub.counter_id || trans.counter_id || null;
-                                        const effectiveSubCounterName = sub.counter_name || trans.counter_name || null;
-                                        return `
-                                            <button type="button"
-                                                    class="btn btn-sm btn-outline-primary sub-concern-btn"
-                                                    data-sub-id="${sub.id}"
-                                                    data-sub-est="${sub.estimated_minutes || 5}"
-                                                    data-counter-id="${effectiveSubCounterId || ''}">
-                                                <div class="w-100">
-                                                    ${buildWindowBadgeHtml(effectiveSubCounterId, effectiveSubCounterName)}
-                                                    <div class="sub-concern-title-text fw-bold">${escapeHtml(sub.sub_concern_name)}</div>
-                                                </div>
-                                                <span class="sub-est-badge">Est. ${sub.estimated_minutes || 5} mins</span>
-                                            </button>
-                                        `;
-                                    }).join('')}
-                                </div>
-                            </div>
-                        `;
-                    }
-
-                    // Show Window Badge above Primary Transaction Name (defaults to Any Window)
-                    const primaryWindowBadgeHtml = (!hasSubConcerns || trans.counter_id)
-                        ? buildWindowBadgeHtml(trans.counter_id, trans.counter_name)
-                        : '';
-
-                    // Show Est. Time on primary transaction ONLY when it has NO sub-transactions
-                    const primaryEstBadgeHtml = !hasSubConcerns
-                        ? `<span class="badge bg-light text-secondary border mt-1 small">Est. Time: ${trans.estimated_minutes || 5} mins</span>`
-                        : '';
-
-                    card.innerHTML = `
-                        <div class="card-header-row d-flex align-items-center justify-content-between">
-                            <div class="d-flex align-items-center gap-3 min-w-0 flex-grow-1">
-                                <i class="bi bi-square text-muted fs-4 select-icon flex-shrink-0"></i>
-                                <div class="min-w-0 flex-grow-1">
-                                    ${primaryWindowBadgeHtml}
-                                    <h6 class="fw-bold text-dark mb-0 fs-6">${escapeHtml(trans.transaction_name)}</h6>
-                                    ${primaryEstBadgeHtml}
-                                </div>
-                            </div>
-                        </div>
-                        ${subConcernsHtml}
-                    `;
-
-                    const cardHeader = card.querySelector('.card-header-row');
-                    cardHeader.addEventListener('click', function(e) {
-                        e.stopPropagation();
-                        if (card.classList.contains('window-disabled')) {
-                            return;
-                        }
-
-                        const icon = card.querySelector('.select-icon');
-                        const subContainer = card.querySelector('.sub-concerns-container');
-
-                        if (selectedConcernIds.includes(trans.id)) {
-                            selectedConcernIds = selectedConcernIds.filter(id => id !== trans.id);
-                            delete selectedSubConcernsMap[trans.id];
-                            card.classList.remove('active');
-                            icon.className = 'bi bi-square text-muted fs-4 select-icon flex-shrink-0';
-                            if (subContainer) {
-                                subContainer.classList.add('d-none');
-                                subContainer.querySelectorAll('.sub-concern-btn').forEach(b => {
-                                    b.classList.remove('btn-primary', 'text-white');
-                                    b.classList.add('btn-outline-primary');
-                                });
-                            }
-                            if (trans.is_others) otherConcernBox.classList.add('d-none');
-                        } else {
-                            selectedConcernIds.push(trans.id);
-                            selectedSubConcernsMap[trans.id] = [];
-                            card.classList.add('active');
-                            icon.className = 'bi bi-check-square-fill text-primary fs-4 select-icon flex-shrink-0';
-                            if (subContainer) subContainer.classList.remove('d-none');
-                            if (trans.is_others) otherConcernBox.classList.remove('d-none');
-                        }
-
-                        transactionInput.value = selectedConcernIds.join(',');
-                        subConcernInput.value  = JSON.stringify(selectedSubConcernsMap);
-                        enforceSameWindowSelectionState();
-                    });
-
-                    const subBtns = card.querySelectorAll('.sub-concern-btn');
-                    subBtns.forEach(btn => {
-                        btn.addEventListener('click', function(e) {
-                            e.stopPropagation();
-                            if (this.disabled || this.classList.contains('window-disabled')) {
-                                return;
-                            }
-
-                            const subId = parseInt(this.dataset.subId, 10);
-                            if (!selectedSubConcernsMap[trans.id]) {
-                                selectedSubConcernsMap[trans.id] = [];
-                            }
-
-                            const index = selectedSubConcernsMap[trans.id].indexOf(subId);
-                            if (index > -1) {
-                                selectedSubConcernsMap[trans.id].splice(index, 1);
-                                this.classList.remove('btn-primary', 'text-white');
-                                this.classList.add('btn-outline-primary');
-                            } else {
-                                selectedSubConcernsMap[trans.id].push(subId);
-                                this.classList.remove('btn-outline-primary');
-                                this.classList.add('btn-primary', 'text-white');
-                            }
-
-                            subConcernInput.value = JSON.stringify(selectedSubConcernsMap);
-                            enforceSameWindowSelectionState();
-                        });
-                    });
-
-                    transactionContainer.appendChild(card);
-                });
-
-                enforceSameWindowSelectionState();
-            });
-        }
-
-        // RENDER DYNAMIC ADDITIONAL DETAILS IN STEP 5
+        /**
+         * Builds the HTML for an individual dynamic field input/select inside a transaction or sub-transaction.
+         */
         function buildDynamicFieldControlHtml(scopeKey, field) {
             const inputName = `transaction_details[${scopeKey}][${field.id}][value]`;
             const fieldIdAttr = `detail_${scopeKey}_${field.id}`;
@@ -2342,103 +2379,584 @@ if ($db_connect) {
             `;
         }
 
-        function renderStep5DynamicDetails() {
-            // Preserve previously entered values if user goes back and forth
-            const existingValues = {};
-            step5DynamicDetailsCont.querySelectorAll('.dynamic-detail-input').forEach(inp => {
-                existingValues[inp.name] = inp.value;
-            });
+        /**
+         * Builds the inline Additional Details form drawer directly underneath its own
+         * Transaction Type (when no sub-transactions) or Sub-Transaction item.
+         */
+        function buildInlineDetailsDrawerHtml(scopeKey, detailsObj) {
+            if (!detailsObj || !detailsObj.has_details || !Array.isArray(detailsObj.fields) || detailsObj.fields.length === 0) {
+                return '';
+            }
 
-            step5DynamicDetailsCont.innerHTML = '';
-            let totalGroupsRendered = 0;
+            return `
+                <div class="inline-detail-drawer d-none" data-scope-key="${escapeHtml(scopeKey)}">
+                    <div class="fw-bold text-primary small mb-2">
+                        <i class="bi bi-ui-checks-grid me-1"></i>Required Additional Details
+                    </div>
+                    <div class="row g-3">
+                        ${detailsObj.fields.map(field => `
+                            <div class="col-12 col-md-6">
+                                <label for="detail_${scopeKey}_${field.id}" class="form-label fw-bold text-dark small">
+                                    ${escapeHtml(field.title)}
+                                </label>
+                                ${buildDynamicFieldControlHtml(scopeKey, field)}
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        /**
+         * Enables/disables & shows/hides an inline Additional Details drawer
+         * so unselected items do not trigger browser validation or submit blank payloads.
+         */
+        function setInlineDrawerActive(drawerEl, isActive) {
+            if (!drawerEl) return;
+            drawerEl.classList.toggle('d-none', !isActive);
+            drawerEl.querySelectorAll('.dynamic-detail-input').forEach(inp => {
+                inp.disabled = !isActive;
+                if (isActive) {
+                    inp.setAttribute('required', 'required');
+                } else {
+                    inp.removeAttribute('required');
+                }
+            });
+            drawerEl.querySelectorAll('.detail-choice-id-hidden').forEach(hid => {
+                hid.disabled = !isActive;
+            });
+            if (isActive) {
+                syncRequiredLabelIndicators(drawerEl);
+            }
+        }
+
+        function fetchOfficeTransactions(officeId) {
+            transactionContainer.innerHTML = '<div class="text-center p-3 text-muted"><span class="spinner-border spinner-border-sm me-2"></span>Loading concerns...</div>';
+            transactionInput.value = '';
+            subConcernInput.value = '';
+            selectedConcernIds = [];
+            selectedSubConcernsMap = {};
+            officeTransactionsMap = {};
+            otherConcernBox.classList.add('d-none');
+            otherConcernText.value = '';
+
+            const formData = new FormData();
+            formData.append('action', 'fetch_office_transactions');
+            formData.append('office_id', officeId);
+
+            fetch('<?= BASE_URL; ?>admin/ajax/office', { method: 'POST', body: formData })
+            .then(res => res.json())
+            .then(result => {
+                transactionContainer.innerHTML = '';
+                let dataList = (result.success && result.data) ? result.data : [];
+                
+                dataList.push({
+                    id: 'OTHERS',
+                    transaction_name: 'Others (Please Specify Concern)',
+                    estimated_minutes: 10,
+                    counter_id: null,
+                    counter_name: null,
+                    is_others: true,
+                    direct_details: null,
+                    sub_concerns: []
+                });
+
+                dataList.forEach(trans => {
+                    officeTransactionsMap[trans.id] = trans;
+                    const hasSubConcerns = Array.isArray(trans.sub_concerns) && trans.sub_concerns.length > 0;
+
+                    const card = document.createElement('div');
+                    card.className = 'transaction-card p-3 mb-2';
+                    card.dataset.transId   = trans.id;
+                    card.dataset.estMins   = trans.estimated_minutes || 5;
+                    card.dataset.counterId = trans.counter_id || '';
+
+                    let subConcernsHtml = '';
+                    let primaryInlineDetailsHtml = '';
+
+                    if (hasSubConcerns) {
+                        subConcernsHtml = `
+                            <div class="sub-concerns-container d-none mt-3 pt-3 border-top">
+                                <label class="form-label text-primary fw-bold small d-block mb-2">Select Specific Transaction(s):</label>
+                                <div class="sub-concerns-grid">
+                                    ${trans.sub_concerns.map(sub => {
+                                        const effectiveSubCounterId   = sub.counter_id || trans.counter_id || null;
+                                        const effectiveSubCounterName = sub.counter_name || trans.counter_name || null;
+                                        const subDrawerHtml = buildInlineDetailsDrawerHtml(`sub_${sub.id}`, sub.parsed_details);
+                                        return `
+                                            <div class="sub-concern-item-wrapper" data-sub-wrapper-id="${sub.id}">
+                                                <button type="button"
+                                                        class="btn btn-outline-primary sub-concern-btn"
+                                                        data-sub-id="${sub.id}"
+                                                        data-sub-est="${sub.estimated_minutes || 5}"
+                                                        data-counter-id="${effectiveSubCounterId || ''}">
+                                                    ${buildWindowBadgeHtml(effectiveSubCounterId, effectiveSubCounterName)}
+                                                    <div class="sub-concern-title-text">${escapeHtml(sub.sub_concern_name)}</div>
+                                                    <span class="sub-est-badge"><i class="bi bi-clock"></i> Est. Time: ${sub.estimated_minutes || 5} mins</span>
+                                                </button>
+                                                ${subDrawerHtml}
+                                            </div>
+                                        `;
+                                    }).join('')}
+                                </div>
+                            </div>
+                        `;
+                    } else if (!trans.is_others) {
+                        primaryInlineDetailsHtml = buildInlineDetailsDrawerHtml(`type_${trans.id}`, trans.direct_details);
+                    }
+
+                    // Show Window Badge above Primary Transaction Name (defaults to Any Window)
+                    const primaryWindowBadgeHtml = (!hasSubConcerns || trans.counter_id)
+                        ? buildWindowBadgeHtml(trans.counter_id, trans.counter_name)
+                        : '';
+
+                    // Show Est. Time on primary transaction ONLY when it has NO sub-transactions
+                    const primaryEstBadgeHtml = !hasSubConcerns
+                        ? `<span class="est-time-subtle"><i class="bi bi-clock"></i> Est. Time: ${trans.estimated_minutes || 5} mins</span>`
+                        : '';
+
+                    card.innerHTML = `
+                        <div class="card-header-row d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center gap-3 min-w-0 flex-grow-1">
+                                <i class="bi bi-square text-primary fs-4 select-icon flex-shrink-0"></i>
+                                <div class="min-w-0 flex-grow-1">
+                                    ${primaryWindowBadgeHtml}
+                                    <div class="transaction-title-highlight">${escapeHtml(trans.transaction_name)}</div>
+                                    ${primaryEstBadgeHtml}
+                                </div>
+                            </div>
+                        </div>
+                        ${primaryInlineDetailsHtml}
+                        ${subConcernsHtml}
+                    `;
+
+                    // Initialize all inline drawers inside this card as disabled/hidden until selected
+                    card.querySelectorAll('.inline-detail-drawer').forEach(drawer => {
+                        drawer.addEventListener('click', ev => ev.stopPropagation());
+                        setInlineDrawerActive(drawer, false);
+                    });
+
+                    // Wire choice_id hidden sync for SELECT fields inside inline drawers
+                    card.querySelectorAll('.dynamic-detail-select').forEach(sel => {
+                        const syncChoiceId = () => {
+                            const opt = sel.options[sel.selectedIndex];
+                            const hiddenChoice = sel.parentElement.querySelector('.detail-choice-id-hidden');
+                            if (hiddenChoice) {
+                                hiddenChoice.value = opt ? (opt.dataset.choiceId || '') : '';
+                            }
+                        };
+                        sel.addEventListener('change', syncChoiceId);
+                    });
+
+                    const cardHeader = card.querySelector('.card-header-row');
+                    cardHeader.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        if (card.classList.contains('window-disabled')) {
+                            return;
+                        }
+
+                        const icon = card.querySelector('.select-icon');
+                        const subContainer = card.querySelector('.sub-concerns-container');
+                        const directDrawer = card.querySelector(`:scope > .inline-detail-drawer[data-scope-key="type_${trans.id}"]`);
+
+                        if (selectedConcernIds.includes(trans.id)) {
+                            selectedConcernIds = selectedConcernIds.filter(id => id !== trans.id);
+                            delete selectedSubConcernsMap[trans.id];
+                            card.classList.remove('active', 'direct-selected');
+                            icon.className = 'bi bi-square text-primary fs-4 select-icon flex-shrink-0';
+                            if (directDrawer) {
+                                setInlineDrawerActive(directDrawer, false);
+                            }
+                            if (subContainer) {
+                                subContainer.classList.add('d-none');
+                                subContainer.querySelectorAll('.sub-concern-btn').forEach(b => {
+                                    b.classList.remove('btn-primary', 'text-white');
+                                    b.classList.add('btn-outline-primary');
+                                    b.closest('.sub-concern-item-wrapper')?.classList.remove('sub-selected');
+                                });
+                                subContainer.querySelectorAll('.inline-detail-drawer').forEach(d => {
+                                    setInlineDrawerActive(d, false);
+                                });
+                            }
+                            if (trans.is_others) otherConcernBox.classList.add('d-none');
+                        } else {
+                            selectedConcernIds.push(trans.id);
+                            selectedSubConcernsMap[trans.id] = [];
+                            card.classList.add('active');
+                            if (!hasSubConcerns) {
+                                card.classList.add('direct-selected');
+                            }
+                            icon.className = 'bi bi-check-square-fill text-primary fs-4 select-icon flex-shrink-0';
+                            if (directDrawer) {
+                                setInlineDrawerActive(directDrawer, true);
+                            }
+                            if (subContainer) subContainer.classList.remove('d-none');
+                            if (trans.is_others) otherConcernBox.classList.remove('d-none');
+                        }
+
+                        transactionInput.value = selectedConcernIds.join(',');
+                        subConcernInput.value  = JSON.stringify(selectedSubConcernsMap);
+                        syncDetailDrawersWithSelection();
+                        enforceSameWindowSelectionState();
+                    });
+
+                    const subBtns = card.querySelectorAll('.sub-concern-btn');
+                    subBtns.forEach(btn => {
+                        btn.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            if (this.disabled || this.classList.contains('window-disabled')) {
+                                return;
+                            }
+
+                            const subId = parseInt(this.dataset.subId, 10);
+                            const subWrapper = this.closest('.sub-concern-item-wrapper');
+                            const subDrawer  = subWrapper ? subWrapper.querySelector('.inline-detail-drawer') : null;
+
+                            if (!selectedSubConcernsMap[trans.id]) {
+                                selectedSubConcernsMap[trans.id] = [];
+                            }
+
+                            const index = selectedSubConcernsMap[trans.id].indexOf(subId);
+                            if (index > -1) {
+                                selectedSubConcernsMap[trans.id].splice(index, 1);
+                                this.classList.remove('btn-primary', 'text-white');
+                                this.classList.add('btn-outline-primary');
+                                setInlineDrawerActive(subDrawer, false);
+                            } else {
+                                selectedSubConcernsMap[trans.id].push(subId);
+                                this.classList.remove('btn-outline-primary');
+                                this.classList.add('btn-primary', 'text-white');
+                                setInlineDrawerActive(subDrawer, true);
+                            }
+
+                            subConcernInput.value = JSON.stringify(selectedSubConcernsMap);
+                            syncDetailDrawersWithSelection();
+                            enforceSameWindowSelectionState();
+                        });
+                    });
+
+                    transactionContainer.appendChild(card);
+                });
+
+                enforceSameWindowSelectionState();
+            });
+        }
+
+        /**
+         * Helper to collect entered dynamic detail values for a given scopeKey ('type_X' or 'sub_Y')
+         * directly from the inline drawer in Step 4 so Step 5 displays them in locked form fields.
+         */
+        function getEnteredDetailsForScope(scopeKey) {
+            const entries = [];
+            const drawer = transactionContainer.querySelector(`.inline-detail-drawer:not(.d-none)[data-scope-key="${scopeKey}"]`);
+            if (!drawer) return entries;
+
+            drawer.querySelectorAll('.dynamic-detail-input:not(:disabled)').forEach(inp => {
+                const label = inp.dataset.fieldTitle || 'Detail';
+                const val   = (inp.value || '').trim();
+                if (val !== '') {
+                    entries.push({ label, val });
+                }
+            });
+            return entries;
+        }
+
+        /**
+         * Helper to get human-readable display text from a <select> element.
+         */
+        function getSelectDisplayText(selectEl, fallbackText = 'None') {
+            if (!selectEl || selectEl.selectedIndex < 0) return fallbackText;
+            const opt = selectEl.options[selectEl.selectedIndex];
+            if (!opt || opt.disabled || opt.value === '') return fallbackText;
+            return opt.textContent.trim();
+        }
+
+        /**
+         * Populates Step 5 using locked/disabled form inputs styled identically to Step 1–4 forms.
+         * - When matched record ("Yes, This Is Me") was confirmed: Step 1 section shows ONLY
+         *   the locked ID Number and Full Name.
+         * - When manual entry or Guest was used: Step 1 section mirrors the exact manual personal
+         *   information form fields in locked read-only controls.
+         */
+        function renderStep5LockedFormSummary() {
+            if (!step5LockedFormCont) return;
+
+            const vType = visitorTypeInput.value;
+            const isEmployee = (vType === 'EMPLOYEE');
+            const isStudent  = (vType === 'STUDENT');
+            const isGuest    = (vType === 'GUEST');
+
+            const effectiveId = (!visitorRecordFound && manualRefIdInput && !manualIdRow?.classList.contains('d-none'))
+                ? manualRefIdInput.value.trim()
+                : referenceIdInput.value.trim();
+
+            let step1LockedHtml = '';
+
+            if (visitorRecordFound) {
+                // MATCHED RECORD ("Yes, This Is Me"): Only ID Number & Full Name in Step 5 review
+                const idLabel = isEmployee ? 'Employee ID Number' : 'Student ID Number';
+                const fullNameVal = buildReviewFullName();
+
+                step1LockedHtml = `
+                    <div class="summary-section-box mb-0">
+                        <div class="row g-2 g-sm-3">
+                            <div class="col-12 col-md-5">
+                                <label class="form-label fw-normal text-dark small">${escapeHtml(idLabel)}</label>
+                                <input type="text" class="form-control form-control-kiosk kiosk-locked-field fw-bold text-primary" value="${escapeHtml(effectiveId || '---')}" readonly disabled>
+                            </div>
+                            <div class="col-12 col-md-7">
+                                <label class="form-label fw-normal text-dark small">Full Name</label>
+                                <input type="text" class="form-control form-control-kiosk kiosk-locked-field" value="${escapeHtml(fullNameVal)}" readonly disabled>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                // MANUAL ENTRY OR GUEST: Exact same form fields as Step 1, locked & read-only
+                const idRowHtml = !isGuest ? `
+                    <div class="row g-2 g-sm-3 mb-3">
+                        <div class="col-12">
+                            <label class="form-label fw-normal text-dark small">${isEmployee ? 'Employee ID Number' : 'Student ID Number'}</label>
+                            <input type="text" class="form-control form-control-kiosk kiosk-locked-field fw-bold text-primary" value="${escapeHtml(effectiveId || '')}" placeholder="Not Provided" readonly disabled>
+                        </div>
+                    </div>
+                ` : '';
+
+                const secColClass = isEmployee ? 'col-md-2' : 'col-md-3';
+                const suffixColClass = isEmployee ? 'col-6 col-sm-6 col-md-2' : 'col-12 col-sm-6 col-md-3';
+                const suffixDisplay = suffixSelect.value || 'None';
+
+                const postNominalColHtml = isEmployee ? `
+                    <div class="col-6 col-sm-6 col-md-2">
+                        <label class="form-label fw-normal text-dark small">Post Nominal</label>
+                        <input type="text" class="form-control form-control-kiosk kiosk-locked-field" value="${escapeHtml(postNominalInput.value.trim())}" placeholder="None" readonly disabled>
+                    </div>
+                ` : '';
+
+                let categorySpecificRowHtml = '';
+                if (isStudent) {
+                    const progDisplay = getSelectDisplayText(courseSelect, '---');
+                    const yearDisplay = getSelectDisplayText(yearSelect, '---');
+                    categorySpecificRowHtml = `
+                        <div class="row g-2 g-sm-3 mb-0">
+                            <div class="col-12 col-sm-6">
+                                <label class="form-label fw-normal text-dark small">Course / Program</label>
+                                <input type="text" class="form-control form-control-kiosk kiosk-locked-field" value="${escapeHtml(progDisplay)}" readonly disabled>
+                            </div>
+                            <div class="col-12 col-sm-6">
+                                <label class="form-label fw-normal text-dark small">Year Level</label>
+                                <input type="text" class="form-control form-control-kiosk kiosk-locked-field" value="${escapeHtml(yearDisplay)}" readonly disabled>
+                            </div>
+                        </div>
+                    `;
+                } else if (isEmployee) {
+                    const deptDisplay   = getSelectDisplayText(employeeDeptSelect, '---');
+                    const officeDisplay = getSelectDisplayText(employeeOfficeSelect, 'None');
+                    categorySpecificRowHtml = `
+                        <div class="row g-2 g-sm-3 mb-0">
+                            <div class="col-12 col-sm-6">
+                                <label class="form-label fw-normal text-dark small">Department</label>
+                                <input type="text" class="form-control form-control-kiosk kiosk-locked-field" value="${escapeHtml(deptDisplay)}" readonly disabled>
+                            </div>
+                            <div class="col-12 col-sm-6">
+                                <label class="form-label fw-normal text-dark small">Office</label>
+                                <input type="text" class="form-control form-control-kiosk kiosk-locked-field" value="${escapeHtml(officeDisplay)}" readonly disabled>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                // Priority classification row if checked during manual/guest entry
+                const priorityLockedHtml = (prioritySwitch && prioritySwitch.checked) ? `
+                    <div class="row g-2 g-sm-3 mt-3 pt-3 border-top">
+                        <div class="col-12">
+                            <label class="form-label fw-normal text-dark small"><i class="bi bi-person-wheelchair text-primary me-1"></i>Priority / Special Assistance Classification</label>
+                            <input type="text" class="form-control form-control-kiosk kiosk-locked-field" value="${escapeHtml(getSelectDisplayText(document.getElementById('priorityType'), 'Priority'))}" readonly disabled>
+                        </div>
+                    </div>
+                ` : '';
+
+                step1LockedHtml = `
+                    <div class="summary-section-box mb-0">
+                        ${idRowHtml}
+                        <div class="row g-2 g-sm-3 mb-3">
+                            <div class="col-12 col-sm-6 col-md-3">
+                                <label class="form-label fw-normal text-dark small">First Name</label>
+                                <input type="text" class="form-control form-control-kiosk kiosk-locked-field" value="${escapeHtml(firstNameInput.value.trim())}" readonly disabled>
+                            </div>
+                            <div class="col-12 col-sm-6 ${secColClass}">
+                                <label class="form-label fw-normal text-dark small">Middle Name</label>
+                                <input type="text" class="form-control form-control-kiosk kiosk-locked-field" value="${escapeHtml(middleNameInput.value.trim())}" placeholder="None" readonly disabled>
+                            </div>
+                            <div class="col-12 col-sm-6 col-md-3">
+                                <label class="form-label fw-normal text-dark small">Last Name</label>
+                                <input type="text" class="form-control form-control-kiosk kiosk-locked-field" value="${escapeHtml(lastNameInput.value.trim())}" readonly disabled>
+                            </div>
+                            <div class="${suffixColClass}">
+                                <label class="form-label fw-normal text-dark small">Suffix</label>
+                                <input type="text" class="form-control form-control-kiosk kiosk-locked-field" value="${escapeHtml(suffixDisplay)}" readonly disabled>
+                            </div>
+                            ${postNominalColHtml}
+                        </div>
+                        <div class="row g-2 g-sm-3 ${categorySpecificRowHtml ? 'mb-3' : 'mb-0'}">
+                            <div class="col-12 col-md-6">
+                                <label class="form-label fw-normal text-dark small">Sex</label>
+                                <input type="text" class="form-control form-control-kiosk kiosk-locked-field" value="${escapeHtml(sexSelect.value || '---')}" readonly disabled>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label class="form-label fw-normal text-dark small">Email Address</label>
+                                <input type="email" class="form-control form-control-kiosk kiosk-locked-field" value="${escapeHtml(emailInput.value.trim())}" readonly disabled>
+                            </div>
+                        </div>
+                        ${categorySpecificRowHtml}
+                        ${priorityLockedHtml}
+                    </div>
+                `;
+            }
+
+            // STEP 2 & STEP 3 LOCKED FORM FIELDS
+            const activeBldgCard = document.querySelector('#buildingListContainer .building-card.active');
+            const bldgName = activeBldgCard?.dataset.facilityName || summaryBuildingName.textContent || '---';
+            const bldgCode = activeBldgCard?.dataset.facilityCode || summaryBuildingCode.textContent || '';
+            const bldgDisplay = bldgCode ? `${bldgName} (${bldgCode})` : bldgName;
+
+            const activeOfficeCard = document.querySelector('#officeListContainer .office-card.active');
+            const offName = activeOfficeCard?.dataset.officeName || summaryOfficeName.textContent || '---';
+            const offCode = activeOfficeCard?.dataset.officeCode || summaryOfficeCode.textContent || '';
+            const offRoom = activeOfficeCard?.dataset.roomName || '';
+            const offDisplay = `${offName}${offCode ? ' (' + offCode + ')' : ''}${offRoom ? ' — ' + offRoom : ''}`;
+
+            const step2And3LockedHtml = `
+                <div class="summary-section-box mb-0">
+                    <div class="row g-2 g-sm-3">
+                        <div class="col-12 col-md-6">
+                            <label class="form-label fw-normal text-dark small">Selected Building</label>
+                            <input type="text" class="form-control form-control-kiosk kiosk-locked-field" value="${escapeHtml(bldgDisplay)}" readonly disabled>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label fw-normal text-dark small">Destination Office</label>
+                            <input type="text" class="form-control form-control-kiosk kiosk-locked-field" value="${escapeHtml(offDisplay)}" readonly disabled>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // STEP 4 LOCKED FORM FIELDS (SELECTED TRANSACTIONS, SUB-TRANSACTIONS & INLINE ADDITIONAL DETAILS)
+            const winInfo = getActiveSelectedWindowInfo();
+            let concernFormBlocksHtml = '';
 
             selectedConcernIds.forEach(tid => {
-                if (tid === 'OTHERS') return;
+                if (tid === 'OTHERS') {
+                    const customVal = otherConcernText.value.trim();
+                    concernFormBlocksHtml += `
+                        <div class="p-3 bg-light rounded-3 border">
+                            <label class="form-label fw-normal text-primary small">Others (Specified Transaction Concern)</label>
+                            <textarea class="form-control form-control-kiosk kiosk-locked-field" rows="2" readonly disabled>${escapeHtml(customVal || 'General Concern')}</textarea>
+                        </div>
+                    `;
+                    return;
+                }
+
                 const transObj = officeTransactionsMap[tid];
                 if (!transObj) return;
 
                 const hasSubs = Array.isArray(transObj.sub_concerns) && transObj.sub_concerns.length > 0;
 
                 if (!hasSubs) {
-                    const dd = transObj.direct_details;
-                    if (dd && dd.has_details && Array.isArray(dd.fields) && dd.fields.length > 0) {
-                        totalGroupsRendered++;
-                        const scopeKey = `type_${tid}`;
-                        const groupEl = document.createElement('div');
-                        groupEl.className = 'detail-group-card';
-                        groupEl.dataset.scopeKey = scopeKey;
-                        groupEl.innerHTML = `
-                            <div class="fw-bold text-dark mb-2">
-                                <i class="bi bi-card-checklist text-primary me-1"></i>${escapeHtml(transObj.transaction_name)}
-                            </div>
-                            <div class="row g-3">
-                                ${dd.fields.map(field => `
+                    const details = getEnteredDetailsForScope(`type_${tid}`);
+                    const detailInputsHtml = details.length > 0 ? `
+                        <div class="mt-3">
+                            <div class="small text-primary mb-2"><i class="bi bi-ui-checks-grid me-1"></i>Additional Details</div>
+                            <div class="row g-2 g-sm-3">
+                                ${details.map(d => `
                                     <div class="col-12 col-md-6">
-                                        <label for="detail_${scopeKey}_${field.id}" class="form-label fw-bold text-dark small">
-                                            ${escapeHtml(field.title)}
-                                        </label>
-                                        ${buildDynamicFieldControlHtml(scopeKey, field)}
+                                        <label class="form-label fw-normal text-dark small">${escapeHtml(d.label)}</label>
+                                        <input type="text" class="form-control form-control-kiosk kiosk-locked-field" value="${escapeHtml(d.val)}" readonly disabled>
                                     </div>
                                 `).join('')}
                             </div>
-                        `;
-                        step5DynamicDetailsCont.appendChild(groupEl);
-                    }
+                        </div>
+                    ` : '';
+
+                    concernFormBlocksHtml += `
+                        <div class="p-3 bg-light rounded-3 border">
+                            <div class="row g-2 g-sm-3">
+                                <div class="col-12 col-md-9">
+                                    <label class="form-label fw-normal text-primary small">Selected Transaction</label>
+                                    <input type="text" class="form-control form-control-kiosk kiosk-locked-field text-primary" value="${escapeHtml(transObj.transaction_name)}" readonly disabled>
+                                </div>
+                                <div class="col-12 col-md-3">
+                                    <label class="form-label fw-normal text-dark small">Est. Time</label>
+                                    <input type="text" class="form-control form-control-kiosk kiosk-locked-field" value="${transObj.estimated_minutes || 5} mins" readonly disabled>
+                                </div>
+                            </div>
+                            ${detailInputsHtml}
+                        </div>
+                    `;
                 } else {
                     const pickedSubIds = selectedSubConcernsMap[tid] || [];
-                    pickedSubIds.forEach(sid => {
+                    const subBlocksHtml = pickedSubIds.map(sid => {
                         const subObj = transObj.sub_concerns.find(s => Number(s.id) === Number(sid));
-                        if (!subObj) return;
-                        const sd = subObj.parsed_details;
-                        if (sd && sd.has_details && Array.isArray(sd.fields) && sd.fields.length > 0) {
-                            totalGroupsRendered++;
-                            const scopeKey = `sub_${sid}`;
-                            const groupEl = document.createElement('div');
-                            groupEl.className = 'detail-group-card';
-                            groupEl.dataset.scopeKey = scopeKey;
-                            groupEl.innerHTML = `
-                                <div class="fw-bold text-dark mb-2">
-                                    <i class="bi bi-card-checklist text-primary me-1"></i>${escapeHtml(transObj.transaction_name)}
-                                    <span class="badge bg-primary-subtle text-primary border ms-1">${escapeHtml(subObj.sub_concern_name)}</span>
-                                </div>
-                                <div class="row g-3">
-                                    ${sd.fields.map(field => `
+                        if (!subObj) return '';
+                        const subDetails = getEnteredDetailsForScope(`sub_${sid}`);
+                        const subDetailInputsHtml = subDetails.length > 0 ? `
+                            <div class="mt-3">
+                                <div class="small text-primary mb-2"><i class="bi bi-ui-checks-grid me-1"></i>Additional Details</div>
+                                <div class="row g-2 g-sm-3">
+                                    ${subDetails.map(d => `
                                         <div class="col-12 col-md-6">
-                                            <label for="detail_${scopeKey}_${field.id}" class="form-label fw-bold text-dark small">
-                                                ${escapeHtml(field.title)}
-                                            </label>
-                                            ${buildDynamicFieldControlHtml(scopeKey, field)}
+                                            <label class="form-label fw-normal text-dark small">${escapeHtml(d.label)}</label>
+                                            <input type="text" class="form-control form-control-kiosk kiosk-locked-field" value="${escapeHtml(d.val)}" readonly disabled>
                                         </div>
                                     `).join('')}
                                 </div>
-                            `;
-                            step5DynamicDetailsCont.appendChild(groupEl);
-                        }
-                    });
+                            </div>
+                        ` : '';
+
+                        return `
+                            <div class="mt-3 pt-3 border-top">
+                                <div class="row g-2 g-sm-3">
+                                    <div class="col-12 col-md-9">
+                                        <label class="form-label fw-normal text-dark small">Specific Sub-Transaction</label>
+                                        <input type="text" class="form-control form-control-kiosk kiosk-locked-field text-primary" value="${escapeHtml(subObj.sub_concern_name)}" readonly disabled>
+                                    </div>
+                                    <div class="col-12 col-md-3">
+                                        <label class="form-label fw-normal text-dark small">Est. Time</label>
+                                        <input type="text" class="form-control form-control-kiosk kiosk-locked-field" value="${subObj.estimated_minutes || 5} mins" readonly disabled>
+                                    </div>
+                                </div>
+                                ${subDetailInputsHtml}
+                            </div>
+                        `;
+                    }).join('');
+
+                    concernFormBlocksHtml += `
+                        <div class="p-3 bg-light rounded-3 border">
+                            <div>
+                                <label class="form-label fw-normal text-primary small">Selected Transaction</label>
+                                <input type="text" class="form-control form-control-kiosk kiosk-locked-field text-primary" value="${escapeHtml(transObj.transaction_name)}" readonly disabled>
+                            </div>
+                            ${subBlocksHtml}
+                        </div>
+                    `;
                 }
             });
 
-            // Restore values & wire choice_id hidden sync for SELECT fields
-            step5DynamicDetailsCont.querySelectorAll('.dynamic-detail-input').forEach(inp => {
-                if (existingValues[inp.name] !== undefined && existingValues[inp.name] !== '') {
-                    inp.value = existingValues[inp.name];
-                }
-                if (inp.classList.contains('dynamic-detail-select')) {
-                    const syncChoiceId = () => {
-                        const opt = inp.options[inp.selectedIndex];
-                        const hiddenChoice = inp.parentElement.querySelector('.detail-choice-id-hidden');
-                        if (hiddenChoice) {
-                            hiddenChoice.value = opt ? (opt.dataset.choiceId || '') : '';
-                        }
-                    };
-                    syncChoiceId();
-                    inp.addEventListener('change', syncChoiceId);
-                }
-            });
+            const step4LockedHtml = `
+                <div class="summary-section-box mb-0">
+                    <div class="row g-2 g-sm-3 mb-3">
+                        <div class="col-12">
+                            <label class="form-label fw-normal text-dark small">Assigned Service Window</label>
+                            <input type="text" class="form-control form-control-kiosk kiosk-locked-field fw-bold text-primary" value="${escapeHtml(winInfo.name || 'Any Window')}" readonly disabled>
+                        </div>
+                    </div>
+                    <div class="d-flex flex-column gap-3">
+                        ${concernFormBlocksHtml}
+                    </div>
+                </div>
+            `;
 
-            // Clean up any duplicate asterisk spans while relying on global theme CSS/JS
-            syncRequiredLabelIndicators(step5DynamicDetailsCont);
-            step5DynamicDetailsSec.classList.toggle('d-none', totalGroupsRendered === 0);
+            step5LockedFormCont.innerHTML = step1LockedHtml + step2And3LockedHtml + step4LockedHtml;
         }
 
         function submitLogbookForm(triggerBtn) {
@@ -2452,21 +2970,8 @@ if ($db_connect) {
                 return;
             }
 
-            // Validate required dynamic transaction detail fields in Step 5
-            const dynamicInputs = step5DynamicDetailsCont.querySelectorAll('.dynamic-detail-input');
-            for (const inp of dynamicInputs) {
-                const val = inp.value.trim();
-                const fieldTitle = inp.dataset.fieldTitle || 'Additional Detail';
-                if (!val) {
-                    inp.focus();
-                    showSweetAlert("Required Detail Missing", `Please fill out "${fieldTitle}".`, "warning");
-                    return;
-                }
-                if (inp.dataset.format === 'INT' && !/^-?\d+$/.test(val)) {
-                    inp.focus();
-                    showSweetAlert("Invalid Number", `"${fieldTitle}" must be a whole number.`, "warning");
-                    return;
-                }
+            if (!validateStep4DynamicDetails()) {
+                return;
             }
 
             if (dataConsentInput.value !== "1") {
@@ -2484,7 +2989,7 @@ if ($db_connect) {
             let totalEstimatedMinutes = 0;
 
             document.querySelectorAll('#transactionCardsContainer .transaction-card.active').forEach(card => {
-                const titleEl = card.querySelector('h6');
+                const titleEl = card.querySelector('.transaction-title-highlight');
                 if (!titleEl) return;
                 const title = titleEl.textContent.trim();
                 const transId = card.dataset.transId;
