@@ -78,29 +78,63 @@ $action = $_POST['action'] ?? '';
 $today  = date('Y-m-d');
 
 // 3. STRICT WORKSTATION ASSIGNMENT AUTHORIZATION
+//    A staff member can be assigned to MANY windows (one staff_assignments row per window).
+//    The window being controlled is sent by the page as `counter_id` and is ONLY accepted
+//    if it is one of the staff member's own active windows.
 $assigned_office_id  = 0;
 $assigned_counter_id = 0;
+$my_windows          = [];
+$needs_window_selection = false;
 
 if ($user_id > 0) {
     $stmtStaff = $db_connect->prepare("
-        SELECT office_id, counter_id 
-        FROM staff_assignments 
-        WHERE user_id = ? AND flag_status = 0 
-        ORDER BY id DESC 
-        LIMIT 1
+        SELECT sa.office_id, sa.counter_id, c.counter_name, o.office_code, o.office_name
+        FROM staff_assignments sa
+        INNER JOIN counters c ON c.id = sa.counter_id AND c.flag_status = 0
+        INNER JOIN office o   ON o.office_id = sa.office_id AND o.flag_status = 0
+        WHERE sa.user_id = ?
+          AND sa.flag_status = 0
+          AND sa.counter_id IS NOT NULL
+        ORDER BY o.office_code ASC, c.counter_name ASC
     ");
     if ($stmtStaff) {
         $stmtStaff->bind_param("i", $user_id);
         $stmtStaff->execute();
-        $staffRow = $stmtStaff->get_result()->fetch_assoc();
-        if ($staffRow) {
-            $assigned_office_id  = (int)$staffRow['office_id'];
-            $assigned_counter_id = (int)($staffRow['counter_id'] ?? 0);
-            $_SESSION['shift_status'] = 'ON_DUTY';
+        $resStaff = $stmtStaff->get_result();
+        while ($w = $resStaff->fetch_assoc()) {
+            $my_windows[] = [
+                'office_id'    => (int)$w['office_id'],
+                'counter_id'   => (int)$w['counter_id'],
+                'counter_name' => $w['counter_name'],
+                'office_code'  => $w['office_code'],
+                'office_name'  => $w['office_name'],
+            ];
         }
     }
 
-    if ($assigned_office_id <= 0) {
+    if (!empty($my_windows)) {
+        $requested_counter = (int)($_POST['counter_id'] ?? 0);
+        $picked = null;
+
+        foreach ($my_windows as $w) {
+            if ($requested_counter > 0 && $w['counter_id'] === $requested_counter) {
+                $picked = $w;
+                break;
+            }
+        }
+        if ($picked === null && count($my_windows) === 1) {
+            $picked = $my_windows[0];
+        }
+
+        if ($picked !== null) {
+            $assigned_office_id  = $picked['office_id'];
+            $assigned_counter_id = $picked['counter_id'];
+            $_SESSION['shift_status'] = 'ON_DUTY';
+        } else {
+            // Several windows and none (valid) chosen: never fall back to "whole office" control
+            $needs_window_selection = true;
+        }
+    } else {
         $stmtEmp = $db_connect->prepare("SELECT office_id FROM employee WHERE user_id = ? AND office_id > 0 LIMIT 1");
         if ($stmtEmp) {
             $stmtEmp->bind_param("i", $user_id);
@@ -230,9 +264,26 @@ function hydrateTicketDetails(\mysqli $db_connect, array $row): array {
 
 switch ($action) {
 
+    case 'fetch_my_windows':
+        echo json_encode([
+            'success' => true,
+            'data'    => [
+                'windows'          => $my_windows,
+                'current_counter'  => $counter_id,
+                'needs_selection'  => $needs_window_selection
+            ]
+        ]);
+        exit();
+
     case 'fetch_counter_status':
         if ($office_id <= 0) {
-            echo json_encode(['success' => false, 'message' => 'No active workstation assignment detected for this staff account.']);
+            echo json_encode([
+                'success' => false,
+                'needs_window_selection' => $needs_window_selection,
+                'message' => $needs_window_selection
+                    ? 'Please select the window you want to control.'
+                    : 'No active workstation assignment detected for this staff account.'
+            ]);
             exit();
         }
 
@@ -287,13 +338,13 @@ switch ($action) {
             $stmtServing = $db_connect->prepare("
                 {$baseTicketSelect}
                 WHERE q.office_id = ? 
-                  AND (q.counter_id = ? OR q.served_by_user_id = ? OR ? = 0)
+                  AND (? = 0 OR q.counter_id = ?)
                   AND q.queue_date = ? 
                   AND q.status IN ('CALLED', 'SERVING')
                 ORDER BY q.called_at DESC, q.id DESC
                 LIMIT 1
             ");
-            $stmtServing->bind_param("iiiis", $office_id, $counter_id, $user_id, $counter_id, $today);
+            $stmtServing->bind_param("iiis", $office_id, $counter_id, $counter_id, $today);
             $stmtServing->execute();
             $now_serving = $stmtServing->get_result()->fetch_assoc();
 

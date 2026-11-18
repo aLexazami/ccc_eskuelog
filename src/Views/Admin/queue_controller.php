@@ -38,35 +38,54 @@ if ($user_id <= 0 && $db_connect && session_id()) {
     }
 }
 
-$assigned_office = null;
+$assigned_office  = null;   // the window being controlled right now
+$my_windows       = [];     // every active window of this staff member
+$needs_selection  = false;  // several windows and none chosen yet
 
 if ($db_connect && $user_id > 0) {
-    // STRICT Priority 1 ONLY: Require active staff_assignments row with BOTH office_id and counter_id
+    // A staff member can hold MANY windows (one staff_assignments row per window)
     $stmtAssign = $db_connect->prepare("
-        SELECT 
-            sa.office_id, 
-            sa.counter_id, 
-            o.office_code, 
-            o.office_name, 
+        SELECT
+            sa.office_id,
+            sa.counter_id,
+            o.office_code,
+            o.office_name,
             c.counter_name AS counter_label
         FROM staff_assignments sa
         INNER JOIN office o ON sa.office_id = o.office_id AND o.flag_status = 0
         INNER JOIN counters c ON sa.counter_id = c.id AND c.flag_status = 0
-        WHERE sa.user_id = ? 
+        WHERE sa.user_id = ?
           AND sa.flag_status = 0
           AND sa.office_id > 0
           AND sa.counter_id IS NOT NULL
           AND sa.counter_id > 0
-        ORDER BY sa.id DESC
-        LIMIT 1
+        ORDER BY o.office_code ASC, c.counter_name ASC
     ");
     if ($stmtAssign) {
         $stmtAssign->bind_param("i", $user_id);
         $stmtAssign->execute();
-        $assigned_office = $stmtAssign->get_result()->fetch_assoc();
+        $resAssign = $stmtAssign->get_result();
+        while ($w = $resAssign->fetch_assoc()) {
+            $my_windows[] = $w;
+        }
     }
 
-    // Update or clear active session values strictly based on staff_assignments
+    // ?window=ID picks a window (only if it really belongs to this user);
+    // a single window is opened directly; several windows -> selection screen.
+    $requested_window = (int)($_GET['window'] ?? 0);
+    foreach ($my_windows as $w) {
+        if ($requested_window > 0 && (int)$w['counter_id'] === $requested_window) {
+            $assigned_office = $w;
+            break;
+        }
+    }
+    if (!$assigned_office && count($my_windows) === 1) {
+        $assigned_office = $my_windows[0];
+    }
+    if (!$assigned_office && count($my_windows) > 1) {
+        $needs_selection = true;
+    }
+
     if ($assigned_office) {
         $_SESSION['assigned_office_id']  = (int)$assigned_office['office_id'];
         $_SESSION['assigned_counter_id'] = (int)$assigned_office['counter_id'];
@@ -74,6 +93,9 @@ if ($db_connect && $user_id > 0) {
         unset($_SESSION['assigned_office_id'], $_SESSION['assigned_counter_id']);
     }
 }
+
+$has_multiple_windows = count($my_windows) > 1;
+$window_page_url      = strtok($_SERVER['REQUEST_URI'] ?? '', '?');
 ?>
 <!DOCTYPE html>
 <html lang="en" class="h-100">
@@ -699,6 +721,173 @@ if ($db_connect && $user_id > 0) {
             box-shadow: 0 4px 12px rgba(220, 38, 38, 0.12);
         }
 
+        /* BLUE GLASSMORPHISM SQUARE CARD STACK FOR WINDOW SELECTION */
+        .window-stack-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 270px;
+            aspect-ratio: 1 / 1;
+            margin: 0.75rem auto;
+            z-index: 1;
+        }
+
+        .window-stack-wrapper::before,
+        .window-stack-wrapper::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 1.5rem;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.22) 0%, rgba(29, 78, 216, 0.12) 100%);
+            border: 1.5px solid rgba(96, 165, 250, 0.45);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            transition: transform 0.32s cubic-bezier(0.34, 1.56, 0.64, 1);
+            pointer-events: none;
+        }
+
+        .window-stack-wrapper::before {
+            z-index: -2;
+            transform: translate(12px, 12px) rotate(3.5deg);
+            opacity: 0.65;
+        }
+
+        .window-stack-wrapper::after {
+            z-index: -1;
+            transform: translate(6px, 6px) rotate(1.75deg);
+            opacity: 0.85;
+        }
+
+        .window-stack-wrapper:hover::before {
+            transform: translate(18px, 16px) rotate(5.5deg);
+        }
+
+        .window-stack-wrapper:hover::after {
+            transform: translate(9px, 8px) rotate(2.75deg);
+        }
+
+        .window-glass-square-card {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 1.75rem 1.35rem;
+            border-radius: 1.5rem;
+            text-decoration: none;
+            background: linear-gradient(145deg, rgba(30, 58, 138, 0.88) 0%, rgba(37, 99, 235, 0.78) 55%, rgba(56, 189, 248, 0.68) 100%);
+            border: 1.5px solid rgba(255, 255, 255, 0.48);
+            box-shadow:
+                0 16px 32px -8px rgba(30, 58, 138, 0.35),
+                inset 0 1px 1px rgba(255, 255, 255, 0.55);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            color: #ffffff;
+            transition: all 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .window-glass-square-card::before {
+            content: '';
+            position: absolute;
+            top: -40%;
+            left: -40%;
+            width: 180%;
+            height: 180%;
+            background: radial-gradient(circle at top left, rgba(255, 255, 255, 0.28), transparent 55%);
+            pointer-events: none;
+        }
+
+        .window-glass-square-card:hover {
+            transform: translate(-3px, -4px);
+            border-color: rgba(255, 255, 255, 0.85);
+            box-shadow:
+                0 22px 40px -8px rgba(29, 78, 216, 0.45),
+                inset 0 1px 2px rgba(255, 255, 255, 0.75);
+            color: #ffffff;
+        }
+
+        .window-glass-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 1.15rem;
+            background: rgba(255, 255, 255, 0.2);
+            border: 1.5px solid rgba(255, 255, 255, 0.45);
+            box-shadow: 0 8px 16px rgba(15, 23, 42, 0.16);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.85rem;
+            color: #ffffff;
+            margin-bottom: 1.1rem;
+            transition: transform 0.25s ease, background 0.25s ease;
+        }
+
+        .window-glass-square-card:hover .window-glass-icon {
+            transform: scale(1.08);
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .window-glass-title {
+            font-size: 1.35rem;
+            font-weight: 800;
+            letter-spacing: 0.02em;
+            color: #ffffff;
+            text-align: center;
+            line-height: 1.25;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 2px 6px rgba(15, 23, 42, 0.25);
+        }
+
+        .window-glass-office {
+            font-size: 0.84rem;
+            font-weight: 600;
+            color: rgba(239, 246, 255, 0.92);
+            text-align: center;
+            line-height: 1.35;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* Modal Window Switch List Card */
+        .window-select-card {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+            padding: 1rem 1.15rem;
+            background: #ffffff;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 0.9rem;
+            text-decoration: none;
+            box-shadow: var(--kiosk-shadow-sm);
+            transition: all 0.2s ease;
+        }
+
+        .window-select-card:hover,
+        .window-select-card.is-current {
+            border-color: #3b82f6;
+            background: #eff6ff;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 18px rgba(37, 99, 235, 0.12);
+        }
+
+        .window-select-icon {
+            width: 46px;
+            height: 46px;
+            min-width: 46px;
+            border-radius: 0.75rem;
+            background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+        }
+
         .modal-section-divider {
             display: flex;
             align-items: center;
@@ -727,20 +916,25 @@ if ($db_connect && $user_id > 0) {
                     </div>
                     <div class="min-w-0">
                         <h4 class="fw-bold text-white mb-0 tracking-wide text-truncate fs-6 fs-sm-5" id="headerOfficeName">
-                            <?= $assigned_office ? htmlspecialchars($assigned_office['office_name']) . ' (' . htmlspecialchars($assigned_office['office_code']) . ')' : 'No Workstation Assigned'; ?>
+                            <?= $assigned_office ? htmlspecialchars($assigned_office['office_name']) . ' (' . htmlspecialchars($assigned_office['office_code']) . ')' : ($needs_selection ? 'Select Your Window' : 'No Workstation Assigned'); ?>
                         </h4>
                         <p class="text-white-50 small mb-0" id="headerCounterName">
-                            <?= $assigned_office ? htmlspecialchars($assigned_office['counter_label']) : 'Service Counter Workstation'; ?>
+                            <?= $assigned_office ? htmlspecialchars($assigned_office['counter_label']) : ($needs_selection ? 'You are assigned to multiple windows' : 'Service Counter Workstation'); ?>
                         </p>
                     </div>
                 </div>
 
-                <!-- RIGHT SIDE: HANDLED SERVICES ICON BUTTON + HIDDEN WORKSTATION INPUTS -->
+                <!-- RIGHT SIDE: 1st = VIEW HANDLED TRANSACTIONS, 2nd = SWITCH WINDOW (ICON ONLY) -->
                 <div class="d-flex align-items-center gap-2">
                     <?php if ($assigned_office): ?>
                         <button type="button" class="btn-header-services" id="btnViewWindowServices" onclick="openWindowServicesModal()" title="View Handled Transactions & Sub-Transactions" aria-label="View Handled Transactions & Sub-Transactions">
                             <i class="bi bi-list-ul fs-5"></i>
                         </button>
+                        <?php if ($has_multiple_windows): ?>
+                            <button type="button" class="btn-header-services" id="btnSwitchWindow" data-bs-toggle="modal" data-bs-target="#windowSwitchModal" title="Switch Window" aria-label="Switch Window">
+                                <i class="bi bi-window-stack fs-5"></i>
+                            </button>
+                        <?php endif; ?>
                         <input type="hidden" id="officeSelect" value="<?= (int)$assigned_office['office_id']; ?>">
                         <input type="hidden" id="counterSelect" value="<?= (int)$assigned_office['counter_id']; ?>">
                     <?php else: ?>
@@ -753,7 +947,38 @@ if ($db_connect && $user_id > 0) {
             <!-- CONTROLLER MAIN BODY -->
             <div class="card-body p-3 p-sm-4">
                 
-                <?php if (!$assigned_office): ?>
+                <?php if ($needs_selection): ?>
+                    <!-- WINDOW SELECTION (staff is assigned to more than one window) -->
+                    <div class="my-3 py-2" id="windowSelectionScreen">
+                        <div class="text-center mb-4">
+                            <div class="mx-auto mb-3 d-flex align-items-center justify-content-center rounded-circle"
+                                 style="width: 80px; height: 80px; background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border: 2px dashed #93c5fd;">
+                                <i class="bi bi-window-stack text-primary" style="font-size: 2.3rem;"></i>
+                            </div>
+                            <h4 class="fw-bold text-dark mb-1">Select a Window</h4>
+                            <p class="text-muted mb-0">You are assigned to multiple windows. Choose the one you want to control.</p>
+                        </div>
+                        <div class="row g-4 justify-content-center py-2">
+                            <?php foreach ($my_windows as $w): ?>
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 d-flex justify-content-center">
+                                    <div class="window-stack-wrapper">
+                                        <a href="<?= htmlspecialchars($window_page_url . '?window=' . (int)$w['counter_id']); ?>" class="window-glass-square-card">
+                                            <span class="window-glass-icon">
+                                                <i class="bi bi-display"></i>
+                                            </span>
+                                            <span class="window-glass-title">
+                                                <?= htmlspecialchars($w['counter_label']); ?>
+                                            </span>
+                                            <span class="window-glass-office">
+                                                <?= htmlspecialchars($w['office_name']); ?> (<?= htmlspecialchars($w['office_code']); ?>)
+                                            </span>
+                                        </a>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                <?php elseif (!$assigned_office): ?>
                     <!-- UNASSIGNED STAFF FALLBACK CARD -->
                     <div class="card border-0 shadow-sm rounded-4 overflow-hidden my-2" id="unassignedFallbackCard">
                         <div class="card-body p-4 p-md-5 text-center">
@@ -946,6 +1171,44 @@ if ($db_connect && $user_id > 0) {
             </div>
         </div>
     </div>
+
+    <?php if ($has_multiple_windows && $assigned_office): ?>
+    <!-- SWITCH WINDOW MODAL -->
+    <div class="modal fade" id="windowSwitchModal" tabindex="-1" aria-labelledby="windowSwitchModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 1.25rem; overflow: hidden;">
+                <div class="modal-header text-white" style="background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);">
+                    <h5 class="modal-title fw-bold d-flex align-items-center mb-0" id="windowSwitchModalLabel">
+                        <i class="bi bi-window-stack me-2 fs-4"></i>Switch Window
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-3 bg-light">
+                    <div class="d-flex flex-column gap-2">
+                        <?php foreach ($my_windows as $w): ?>
+                            <?php $isCurrent = (int)$w['counter_id'] === (int)$assigned_office['counter_id']; ?>
+                            <a href="<?= htmlspecialchars($window_page_url . '?window=' . (int)$w['counter_id']); ?>" class="window-select-card <?= $isCurrent ? 'is-current' : ''; ?>">
+                                <span class="window-select-icon"><i class="bi bi-display"></i></span>
+                                <span class="min-w-0">
+                                    <span class="d-block fw-bold text-dark text-truncate"><?= htmlspecialchars($w['counter_label']); ?></span>
+                                    <span class="d-block small text-muted text-truncate"><?= htmlspecialchars($w['office_name']); ?> (<?= htmlspecialchars($w['office_code']); ?>)</span>
+                                </span>
+                                <?php if ($isCurrent): ?>
+                                    <span class="badge bg-primary ms-auto">Current</span>
+                                <?php else: ?>
+                                    <i class="bi bi-chevron-right ms-auto text-muted"></i>
+                                <?php endif; ?>
+                            </a>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+                <div class="modal-footer bg-white border-top">
+                    <button type="button" class="btn btn-secondary fw-semibold px-4 rounded-3" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <?php endif; ?>
 
     <!-- OFFICE & WINDOW HANDLED SERVICES MODAL -->
     <div class="modal fade" id="windowServicesModal" tabindex="-1" aria-labelledby="windowServicesModalLabel" aria-hidden="true">
