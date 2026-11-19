@@ -9,6 +9,42 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+// Load shared activity logger if available, with safe built-in fallback
+$activityLoggerPath = __DIR__ . '/../../Common/activity_logger.php';
+if (file_exists($activityLoggerPath)) {
+    require_once $activityLoggerPath;
+}
+
+if (!function_exists('record_activity_log')) {
+    function record_activity_log(
+        \mysqli $db_connect,
+        int $user_id,
+        string $action_text,
+        string $user_level = 'USER',
+        int $system_id = 5,
+        string $session_id = ''
+    ): void {
+        try {
+            if ($session_id === '') {
+                $session_id = session_id() ?: 'NO_SESSION';
+            }
+            $user_level = strtoupper(trim($user_level)) ?: 'USER';
+
+            $stmt = $db_connect->prepare("
+                INSERT INTO activity_log (user_id, date_log, action, session_id, user_level, system_id)
+                VALUES (?, NOW(), ?, ?, ?, ?)
+            ");
+            if ($stmt) {
+                $stmt->bind_param("isssi", $user_id, $action_text, $session_id, $user_level, $system_id);
+                $stmt->execute();
+                $stmt->close();
+            }
+        } catch (\Throwable $e) {
+            error_log('[ActivityLog Error] ' . $e->getMessage());
+        }
+    }
+}
+
 // 1. Resolve User ID using $session_class wrapper or raw session
 $user_id = 0;
 if (isset($session_class) && method_exists($session_class, 'getValue')) {
@@ -35,8 +71,38 @@ if ($user_id <= 0 && $db_connect && session_id()) {
         if ($sessRes) {
             $user_id = (int)$sessRes['user_id'];
         }
+        $stmtSess->close();
     }
 }
+
+// 2. Resolve User Role for activity_log user_level
+$g_user_role = '';
+if (isset($session_class) && method_exists($session_class, 'getValue')) {
+    $g_user_role = $session_class->getValue('user_role') ?? $session_class->getValue('system_role') ?? '';
+}
+if (empty($g_user_role)) {
+    $g_user_role = $_SESSION['user_role'] ?? $_SESSION['g_user_role'] ?? $_SESSION['role'] ?? '';
+}
+
+$role_map = ['1' => 'ADMIN', '2' => 'ADMIN_STAFF', '3' => 'STATION_ADMIN', '4' => 'USER'];
+if (isset($role_map[(string)$g_user_role])) {
+    $g_user_role = $role_map[(string)$g_user_role];
+}
+
+if (empty($g_user_role) && $db_connect && $user_id > 0) {
+    $stmtSysRole = $db_connect->prepare("SELECT system_role FROM system_access WHERE user_id = ? AND system_type = 'E-SKUELOG' ORDER BY system_role ASC LIMIT 1");
+    if ($stmtSysRole) {
+        $stmtSysRole->bind_param("i", $user_id);
+        $stmtSysRole->execute();
+        $roleRes = $stmtSysRole->get_result()->fetch_assoc();
+        if ($roleRes && isset($role_map[(string)$roleRes['system_role']])) {
+            $g_user_role = $role_map[(string)$roleRes['system_role']];
+        }
+        $stmtSysRole->close();
+    }
+}
+
+$g_user_role_upper = strtoupper(trim((string)$g_user_role)) ?: 'ADMIN_STAFF';
 
 $assigned_office  = null;   // the window being controlled right now
 $my_windows       = [];     // every active window of this staff member
@@ -68,6 +134,7 @@ if ($db_connect && $user_id > 0) {
         while ($w = $resAssign->fetch_assoc()) {
             $my_windows[] = $w;
         }
+        $stmtAssign->close();
     }
 
     // ?window=ID picks a window (only if it really belongs to this user);
@@ -89,8 +156,24 @@ if ($db_connect && $user_id > 0) {
     if ($assigned_office) {
         $_SESSION['assigned_office_id']  = (int)$assigned_office['office_id'];
         $_SESSION['assigned_counter_id'] = (int)$assigned_office['counter_id'];
+
+        // Log QUEUE_WINDOW_SELECT only when entering or switching counters in this session
+        $last_logged_counter = (int)($_SESSION['last_logged_queue_counter'] ?? 0);
+        if ($last_logged_counter !== (int)$assigned_office['counter_id']) {
+            $action_msg = sprintf(
+                'QUEUE_WINDOW_SELECT: Opened Queue Controller for %s (%s)',
+                $assigned_office['office_code'],
+                $assigned_office['counter_label']
+            );
+            record_activity_log($db_connect, $user_id, $action_msg, $g_user_role_upper);
+            $_SESSION['last_logged_queue_counter'] = (int)$assigned_office['counter_id'];
+        }
     } else {
-        unset($_SESSION['assigned_office_id'], $_SESSION['assigned_counter_id']);
+        unset(
+            $_SESSION['assigned_office_id'],
+            $_SESSION['assigned_counter_id'],
+            $_SESSION['last_logged_queue_counter']
+        );
     }
 }
 
