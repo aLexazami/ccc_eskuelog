@@ -18,29 +18,31 @@ $page_header  = render_page_header((string)$title_page, $active_links) ?? '';
     <?php include_once ADMIN_META_DATA_PATH; ?>
     <?php include_once ADMIN_LINK_PATH; ?>
     <style>
-        @keyframes spin-refresh {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+        .filter-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 0.85rem;
+            background: #ffffff;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
         }
-        .spin-icon {
-            display: inline-block;
-            animation: spin-refresh 0.8s linear infinite;
-        }
+
         .search-input-group {
             position: relative;
         }
         .search-input-group .search-icon {
             position: absolute;
-            left: 0.65rem;
+            left: 0.75rem;
             top: 50%;
             transform: translateY(-50%);
             color: #6c757d;
             pointer-events: none;
             z-index: 4;
-            font-size: 0.85rem;
+            font-size: 0.875rem;
         }
         .search-input-group .form-control {
-            padding-left: 2rem !important;
+            padding-left: 2.15rem !important;
+            padding-top: 0.42rem;
+            padding-bottom: 0.42rem;
+            min-height: 36px;
         }
     </style>
 </head>
@@ -53,9 +55,38 @@ $page_header  = render_page_header((string)$title_page, $active_links) ?? '';
             <?php include_once ADMIN_HEADER_PATH; ?>
 
             <div class="container">
-                <div class="page-inner">
+                <div class="page-inner px-2 px-sm-3">
                     <?php echo $page_header; ?>
 
+                    <!-- SEPARATE DATE FILTER CONTAINER (Mirrors reports_analytics.php) -->
+                    <div class="card filter-card mb-4">
+                        <div class="card-body p-3 p-sm-4">
+                            <form id="activityFilterForm">
+                                <div class="row g-2 align-items-end">
+                                    <div class="col-6 col-sm-4 col-md-3 col-xl-2">
+                                        <label for="filterDateFrom" class="form-label fw-bold small text-muted">Date From</label>
+                                        <input type="date" id="filterDateFrom" class="form-control form-control-sm" value="<?= date('Y-m-d'); ?>">
+                                    </div>
+
+                                    <div class="col-6 col-sm-4 col-md-3 col-xl-2">
+                                        <label for="filterDateTo" class="form-label fw-bold small text-muted">Date To</label>
+                                        <input type="date" id="filterDateTo" class="form-control form-control-sm" value="<?= date('Y-m-d'); ?>">
+                                    </div>
+
+                                    <div class="col-12 col-sm-4 col-md-6 col-xl-8 d-flex flex-wrap gap-2">
+                                        <button type="submit" id="btnFilter" class="btn btn-primary btn-sm fw-bold px-3 text-nowrap">
+                                            <i class="bi bi-filter me-1"></i>Apply
+                                        </button>
+                                        <button type="button" id="btnReset" class="btn btn-outline-secondary btn-sm text-nowrap" title="Reset Filters">
+                                            <i class="bi bi-arrow-counterclockwise"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- ACTIVITY LOG TABLE CONTAINER -->
                     <div class="row">
                         <div class="col-12">
                             <div class="card">
@@ -76,34 +107,18 @@ $page_header  = render_page_header((string)$title_page, $active_links) ?? '';
                                 </div>
 
                                 <div class="card-body">
-                                    <!-- Single-Row Toolbar: Global Search + Date Filter + Export + Refresh -->
-                                    <div class="d-flex flex-wrap align-items-end justify-content-between gap-2 mb-3">
-                                        <!-- Global Search -->
-                                        <div class="flex-grow-1" style="min-width: 240px;">
-                                            <label for="global-search" class="form-label small fw-semibold mb-1">Search</label>
+                                    <!-- Unified Top Toolbar: Global Search + Export/Download + Refresh Data -->
+                                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+                                        <!-- Global Search (No label, placeholder="Search", slightly taller) -->
+                                        <div class="flex-grow-1" style="min-width: 240px; max-width: 420px;">
                                             <div class="search-input-group">
                                                 <i class="bi bi-search search-icon"></i>
-                                                <input type="text" id="global-search" class="form-control form-control-sm" placeholder="Search user, email, system, action, level, or session ID...">
+                                                <input type="text" id="global-search" class="form-control form-control-sm" placeholder="Search" aria-label="Search">
                                             </div>
                                         </div>
 
-                                        <!-- Date Filters & Actions -->
-                                        <div class="d-flex flex-wrap align-items-end gap-2">
-                                            <div>
-                                                <label for="filterDateFrom" class="form-label small fw-semibold mb-1">From Date</label>
-                                                <input type="date" id="filterDateFrom" class="form-control form-control-sm">
-                                            </div>
-                                            <div>
-                                                <label for="filterDateTo" class="form-label small fw-semibold mb-1">To Date</label>
-                                                <input type="date" id="filterDateTo" class="form-control form-control-sm">
-                                            </div>
-                                            <button type="button" id="btnFilter" class="btn btn-primary btn-sm">
-                                                <i class="bi bi-funnel me-1"></i>Filter
-                                            </button>
-                                            <button type="button" id="btnReset" class="btn btn-outline-secondary btn-sm">
-                                                Reset
-                                            </button>
-
+                                        <!-- Export & Refresh Actions -->
+                                        <div class="d-flex flex-wrap align-items-center gap-2 ms-auto">
                                             <div class="dropdown">
                                                 <button class="btn btn-action btn-sm dropdown-toggle d-inline-flex align-items-center" type="button" id="exportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                                                     <i class="bi bi-download me-1"></i>Export / Download
@@ -117,8 +132,7 @@ $page_header  = render_page_header((string)$title_page, $active_links) ?? '';
                                             </div>
 
                                             <button type="button" id="btn-refresh" class="btn btn-action btn-sm d-inline-flex align-items-center">
-                                                <i id="refresh-icon" class="bi bi-arrow-clockwise me-1"></i>
-                                                <span id="refresh-text">Refresh Data</span>
+                                                <i class="bi bi-arrow-clockwise me-1"></i>Refresh Data
                                             </button>
                                         </div>
                                     </div>
@@ -134,18 +148,52 @@ $page_header  = render_page_header((string)$title_page, $active_links) ?? '';
             <?php include_once ADMIN_FOOTER_PATH; ?>
         </div>
     </div>
-</body>
 
-<?php include_once ADMIN_SCRIPT_PATH; ?>
+    <?php include_once ADMIN_SCRIPT_PATH; ?>
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-    const ajaxUrl     = "<?= BASE_URL; ?>admin/ajax/activity-log";
-    const btnRefresh  = document.getElementById("btn-refresh");
-    const refreshIcon = document.getElementById("refresh-icon");
-    const refreshText = document.getElementById("refresh-text");
+    const AJAX_HANDLER = "<?= BASE_URL; ?>admin/ajax/activity-log";
+
+    const getTodayDate = () => {
+        const t = new Date();
+        return `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}`;
+    };
+
+    function applyGlobalSearch(tableInstance) {
+        const q = document.getElementById("global-search").value.toLowerCase().trim();
+        if (!q) {
+            tableInstance.clearFilter();
+            return;
+        }
+        tableInstance.setFilter(function (data) {
+            return (
+                String(data.activity_log_id).includes(q) ||
+                (data.full_name || "").toLowerCase().includes(q) ||
+                (data.email || "").toLowerCase().includes(q) ||
+                (data.user_level || "").toLowerCase().includes(q) ||
+                (data.system_type || "").toLowerCase().includes(q) ||
+                (data.action || "").toLowerCase().includes(q) ||
+                (data.session_id || "").toLowerCase().includes(q)
+            );
+        });
+    }
 
     const table = new Tabulator("#activity-log-table", {
+        ajaxURL: AJAX_HANDLER,
+        ajaxLoader: true,
+        ajaxConfig: "GET",
+        ajaxParams: () => ({
+            action: "fetch",
+            date_from: document.getElementById("filterDateFrom").value,
+            date_to: document.getElementById("filterDateTo").value
+        }),
+        ajaxResponse: (url, params, response) => {
+            if (response && response.success) {
+                return response.data || [];
+            }
+            return [];
+        },
         layout: "fitColumns",
         resizableColumnFit: true,
         height: "550px",
@@ -261,86 +309,39 @@ document.addEventListener("DOMContentLoaded", function () {
         ]
     });
 
-    function setRefreshLoading(isLoading) {
-        btnRefresh.disabled = isLoading;
-        if (isLoading) {
-            refreshIcon.classList.add("spin-icon");
-            refreshText.textContent = "Refreshing...";
-            if (typeof table.showDataLoader === "function") {
-                table.showDataLoader("Loading activity logs...");
-            }
-        } else {
-            refreshIcon.classList.remove("spin-icon");
-            refreshText.textContent = "Refresh Data";
-            if (typeof table.hideDataLoader === "function") {
-                table.hideDataLoader();
-            }
-        }
-    }
-
-    function applyGlobalSearch() {
-        const q = document.getElementById("global-search").value.toLowerCase().trim();
-        if (!q) {
-            table.clearFilter();
-            return;
-        }
-        table.setFilter(function (data) {
-            return (
-                String(data.activity_log_id).includes(q) ||
-                (data.full_name || "").toLowerCase().includes(q) ||
-                (data.email || "").toLowerCase().includes(q) ||
-                (data.user_level || "").toLowerCase().includes(q) ||
-                (data.system_type || "").toLowerCase().includes(q) ||
-                (data.action || "").toLowerCase().includes(q) ||
-                (data.session_id || "").toLowerCase().includes(q)
-            );
-        });
-    }
-
-    function loadActivityLogs() {
-        setRefreshLoading(true);
-
-        const params = new URLSearchParams({
-            action: "fetch",
-            date_from: document.getElementById("filterDateFrom").value,
-            date_to: document.getElementById("filterDateTo").value
-        });
-
-        fetch(`${ajaxUrl}?${params.toString()}`)
-            .then(res => res.json())
-            .then(res => {
-                if (res.success) {
-                    table.setData(res.data || []).then(() => {
-                        applyGlobalSearch();
-                    });
-                } else {
-                    table.setData([]);
-                }
-            })
-            .catch(() => table.setData([]))
-            .finally(() => {
-                setTimeout(() => setRefreshLoading(false), 300);
-            });
-    }
-
-    document.getElementById("global-search").addEventListener("input", applyGlobalSearch);
-    document.getElementById("btnFilter").addEventListener("click", loadActivityLogs);
-    btnRefresh.addEventListener("click", loadActivityLogs);
-
-    document.getElementById("btnReset").addEventListener("click", function () {
-        document.getElementById("filterDateFrom").value = "";
-        document.getElementById("filterDateTo").value = "";
+    function resetToTodayAndReload() {
+        const todayStr = getTodayDate();
+        document.getElementById("filterDateFrom").value = todayStr;
+        document.getElementById("filterDateTo").value = todayStr;
         document.getElementById("global-search").value = "";
-        table.clearFilter(true);
-        loadActivityLogs();
+        table.clearFilter();
+        table.clearHeaderFilter();
+        table.setData();
+    }
+
+    // Re-apply global search text whenever AJAX data finishes loading
+    table.on("dataProcessed", function () {
+        applyGlobalSearch(table);
     });
+
+    document.getElementById("global-search").addEventListener("input", function () {
+        applyGlobalSearch(table);
+    });
+
+    document.getElementById("activityFilterForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        table.setData();
+    });
+
+    document.getElementById("btnReset").addEventListener("click", resetToTodayAndReload);
+    document.getElementById("btn-refresh").addEventListener("click", resetToTodayAndReload);
 
     document.getElementById("export-csv").addEventListener("click", () => table.download("csv", "activity_log.csv"));
     document.getElementById("export-excel").addEventListener("click", () => table.download("xlsx", "activity_log.xlsx", { sheetName: "Activity Log" }));
     document.getElementById("export-print").addEventListener("click", () => table.print(false, true));
-
-    loadActivityLogs();
 });
 </script>
+
+</body>
 
 </html>
