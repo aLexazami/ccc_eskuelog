@@ -112,7 +112,11 @@ $prepared_by_role = ucwords(strtolower(str_replace('_', ' ', $g_user_role_upper 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Analytics_Report_<?= preg_replace('/[^A-Za-z0-9_\-]/', '_', $office_name); ?>_<?= htmlspecialchars($date_from); ?></title>
-    
+
+    <!-- Bootstrap & Icons -->
+    <link rel="stylesheet" href="<?= BASE_URL; ?>assets/vendor/bootstrap/bootstrap.min.css">
+    <link rel="stylesheet" href="<?= BASE_URL; ?>assets/vendor/bootstrap-icons/bootstrap-icons.css">
+
     <style>
         :root {
             --primary-color: #1e3a8a;
@@ -208,6 +212,14 @@ $prepared_by_role = ucwords(strtolower(str_replace('_', ' ', $g_user_role_upper 
             padding: 8px 12px;
         }
 
+        .empty-row-cell {
+            background-color: #f8fafc;
+            color: #64748b;
+            font-style: italic;
+            text-align: center;
+            padding: 14px 12px !important;
+        }
+
         .section-heading {
             font-size: 14px;
             font-weight: 700;
@@ -278,7 +290,10 @@ $prepared_by_role = ucwords(strtolower(str_replace('_', ' ', $g_user_role_upper 
         </div>
     </div>
 
-        <!-- OFFICIAL REPORT HEADER -->
+    <!-- INLINE FETCH ERROR ALERT -->
+    <div id="reportErrorBanner" class="alert alert-danger d-none mb-3" role="alert"></div>
+
+    <!-- OFFICIAL REPORT HEADER -->
     <div class="report-header text-center">
         <h5 class="fw-bold mb-1 text-uppercase">City College of Calamba</h5>
         <h6 class="text-muted mb-2">Management Information Systems Division (MISD)</h6>
@@ -301,8 +316,8 @@ $prepared_by_role = ucwords(strtolower(str_replace('_', ' ', $g_user_role_upper 
             ['kpiCompleted', 'Completed', 'text-success', '0'],
             ['kpiSkipped', 'Skipped / Missed', 'text-danger', '0'],
             ['kpiPriority', 'Priority Tickets', 'text-warning', '0'],
-            ['kpiWait', 'Avg. Waiting Time', 'text-primary', '0m'],
-            ['kpiService', 'Avg. Service Time', 'text-primary', '0m'],
+            ['kpiWait', 'Avg. Waiting Time', 'text-primary', '0.0m'],
+            ['kpiService', 'Avg. Service Time', 'text-primary', '0.0m'],
         ];
         foreach ($kpis as [$id, $label, $cls, $def]): ?>
             <div class="col-4">
@@ -313,7 +328,7 @@ $prepared_by_role = ucwords(strtolower(str_replace('_', ' ', $g_user_role_upper 
             </div>
         <?php endforeach; ?>
     </div>
-    <p class="small text-muted mb-0">Average calling time (called to serving): <strong id="kpiCall">0m</strong></p>
+    <p class="small text-muted mb-0">Average calling time (called to serving): <strong id="kpiCall">0.0m</strong></p>
 
     <!-- II. DEMOGRAPHICS & STATUS -->
     <div class="row g-4 mb-3">
@@ -321,33 +336,27 @@ $prepared_by_role = ucwords(strtolower(str_replace('_', ' ', $g_user_role_upper 
             <div class="section-heading">II. Visitor Demographics</div>
             <table class="report-table" id="visitorDistributionTable">
                 <thead><tr><th>Visitor Category</th><th class="text-center">Ticket Count</th></tr></thead>
-                <tbody><tr><td colspan="2" class="text-center py-2 text-muted">Loading data...</td></tr></tbody>
+                <tbody><tr><td colspan="2" class="empty-row-cell">Loading visitor demographics...</td></tr></tbody>
             </table>
         </div>
         <div class="col-6">
             <div class="section-heading">III. Queue Status Summary</div>
             <table class="report-table" id="statusTable">
                 <thead><tr><th>Status</th><th class="text-center">Ticket Count</th></tr></thead>
-                <tbody><tr><td colspan="2" class="text-center py-2 text-muted">Loading data...</td></tr></tbody>
+                <tbody><tr><td colspan="2" class="empty-row-cell">Loading queue status summary...</td></tr></tbody>
             </table>
         </div>
     </div>
 
-    <!-- IV. SERVICES & SUB-CONCERNS -->
-    <div class="section-heading">IV. Top Services</div>
+    <!-- IV. TOP TRANSACTIONS -->
+    <div class="section-heading">IV. Top Transactions</div>
     <table class="report-table mb-3" id="topConcernsTable">
-        <thead><tr><th>Service / Transaction Type</th><th class="text-center" style="width: 140px;">Requests</th></tr></thead>
-        <tbody><tr><td colspan="2" class="text-center py-2 text-muted">Loading data...</td></tr></tbody>
+        <thead><tr><th>Transaction / Service Type</th><th class="text-center" style="width: 140px;">Requests</th></tr></thead>
+        <tbody><tr><td colspan="2" class="empty-row-cell">Loading top transactions...</td></tr></tbody>
     </table>
 
-    <div class="section-heading">V. Top Sub-Concerns</div>
-    <table class="report-table mb-3" id="subConcernTable">
-        <thead><tr><th>Service</th><th>Sub-Concern</th><th class="text-center" style="width: 140px;">Requests</th></tr></thead>
-        <tbody><tr><td colspan="3" class="text-center py-2 text-muted">Loading data...</td></tr></tbody>
-    </table>
-
-    <!-- VI. WINDOW PERFORMANCE -->
-    <div class="section-heading">VI. Window Performance</div>
+    <!-- V. WINDOW PERFORMANCE -->
+    <div class="section-heading">V. Window Performance</div>
     <table class="report-table mb-3" id="counterTable">
         <thead>
             <tr>
@@ -358,11 +367,11 @@ $prepared_by_role = ucwords(strtolower(str_replace('_', ' ', $g_user_role_upper 
                 <th class="text-center" style="width: 120px;">Avg. Service</th>
             </tr>
         </thead>
-        <tbody><tr><td colspan="5" class="text-center py-2 text-muted">Loading data...</td></tr></tbody>
+        <tbody><tr><td colspan="5" class="empty-row-cell">Loading window performance...</td></tr></tbody>
     </table>
 
-    <!-- VII. STAFF PERFORMANCE -->
-    <div class="section-heading">VII. Staff Performance Breakdown</div>
+    <!-- VI. STAFF PERFORMANCE -->
+    <div class="section-heading">VI. Staff Performance Breakdown</div>
     <table class="report-table align-middle mb-4" id="pdfStaffTable">
         <thead>
             <tr>
@@ -374,7 +383,7 @@ $prepared_by_role = ucwords(strtolower(str_replace('_', ' ', $g_user_role_upper 
                 <th class="text-center" style="width: 110px;">Completion</th>
             </tr>
         </thead>
-        <tbody><tr><td colspan="6" class="text-center py-3 text-muted">Loading staff activity data...</td></tr></tbody>
+        <tbody><tr><td colspan="6" class="empty-row-cell">Loading staff activity data...</td></tr></tbody>
     </table>
 
     <!-- SIGNATURE BLOCK -->
@@ -401,17 +410,27 @@ $prepared_by_role = ucwords(strtolower(str_replace('_', ' ', $g_user_role_upper 
                 $('#previewActionBar').hide();
             }
 
-            const esc = (s) => String(s ?? '').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+            const esc = (s) => String(s ?? '')
+                .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
             const fmtMin = (v) => `${(parseFloat(v) || 0).toFixed(1)}m`;
 
-            // Fill a table body from rows; renderRow returns the <td> cells
-            function fillTable(selector, rows, colspan, renderRow) {
+            // Fill a table body from rows with a custom empty fallback message
+            function fillTable(selector, rows, colspan, emptyMessage, renderRow) {
                 const $tbody = $(`${selector} tbody`).empty();
                 if (!rows || rows.length === 0) {
-                    $tbody.html(`<tr><td colspan="${colspan}" class="text-center py-2 text-muted">No records.</td></tr>`);
+                    $tbody.html(`<tr><td colspan="${colspan}" class="empty-row-cell">${esc(emptyMessage)}</td></tr>`);
                     return;
                 }
                 rows.forEach(r => $tbody.append(`<tr>${renderRow(r)}</tr>`));
+            }
+
+            function renderAllEmpty(messagePrefix = 'No records found') {
+                fillTable('#visitorDistributionTable', [], 2, `${messagePrefix} for visitor demographics.`, () => '');
+                fillTable('#statusTable', [], 2, `${messagePrefix} for completed or skipped tickets.`, () => '');
+                fillTable('#topConcernsTable', [], 2, `${messagePrefix} for transactions.`, () => '');
+                fillTable('#counterTable', [], 5, `${messagePrefix} for window activity.`, () => '');
+                fillTable('#pdfStaffTable', [], 6, `${messagePrefix} for staff performance.`, () => '');
             }
 
             $.ajax({
@@ -428,9 +447,13 @@ $prepared_by_role = ucwords(strtolower(str_replace('_', ' ', $g_user_role_upper 
                 },
                 success: function(res) {
                     if (!(res.success && res.data)) {
-                        alert("Error loading report data: " + (res.message || "Unknown error"));
+                        $('#reportErrorBanner')
+                            .removeClass('d-none')
+                            .text('Unable to load report data: ' + (res.message || 'Unknown error.'));
+                        renderAllEmpty('No data available');
                         return;
                     }
+
                     const d = res.data;
                     const k = d.kpi || {};
 
@@ -442,30 +465,35 @@ $prepared_by_role = ucwords(strtolower(str_replace('_', ' ', $g_user_role_upper 
                     $('#kpiService').text(fmtMin(k.avg_service_minutes));
                     $('#kpiCall').text(fmtMin(k.avg_call_minutes));
 
-                    fillTable('#visitorDistributionTable', d.visitor_distribution, 2, r =>
-                        `<td class="fw-semibold">${esc(r.type)}</td><td class="text-center font-monospace">${parseInt(r.total || 0)}</td>`);
+                    const visitorRows = (d.visitor_distribution || []).filter(r => (parseInt(r.total, 10) || 0) > 0);
+                    fillTable('#visitorDistributionTable', visitorRows, 2, 'No visitor records found for the selected filters.', r =>
+                        `<td class="fw-semibold">${esc(r.type)}</td><td class="text-center font-monospace">${parseInt(r.total || 0, 10)}</td>`);
 
-                    fillTable('#statusTable', d.status_distribution, 2, r =>
-                        `<td class="fw-semibold">${esc(r.status.charAt(0) + r.status.slice(1).toLowerCase())}</td><td class="text-center font-monospace">${parseInt(r.total || 0)}</td>`);
+                    const allowedStatuses = ['COMPLETED', 'SKIPPED'];
+                    const statusRows = (d.status_distribution || []).filter(r =>
+                        allowedStatuses.includes(String(r.status || '').toUpperCase()) && (parseInt(r.total, 10) || 0) > 0
+                    );
+                    fillTable('#statusTable', statusRows, 2, 'No completed or skipped tickets recorded.', r =>
+                        `<td class="fw-semibold">${esc(r.status.charAt(0) + r.status.slice(1).toLowerCase())}</td><td class="text-center font-monospace">${parseInt(r.total || 0, 10)}</td>`);
 
-                    fillTable('#topConcernsTable', d.top_concerns, 2, r =>
-                        `<td class="fw-semibold">${esc(r.concern)}</td><td class="text-center font-monospace">${parseInt(r.total || 0)}</td>`);
+                    const concernRows = (d.top_concerns || []).filter(r => (parseInt(r.total, 10) || 0) > 0);
+                    fillTable('#topConcernsTable', concernRows, 2, 'No transaction requests logged for the selected filters.', r =>
+                        `<td class="fw-semibold">${esc(r.concern)}</td><td class="text-center font-monospace">${parseInt(r.total || 0, 10)}</td>`);
 
-                    fillTable('#subConcernTable', d.sub_concerns, 3, r =>
-                        `<td>${esc(r.transaction_name)}</td><td class="fw-semibold">${esc(r.sub_concern_name)}</td><td class="text-center font-monospace">${parseInt(r.total || 0)}</td>`);
-
-                    fillTable('#counterTable', d.counter_breakdown, 5, r =>
+                    fillTable('#counterTable', d.counter_breakdown, 5, 'No window activity recorded for the selected filters.', r =>
                         `<td class="fw-semibold">${esc(r.counter_label)}</td>
-                         <td class="text-center font-monospace">${r.total_tickets}</td>
-                         <td class="text-center font-monospace">${r.total_completed}</td>
-                         <td class="text-center font-monospace">${r.total_skipped}</td>
+                         <td class="text-center font-monospace">${parseInt(r.total_tickets || 0, 10)}</td>
+                         <td class="text-center font-monospace">${parseInt(r.total_completed || 0, 10)}</td>
+                         <td class="text-center font-monospace">${parseInt(r.total_skipped || 0, 10)}</td>
                          <td class="text-center font-monospace">${fmtMin(r.avg_service_minutes)}</td>`);
 
-                    fillTable('#pdfStaffTable', d.staff_breakdown, 6, r => {
-                        const served = parseInt(r.total_served || 0), completed = parseInt(r.total_completed || 0);
+                    fillTable('#pdfStaffTable', d.staff_breakdown, 6, 'No staff activity recorded for the selected filters.', r => {
+                        const served = parseInt(r.total_served || 0, 10);
+                        const completed = parseInt(r.total_completed || 0, 10);
                         const rate = served > 0 ? Math.round((completed / served) * 100) : 0;
+                        const windowLabel = r.window_label || r.windows || '---';
                         return `<td class="fw-semibold">${esc(r.staff_name || 'Unassigned')}</td>
-                                <td>${esc(r.windows || '---')}</td>
+                                <td>${esc(windowLabel)}</td>
                                 <td class="text-center font-monospace">${served}</td>
                                 <td class="text-center font-monospace">${completed}</td>
                                 <td class="text-center font-monospace">${fmtMin(r.avg_service_minutes)}</td>
@@ -476,7 +504,10 @@ $prepared_by_role = ucwords(strtolower(str_replace('_', ' ', $g_user_role_upper 
                 },
                 error: function(xhr, status, error) {
                     console.error("AJAX Report Fetch Error:", error);
-                    alert("Failed to fetch report data from server.");
+                    $('#reportErrorBanner')
+                        .removeClass('d-none')
+                        .text('Failed to fetch report data from the server. Please try again.');
+                    renderAllEmpty('Unable to load data');
                 }
             });
         });
