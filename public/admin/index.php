@@ -83,6 +83,8 @@ switch ($route) {
             '/admin/transaction-records'   => ['file' => SRC_PATH . '/Views/Admin/transaction_records.php', 'roles' => ["ADMIN", "ADMIN_STAFF"]],
             '/admin/reports-analytics'     => ['file' => SRC_PATH . '/Views/Admin/reports_analytics.php', 'roles' => ["ADMIN", "ADMIN_STAFF"]],
             '/admin/reports-analytics-pdf' => ['file' => SRC_PATH . '/Views/Admin/reports_analytics_pdf.php', 'roles' => ["ADMIN", "ADMIN_STAFF"]],
+            '/admin/activity-log'          => ['file' => SRC_PATH . '/Views/Admin/activity_log.php', 'roles' => ["ADMIN", "ADMIN_STAFF", "STATION_ADMIN", "USER"]],
+            '/admin/user-log'              => ['file' => SRC_PATH . '/Views/Admin/user_log.php', 'roles' => ["ADMIN", "ADMIN_STAFF", "STATION_ADMIN", "USER"]],
 
             # TABLE Handlers
             '/admin/table/user-information' => ['file' => SRC_PATH . '/Handlers/Admin/table/user_information_table.php', 'roles' => ["ADMIN", "ADMIN_STAFF", "STATION_ADMIN", "USER"]],
@@ -96,6 +98,8 @@ switch ($route) {
             '/admin/ajax/transaction-types'   => ['file' => SRC_PATH . '/Handlers/Admin/ajax/transaction_types_handler.php', 'roles' => ["ADMIN", "ADMIN_STAFF", "STATION_ADMIN", "USER"]],
             '/admin/ajax/transaction-records' => ['file' => SRC_PATH . '/Handlers/Admin/ajax/transaction_records_handler.php', 'roles' => ["ADMIN", "ADMIN_STAFF", "STATION_ADMIN", "USER"]],
             '/admin/ajax/reports-analytics'   => ['file' => SRC_PATH . '/Handlers/Admin/ajax/reports_analytics_handler.php', 'roles' => ["ADMIN", "ADMIN_STAFF", "STATION_ADMIN", "USER"]],
+            '/admin/ajax/activity-log'        => ['file' => SRC_PATH . '/Handlers/Admin/ajax/activity_log_handler.php', 'roles' => ["ADMIN", "ADMIN_STAFF", "STATION_ADMIN", "USER"]],
+            '/admin/ajax/user-log'            => ['file' => SRC_PATH . '/Handlers/Admin/ajax/user_log_handler.php', 'roles' => ["ADMIN", "ADMIN_STAFF", "STATION_ADMIN", "USER"]],
         ];
 
         # Dynamic Route Matching Engine

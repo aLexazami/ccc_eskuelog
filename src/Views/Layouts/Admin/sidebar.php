@@ -266,6 +266,7 @@ function render_action_links($links = [])
                 <?php endif; ?>
 
                 <?php if ($g_user_role == 'STATION_ADMIN'): ?>
+
                     <!-- DASHBOARD NAVIGATION -->
                     <li class="nav-item <?php echo navigation_active("dashboard"); ?>">
                         <a href="<?php echo BASE_URL . "admin/dashboard"; ?>">
@@ -309,7 +310,23 @@ function render_action_links($links = [])
                             </ul>
                         </div>
                     </li>
-                    <?php endif; ?>
+                <?php endif; ?>
+
+                <?php if (!empty($g_user_role)): ?>
+                    <li class="nav-item <?php echo navigation_active("activity-log"); ?>">
+                        <a href="<?php echo BASE_URL . "admin/activity-log"; ?>">
+                            <i class="bi bi-clock-history"></i>
+                            <p>Activity Log</p>
+                        </a>
+                    </li>
+
+                    <li class="nav-item <?php echo navigation_active("user-log"); ?>">
+                        <a href="<?php echo BASE_URL . "admin/user-log"; ?>">
+                            <i class="bi bi-person-lines-fill"></i>
+                            <p>User Log</p>
+                        </a>
+                    </li>
+                <?php endif; ?>
             </ul>
         </div>
     </div>
