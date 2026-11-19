@@ -35,7 +35,7 @@ if ($db_connect) {
     <title>E-Eskuelog — <?= htmlspecialchars($page_title_text); ?></title>
 
     <style>
-        /* LIGHT THEME (DEFAULT) - HIGH CONTRAST FROSTED SLATE BLUE GLASS */
+        /* HIGH CONTRAST FROSTED SLATE BLUE GLASS THEME */
         :root {
             --bg-wrapper: linear-gradient(135deg, rgba(11, 32, 117, 0.25) 0%, rgba(0, 10, 76, 0.45) 100%), url('<?= BASE_URL; ?>public/assets/main/css/bg-template.png');
             --bg-header: rgba(0, 16, 77, 0.88);
@@ -99,72 +99,8 @@ if ($db_connect) {
             --btn-action-hover-color: #ffffff;
             --btn-action-hover-border: 1px solid #3b82f6;
             --btn-action-hover-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
-        }
 
-        /* DARK THEME OVERRIDES */
-        body.dark-mode {
-            --bg-wrapper: linear-gradient(135deg, rgba(10, 15, 28, 0.92) 0%, rgba(15, 23, 42, 0.98) 100%), url('<?= BASE_URL; ?>public/assets/main/css/bg-template.png');
-            --bg-header: rgba(0, 16, 77, 0.90);
-            --border-header: 1px solid rgba(255, 255, 255, 0.15);
-            --header-title-color: #ffffff;
-
-            --bg-card: linear-gradient(135deg, #0a0f1d 0%, #172554 100%);
-            --border-card: 1px solid rgba(255, 255, 255, 0.20);
-            --card-text-color: #ffffff;
-            --card-shadow: 0 16px 36px rgba(0, 0, 0, 0.65);
-
-            --pillar-header-border: rgba(255, 255, 255, 0.18);
-            --office-name-color: #ffffff;
-            --office-meta-color: #93c5fd;
-
-            --serving-bg: rgba(15, 23, 42, 0.75);
-            --serving-border: 1px solid rgba(59, 130, 246, 0.4);
-            --serving-label-color: #60a5fa;
-            --serving-ticket-color: #ffffff;
-
-            --calling-border: #22c55e;
-            --calling-shadow: 0 0 35px rgba(34, 197, 94, 0.65);
-
-            --priority-tag-bg: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
-            --priority-tag-color: #ffffff;
-            --priority-tag-border: none;
-            --priority-tag-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
-
-            --lineup-border-top: rgba(255, 255, 255, 0.18);
-            --lineup-label-color: #93c5fd;
-            --lineup-pill-bg: rgba(255, 255, 255, 0.12);
-            --lineup-pill-border: 1px solid rgba(255, 255, 255, 0.22);
-            --lineup-pill-color: #ffffff;
-
-            --lineup-pill-priority-bg: linear-gradient(135deg, rgba(217, 119, 6, 0.4) 0%, rgba(245, 158, 11, 0.5) 100%);
-            --lineup-pill-priority-border: 1.5px solid #f59e0b;
-            --lineup-pill-priority-color: #fef08a;
-
-            --lineup-pill-empty-bg: rgba(15, 23, 42, 0.3);
-            --lineup-pill-empty-border: 1px dashed rgba(255, 255, 255, 0.25);
-            --lineup-pill-empty-color: #94a3b8;
-
-            --page-badge-bg: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
-            --page-badge-color: #ffffff;
-            --page-badge-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
-
-            --datetime-bg: transparent;
-            --datetime-border: none;
-            --datetime-icon-color: #60a5fa;
-            --datetime-text-color: #cbd5e1;
-            --datetime-clock-color: #ffffff;
-
-            --footer-bg: rgba(0, 16, 77, 0.90);
-            --footer-border: 1px solid rgba(255, 255, 255, 0.15);
-
-            --btn-action-bg: rgba(255, 255, 255, 0.14);
-            --btn-action-border: 1px solid rgba(255, 255, 255, 0.22);
-            --btn-action-color: #ffffff;
-            --btn-action-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-            --btn-action-hover-bg: #2563eb;
-            --btn-action-hover-color: #ffffff;
-            --btn-action-hover-border: 1px solid #3b82f6;
-            --btn-action-hover-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+            --win-color: #0ea5e9;   /* every window uses the same blue */
         }
 
         body,
@@ -349,19 +285,19 @@ if ($db_connect) {
             text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
         }
 
-        /* NOW SERVING BLOCK WITH WINDOW BADGE */
+        /* NOW SERVING BLOCK - WINDOW BANNER SITS AT THE TOP, INSIDE THE CONTAINER BORDER */
         .pillar-serving-block {
             container-type: inline-size;
             text-align: center;
-            padding: clamp(0.4rem, 1vh, 0.8rem) 0.25rem;
+            padding: 0;
             background: var(--serving-bg);
             border-radius: clamp(0.75rem, 1.5vh, 1.5rem);
-            border: var(--serving-border);
+            border: 2px solid var(--win-color);
             margin: clamp(0.35rem, 0.8vh, 0.75rem) 0;
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            align-items: center;
+            justify-content: flex-start;
+            align-items: stretch;
             flex-grow: 1;
             min-height: clamp(120px, 18vh, 240px);
             box-sizing: border-box;
@@ -372,6 +308,35 @@ if ($db_connect) {
             overflow: hidden;
         }
 
+        .window-banner {
+            width: 100%;
+            padding: clamp(0.3rem, 0.7vh, 0.6rem) 0.5rem;
+            background: var(--win-color);
+            color: #ffffff;
+            font-size: clamp(0.9rem, 1.15vw, 1.45rem);
+            font-weight: 900;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.28);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.35);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            box-sizing: border-box;
+            flex-shrink: 0;
+        }
+
+        .serving-body {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: clamp(0.3rem, 0.8vh, 0.7rem) 0.25rem;
+            min-width: 0;
+        }
+
         .serving-label {
             font-size: clamp(0.75rem, 0.9vw, 1rem);
             font-weight: 800;
@@ -379,20 +344,6 @@ if ($db_connect) {
             color: var(--serving-label-color);
             text-transform: uppercase;
             margin-bottom: 0.1rem;
-        }
-
-        .window-badge-tag {
-            font-size: clamp(0.65rem, 0.75vw, 0.85rem);
-            font-weight: 800;
-            color: #93c5fd;
-            background: rgba(30, 58, 138, 0.8);
-            border: 1px solid rgba(59, 130, 246, 0.4);
-            padding: 0.15rem 0.6rem;
-            border-radius: 0.4rem;
-            margin-bottom: 0.2rem;
-            letter-spacing: 0.05em;
-            text-transform: uppercase;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
         }
 
         .serving-ticket-number {
@@ -692,10 +643,6 @@ if ($db_connect) {
             <img src="<?= BASE_URL; ?>public/upload/images/logo/ccc-banner.webp" alt="CCC Banner" class="header-banner-img">
 
             <div class="d-flex align-items-center gap-2">
-                <button type="button" class="header-action-btn" id="btnToggleTheme" title="Toggle Dark/Light Theme">
-                    <i class="bi bi-moon-stars-fill fs-5" id="themeIcon"></i>
-                </button>
-
                 <button type="button" class="header-action-btn" id="btnToggleFullscreen" title="Toggle Fullscreen">
                     <i class="bi bi-fullscreen fs-5"></i>
                 </button>
@@ -737,6 +684,9 @@ if ($db_connect) {
             const ITEMS_PER_PAGE = 5;
             const ROTATION_INTERVAL_MS = 5000;
             const POST_CALL_HOLD_MS = 6000;
+            const FRESH_CALL_SECONDS = 20;      // on first load, only announce calls newer than this
+            const PENDING_MAX_AGE_MS = 60000;   // drop announcements that waited too long for audio unlock
+            const SPEECH_WATCHDOG_MS = 20000;   // never let a stuck utterance freeze the queue
 
             const digitalDate = document.getElementById('digitalDate');
             const digitalClock = document.getElementById('digitalClock');
@@ -745,16 +695,17 @@ if ($db_connect) {
             const pillarGridContainer = document.getElementById('pillarGridContainer');
             const emptyStateDisplay = document.getElementById('emptyStateDisplay');
             const btnToggleFullscreen = document.getElementById('btnToggleFullscreen');
-            const btnToggleTheme = document.getElementById('btnToggleTheme');
-            const themeIcon = document.getElementById('themeIcon');
 
-            let calledTicketsHistory = new Set();
-            let cachedActiveOffices = [];
+            let announcedCalls = new Set();
+            let firstPollDone = false;
+            let cachedPillars = [];
             let currentPageIndex = 0;
             let rotationTimer = null;
             let postCallHoldTimer = null;
             let isHoldingCall = false;
             let lastRenderedJson = '';
+            let renderSeq = 0;               // only the newest scheduled render may touch the screen
+            let knownPillarKeys = null;      // pillars seen on the previous poll (null until first poll)
 
             function escapeHtml(str) {
                 if (str === null || str === undefined) return '';
@@ -766,31 +717,13 @@ if ($db_connect) {
                     .replace(/'/g, '&#039;');
             }
 
-            function applyTheme(isDark) {
-                if (isDark) {
-                    document.body.classList.add('dark-mode');
-                    themeIcon.className = 'bi bi-sun-fill fs-5 text-warning';
-                } else {
-                    document.body.classList.remove('dark-mode');
-                    themeIcon.className = 'bi bi-moon-stars-fill fs-5';
-                }
-            }
-
-            const savedTheme = localStorage.getItem('queue_monitor_theme');
-            applyTheme(savedTheme === 'dark');
-
-            if (btnToggleTheme) {
-                btnToggleTheme.addEventListener('click', function() {
-                    const isCurrentlyDark = document.body.classList.contains('dark-mode');
-                    const newDarkState = !isCurrentlyDark;
-                    applyTheme(newDarkState);
-                    localStorage.setItem('queue_monitor_theme', newDarkState ? 'dark' : 'light');
-                });
-            }
-
+            /* ---------------- AUDIO ---------------- */
             let audioQueue = [];
             let isSpeaking = false;
+            let audioUnlocked = false;
+            let audioCtx = null;
             let singleFemaleVoice = null;
+            let currentUtterance = null;   // keep a reference so the browser does not garbage-collect it mid-speech
 
             function getBestFemaleVoice() {
                 if (!('speechSynthesis' in window)) return null;
@@ -816,14 +749,11 @@ if ($db_connect) {
                 loadVoices();
             }
 
-            function playBellDing(callback) {
+            function playBellDing() {
                 try {
-                    const AudioContext = window.AudioContext || window.webkitAudioContext;
-                    if (!AudioContext) {
-                        if (callback) callback();
-                        return;
-                    }
-                    const ctx = new AudioContext();
+                    if (!audioCtx) return;
+                    if (audioCtx.state === 'suspended') audioCtx.resume();
+                    const ctx = audioCtx;
 
                     const osc1 = ctx.createOscillator();
                     const gain1 = ctx.createGain();
@@ -831,7 +761,6 @@ if ($db_connect) {
                     osc1.frequency.setValueAtTime(659.25, ctx.currentTime);
                     gain1.gain.setValueAtTime(0.3, ctx.currentTime);
                     gain1.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 1.2);
-
                     osc1.connect(gain1);
                     gain1.connect(ctx.destination);
                     osc1.start(ctx.currentTime);
@@ -843,31 +772,23 @@ if ($db_connect) {
                     osc2.frequency.setValueAtTime(783.99, ctx.currentTime + 0.25);
                     gain2.gain.setValueAtTime(0.35, ctx.currentTime + 0.25);
                     gain2.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 1.6);
-
                     osc2.connect(gain2);
                     gain2.connect(ctx.destination);
                     osc2.start(ctx.currentTime + 0.25);
                     osc2.stop(ctx.currentTime + 1.6);
-
-                    setTimeout(() => {
-                        if (callback) callback();
-                    }, 500);
-
                 } catch (e) {
-                    console.warn("Audio Context blocked until page interaction.", e);
-                    if (callback) callback();
+                    console.warn("Bell could not be played.", e);
                 }
             }
 
             function updateDateTime() {
                 const now = new Date();
-                const options = {
+                digitalDate.textContent = now.toLocaleDateString('en-US', {
                     weekday: 'short',
                     month: 'short',
                     day: 'numeric',
                     year: 'numeric'
-                };
-                digitalDate.textContent = now.toLocaleDateString('en-US', options);
+                });
                 digitalClock.textContent = now.toLocaleTimeString('en-US', {
                     hour12: true,
                     hour: '2-digit',
@@ -888,6 +809,7 @@ if ($db_connect) {
                 });
             }
 
+            /* ---------------- DATA ---------------- */
             function fetchLiveQueueData() {
                 const formData = new FormData();
                 formData.append('action', 'fetch_master_queue');
@@ -899,152 +821,223 @@ if ($db_connect) {
                     })
                     .then(res => res.json())
                     .then(result => {
-                        if (result.success && result.data) {
-                            cachedActiveOffices = result.data.active_offices || [];
+                        if (!(result.success && result.data)) return;
 
-                            if (cachedActiveOffices.length === 0) {
-                                if (lastRenderedJson !== 'EMPTY_STATE') {
-                                    renderEmptyState();
-                                    lastRenderedJson = 'EMPTY_STATE';
-                                }
-                                return;
+                        cachedPillars = result.data.pillars || result.data.active_offices || [];
+
+                        // 1. Drop audio for tickets that are no longer being called (completed / skipped / replaced)
+                        audioQueue = audioQueue.filter(item => isTicketActive(item.ticketId));
+                        if (activeSpeech && !isTicketActive(activeSpeech.ticketId)) {
+                            activeSpeech.abort();
+                        }
+
+                        // 2. Announce newly called tickets, oldest call first
+                        detectNewCalls(cachedPillars);
+
+                        // 3. A pillar that was not on screen before (new office/window activity) is shown on page 1
+                        const currentKeys = new Set(cachedPillars.map(p => p.pillar_key));
+                        if (knownPillarKeys !== null) {
+                            let hasNewPillar = false;
+                            currentKeys.forEach(k => { if (!knownPillarKeys.has(k)) hasNewPillar = true; });
+                            if (hasNewPillar) {
+                                holdOnFirstPage();
                             }
+                        }
+                        knownPillarKeys = currentKeys;
 
-                            const totalPages = Math.ceil(cachedActiveOffices.length / ITEMS_PER_PAGE);
-                            if (currentPageIndex >= totalPages) {
-                                currentPageIndex = 0;
-                            }
+                        if (cachedPillars.length === 0) {
+                            renderEmptyState();
+                            return;
+                        }
 
-                            cachedActiveOffices.forEach((office, index) => {
-                                const isCalling = office.now_serving && office.now_serving.status === 'CALLED';
-
-                                if (isCalling && office.now_serving.ticket_number) {
-                                    const callKey = `${office.now_serving.ticket_number}_${office.now_serving.called_at || ''}`;
-
-                                    if (!calledTicketsHistory.has(callKey)) {
-                                        calledTicketsHistory.add(callKey);
-                                        const officePageIndex = Math.floor(index / ITEMS_PER_PAGE);
-                                        const counterName = office.now_serving.counter_name || '';
-                                        queueVoiceCallout(office.now_serving.ticket_number, counterName, officePageIndex);
-                                    }
-                                }
-                            });
-
-                            const currentDataFingerprint = JSON.stringify(cachedActiveOffices);
-
-                            if (currentDataFingerprint !== lastRenderedJson) {
-                                renderCurrentPage(false);
-                                lastRenderedJson = currentDataFingerprint;
-                            }
+                        // called_age changes every poll, so it must not trigger a re-render
+                        if (currentFingerprint() !== lastRenderedJson) {
+                            renderCurrentPage(false);
                         }
                     })
                     .catch(err => console.error("Live Queue Fetch Error:", err));
             }
 
-            function renderCurrentPage(animate = false) {
-                if (cachedActiveOffices.length === 0) return;
+            function currentFingerprint() {
+                // called_age changes every poll, so it is excluded
+                return JSON.stringify(cachedPillars, (k, v) => (k === 'called_age' ? undefined : v));
+            }
 
-                const totalPages = Math.ceil(cachedActiveOffices.length / ITEMS_PER_PAGE);
-                if (currentPageIndex >= totalPages) currentPageIndex = 0;
+            function isTicketActive(ticketId) {
+                return cachedPillars.some(p => p.now_serving
+                    && p.now_serving.ticket_id === ticketId
+                    && (p.now_serving.status === 'CALLED' || p.now_serving.status === 'SERVING'));
+            }
 
-                if (totalPages > 1) {
-                    pageRotationBadge.textContent = `PAGE ${currentPageIndex + 1} / ${totalPages}`;
-                    if (pageBadgeWrapper) pageBadgeWrapper.classList.remove('d-none');
-                } else {
-                    if (pageBadgeWrapper) pageBadgeWrapper.classList.add('d-none');
+            function holdOnFirstPage() {
+                currentPageIndex = 0;
+                isHoldingCall = true;
+                if (postCallHoldTimer) clearTimeout(postCallHoldTimer);
+                postCallHoldTimer = setTimeout(() => { isHoldingCall = false; }, POST_CALL_HOLD_MS + 2000);
+            }
+
+            function detectNewCalls(pillars) {
+                const fresh = [];
+
+                pillars.forEach(p => {
+                    const ns = p.now_serving;
+                    if (!ns || !ns.ticket_number) return;
+
+                    // A call is "new" while CALLED (or if the staff pressed Start Serving within seconds of calling)
+                    const isCallState = ns.status === 'CALLED' || (ns.status === 'SERVING' && ns.called_age !== null && ns.called_age <= 6);
+                    if (!isCallState) return;
+
+                    const callKey = `${ns.ticket_id}_${ns.called_at || ''}`;
+                    if (announcedCalls.has(callKey)) return;
+                    announcedCalls.add(callKey);
+
+                    // First load of this screen: calls made a while ago were already announced earlier
+                    if (!firstPollDone && (ns.called_age === null || ns.called_age > FRESH_CALL_SECONDS)) return;
+
+                    fresh.push({ pillar: p, ns: ns });
+                });
+
+                firstPollDone = true;
+
+                // A new call is shown on page 1 (the handler sorts newest call first): keep the screen there for a moment
+                if (fresh.length > 0) {
+                    holdOnFirstPage();
                 }
 
-                const start = currentPageIndex * ITEMS_PER_PAGE;
-                const end = start + ITEMS_PER_PAGE;
-                const pageItems = cachedActiveOffices.slice(start, end);
+                // FIRST CALLED = FIRST SPOKEN (the list order is by office/window, not by call time)
+                fresh.sort((a, b) => {
+                    const t = String(a.ns.called_at || '').localeCompare(String(b.ns.called_at || ''));
+                    return t !== 0 ? t : (a.ns.ticket_id - b.ns.ticket_id);
+                });
 
-                const buildPillars = () => {
+                fresh.forEach(item => queueVoiceCallout(item.ns.ticket_number, item.pillar.counter_name, item.pillar.pillar_key, item.ns.ticket_id));
+            }
+
+            /* ---------------- RENDER ---------------- */
+            function renderCurrentPage(animate = false) {
+                if (cachedPillars.length === 0) return;
+
+                const seq = ++renderSeq;
+
+                // Everything is computed when the build actually runs (never from data captured earlier),
+                // and a newer render cancels any older pending one. This is what stops a slow page-rotation
+                // fade from putting old pillars back on the screen after fresh data arrived.
+                const build = () => {
+                    if (seq !== renderSeq || cachedPillars.length === 0) return;
+
+                    const totalPages = Math.ceil(cachedPillars.length / ITEMS_PER_PAGE);
+                    if (currentPageIndex >= totalPages) currentPageIndex = 0;
+
+                    if (totalPages > 1) {
+                        pageRotationBadge.textContent = `PAGE ${currentPageIndex + 1} / ${totalPages}`;
+                        if (pageBadgeWrapper) pageBadgeWrapper.classList.remove('d-none');
+                    } else {
+                        if (pageBadgeWrapper) pageBadgeWrapper.classList.add('d-none');
+                    }
+
+                    const start = currentPageIndex * ITEMS_PER_PAGE;
+                    const pageItems = cachedPillars.slice(start, start + ITEMS_PER_PAGE);
+
                     pillarGridContainer.innerHTML = '';
 
-                    pageItems.forEach(office => {
+                    pageItems.forEach(p => {
                         const pillar = document.createElement('div');
-                        const isCalling = office.now_serving && office.now_serving.status === 'CALLED';
-                        const cntName = office.now_serving ? (office.now_serving.counter_name || '') : '';
+                        const ns = p.now_serving;
+                        const isCalling = ns && ns.status === 'CALLED';
+                        const windowName = p.counter_name || 'OFFICE';
 
                         pillar.className = `office-pillar-card ${isCalling ? 'is-calling' : ''}`;
 
                         let lineupHtml = '';
-                        const upcoming = office.up_next || [];
+                        const upcoming = p.up_next || [];
                         for (let i = 0; i < 4; i++) {
                             if (upcoming[i]) {
                                 const isPri = upcoming[i].is_priority == 1;
-                                const priClass = isPri ? 'is-priority' : '';
-                                const priTag = isPri ? '★ ' : '';
-                                lineupHtml += `<div class="lineup-pill ${priClass}">${priTag}${escapeHtml(upcoming[i].ticket_number)}</div>`;
+                                lineupHtml += `<div class="lineup-pill ${isPri ? 'is-priority' : ''}">${isPri ? '★ ' : ''}${escapeHtml(upcoming[i].ticket_number)}</div>`;
                             } else {
                                 lineupHtml += `<div class="lineup-pill empty-pill">---</div>`;
                             }
                         }
 
-                        const logoHtml = office.office_logo ?
-                            `<img src="<?= BASE_URL; ?>${escapeHtml(office.office_logo)}" class="pillar-logo-img" alt="Logo" width="46" height="46">` :
+                        const logoHtml = p.office_logo ?
+                            `<img src="<?= BASE_URL; ?>${escapeHtml(p.office_logo)}" class="pillar-logo-img" alt="Logo" width="46" height="46">` :
                             `<div class="pillar-logo-img text-primary fw-bold fs-4"><i class="bi bi-building"></i></div>`;
-
-                        const windowBadgeHtml = cntName ? `<span class="window-badge-tag">${escapeHtml(cntName)}</span>` : '';
 
                         pillar.innerHTML = `
                             <div class="pillar-header">
                                 ${logoHtml}
-                                <h2 class="pillar-office-name">${escapeHtml(office.office_name)}</h2>
+                                <h2 class="pillar-office-name">${escapeHtml(p.office_name)}</h2>
                             </div>
 
                             <div class="pillar-serving-block">
-                                <span class="serving-label">NOW SERVING</span>
-                                ${windowBadgeHtml}
-                                <div class="serving-ticket-number">${office.now_serving ? escapeHtml(office.now_serving.ticket_number) : '---'}</div>
-                                <div class="priority-badge-container">
-                                    ${office.now_serving && office.now_serving.is_priority == 1 ? '<span class="priority-badge-tag">★ PRIORITY</span>' : ''}
+                                <div class="window-banner">${escapeHtml(windowName)}</div>
+                                <div class="serving-body">
+                                    <span class="serving-label">NOW SERVING</span>
+                                    <div class="serving-ticket-number">${ns ? escapeHtml(ns.ticket_number) : '---'}</div>
+                                    <div class="priority-badge-container">
+                                        ${ns && ns.is_priority == 1 ? '<span class="priority-badge-tag">★ PRIORITY</span>' : ''}
+                                    </div>
                                 </div>
                             </div>
 
                             <div class="pillar-lineup-block">
-                                <span class="lineup-label">NEXT IN LINE</span>
+                                <span class="lineup-label">WAITING LINE</span>
                                 <div class="lineup-pills-stack">
                                     ${lineupHtml}
                                 </div>
-                                <div class="waiting-count-footer">(${office.waiting_count || 0} Waiting)</div>
+                                <div class="waiting-count-footer">(${p.waiting_count || 0} Waiting)</div>
                             </div>
                         `;
 
                         pillarGridContainer.appendChild(pillar);
                     });
+
+                    lastRenderedJson = currentFingerprint();
                 };
 
                 if (animate) {
                     pillarGridContainer.classList.add('fade-out');
-
                     setTimeout(() => {
-                        buildPillars();
-
-                        requestAnimationFrame(() => {
-                            pillarGridContainer.classList.remove('fade-out');
-                        });
+                        if (seq !== renderSeq) return;   // superseded by a newer render, which handles the fade itself
+                        build();
+                        requestAnimationFrame(() => pillarGridContainer.classList.remove('fade-out'));
                     }, 350);
                 } else {
-                    buildPillars();
+                    pillarGridContainer.classList.remove('fade-out');
+                    build();
                 }
             }
 
             function renderEmptyState() {
+                renderSeq++;   // cancel any pending animated render
+                if (lastRenderedJson === 'EMPTY_STATE') return;
+                lastRenderedJson = 'EMPTY_STATE';
+                pillarGridContainer.classList.remove('fade-out');
                 if (pageBadgeWrapper) pageBadgeWrapper.classList.add('d-none');
                 pillarGridContainer.innerHTML = '';
                 pillarGridContainer.appendChild(emptyStateDisplay);
                 emptyStateDisplay.classList.remove('d-none');
             }
 
+            function showPillarPage(pillarKey) {
+                const idx = cachedPillars.findIndex(p => p.pillar_key === pillarKey);
+                if (idx < 0) return;
+                const page = Math.floor(idx / ITEMS_PER_PAGE);
+                if (page !== currentPageIndex) {
+                    currentPageIndex = page;
+                    renderCurrentPage(true);
+                }
+            }
+
             function startPageRotation() {
                 if (rotationTimer) clearInterval(rotationTimer);
                 rotationTimer = setInterval(() => {
-                    if (isSpeaking || isHoldingCall || audioQueue.length > 0) {
+                    // Hold the page while a call is being spoken (only when audio is actually working)
+                    if (isHoldingCall || (audioUnlocked && (isSpeaking || audioQueue.length > 0))) {
                         return;
                     }
 
-                    const totalPages = Math.ceil(cachedActiveOffices.length / ITEMS_PER_PAGE);
+                    const totalPages = Math.ceil(cachedPillars.length / ITEMS_PER_PAGE);
 
                     if (totalPages > 1) {
                         currentPageIndex = (currentPageIndex + 1) % totalPages;
@@ -1056,16 +1049,18 @@ if ($db_connect) {
                 }, ROTATION_INTERVAL_MS);
             }
 
-            function queueVoiceCallout(rawTicketNumber, counterName, pageIndex) {
-                const spokenTicket = rawTicketNumber
+            /* ---------------- VOICE QUEUE ---------------- */
+            function queueVoiceCallout(rawTicketNumber, counterName, pillarKey, ticketId) {
+                const spokenTicket = String(rawTicketNumber)
                     .split('')
                     .map(char => (char === '-' ? ' ' : char))
                     .join(' ');
 
                 const windowText = counterName ? `, proceed to ${counterName}` : ', proceed to the office';
-                const phrase     = `Now calling, ${spokenTicket}${windowText}. I repeat, ${spokenTicket}${windowText}.`;
+                const phrase = `Now calling, ${spokenTicket}${windowText}. I repeat, ${spokenTicket}${windowText}.`;
 
-                audioQueue.push({ phrase, pageIndex });
+                audioQueue.push({ phrase, pillarKey, ticketId, queuedAt: Date.now() });
+                if (audioQueue.length > 10) audioQueue.shift();
                 processAudioQueue();
             }
 
@@ -1076,74 +1071,143 @@ if ($db_connect) {
                 if (postCallHoldTimer) clearTimeout(postCallHoldTimer);
                 postCallHoldTimer = setTimeout(() => {
                     isHoldingCall = false;
-                    startPageRotation();
                 }, POST_CALL_HOLD_MS);
 
                 processAudioQueue();
             }
 
-            function processAudioQueue() {
-                if (isSpeaking || audioQueue.length === 0 || !('speechSynthesis' in window)) return;
+            let activeSpeech = null;   // { ticketId, abort() } while a call is being spoken
 
-                isSpeaking = true;
-                const nextItem = audioQueue.shift();
+            function speakPhrase(item) {
+                let finished = false;
+                let watchdog = null;
 
-                if (currentPageIndex !== nextItem.pageIndex) {
-                    currentPageIndex = nextItem.pageIndex;
-                    renderCurrentPage(true);
-                }
+                // aborted = the ticket was completed/skipped while speaking: stop right away, no post-call hold
+                const finish = (aborted) => {
+                    if (finished) return;
+                    finished = true;
+                    clearTimeout(watchdog);
+                    currentUtterance = null;
+                    activeSpeech = null;
+                    if (aborted) {
+                        isSpeaking = false;
+                        processAudioQueue();
+                    } else {
+                        finishSpeechAndHold();
+                    }
+                };
 
-                playBellDing(() => {
+                activeSpeech = {
+                    ticketId: item.ticketId,
+                    abort: () => {
+                        try { window.speechSynthesis.cancel(); } catch (e) {}
+                        finish(true);
+                    }
+                };
+
+                watchdog = setTimeout(() => {
+                    try { window.speechSynthesis.cancel(); } catch (e) {}
+                    finish(false);
+                }, SPEECH_WATCHDOG_MS);
+
+                try {
                     if (!singleFemaleVoice) loadVoices();
 
-                    const utterance = new SpeechSynthesisUtterance(nextItem.phrase);
+                    const utterance = new SpeechSynthesisUtterance(item.phrase);
                     utterance.rate = 1.0;
                     utterance.pitch = 1.1;
                     utterance.lang = 'en-US';
                     if (singleFemaleVoice) utterance.voice = singleFemaleVoice;
+                    utterance.onend = () => finish(false);
+                    utterance.onerror = () => finish(false);
 
-                    utterance.onend = finishSpeechAndHold;
-                    utterance.onerror = finishSpeechAndHold;
-
+                    currentUtterance = utterance;
                     window.speechSynthesis.speak(utterance);
-                });
+                } catch (e) {
+                    console.warn('Speech failed.', e);
+                    finish(false);
+                }
             }
 
-            setInterval(fetchLiveQueueData, 3000);
-            fetchLiveQueueData();
-            startPageRotation();
+            function processAudioQueue() {
+                if (isSpeaking || audioQueue.length === 0) return;
 
+                // Ticket already completed / skipped before it could be announced: do not announce it
+                if (!isTicketActive(audioQueue[0].ticketId)) {
+                    audioQueue.shift();
+                    processAudioQueue();
+                    return;
+                }
+
+                // Show the window that is being called, even while audio is still locked
+                showPillarPage(audioQueue[0].pillarKey);
+
+                if (!audioUnlocked || !('speechSynthesis' in window)) return;   // wait for the first click
+
+                const nextItem = audioQueue.shift();
+                if (Date.now() - nextItem.queuedAt > PENDING_MAX_AGE_MS) {
+                    processAudioQueue();   // too old to be useful, skip to the next one
+                    return;
+                }
+
+                isSpeaking = true;
+                playBellDing();
+                // Let the bell start first, then speak the ticket (if it is still being called)
+                setTimeout(() => {
+                    if (!isTicketActive(nextItem.ticketId)) {
+                        isSpeaking = false;
+                        processAudioQueue();
+                        return;
+                    }
+                    speakPhrase(nextItem);
+                }, 500);
+            }
+
+            /* ---------------- AUDIO UNLOCK (browsers require one click) ---------------- */
             const audioNoticeBanner = document.getElementById('audioNoticeBanner');
 
             function unlockAudioContext() {
-                if ('speechSynthesis' in window) {
-                    window.speechSynthesis.resume();
-                    loadVoices();
-                }
-
                 try {
                     const AudioContext = window.AudioContext || window.webkitAudioContext;
-                    if (AudioContext) {
-                        const tempCtx = new AudioContext();
-                        tempCtx.resume().then(() => tempCtx.close());
-                    }
+                    if (AudioContext && !audioCtx) audioCtx = new AudioContext();
+                    if (audioCtx) audioCtx.resume();
                 } catch (e) {
                     console.warn("Audio Context unlock attempt:", e);
                 }
 
+                if ('speechSynthesis' in window) {
+                    try {
+                        window.speechSynthesis.resume();
+                        loadVoices();
+                        // Silent primer so the very first real announcement is not dropped by the browser
+                        const primer = new SpeechSynthesisUtterance(' ');
+                        primer.volume = 0;
+                        window.speechSynthesis.speak(primer);
+                    } catch (e) {}
+                }
+
+                audioUnlocked = true;
+
                 if (audioNoticeBanner) {
                     audioNoticeBanner.classList.add('dismissed');
-                    setTimeout(() => {
-                        audioNoticeBanner.remove();
-                    }, 400);
+                    setTimeout(() => audioNoticeBanner.remove(), 400);
                 }
 
                 document.removeEventListener('click', unlockAudioContext);
                 document.removeEventListener('keydown', unlockAudioContext);
+                document.removeEventListener('touchstart', unlockAudioContext);
+
+                // Speak anything that was called before the first click
+                processAudioQueue();
             }
 
             document.addEventListener('click', unlockAudioContext);
             document.addEventListener('keydown', unlockAudioContext);
+            document.addEventListener('touchstart', unlockAudioContext);
+
+            setInterval(fetchLiveQueueData, 2000);
+            fetchLiveQueueData();
+            startPageRotation();
 
         })();
     </script>
