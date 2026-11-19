@@ -349,9 +349,12 @@ if ($db_connect && $user_id > 0) {
                             <form id="recordsFilterForm" class="row g-3 align-items-end">
                                 
                                 <!-- OFFICE SELECTION -->
+                                <?php $lock_office = ($g_user_role_upper === 'ADMIN_STAFF' && !empty($assigned_office)); ?>
                                 <div class="col-12 col-md-3">
-                                    <label for="filterOfficeId" class="form-label fw-bold small text-muted">Office Location</label>
-                                    <select id="filterOfficeId" class="form-select form-select-sm">
+                                    <label for="filterOfficeId" class="form-label fw-bold small text-muted">
+                                        Office Location <?php if ($lock_office): ?><i class="bi bi-lock-fill ms-1" title="Locked to your assigned office"></i><?php endif; ?>
+                                    </label>
+                                    <select id="filterOfficeId" class="form-select form-select-sm" <?= $lock_office ? 'disabled style="pointer-events:none; background-color:#f1f5f9;"' : ''; ?>>
                                         <?php if ($g_user_role_upper === 'ADMIN' || $g_user_role_upper === 'STATION_ADMIN'): ?>
                                             <option value="0">-- All Offices --</option>
                                             <?php foreach ($offices as $off): ?>
@@ -980,7 +983,9 @@ if ($db_connect && $user_id > 0) {
                 r.status         = (r.status || '').trim().toUpperCase();
                 r.visitor_type   = (r.visitor_type || '').trim().toUpperCase();
                 r.concerns_text  = buildConcernsText(r);
-                r.office_counter = (r.office_name || '') + (r.counter_name ? ` (${r.counter_name})` : '');
+                r.office_name    = r.office_name || '';
+                r.counter_name   = r.counter_name || '';
+                r.served_by_name = (r.served_by_name || '').trim();
                 const d    = r.created_at ? new Date(r.created_at) : null;
                 const time = (d && !isNaN(d)) ? d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
                 r.time_text     = time;
@@ -1095,9 +1100,24 @@ if ($db_connect && $user_id > 0) {
                         formatter: cell => `<div class="py-1">${buildLogbookStyleConcerns(cell.getRow().getData())}</div>`
                     }, colFilter),
                     Object.assign({
-                        title: "Office / Counter",
-                        field: "office_counter",
-                        minWidth: 220,
+                        title: "Office",
+                        field: "office_name",
+                        minWidth: 200,
+                        vertAlign: 'middle',
+                        formatter: cell => `<span class="text-dark">${escapeHtml(cell.getValue()) || '---'}</span>`
+                    }, colFilter),
+                    Object.assign({
+                        title: "Window",
+                        field: "counter_name",
+                        minWidth: 120,
+                        vertAlign: 'middle',
+                        hozAlign: 'center',
+                        formatter: cell => `<span class="text-dark">${escapeHtml(cell.getValue()) || '---'}</span>`
+                    }, colFilter),
+                    Object.assign({
+                        title: "Served By",
+                        field: "served_by_name",
+                        minWidth: 170,
                         vertAlign: 'middle',
                         formatter: cell => `<span class="text-dark">${escapeHtml(cell.getValue()) || '---'}</span>`
                     }, colFilter),
@@ -1137,8 +1157,9 @@ if ($db_connect && $user_id > 0) {
                 const kw = this.value.trim().toLowerCase();
                 if (!kw) { recordsTable.clearFilter(); return; }
                 recordsTable.setFilter(function(data) {
-                    return [data.ticket_number, data.full_name, data.visitor_type, data.concerns_text, data.office_counter, data.status, data.datetime_text]
-                        .some(v => String(v ?? '').toLowerCase().includes(kw));
+                    return [data.ticket_number, data.full_name, data.visitor_type, data.concerns_text,
+        data.office_name, data.counter_name, data.served_by_name, data.status, data.datetime_text]
+    .some(v => String(v ?? '').toLowerCase().includes(kw));
                 });
             });
 

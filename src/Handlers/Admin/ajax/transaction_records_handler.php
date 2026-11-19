@@ -147,11 +147,13 @@ switch ($action) {
                     l.other_concern_text,
                     o.office_name,
                     c.counter_name,
+                    CONCAT(su.first_name, ' ', su.last_name) AS served_by_name,
                     tt_main.transaction_name AS transaction_name
                 FROM queue_tickets q
                 INNER JOIN logbooks l ON q.logbook_id = l.id
                 LEFT JOIN office o ON q.office_id = o.office_id
                 LEFT JOIN counters c ON q.counter_id = c.id
+                LEFT JOIN users su ON q.served_by_user_id = su.id
                 LEFT JOIN transaction_types tt_main ON l.transaction_type_id = tt_main.id
                 WHERE {$whereSql}
                 ORDER BY q.id DESC
