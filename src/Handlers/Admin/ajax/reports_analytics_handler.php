@@ -75,12 +75,11 @@ if ($g_user_role_upper === 'ADMIN_STAFF' && $user_id > 0) {
     }
 }
 
-// Support both POST and GET payloads
 $action = $_REQUEST['action'] ?? '';
 
 switch ($action) {
 
-        case 'fetch_counters':
+    case 'fetch_counters':
         $office_id = (int)($_REQUEST['office_id'] ?? 0);
         if ($g_user_role_upper === 'ADMIN_STAFF' && $assigned_office_id > 0) {
             $office_id = $assigned_office_id;
@@ -153,7 +152,7 @@ switch ($action) {
                 return $rows;
             };
 
-            // A. KPI METRICS + AVERAGE STAGE TIMES (same stages as the Transaction Records lifecycle)
+            // A. KPI METRICS + AVERAGE STAGE TIMES
             $kpi = $fetchAll("
                 SELECT
                     COUNT(q.id) AS total_tickets,
@@ -193,61 +192,66 @@ switch ($action) {
                 }
             }
 
-            // C. VISITOR DISTRIBUTION
-            $visitorDistribution = [];
+            // C. VISITOR DISTRIBUTION (Always include Student, Employee, Guest)
+            $visitorCounts = ['STUDENT' => 0, 'EMPLOYEE' => 0, 'GUEST' => 0];
             foreach ($fetchAll("SELECT UPPER(TRIM(l.visitor_type)) AS type, COUNT(q.id) AS total {$base} WHERE {$whereSql} GROUP BY UPPER(TRIM(l.visitor_type))") as $r) {
-                $visitorDistribution[] = ['type' => ucfirst(strtolower($r['type'] ?: 'Unknown')), 'total' => (int)$r['total']];
+                $vType = strtoupper(trim((string)($r['type'] ?? '')));
+                if (isset($visitorCounts[$vType])) {
+                    $visitorCounts[$vType] = (int)$r['total'];
+                }
             }
+            $visitorDistribution = [
+                ['type' => 'Student',  'total' => $visitorCounts['STUDENT']],
+                ['type' => 'Employee', 'total' => $visitorCounts['EMPLOYEE']],
+                ['type' => 'Guest',    'total' => $visitorCounts['GUEST']]
+            ];
 
-            // D. QUEUE STATUS DISTRIBUTION
-            $statusDistribution = [];
-            foreach ($fetchAll("SELECT q.status, COUNT(q.id) AS total {$base} WHERE {$whereSql} GROUP BY q.status") as $r) {
-                $statusDistribution[] = ['status' => strtoupper((string)$r['status']), 'total' => (int)$r['total']];
+            // D. QUEUE STATUS DISTRIBUTION (Completed and Skipped)
+            $statusCounts = ['COMPLETED' => 0, 'SKIPPED' => 0];
+            foreach ($fetchAll("SELECT UPPER(TRIM(q.status)) AS status, COUNT(q.id) AS total {$base} WHERE {$whereSql} AND q.status IN ('COMPLETED', 'SKIPPED') GROUP BY q.status") as $r) {
+                $st = strtoupper((string)$r['status']);
+                if (isset($statusCounts[$st])) {
+                    $statusCounts[$st] = (int)$r['total'];
+                }
             }
+            $statusDistribution = [
+                ['status' => 'COMPLETED', 'total' => $statusCounts['COMPLETED']],
+                ['status' => 'SKIPPED',   'total' => $statusCounts['SKIPPED']]
+            ];
 
-            // E. TOP SERVICES (transaction types) - a ticket is counted once per service
+            // E. TOP TRANSACTIONS (Primary + Sub-Transactions combined if present, minimum 5 rows returned when available)
             $topConcerns = [];
             foreach ($fetchAll("
-                SELECT COALESCE(tt.transaction_name, 'Others / General Concern') AS concern,
-                       COUNT(DISTINCT q.id) AS total
+                SELECT
+                    CASE
+                        WHEN tsc.id IS NOT NULL AND TRIM(tsc.sub_concern_name) <> ''
+                            THEN CONCAT(COALESCE(tt.transaction_name, 'Others / General Concern'), ' / ', tsc.sub_concern_name)
+                        ELSE COALESCE(tt.transaction_name, 'Others / General Concern')
+                    END AS concern,
+                    COUNT(DISTINCT q.id) AS total
                 {$base}
                 LEFT JOIN logbook_transaction_items lti ON lti.logbook_id = l.id
-                LEFT JOIN transaction_types tt ON tt.id = COALESCE(lti.transaction_type_id, l.transaction_type_id)
+                LEFT JOIN transaction_sub_concerns tsc ON tsc.id = lti.sub_concern_id
+                LEFT JOIN transaction_types tt ON tt.id = COALESCE(lti.transaction_type_id, tsc.transaction_type_id, l.transaction_type_id)
                 WHERE {$whereSql}
-                GROUP BY tt.id, concern
-                ORDER BY total DESC
-                LIMIT 5
+                GROUP BY concern
+                ORDER BY total DESC, concern ASC
+                LIMIT 10
             ") as $r) {
                 $topConcerns[] = ['concern' => $r['concern'], 'total' => (int)$r['total']];
             }
 
-            // F. TOP SUB-CONCERNS (per service)
-            $subConcerns = [];
-            foreach ($fetchAll("
-                SELECT tt.transaction_name, tsc.sub_concern_name, COUNT(DISTINCT q.id) AS total
-                {$base}
-                INNER JOIN logbook_transaction_items lti ON lti.logbook_id = l.id AND lti.sub_concern_id IS NOT NULL
-                INNER JOIN transaction_sub_concerns tsc ON tsc.id = lti.sub_concern_id
-                LEFT JOIN transaction_types tt ON tt.id = tsc.transaction_type_id
-                WHERE {$whereSql}
-                GROUP BY tsc.id, tt.transaction_name, tsc.sub_concern_name
-                ORDER BY total DESC
-                LIMIT 10
-            ") as $r) {
-                $subConcerns[] = [
-                    'transaction_name'  => $r['transaction_name'] ?? 'N/A',
-                    'sub_concern_name'  => $r['sub_concern_name'],
-                    'total'             => (int)$r['total']
-                ];
-            }
-
-            // G. WINDOW (COUNTER) PERFORMANCE
+            // F. WINDOW (COUNTER) PERFORMANCE (Avg. Waiting, Avg. Calling, Avg. Processing)
             $counterBreakdown = [];
             foreach ($fetchAll("
                 SELECT CONCAT(o.office_code, ' - ', c.counter_name) AS counter_label,
                        COUNT(q.id) AS total_tickets,
                        SUM(q.status = 'COMPLETED') AS total_completed,
                        SUM(q.status = 'SKIPPED') AS total_skipped,
+                       ROUND(AVG(CASE WHEN q.called_at IS NOT NULL
+                           THEN TIMESTAMPDIFF(SECOND, l.created_at, q.called_at) END) / 60, 1) AS avg_wait_minutes,
+                       ROUND(AVG(CASE WHEN q.called_at IS NOT NULL AND q.served_at IS NOT NULL
+                           THEN TIMESTAMPDIFF(SECOND, q.called_at, q.served_at) END) / 60, 1) AS avg_call_minutes,
                        ROUND(AVG(CASE WHEN q.served_at IS NOT NULL AND q.completed_at IS NOT NULL
                            THEN TIMESTAMPDIFF(SECOND, q.served_at, q.completed_at) END) / 60, 1) AS avg_service_minutes
                 {$base}
@@ -262,31 +266,35 @@ switch ($action) {
                     'total_tickets'       => (int)$r['total_tickets'],
                     'total_completed'     => (int)$r['total_completed'],
                     'total_skipped'       => (int)$r['total_skipped'],
+                    'avg_wait_minutes'    => (float)($r['avg_wait_minutes'] ?? 0),
+                    'avg_call_minutes'    => (float)($r['avg_call_minutes'] ?? 0),
                     'avg_service_minutes' => (float)($r['avg_service_minutes'] ?? 0)
                 ];
             }
 
-            // H. STAFF PERFORMANCE
+            // G. STAFF PERFORMANCE (Separate row per Staff + Window so multi-window staff show each window individually)
             $staffBreakdown = [];
             foreach ($fetchAll("
                 SELECT CONCAT(su.first_name, ' ', su.last_name) AS staff_name,
-                       GROUP_CONCAT(DISTINCT c.counter_name ORDER BY c.counter_name SEPARATOR ', ') AS windows,
+                       COALESCE(c.counter_name, 'Unassigned Window') AS window_label,
                        COUNT(q.id) AS total_served,
                        SUM(q.status = 'COMPLETED') AS total_completed,
+                       SUM(q.status = 'SKIPPED') AS total_skipped,
                        ROUND(AVG(CASE WHEN q.served_at IS NOT NULL AND q.completed_at IS NOT NULL
                            THEN TIMESTAMPDIFF(SECOND, q.served_at, q.completed_at) END) / 60, 1) AS avg_service_minutes
                 {$base}
                 INNER JOIN users su ON q.served_by_user_id = su.id
                 LEFT JOIN counters c ON c.id = q.counter_id
                 WHERE {$whereSql}
-                GROUP BY su.id, su.first_name, su.last_name
-                ORDER BY total_served DESC
+                GROUP BY su.id, su.first_name, su.last_name, c.id, c.counter_name
+                ORDER BY staff_name ASC, window_label ASC
             ") as $r) {
                 $staffBreakdown[] = [
                     'staff_name'          => $r['staff_name'],
-                    'windows'             => $r['windows'] ?? '',
+                    'window_label'        => $r['window_label'],
                     'total_served'        => (int)$r['total_served'],
                     'total_completed'     => (int)$r['total_completed'],
+                    'total_skipped'       => (int)$r['total_skipped'],
                     'avg_service_minutes' => (float)($r['avg_service_minutes'] ?? 0)
                 ];
             }
@@ -299,7 +307,6 @@ switch ($action) {
                     'visitor_distribution' => $visitorDistribution,
                     'status_distribution'  => $statusDistribution,
                     'top_concerns'         => $topConcerns,
-                    'sub_concerns'         => $subConcerns,
                     'counter_breakdown'    => $counterBreakdown,
                     'staff_breakdown'      => $staffBreakdown
                 ]

@@ -68,7 +68,7 @@ if ($db_connect && $user_id > 0) {
         $stmtAssign->close();
     }
 
-    // Priority 2: employee table (same fallback the handler uses)
+    // Priority 2: employee table
     if (!$assigned_office && $g_user_role_upper === 'ADMIN_STAFF') {
         $stmtEmp = $db_connect->prepare("
             SELECT e.office_id, o.office_code, o.office_name 
@@ -169,20 +169,81 @@ if ($db_connect && $user_id > 0) {
             width: 100%;
         }
 
-        /* Tabulator Custom Layout Styling */
-        .report-table-box {
-            border-radius: 0.5rem;
-            border: 1px solid #e2e8f0;
+        .chart-container-tall {
+            position: relative;
+            min-height: 360px;
             width: 100%;
         }
-        .tabulator .tabulator-header {
-            background-color: #f8fafc;
-            border-bottom: 2px solid #e2e8f0;
-            font-weight: 600;
+
+        /* Bootstrap Tabulator Scrollbar Support (Y and X) */
+        .tabulator .tabulator-tableholder {
+            overflow-x: auto !important;
+            overflow-y: auto !important;
         }
-        .tabulator .tabulator-col-title {
-            white-space: normal !important;
-            word-wrap: break-word !important;
+
+        /* Force alignment on both Tabulator cells and inner wrappers */
+        #counterTable .tabulator-cell[tabulator-field="counter_label"],
+        #staffBreakdownTable .tabulator-cell[tabulator-field="staff_name"] {
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: flex-start !important;
+            text-align: left !important;
+        }
+
+        #staffBreakdownTable .tabulator-cell[tabulator-field="window_label"],
+        #staffBreakdownTable .tabulator-cell[tabulator-field="rate"],
+        #counterTable .tabulator-cell:not([tabulator-field="counter_label"]),
+        #staffBreakdownTable .tabulator-cell:not([tabulator-field="staff_name"]) {
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            text-align: center !important;
+        }
+
+        /* Empty Fallback Overlay for Chart.js Containers */
+        .chart-empty-state {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            background: #f8fafc;
+            border: 1px dashed #cbd5e1;
+            border-radius: 0.75rem;
+            color: #64748b;
+            padding: 1.5rem;
+            z-index: 2;
+        }
+
+        .chart-empty-state i {
+            font-size: 2rem;
+            color: #94a3b8;
+            margin-bottom: 0.5rem;
+        }
+
+        .chart-empty-state .empty-title {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #475569;
+        }
+
+        .chart-empty-state .empty-sub {
+            font-size: 0.78rem;
+            color: #94a3b8;
+            margin-top: 0.15rem;
+        }
+
+        /* Tabulator Empty Placeholder Styling */
+        .tabulator .tabulator-tableholder .tabulator-placeholder {
+            padding: 2rem 1rem !important;
+        }
+
+        .tabulator .tabulator-tableholder .tabulator-placeholder span {
+            color: #64748b !important;
+            font-size: 0.9rem !important;
+            font-weight: 500 !important;
         }
     </style>
 </head>
@@ -201,92 +262,99 @@ if ($db_connect && $user_id > 0) {
                         <?php echo is_array($page_header) ? '' : $page_header; ?>
                     </div>
 
-                                        <!-- FILTERS CARD -->
+                    <!-- FILTERS CARD -->
                     <div class="card filter-card mb-4">
                         <div class="card-body p-3 p-sm-4">
-                            <form id="analyticsFilterForm" class="row g-3 align-items-end">
+                            <form id="analyticsFilterForm">
 
-                                <div class="col-12 col-md-3">
-                                    <label for="filterOfficeId" class="form-label fw-bold small text-muted">
-                                        Office Location <?php if ($lock_office): ?><i class="bi bi-lock-fill ms-1" title="Locked to your assigned office"></i><?php endif; ?>
-                                    </label>
-                                    <select id="filterOfficeId" class="form-select form-select-sm" <?= $lock_office ? 'disabled style="pointer-events:none; background-color:#f1f5f9;"' : ''; ?>>
-                                        <?php if ($g_user_role_upper === 'ADMIN' || $g_user_role_upper === 'STATION_ADMIN'): ?>
-                                            <option value="0">-- All Offices --</option>
-                                            <?php foreach ($offices as $off): ?>
-                                                <option value="<?= $off['office_id']; ?>"><?= htmlspecialchars($off['office_name']); ?> (<?= htmlspecialchars($off['office_code']); ?>)</option>
-                                            <?php endforeach; ?>
-                                        <?php else: ?>
-                                            <?php if ($assigned_office): ?>
-                                                <option value="<?= $assigned_office['office_id']; ?>" selected><?= htmlspecialchars($assigned_office['office_name']); ?> (<?= htmlspecialchars($assigned_office['office_code']); ?>)</option>
-                                            <?php else: ?>
+                                <!-- ROW 1: SOLO OFFICE LOCATION -->
+                                <div class="row g-3 mb-3">
+                                    <div class="col-12">
+                                        <label for="filterOfficeId" class="form-label fw-bold small text-muted">
+                                            Office Location
+                                        </label>
+                                        <select id="filterOfficeId" class="form-select form-select-sm" <?= $lock_office ? 'disabled style="pointer-events:none; background-color:#f1f5f9;"' : ''; ?>>
+                                            <?php if ($g_user_role_upper === 'ADMIN' || $g_user_role_upper === 'STATION_ADMIN'): ?>
                                                 <option value="0">-- All Offices --</option>
                                                 <?php foreach ($offices as $off): ?>
-                                                    <option value="<?= $off['office_id']; ?>"><?= htmlspecialchars($off['office_name']); ?></option>
+                                                    <option value="<?= $off['office_id']; ?>"><?= htmlspecialchars($off['office_name']); ?> (<?= htmlspecialchars($off['office_code']); ?>)</option>
                                                 <?php endforeach; ?>
+                                            <?php else: ?>
+                                                <?php if ($assigned_office): ?>
+                                                    <option value="<?= $assigned_office['office_id']; ?>" selected><?= htmlspecialchars($assigned_office['office_name']); ?> (<?= htmlspecialchars($assigned_office['office_code']); ?>)</option>
+                                                <?php else: ?>
+                                                    <option value="0">-- All Offices --</option>
+                                                    <?php foreach ($offices as $off): ?>
+                                                        <option value="<?= $off['office_id']; ?>"><?= htmlspecialchars($off['office_name']); ?></option>
+                                                    <?php endforeach; ?>
+                                                <?php endif; ?>
                                             <?php endif; ?>
-                                        <?php endif; ?>
-                                    </select>
-                                </div>
-
-                                <div class="col-12 col-sm-6 col-md-2">
-                                    <label for="filterCounterId" class="form-label fw-bold small text-muted">Window / Counter</label>
-                                    <select id="filterCounterId" class="form-select form-select-sm">
-                                        <option value="0">All Windows</option>
-                                        <?php foreach ($counters as $c): ?>
-                                            <option value="<?= (int)$c['id']; ?>"><?= htmlspecialchars($c['counter_name']); ?></option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </div>
-
-                                <div class="col-12 col-sm-6 col-md-2">
-                                    <label for="filterVisitorType" class="form-label fw-bold small text-muted">Visitor Type</label>
-                                    <select id="filterVisitorType" class="form-select form-select-sm">
-                                        <option value="">All Types</option>
-                                        <option value="STUDENT">Student</option>
-                                        <option value="EMPLOYEE">Employee</option>
-                                        <option value="GUEST">Guest</option>
-                                    </select>
-                                </div>
-
-                                <div class="col-6 col-md-2">
-                                    <label for="filterDateFrom" class="form-label fw-bold small text-muted">Date From</label>
-                                    <input type="date" id="filterDateFrom" class="form-control form-control-sm" value="<?= date('Y-m-d'); ?>">
-                                </div>
-
-                                <div class="col-6 col-md-3">
-                                    <label for="filterDateTo" class="form-label fw-bold small text-muted">Date To</label>
-                                    <input type="date" id="filterDateTo" class="form-control form-control-sm" value="<?= date('Y-m-d'); ?>">
-                                </div>
-
-                                <div class="col-12 d-flex flex-wrap gap-2 justify-content-end">
-                                    <button type="submit" class="btn btn-primary btn-sm fw-bold px-4">
-                                        <i class="bi bi-filter me-1"></i>Apply
-                                    </button>
-                                    <button type="button" id="btnResetFilters" class="btn btn-outline-secondary btn-sm" title="Reset Filters">
-                                        <i class="bi bi-arrow-counterclockwise"></i>
-                                    </button>
-
-                                    <div class="dropdown">
-                                        <button class="btn btn-action btn-sm dropdown-toggle d-inline-flex align-items-center fw-semibold text-nowrap" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                            <i class="bi bi-download me-1"></i>Export / Download
-                                        </button>
-                                        <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                                            <?php foreach (['staff' => 'Staff Performance', 'counter' => 'Window Performance', 'sub' => 'Services & Sub-Concerns'] as $key => $label): ?>
-                                                <li class="px-3 py-1">
-                                                    <div class="small fw-bold text-muted"><?= $label; ?></div>
-                                                    <div class="d-flex gap-3 small">
-                                                        <a href="javascript:void(0)" data-export="<?= $key; ?>:csv">CSV</a>
-                                                        <a href="javascript:void(0)" data-export="<?= $key; ?>:xlsx">Excel</a>
-                                                        <a href="javascript:void(0)" data-export="<?= $key; ?>:json">JSON</a>
-                                                    </div>
-                                                </li>
-                                            <?php endforeach; ?>
-                                            <li><hr class="dropdown-divider"></li>
-                                            <li><a class="dropdown-item" href="javascript:void(0)" id="export-pdf-report"><i class="bi bi-file-earmark-pdf-fill text-danger me-2"></i> PDF Report</a></li>
-                                        </ul>
+                                        </select>
                                     </div>
                                 </div>
+
+                                <!-- ROW 2: WINDOW, VISITOR TYPE, DATES & ACTION BUTTONS ALIGNED -->
+                                <div class="row g-2 align-items-end">
+                                    <div class="col-12 col-sm-6 col-xl-2">
+                                        <label for="filterCounterId" class="form-label fw-bold small text-muted">Window / Counter</label>
+                                        <select id="filterCounterId" class="form-select form-select-sm">
+                                            <option value="0">All Windows</option>
+                                            <?php foreach ($counters as $c): ?>
+                                                <option value="<?= (int)$c['id']; ?>"><?= htmlspecialchars($c['counter_name']); ?></option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-12 col-sm-6 col-xl-2">
+                                        <label for="filterVisitorType" class="form-label fw-bold small text-muted">Visitor Type</label>
+                                        <select id="filterVisitorType" class="form-select form-select-sm">
+                                            <option value="">All Types</option>
+                                            <option value="STUDENT">Student</option>
+                                            <option value="EMPLOYEE">Employee</option>
+                                            <option value="GUEST">Guest</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-6 col-sm-6 col-xl-2">
+                                        <label for="filterDateFrom" class="form-label fw-bold small text-muted">Date From</label>
+                                        <input type="date" id="filterDateFrom" class="form-control form-control-sm" value="<?= date('Y-m-d'); ?>">
+                                    </div>
+
+                                    <div class="col-6 col-sm-6 col-xl-2">
+                                        <label for="filterDateTo" class="form-label fw-bold small text-muted">Date To</label>
+                                        <input type="date" id="filterDateTo" class="form-control form-control-sm" value="<?= date('Y-m-d'); ?>">
+                                    </div>
+
+                                    <div class="col-12 col-xl-4 d-flex flex-wrap flex-xl-nowrap gap-2 justify-content-xl-end">
+                                        <button type="submit" class="btn btn-primary btn-sm fw-bold px-3 text-nowrap">
+                                            <i class="bi bi-filter me-1"></i>Apply
+                                        </button>
+                                        <button type="button" id="btnResetFilters" class="btn btn-outline-secondary btn-sm text-nowrap" title="Reset Filters">
+                                            <i class="bi bi-arrow-counterclockwise"></i>
+                                        </button>
+
+                                        <div class="dropdown">
+                                            <button class="btn btn-action btn-sm dropdown-toggle d-inline-flex align-items-center fw-semibold text-nowrap" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                <i class="bi bi-download me-1"></i>Export / Download
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                                                <?php foreach (['staff' => 'Staff Performance', 'counter' => 'Window Performance'] as $key => $label): ?>
+                                                    <li class="px-3 py-1">
+                                                        <div class="small fw-bold text-muted"><?= $label; ?></div>
+                                                        <div class="d-flex gap-3 small">
+                                                            <a href="javascript:void(0)" data-export="<?= $key; ?>:csv">CSV</a>
+                                                            <a href="javascript:void(0)" data-export="<?= $key; ?>:xlsx">Excel</a>
+                                                            <a href="javascript:void(0)" data-export="<?= $key; ?>:json">JSON</a>
+                                                        </div>
+                                                    </li>
+                                                <?php endforeach; ?>
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li><a class="dropdown-item" href="javascript:void(0)" id="export-pdf-report"><i class="bi bi-file-earmark-pdf-fill text-danger me-2"></i> PDF Report</a></li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+
                             </form>
                         </div>
                     </div>
@@ -315,23 +383,17 @@ if ($db_connect && $user_id > 0) {
                         <?php endforeach; ?>
                     </div>
 
-                    <!-- ROW 1: TREND + VISITORS -->
+                    <!-- ROW 1: QUEUE VOLUME TREND (1 COLUMN) -->
                     <div class="row g-4 mb-4">
-                        <div class="col-12 col-lg-8">
+                        <div class="col-12">
                             <div class="card chart-card p-3 p-sm-4">
                                 <h6 class="fw-bold text-dark mb-3"><i class="bi bi-graph-up-arrow me-2 text-primary"></i>Queue Volume Trend</h6>
                                 <div class="chart-container"><canvas id="volumeTrendChart"></canvas></div>
                             </div>
                         </div>
-                        <div class="col-12 col-lg-4">
-                            <div class="card chart-card p-3 p-sm-4">
-                                <h6 class="fw-bold text-dark mb-3"><i class="bi bi-pie-chart-fill me-2 text-primary"></i>Visitor Distribution</h6>
-                                <div class="chart-container"><canvas id="visitorTypeChart"></canvas></div>
-                            </div>
-                        </div>
                     </div>
 
-                    <!-- ROW 2: STATUS + STAGE TIMES + TOP SERVICES -->
+                    <!-- ROW 2: QUEUE STATUS + AVERAGE TIME PER STAGE + VISITOR DISTRIBUTION (3 COLUMNS) -->
                     <div class="row g-4 mb-4">
                         <div class="col-12 col-lg-4">
                             <div class="card chart-card p-3 p-sm-4">
@@ -347,34 +409,38 @@ if ($db_connect && $user_id > 0) {
                         </div>
                         <div class="col-12 col-lg-4">
                             <div class="card chart-card p-3 p-sm-4">
-                                <h6 class="fw-bold text-dark mb-3"><i class="bi bi-card-checklist me-2 text-primary"></i>Top Services</h6>
-                                <div class="chart-container"><canvas id="topConcernsChart"></canvas></div>
+                                <h6 class="fw-bold text-dark mb-3"><i class="bi bi-pie-chart-fill me-2 text-primary"></i>Visitor Distribution</h6>
+                                <div class="chart-container"><canvas id="visitorTypeChart"></canvas></div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- ROW 3: WINDOWS + STAFF -->
-                    <div class="row g-4 mb-4">
-                        <div class="col-12 col-lg-6">
-                            <div class="card chart-card p-3 p-sm-4">
-                                <h6 class="fw-bold text-dark mb-3"><i class="bi bi-window-stack me-2 text-primary"></i>Window Performance</h6>
-                                <div id="counterTable" class="report-table-box"></div>
-                            </div>
-                        </div>
-                        <div class="col-12 col-lg-6">
-                            <div class="card chart-card p-3 p-sm-4">
-                                <h6 class="fw-bold text-dark mb-3"><i class="bi bi-person-workspace me-2 text-primary"></i>Staff Performance</h6>
-                                <div id="staffBreakdownTable" class="report-table-box"></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- ROW 4: SUB-CONCERNS -->
+                    <!-- ROW 3: TOP TRANSACTIONS (1 COLUMN, FULL READABLE TITLES) -->
                     <div class="row g-4 mb-4">
                         <div class="col-12">
                             <div class="card chart-card p-3 p-sm-4">
-                                <h6 class="fw-bold text-dark mb-3"><i class="bi bi-list-nested me-2 text-primary"></i>Top Services & Sub-Concerns</h6>
-                                <div id="subConcernTable" class="report-table-box"></div>
+                                <h6 class="fw-bold text-dark mb-3"><i class="bi bi-card-checklist me-2 text-primary"></i>Top Transactions</h6>
+                                <div class="chart-container-tall"><canvas id="topConcernsChart"></canvas></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ROW 4: WINDOW PERFORMANCE (1 COLUMN) -->
+                    <div class="row g-4 mb-4">
+                        <div class="col-12">
+                            <div class="card chart-card p-3 p-sm-4">
+                                <h6 class="fw-bold text-dark mb-3"><i class="bi bi-window-stack me-2 text-primary"></i>Window Performance</h6>
+                                <div id="counterTable" class="table table-bordered tabulator" style="min-height: 420px;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ROW 5: STAFF PERFORMANCE (1 COLUMN) -->
+                    <div class="row g-4 mb-4">
+                        <div class="col-12">
+                            <div class="card chart-card p-3 p-sm-4">
+                                <h6 class="fw-bold text-dark mb-3"><i class="bi bi-person-workspace me-2 text-primary"></i>Staff Performance</h6>
+                                <div id="staffBreakdownTable" class="table table-bordered tabulator" style="min-height: 420px;"></div>
                             </div>
                         </div>
                     </div>
@@ -388,251 +454,426 @@ if ($db_connect && $user_id > 0) {
 
     <?php include_once ADMIN_SCRIPT_PATH; ?>
 
-    <script>
-        (function() {
-            const HANDLER_URL = '<?= BASE_URL; ?>admin/ajax/reports-analytics';
-            const PDF_URL     = '<?= BASE_URL; ?>admin/reports-analytics-pdf';
+<script>
+    (function() {
+        const HANDLER_URL = '<?= BASE_URL; ?>admin/ajax/reports-analytics';
+        const PDF_URL     = '<?= BASE_URL; ?>admin/reports-analytics-pdf';
 
-            const charts = {};
-            const tables = {};
-            const STATUS_COLORS = {
-                COMPLETED: '#16a34a', SKIPPED: '#dc2626', SERVING: '#2563eb',
-                CALLED: '#ca8a04', WAITING: '#94a3b8', CANCELLED: '#6b7280'
-            };
+        const charts = {};
+        const tables = {};
+        const STATUS_COLORS = {
+            COMPLETED: '#16a34a', SKIPPED: '#dc2626'
+        };
 
-            const getTodayDate = () => {
-                const t = new Date();
-                return `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}`;
-            };
+        const getTodayDate = () => {
+            const t = new Date();
+            return `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}`;
+        };
 
-            const escapeHtml = (s) => String(s ?? '')
-                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+        const escapeHtml = (s) => String(s ?? '')
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
 
-            const fmtMin = (v) => `${(parseFloat(v) || 0).toFixed(1)}m`;
+        const fmtMin = (v) => `${(parseFloat(v) || 0).toFixed(1)}m`;
 
-            function drawChart(key, canvasId, config) {
-                if (charts[key]) charts[key].destroy();
-                charts[key] = new Chart(document.getElementById(canvasId).getContext('2d'), config);
+        // Wrap long transaction labels into multi-line arrays so Chart.js never truncates them
+        function wrapChartLabel(str, maxLineLen = 58) {
+            const text = String(str || '');
+            if (text.length <= maxLineLen) return text;
+            const words = text.split(' ');
+            const lines = [];
+            let current = '';
+            words.forEach(w => {
+                if ((current + ' ' + w).trim().length > maxLineLen) {
+                    if (current) lines.push(current.trim());
+                    current = w;
+                } else {
+                    current = (current + ' ' + w).trim();
+                }
+            });
+            if (current) lines.push(current.trim());
+            return lines;
+        }
+
+        function drawChart(key, canvasId, config) {
+            if (charts[key]) charts[key].destroy();
+            charts[key] = new Chart(document.getElementById(canvasId).getContext('2d'), config);
+        }
+
+        function toggleChartEmptyState(key, canvasId, isEmpty, title = 'No data available', subtitle = 'Try adjusting your office, window, or date filters.') {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+            const container = canvas.parentElement;
+            let emptyEl = container.querySelector('.chart-empty-state');
+
+            if (isEmpty) {
+                if (charts[key]) {
+                    charts[key].destroy();
+                    delete charts[key];
+                }
+                canvas.style.display = 'none';
+                if (!emptyEl) {
+                    emptyEl = document.createElement('div');
+                    emptyEl.className = 'chart-empty-state';
+                    container.appendChild(emptyEl);
+                }
+                emptyEl.innerHTML = `
+                    <i class="bi bi-bar-chart-line"></i>
+                    <div class="empty-title">${escapeHtml(title)}</div>
+                    <div class="empty-sub">${escapeHtml(subtitle)}</div>
+                `;
+            } else {
+                if (emptyEl) emptyEl.remove();
+                canvas.style.display = 'block';
+            }
+        }
+
+        const buildTablePlaceholder = (title, subtitle) => `
+            <div class="text-center py-4">
+                <i class="bi bi-inbox fs-2 text-muted d-block mb-2"></i>
+                <div class="fw-semibold text-secondary">${escapeHtml(title)}</div>
+                <div class="small text-muted">${escapeHtml(subtitle)}</div>
+            </div>
+        `;
+
+        const colFilter = {
+            headerFilter: "input",
+            headerFilterFunc: "like",
+            headerFilterParams: { allowEmpty: true }
+        };
+
+        const baseTabulatorOptions = {
+            data: [],
+            layout: "fitColumns",
+            resizableColumnFit: true,
+            headerFilterPlaceholder: "Search",
+            pagination: "local",
+            paginationSize: 10,
+            paginationSizeSelector: [10, 25, 50, 100, true],
+            height: "420px",
+            headerHozAlign: "center",
+            downloadConfig: {
+                columnHeaders: true,
+                columnGroups: false,
+                rowGroups: false,
+                formatCells: false
+            }
+        };
+
+        function initTables() {
+            // Window Performance: Window aligned left, metrics centered
+            tables.counter = new Tabulator("#counterTable", Object.assign({}, baseTabulatorOptions, {
+                placeholder: buildTablePlaceholder("No window activity found", "No tickets were routed to any window for the selected filters."),
+                columns: [
+                    Object.assign({ title: "Window", field: "counter_label", widthGrow: 1, minWidth: 160, vertAlign: "middle", hozAlign: "left",
+                        formatter: c => `<div class="w-100 text-start"><span class="badge bg-light text-dark border font-monospace">${escapeHtml(c.getValue())}</span></div>` }, colFilter),
+                    Object.assign({ title: "Tickets", field: "total_tickets", widthGrow: 1, minWidth: 120, vertAlign: "middle", hozAlign: "center", sorter: "number" }, colFilter),
+                    Object.assign({ title: "Completed", field: "total_completed", widthGrow: 1, minWidth: 120, vertAlign: "middle", hozAlign: "center", sorter: "number" }, colFilter),
+                    Object.assign({ title: "Skipped", field: "total_skipped", widthGrow: 1, minWidth: 120, vertAlign: "middle", hozAlign: "center", sorter: "number" }, colFilter),
+                    Object.assign({ title: "Avg. Waiting", field: "avg_wait_minutes", widthGrow: 1, minWidth: 130, vertAlign: "middle", hozAlign: "center", sorter: "number", formatter: c => fmtMin(c.getValue()) }, colFilter),
+                    Object.assign({ title: "Avg. Calling", field: "avg_call_minutes", widthGrow: 1, minWidth: 130, vertAlign: "middle", hozAlign: "center", sorter: "number", formatter: c => fmtMin(c.getValue()) }, colFilter),
+                    Object.assign({ title: "Avg. Processing", field: "avg_service_minutes", widthGrow: 1, minWidth: 140, vertAlign: "middle", hozAlign: "center", sorter: "number", formatter: c => fmtMin(c.getValue()) }, colFilter)
+                ]
+            }));
+
+            // Staff Performance: Staff Name left, Window & Completion centered, Skipped column added
+            tables.staff = new Tabulator("#staffBreakdownTable", Object.assign({}, baseTabulatorOptions, {
+                placeholder: buildTablePlaceholder("No staff activity recorded", "Staff performance metrics will appear once tickets are served."),
+                columns: [
+                    Object.assign({ title: "Staff Name", field: "staff_name", widthGrow: 1, minWidth: 180, vertAlign: "middle", hozAlign: "left",
+                        formatter: c => `<div class="w-100 text-start"><span class="fw-semibold text-wrap">${escapeHtml(c.getValue() || 'Unassigned')}</span></div>` }, colFilter),
+                    Object.assign({ title: "Window", field: "window_label", widthGrow: 1, minWidth: 150, vertAlign: "middle", hozAlign: "center",
+                        formatter: c => `<div class="w-100 text-center"><span class="badge bg-light text-dark border font-monospace">${escapeHtml(c.getValue() || '---')}</span></div>` }, colFilter),
+                    Object.assign({ title: "Served", field: "total_served", widthGrow: 1, minWidth: 115, vertAlign: "middle", hozAlign: "center", sorter: "number" }, colFilter),
+                    Object.assign({ title: "Completed", field: "total_completed", widthGrow: 1, minWidth: 115, vertAlign: "middle", hozAlign: "center", sorter: "number" }, colFilter),
+                    Object.assign({ title: "Skipped", field: "total_skipped", widthGrow: 1, minWidth: 115, vertAlign: "middle", hozAlign: "center", sorter: "number" }, colFilter),
+                    Object.assign({
+                        title: "Completion", field: "rate", widthGrow: 1, minWidth: 130, vertAlign: "middle", hozAlign: "center", sorter: "number",
+                        formatter: c => `${c.getValue()}%`
+                    }, colFilter)
+                ]
+            }));
+        }
+
+        function resetAllEmptyStates() {
+            renderKPIs({
+                total_tickets: 0,
+                completed_tickets: 0,
+                skipped_tickets: 0,
+                priority_tickets: 0,
+                avg_wait_minutes: 0,
+                avg_service_minutes: 0
+            });
+            renderVolumeTrend([]);
+            renderVisitorType([]);
+            renderStatus([]);
+            renderStageTimes({});
+            renderTopConcerns([]);
+            if (tables.counter) tables.counter.setData([]);
+            if (tables.staff) tables.staff.setData([]);
+        }
+
+        function loadCounters() {
+            const fd = new FormData();
+            fd.append('action', 'fetch_counters');
+            fd.append('office_id', $('#filterOfficeId').val() || 0);
+
+            fetch(HANDLER_URL, { method: 'POST', body: fd })
+                .then(r => r.json())
+                .then(res => {
+                    const $sel = $('#filterCounterId').empty().append('<option value="0">All Windows</option>');
+                    (res.data || []).forEach(c => $sel.append($('<option>').val(c.id).text(c.counter_name)));
+                })
+                .catch(err => console.error("Counter fetch error:", err));
+        }
+
+        function loadAnalytics() {
+            const fd = new FormData();
+            fd.append('action', 'fetch_analytics');
+            fd.append('office_id', $('#filterOfficeId').val());
+            fd.append('counter_id', $('#filterCounterId').val());
+            fd.append('visitor_type', $('#filterVisitorType').val());
+            fd.append('date_from', $('#filterDateFrom').val());
+            fd.append('date_to', $('#filterDateTo').val());
+
+            fetch(HANDLER_URL, { method: 'POST', body: fd })
+                .then(res => res.json())
+                .then(res => {
+                    if (!(res.success && res.data)) {
+                        console.warn("Analytics response error:", res.message);
+                        resetAllEmptyStates();
+                        return;
+                    }
+                    const d = res.data;
+                    renderKPIs(d.kpi);
+                    renderVolumeTrend(d.volume_trend);
+                    renderVisitorType(d.visitor_distribution);
+                    renderStatus(d.status_distribution);
+                    renderStageTimes(d.kpi);
+                    renderTopConcerns(d.top_concerns);
+                    tables.counter.setData(d.counter_breakdown || []);
+                    tables.staff.setData((d.staff_breakdown || []).map(s => {
+                        const served = parseInt(s.total_served || 0), completed = parseInt(s.total_completed || 0);
+                        return { ...s, rate: served > 0 ? Math.round((completed / served) * 100) : 0 };
+                    }));
+                })
+                .catch(err => {
+                    console.error("Analytics fetch error:", err);
+                    resetAllEmptyStates();
+                });
+        }
+
+        function renderKPIs(k) {
+            if (!k) return;
+            $('#kpiTotalTickets').text(k.total_tickets || 0);
+            $('#kpiCompletedTickets').text(k.completed_tickets || 0);
+            $('#kpiSkippedTickets').text(k.skipped_tickets || 0);
+            $('#kpiPriorityTickets').text(k.priority_tickets || 0);
+            $('#kpiAvgWaitTime').text(fmtMin(k.avg_wait_minutes));
+            $('#kpiAvgServiceTime').text(fmtMin(k.avg_service_minutes));
+        }
+
+        function renderVolumeTrend(data) {
+            const items = data || [];
+            const hasData = items.some(d => (parseInt(d.total, 10) || 0) > 0);
+            toggleChartEmptyState('volume', 'volumeTrendChart', !hasData, 'No queue volume recorded', 'No tickets were issued for the selected filters.');
+            if (!hasData) return;
+
+            drawChart('volume', 'volumeTrendChart', {
+                type: 'line',
+                data: {
+                    labels: items.map(d => d.label),
+                    datasets: [{
+                        label: 'Tickets Issued', data: items.map(d => d.total),
+                        borderColor: '#2563eb', backgroundColor: 'rgba(37, 99, 235, 0.08)',
+                        fill: true, lineTension: 0.35, borderWidth: 2, pointBackgroundColor: '#2563eb', pointRadius: 4
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, legend: { display: false },
+                    scales: { yAxes: [{ ticks: { beginAtZero: true, precision: 0 } }] } }
+            });
+        }
+
+        function renderVisitorType(data) {
+            const counts = { Student: 0, Employee: 0, Guest: 0 };
+            (data || []).forEach(d => {
+                const key = String(d.type || '').trim().toLowerCase();
+                if (key === 'student') counts.Student = parseInt(d.total || 0, 10);
+                else if (key === 'employee') counts.Employee = parseInt(d.total || 0, 10);
+                else if (key === 'guest') counts.Guest = parseInt(d.total || 0, 10);
+            });
+
+            const labels = ['Student', 'Employee', 'Guest'];
+            const values = [counts.Student, counts.Employee, counts.Guest];
+            const hasData = values.some(v => v > 0);
+
+            toggleChartEmptyState('visitor', 'visitorTypeChart', !hasData, 'No visitor records found', 'No student, employee, or guest activity in this range.');
+            if (!hasData) return;
+
+            drawChart('visitor', 'visitorTypeChart', {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: values,
+                        backgroundColor: ['#2563eb', '#7c3aed', '#16a34a'],
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, legend: { position: 'bottom' } }
+            });
+        }
+
+        function renderStatus(data) {
+            const allowed = ['COMPLETED', 'SKIPPED'];
+            const filtered = (data || []).filter(d => allowed.includes(String(d.status || '').toUpperCase()));
+            const hasData = filtered.some(d => (parseInt(d.total, 10) || 0) > 0);
+
+            toggleChartEmptyState('status', 'statusChart', !hasData, 'No completed or skipped tickets', 'Queue status breakdown will appear once tickets are processed.');
+            if (!hasData) return;
+
+            drawChart('status', 'statusChart', {
+                type: 'doughnut',
+                data: {
+                    labels: filtered.map(d => d.status.charAt(0) + d.status.slice(1).toLowerCase()),
+                    datasets: [{
+                        data: filtered.map(d => d.total),
+                        backgroundColor: filtered.map(d => STATUS_COLORS[d.status] || '#94a3b8'),
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, legend: { position: 'bottom' } }
+            });
+        }
+
+        function renderStageTimes(k) {
+            k = k || {};
+            const values = [
+                parseFloat(k.avg_wait_minutes) || 0,
+                parseFloat(k.avg_call_minutes) || 0,
+                parseFloat(k.avg_service_minutes) || 0
+            ];
+            const hasData = values.some(v => v > 0);
+
+            toggleChartEmptyState('stage', 'stageTimeChart', !hasData, 'No stage timing data', 'Waiting, calling, and processing averages require served tickets.');
+            if (!hasData) return;
+
+            drawChart('stage', 'stageTimeChart', {
+                type: 'bar',
+                data: {
+                    labels: ['Waiting', 'Calling', 'Processing'],
+                    datasets: [{ label: 'Minutes', data: values, backgroundColor: ['#94a3b8', '#ca8a04', '#2563eb'] }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, legend: { display: false },
+                    scales: { yAxes: [{ ticks: { beginAtZero: true } }] } }
+            });
+        }
+
+        function renderTopConcerns(data) {
+            const items = (data || []).filter(d => (parseInt(d.total, 10) || 0) > 0);
+            const container = document.getElementById('topConcernsChart').parentElement;
+            const hasData = items.length > 0;
+
+            if (!hasData) {
+                container.style.minHeight = '280px';
+                toggleChartEmptyState('concerns', 'topConcernsChart', true, 'No transactions logged', 'Top requested transactions will display here once logged.');
+                return;
             }
 
-            const downloadConfig = { columnHeaders: true, columnGroups: false, rowGroups: false, formatCells: false };
+            toggleChartEmptyState('concerns', 'topConcernsChart', false);
 
-            function initTables() {
-                tables.counter = new Tabulator("#counterTable", {
-                    data: [], layout: "fitColumns", downloadConfig,
-                    placeholder: "No window activity for the selected filters.",
-                    columns: [
-                        { title: "Window", field: "counter_label", formatter: c => `<span class="fw-semibold">${escapeHtml(c.getValue())}</span>` },
-                        { title: "Tickets", field: "total_tickets", hozAlign: "center", headerHozAlign: "center", sorter: "number" },
-                        { title: "Completed", field: "total_completed", hozAlign: "center", headerHozAlign: "center", sorter: "number" },
-                        { title: "Skipped", field: "total_skipped", hozAlign: "center", headerHozAlign: "center", sorter: "number" },
-                        { title: "Avg. Service", field: "avg_service_minutes", hozAlign: "center", headerHozAlign: "center", sorter: "number", formatter: c => fmtMin(c.getValue()) }
-                    ]
-                });
+            const rawLabels = items.map(d => d.concern);
+            const wrappedLabels = rawLabels.map(lbl => wrapChartLabel(lbl, 60));
+            const dynamicHeight = Math.max(360, items.length * 52);
+            container.style.minHeight = `${dynamicHeight}px`;
 
-                tables.staff = new Tabulator("#staffBreakdownTable", {
-                    data: [], layout: "fitColumns", downloadConfig,
-                    placeholder: "No staff activity recorded for selected range.",
-                    columns: [
-                        { title: "Staff Name", field: "staff_name", formatter: c => `<span class="fw-semibold text-wrap">${escapeHtml(c.getValue() || 'Unassigned')}</span>` },
-                        { title: "Window(s)", field: "windows", formatter: c => escapeHtml(c.getValue() || '---') },
-                        { title: "Served", field: "total_served", hozAlign: "center", headerHozAlign: "center", sorter: "number" },
-                        { title: "Completed", field: "total_completed", hozAlign: "center", headerHozAlign: "center", sorter: "number" },
-                        {
-                            title: "Completion", field: "rate", hozAlign: "center", headerHozAlign: "center", sorter: "number",
-                            formatter: function(cell) {
-                                const rate = cell.getValue();
-                                const cls = rate >= 80 ? 'bg-success-subtle text-success border-success-subtle' : 'bg-primary-subtle text-primary';
-                                return `<span class="badge ${cls} px-2 py-1 rounded-pill font-monospace">${rate}%</span>`;
+            drawChart('concerns', 'topConcernsChart', {
+                type: 'horizontalBar',
+                data: {
+                    labels: wrappedLabels,
+                    datasets: [{ label: 'Requests', data: items.map(d => d.total), backgroundColor: '#0284c7' }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    legend: { display: false },
+                    tooltips: {
+                        callbacks: {
+                            title: function(tooltipItems) {
+                                const idx = tooltipItems[0].index;
+                                return rawLabels[idx] || '';
                             }
                         }
-                    ]
-                });
-
-                tables.sub = new Tabulator("#subConcernTable", {
-                    data: [], layout: "fitColumns", downloadConfig,
-                    placeholder: "No sub-concerns recorded for selected range.",
-                    columns: [
-                        { title: "Service / Transaction Type", field: "transaction_name", formatter: c => escapeHtml(c.getValue()) },
-                        { title: "Sub-Concern", field: "sub_concern_name", formatter: c => `<span class="fw-semibold">${escapeHtml(c.getValue())}</span>` },
-                        { title: "Requests", field: "total", width: 120, hozAlign: "center", headerHozAlign: "center", sorter: "number" }
-                    ]
-                });
-            }
-
-            function loadCounters() {
-                const fd = new FormData();
-                fd.append('action', 'fetch_counters');
-                fd.append('office_id', $('#filterOfficeId').val() || 0);
-
-                fetch(HANDLER_URL, { method: 'POST', body: fd })
-                    .then(r => r.json())
-                    .then(res => {
-                        const $sel = $('#filterCounterId').empty().append('<option value="0">All Windows</option>');
-                        (res.data || []).forEach(c => $sel.append($('<option>').val(c.id).text(c.counter_name)));
-                    })
-                    .catch(err => console.error("Counter fetch error:", err));
-            }
-
-            function loadAnalytics() {
-                const fd = new FormData();
-                fd.append('action', 'fetch_analytics');
-                fd.append('office_id', $('#filterOfficeId').val());
-                fd.append('counter_id', $('#filterCounterId').val());
-                fd.append('visitor_type', $('#filterVisitorType').val());
-                fd.append('date_from', $('#filterDateFrom').val());
-                fd.append('date_to', $('#filterDateTo').val());
-
-                fetch(HANDLER_URL, { method: 'POST', body: fd })
-                    .then(res => res.json())
-                    .then(res => {
-                        if (!(res.success && res.data)) {
-                            console.warn("Analytics response error:", res.message);
-                            return;
-                        }
-                        const d = res.data;
-                        renderKPIs(d.kpi);
-                        renderVolumeTrend(d.volume_trend);
-                        renderVisitorType(d.visitor_distribution);
-                        renderStatus(d.status_distribution);
-                        renderStageTimes(d.kpi);
-                        renderTopConcerns(d.top_concerns);
-                        tables.counter.setData(d.counter_breakdown || []);
-                        tables.sub.setData(d.sub_concerns || []);
-                        tables.staff.setData((d.staff_breakdown || []).map(s => {
-                            const served = parseInt(s.total_served || 0), completed = parseInt(s.total_completed || 0);
-                            return { ...s, rate: served > 0 ? Math.round((completed / served) * 100) : 0 };
-                        }));
-                    })
-                    .catch(err => console.error("Analytics fetch error:", err));
-            }
-
-            function renderKPIs(k) {
-                if (!k) return;
-                $('#kpiTotalTickets').text(k.total_tickets || 0);
-                $('#kpiCompletedTickets').text(k.completed_tickets || 0);
-                $('#kpiSkippedTickets').text(k.skipped_tickets || 0);
-                $('#kpiPriorityTickets').text(k.priority_tickets || 0);
-                $('#kpiAvgWaitTime').text(fmtMin(k.avg_wait_minutes));
-                $('#kpiAvgServiceTime').text(fmtMin(k.avg_service_minutes));
-            }
-
-            function renderVolumeTrend(data) {
-                drawChart('volume', 'volumeTrendChart', {
-                    type: 'line',
-                    data: {
-                        labels: (data || []).map(d => d.label),
-                        datasets: [{
-                            label: 'Tickets Issued', data: (data || []).map(d => d.total),
-                            borderColor: '#2563eb', backgroundColor: 'rgba(37, 99, 235, 0.08)',
-                            fill: true, lineTension: 0.35, borderWidth: 2, pointBackgroundColor: '#2563eb', pointRadius: 4
+                    },
+                    scales: {
+                        xAxes: [{ ticks: { beginAtZero: true, precision: 0 } }],
+                        yAxes: [{
+                            ticks: {
+                                autoSkip: false,
+                                fontSize: 12
+                            }
                         }]
-                    },
-                    options: { responsive: true, maintainAspectRatio: false, legend: { display: false },
-                        scales: { yAxes: [{ ticks: { beginAtZero: true, precision: 0 } }] } }
-                });
-            }
-
-            function renderVisitorType(data) {
-                drawChart('visitor', 'visitorTypeChart', {
-                    type: 'doughnut',
-                    data: {
-                        labels: (data || []).map(d => d.type),
-                        datasets: [{ data: (data || []).map(d => d.total), backgroundColor: ['#2563eb', '#0284c7', '#ca8a04'], borderWidth: 2, borderColor: '#ffffff' }]
-                    },
-                    options: { responsive: true, maintainAspectRatio: false, legend: { position: 'bottom' } }
-                });
-            }
-
-            function renderStatus(data) {
-                drawChart('status', 'statusChart', {
-                    type: 'doughnut',
-                    data: {
-                        labels: (data || []).map(d => d.status.charAt(0) + d.status.slice(1).toLowerCase()),
-                        datasets: [{ data: (data || []).map(d => d.total), backgroundColor: (data || []).map(d => STATUS_COLORS[d.status] || '#94a3b8'), borderWidth: 2, borderColor: '#ffffff' }]
-                    },
-                    options: { responsive: true, maintainAspectRatio: false, legend: { position: 'bottom' } }
-                });
-            }
-
-            function renderStageTimes(k) {
-                k = k || {};
-                drawChart('stage', 'stageTimeChart', {
-                    type: 'bar',
-                    data: {
-                        labels: ['Waiting', 'Calling', 'Processing'],
-                        datasets: [{ label: 'Minutes', data: [k.avg_wait_minutes || 0, k.avg_call_minutes || 0, k.avg_service_minutes || 0], backgroundColor: ['#94a3b8', '#ca8a04', '#2563eb'] }]
-                    },
-                    options: { responsive: true, maintainAspectRatio: false, legend: { display: false },
-                        scales: { yAxes: [{ ticks: { beginAtZero: true } }] } }
-                });
-            }
-
-            function renderTopConcerns(data) {
-                drawChart('concerns', 'topConcernsChart', {
-                    type: 'horizontalBar',
-                    data: {
-                        labels: (data || []).map(d => d.concern),
-                        datasets: [{ label: 'Requests', data: (data || []).map(d => d.total), backgroundColor: '#0284c7' }]
-                    },
-                    options: { responsive: true, maintainAspectRatio: false, legend: { display: false },
-                        scales: { xAxes: [{ ticks: { beginAtZero: true, precision: 0 } }] } }
-                });
-            }
-
-            // Events
-            $('#filterOfficeId').on('change', loadCounters);
-
-            $('#analyticsFilterForm').on('submit', function(e) {
-                e.preventDefault();
-                loadAnalytics();
-            });
-
-            $('#btnResetFilters').on('click', function() {
-                const todayStr = getTodayDate();
-                $('#filterCounterId').val('0');
-                $('#filterVisitorType').val('');
-                $('#filterDateFrom').val(todayStr);
-                $('#filterDateTo').val(todayStr);
-                loadAnalytics();
-            });
-
-            document.querySelectorAll('[data-export]').forEach(el => {
-                el.addEventListener('click', () => {
-                    const [name, fmt] = el.dataset.export.split(':');
-                    const table = tables[name];
-                    if (!table) return;
-                    const file = `${name}_report`;
-                    if (fmt === 'xlsx') table.download('xlsx', `${file}.xlsx`, { sheetName: name });
-                    else table.download(fmt, `${file}.${fmt}`);
-                });
-            });
-
-            document.getElementById('export-pdf-report')?.addEventListener('click', function() {
-                const qs = new URLSearchParams({
-                    office_id: $('#filterOfficeId').val() || 0,
-                    counter_id: $('#filterCounterId').val() || 0,
-                    visitor_type: $('#filterVisitorType').val() || '',
-                    date_from: $('#filterDateFrom').val() || '',
-                    date_to: $('#filterDateTo').val() || ''
-                });
-
-                let frame = document.getElementById('silentPrintIframe');
-                if (!frame) {
-                    frame = document.createElement('iframe');
-                    frame.id = 'silentPrintIframe';
-                    frame.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;';
-                    document.body.appendChild(frame);
+                    }
                 }
-                frame.src = `${PDF_URL}?${qs.toString()}`;
+            });
+        }
+
+        // Events
+        $('#filterOfficeId').on('change', loadCounters);
+
+        $('#analyticsFilterForm').on('submit', function(e) {
+            e.preventDefault();
+            loadAnalytics();
+        });
+
+        $('#btnResetFilters').on('click', function() {
+            const todayStr = getTodayDate();
+            $('#filterCounterId').val('0');
+            $('#filterVisitorType').val('');
+            $('#filterDateFrom').val(todayStr);
+            $('#filterDateTo').val(todayStr);
+            if (tables.counter) tables.counter.clearHeaderFilter();
+            if (tables.staff) tables.staff.clearHeaderFilter();
+            loadAnalytics();
+        });
+
+        document.querySelectorAll('[data-export]').forEach(el => {
+            el.addEventListener('click', () => {
+                const [name, fmt] = el.dataset.export.split(':');
+                const table = tables[name];
+                if (!table) return;
+                const file = `${name}_report`;
+                if (fmt === 'xlsx') table.download('xlsx', `${file}.xlsx`, { sheetName: name });
+                else table.download(fmt, `${file}.${fmt}`);
+            });
+        });
+
+        document.getElementById('export-pdf-report')?.addEventListener('click', function() {
+            const qs = new URLSearchParams({
+                office_id: $('#filterOfficeId').val() || 0,
+                counter_id: $('#filterCounterId').val() || 0,
+                visitor_type: $('#filterVisitorType').val() || '',
+                date_from: $('#filterDateFrom').val() || '',
+                date_to: $('#filterDateTo').val() || ''
             });
 
-            $(document).ready(function() {
-                initTables();
-                loadAnalytics();
-            });
-        })();
-    </script>
+            let frame = document.getElementById('silentPrintIframe');
+            if (!frame) {
+                frame = document.createElement('iframe');
+                frame.id = 'silentPrintIframe';
+                frame.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;';
+                document.body.appendChild(frame);
+            }
+            frame.src = `${PDF_URL}?${qs.toString()}`;
+        });
+
+        $(document).ready(function() {
+            initTables();
+            loadAnalytics();
+        });
+    })();
+</script>
 </body>
 </html>
