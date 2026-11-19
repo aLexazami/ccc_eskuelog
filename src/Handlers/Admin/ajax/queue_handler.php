@@ -78,9 +78,6 @@ $action = $_POST['action'] ?? '';
 $today  = date('Y-m-d');
 
 // 3. STRICT WORKSTATION ASSIGNMENT AUTHORIZATION
-//    A staff member can be assigned to MANY windows (one staff_assignments row per window).
-//    The window being controlled is sent by the page as `counter_id` and is ONLY accepted
-//    if it is one of the staff member's own active windows.
 $assigned_office_id  = 0;
 $assigned_counter_id = 0;
 $my_windows          = [];
@@ -131,7 +128,6 @@ if ($user_id > 0) {
             $assigned_counter_id = $picked['counter_id'];
             $_SESSION['shift_status'] = 'ON_DUTY';
         } else {
-            // Several windows and none (valid) chosen: never fall back to "whole office" control
             $needs_window_selection = true;
         }
     } else {
@@ -244,7 +240,7 @@ function hydrateTicketDetails(\mysqli $db_connect, array $row): array {
             LEFT JOIN transaction_sub_concerns tsc ON lti.sub_concern_id = tsc.id
             WHERE lti.logbook_id = ?
               AND TRIM(ltid.answer_value) != ''
-            ORDER BY lti.id ASC, ltid.id ASC
+            ORDER BY lti.id ASC, lti.id ASC
         ");
         if ($stmtDetails) {
             $stmtDetails->bind_param("i", $row['logbook_id']);
@@ -290,7 +286,7 @@ switch ($action) {
         try {
             $shift_status = $_SESSION['shift_status'] ?? 'ON_DUTY';
 
-            // Base SELECT for full visitor & ticket details including counter/window names
+            // Base SELECT for full visitor & ticket details including counter/window names and lifecycle timestamps
             $baseTicketSelect = "
                 SELECT 
                     q.id,
@@ -306,6 +302,7 @@ switch ($action) {
                     l.created_at AS queue_entry_time,
                     q.called_at,
                     q.served_at,
+                    q.completed_at,
                     l.visitor_type,
                     l.reference_id,
                     COALESCE(l.email, u.email) AS email,
@@ -361,7 +358,6 @@ switch ($action) {
                 ORDER BY q.queue_sequence ASC
                 LIMIT 50
             ");
-            // Only this window's tickets (+ "Any Window" tickets with no designated window)
             $stmtNext->bind_param("isii", $office_id, $today, $counter_id, $counter_id);
             $stmtNext->execute();
             $resNext = $stmtNext->get_result();
@@ -456,7 +452,6 @@ switch ($action) {
                     }
                 }
 
-                // Include transaction if it has matched sub-transactions OR if it has no sub-transactions and handles this window
                 if (!empty($matchedSubs) || (empty($allSubs) && $transHandlesWindow)) {
                     $tRow['sub_concerns'] = $matchedSubs;
                     $services[] = $tRow;
@@ -488,12 +483,10 @@ switch ($action) {
             exit();
         }
 
-        // Serialize Call Next per window so two staff on the same window can never interleave.
-        // (Lock is per office+window; it is released automatically if the request dies.)
         $lock_name     = "eq_call_{$office_id}_{$counter_id}";
         $lock_held     = false;
         $in_tx         = false;
-        $guard_seconds = 4;   // a ticket called less than this long ago at this window blocks a second Call Next
+        $guard_seconds = 4;
         $response      = ['success' => false, 'message' => 'Call next failed.'];
 
         $lane_filters = [
@@ -558,7 +551,7 @@ switch ($action) {
                     $stmtCompletePrev->execute();
                     $stmtCompletePrev->close();
 
-                    // 3. Pick + atomically claim the next FIFO ticket of the lane (retry if another window takes a shared ticket first)
+                    // 3. Pick + atomically claim the next FIFO ticket of the lane
                     $claimed_number = null;
                     $lane_empty     = false;
 
@@ -615,7 +608,6 @@ switch ($action) {
                         $in_tx = false;
                         $response = ['success' => true, 'message' => "Ticket {$claimed_number} called."];
                     } else {
-                        // Nothing was called: undo the auto-complete so the current ticket is not lost
                         $db_connect->rollback();
                         $in_tx = false;
                         $response = [
@@ -688,7 +680,6 @@ switch ($action) {
             exit();
         }
 
-        // Preserve original called_at timestamp so the elapsed clock timer does not reset on recall
         if ($counter_id > 0) {
             $stmtRecall = $db_connect->prepare("
                 SELECT id, ticket_number 
