@@ -174,19 +174,6 @@ if ($db_connect && $user_id > 0) {
             margin-top: 2px;
         }
 
-        .timeline-step-card {
-            background: #f8fafc;
-            border: 1.5px solid #e2e8f0;
-            border-radius: 0.65rem;
-            padding: 0.65rem 0.75rem;
-            transition: all 0.2s ease;
-        }
-
-        .timeline-step-card:hover {
-            background: #ffffff;
-            border-color: #cbd5e1;
-        }
-
         /* RECEIPT CONCERN STYLES (MATCHED EXACTLY FROM STUDENT LOGBOOK & QUEUE CONTROLLER) */
         .receipt-concern-item {
             background-color: #ffffff;
@@ -216,6 +203,128 @@ if ($db_connect && $user_id > 0) {
             align-items: center;
             border: 1px solid #bfdbfe;
             line-height: 1.2;
+        }
+
+        /* QUEUE LIFECYCLE TIMESTAMPS CARD (MATCHED TO DETAIL-TILE) */
+        .lifecycle-card {
+            background: #ffffff;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 0.75rem;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
+        }
+
+        .lifecycle-toolbar {
+            background: #f8fafc;
+            border-bottom: 1.5px solid #e2e8f0;
+            padding: 0.65rem 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .lifecycle-table {
+            width: 100%;
+            margin-bottom: 0;
+            border-collapse: collapse;
+            font-size: 0.84rem;
+        }
+
+        .lifecycle-table th,
+        .lifecycle-table td {
+            padding: 0.6rem 0.9rem;
+            border-bottom: 1px solid #e2e8f0;
+            vertical-align: middle;
+        }
+
+        .lifecycle-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .lifecycle-stage-header td,
+        .lifecycle-summary-header td {
+            background: #eff6ff;
+            color: #1e40af;
+            font-weight: 800;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            padding: 0.48rem 0.9rem;
+            text-align: center;
+        }
+
+        .lifecycle-summary-header td {
+            border-top: 1.5px solid #cbd5e1;
+        }
+
+        .lifecycle-sub-header th {
+            background: #f8fafc;
+            color: #64748b;
+            font-weight: 700;
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            padding: 0.4rem 0.9rem;
+            width: 33.33%;
+        }
+
+        .lifecycle-total-row td {
+            background: #eff6ff;
+            color: #1e3a8a;
+            font-weight: 800;
+            border-top: 1.5px solid #bfdbfe;
+        }
+
+        .lifecycle-status-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 50rem;
+            font-size: 0.75rem;
+            font-weight: 800;
+            letter-spacing: 0.03em;
+            line-height: 1.2;
+            border: 1.5px solid transparent;
+            vertical-align: middle;
+        }
+
+        .lc-status-completed {
+            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+            color: #065f46;
+            border-color: #34d399;
+        }
+
+        .lc-status-calling {
+            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+            color: #92400e;
+            border-color: #fbbf24;
+        }
+
+        .lc-status-skipped {
+            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+            color: #991b1b;
+            border-color: #f87171;
+        }
+
+        .lc-status-serving {
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            color: #1e40af;
+            border-color: #60a5fa;
+        }
+
+        .lc-status-waiting {
+            background: #f1f5f9;
+            color: #334155;
+            border-color: #cbd5e1;
+        }
+
+        .lc-status-cancelled {
+            background: #f3f4f6;
+            color: #4b5563;
+            border-color: #d1d5db;
         }
     </style>
 </head>
@@ -382,6 +491,18 @@ if ($db_connect && $user_id > 0) {
         const HANDLER_URL = '<?= BASE_URL; ?>admin/ajax/transaction-records';
         let recordsTable = null;
 
+        // Live Lifecycle Table State
+        let modalLifecycleInterval = null;
+        let activeModalTicketRef = null;
+        let selectedDurationFormat = 'B'; // Default: B. X hr Y min Z sec
+
+        const DURATION_FORMAT_LABELS = {
+            'A': 'HH:MM:SS',
+            'B': 'X hr Y min Z sec',
+            'C': 'Xh Ym Zs',
+            'D': 'Full Words'
+        };
+
         const getTodayDate = () => {
             const today = new Date();
             const year = today.getFullYear();
@@ -405,10 +526,366 @@ if ($db_connect && $user_id > 0) {
             return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
         }
 
-        // Build exact Student Logbook Receipt Style for Multiple Primary Transactions & Sub Concerns
+        function parseSqlTimestamp(ts) {
+            if (!ts) return null;
+            const d = new Date(String(ts).replace(' ', 'T'));
+            return isNaN(d.getTime()) ? null : d;
+        }
+
+        function formatClockTime(dateObj) {
+            if (!dateObj) return '---';
+            return dateObj.toLocaleTimeString('en-US', {
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true
+            });
+        }
+
+        function formatLifecycleDuration(totalSeconds, formatKey = 'B') {
+            if (totalSeconds === null || totalSeconds === undefined || isNaN(totalSeconds)) {
+                return '---';
+            }
+            const secs = Math.max(0, Math.floor(totalSeconds));
+            const h = Math.floor(secs / 3600);
+            const m = Math.floor((secs % 3600) / 60);
+            const s = secs % 60;
+
+            switch (formatKey) {
+                case 'A': {
+                    const hh = String(h).padStart(2, '0');
+                    const mm = String(m).padStart(2, '0');
+                    const ss = String(s).padStart(2, '0');
+                    return `${hh}:${mm}:${ss}`;
+                }
+                case 'C': {
+                    return h > 0 ? `${h}h ${m}m ${s}s` : `${m}m ${s}s`;
+                }
+                case 'D': {
+                    const parts = [];
+                    if (h > 0) parts.push(`${h} ${h === 1 ? 'hour' : 'hours'}`);
+                    parts.push(`${m} ${m === 1 ? 'minute' : 'minutes'}`);
+                    parts.push(`and ${s} ${s === 1 ? 'second' : 'seconds'}`);
+                    return parts.join(', ');
+                }
+                case 'B':
+                default: {
+                    return h > 0 ? `${h} hr ${m} min ${s} sec` : `${m} min ${s} sec`;
+                }
+            }
+        }
+
+        function computeQueueLifecycleMetrics(ticket) {
+            const now = new Date();
+            const status = (ticket.status || 'WAITING').toUpperCase();
+
+            const entryDate = parseSqlTimestamp(ticket.queue_entry_time || ticket.created_at);
+            const calledDate = parseSqlTimestamp(ticket.called_at);
+            const servedDate = parseSqlTimestamp(ticket.served_at);
+            const completedDate = parseSqlTimestamp(ticket.completed_at);
+
+            // 1. Waiting Time (Entry -> Called)
+            let waitStart = formatClockTime(entryDate);
+            let waitEnd = '---';
+            let waitSecs = null;
+            let waitLive = false;
+
+            if (entryDate) {
+                if (calledDate) {
+                    waitEnd = formatClockTime(calledDate);
+                    waitSecs = Math.floor((calledDate - entryDate) / 1000);
+                } else if (completedDate) {
+                    waitEnd = formatClockTime(completedDate);
+                    waitSecs = Math.floor((completedDate - entryDate) / 1000);
+                } else if (status === 'WAITING') {
+                    waitEnd = 'Ongoing';
+                    waitSecs = Math.floor((now - entryDate) / 1000);
+                    waitLive = true;
+                }
+            }
+
+            // 2. Calling Time (Called -> Served, or Completed if skipped while called)
+            let callStart = formatClockTime(calledDate);
+            let callEnd = '---';
+            let callSecs = null;
+            let callLive = false;
+
+            if (calledDate) {
+                if (servedDate) {
+                    callEnd = formatClockTime(servedDate);
+                    callSecs = Math.floor((servedDate - calledDate) / 1000);
+                } else if (completedDate) {
+                    callEnd = formatClockTime(completedDate);
+                    callSecs = Math.floor((completedDate - calledDate) / 1000);
+                } else if (status === 'CALLED') {
+                    callEnd = 'Ongoing';
+                    callSecs = Math.floor((now - calledDate) / 1000);
+                    callLive = true;
+                }
+            }
+
+            // 3. Processing Time (Served -> Completed)
+            let procStart = formatClockTime(servedDate);
+            let procEnd = '---';
+            let procSecs = null;
+            let procLive = false;
+
+            if (servedDate) {
+                if (completedDate) {
+                    procEnd = formatClockTime(completedDate);
+                    procSecs = Math.floor((completedDate - servedDate) / 1000);
+                } else if (status === 'SERVING') {
+                    procEnd = 'Ongoing';
+                    procSecs = Math.floor((now - servedDate) / 1000);
+                    procLive = true;
+                }
+            }
+
+            const totalSecs = (waitSecs || 0) + (callSecs || 0) + (procSecs || 0);
+            const hasAnyTime = (waitSecs !== null || callSecs !== null || procSecs !== null);
+
+            return {
+                status,
+                wait: { start: waitStart, end: waitEnd, secs: waitSecs, live: waitLive },
+                call: { start: callStart, end: callEnd, secs: callSecs, live: callLive },
+                proc: { start: procStart, end: procEnd, secs: procSecs, live: procLive },
+                totalSecs: hasAnyTime ? totalSecs : null,
+                isAnyLive: waitLive || callLive || procLive
+            };
+        }
+
+        function buildLifecycleTableHtml(ticket) {
+            const m = computeQueueLifecycleMetrics(ticket);
+            const fmt = selectedDurationFormat;
+
+            const formatStatusBadge = (st) => {
+                const config = {
+                    'WAITING':   { cls: 'lc-status-waiting',   label: 'Waiting' },
+                    'CALLED':    { cls: 'lc-status-calling',   label: 'Calling' },
+                    'SERVING':   { cls: 'lc-status-serving',   label: 'Serving' },
+                    'COMPLETED': { cls: 'lc-status-completed', label: 'Completed' },
+                    'SKIPPED':   { cls: 'lc-status-skipped',   label: 'Skipped' },
+                    'CANCELLED': { cls: 'lc-status-cancelled', label: 'Cancelled' }
+                };
+                const item = config[st] || {
+                    cls: 'lc-status-waiting',
+                    label: st.charAt(0) + st.slice(1).toLowerCase()
+                };
+                return `
+                    <span class="lifecycle-status-badge ${item.cls}">
+                        ${escapeHtml(item.label)}
+                    </span>
+                `;
+            };
+
+            return `
+                <div class="lifecycle-card">
+                    <div class="lifecycle-toolbar">
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-primary dropdown-toggle fw-semibold d-inline-flex align-items-center gap-1" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 0.76rem; border-radius: 0.5rem;">
+                                <i class="bi bi-sliders"></i>
+                                <span>Time Format: ${escapeHtml(DURATION_FORMAT_LABELS[fmt])}</span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end shadow-sm" style="font-size: 0.82rem;">
+                                <li><a class="dropdown-item ${fmt === 'A' ? 'active' : ''}" href="javascript:void(0)" onclick="setLifecycleTimeFormat('A')">A. HH:MM:SS <small class="opacity-75">(e.g., 01:05:30)</small></a></li>
+                                <li><a class="dropdown-item ${fmt === 'B' ? 'active' : ''}" href="javascript:void(0)" onclick="setLifecycleTimeFormat('B')">B. X hr Y min Z sec <small class="opacity-75">(Default)</small></a></li>
+                                <li><a class="dropdown-item ${fmt === 'C' ? 'active' : ''}" href="javascript:void(0)" onclick="setLifecycleTimeFormat('C')">C. Xh Ym Zs <small class="opacity-75">(e.g., 2h 45m 45s)</small></a></li>
+                                <li><a class="dropdown-item ${fmt === 'D' ? 'active' : ''}" href="javascript:void(0)" onclick="setLifecycleTimeFormat('D')">D. X hours, Y minutes, and Z seconds</a></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="lifecycle-table">
+                            <tbody>
+                                <!-- WAITING TIME -->
+                                <tr class="lifecycle-stage-header">
+                                    <td colspan="3">Waiting Time</td>
+                                </tr>
+                                <tr class="lifecycle-sub-header">
+                                    <th>Start Time</th>
+                                    <th>End Time</th>
+                                    <th>Duration</th>
+                                </tr>
+                                <tr>
+                                    <td class="fw-semibold text-dark">${escapeHtml(m.wait.start)}</td>
+                                    <td class="fw-semibold ${m.wait.live ? 'text-primary' : 'text-dark'}">${escapeHtml(m.wait.end)}</td>
+                                    <td class="fw-bold ${m.wait.live ? 'text-primary' : 'text-dark'}" id="lcWaitDuration">${escapeHtml(formatLifecycleDuration(m.wait.secs, fmt))}</td>
+                                </tr>
+
+                                <!-- CALLING TIME -->
+                                <tr class="lifecycle-stage-header">
+                                    <td colspan="3">Calling Time</td>
+                                </tr>
+                                <tr class="lifecycle-sub-header">
+                                    <th>Start Time</th>
+                                    <th>End Time</th>
+                                    <th>Duration</th>
+                                </tr>
+                                <tr>
+                                    <td class="fw-semibold text-dark">${escapeHtml(m.call.start)}</td>
+                                    <td class="fw-semibold ${m.call.live ? 'text-primary' : 'text-dark'}">${escapeHtml(m.call.end)}</td>
+                                    <td class="fw-bold ${m.call.live ? 'text-primary' : 'text-dark'}" id="lcCallDuration">${escapeHtml(formatLifecycleDuration(m.call.secs, fmt))}</td>
+                                </tr>
+
+                                <!-- PROCESSING TIME -->
+                                <tr class="lifecycle-stage-header">
+                                    <td colspan="3">Processing Time</td>
+                                </tr>
+                                <tr class="lifecycle-sub-header">
+                                    <th>Start Time</th>
+                                    <th>End Time</th>
+                                    <th>Duration</th>
+                                </tr>
+                                <tr>
+                                    <td class="fw-semibold text-dark">${escapeHtml(m.proc.start)}</td>
+                                    <td class="fw-semibold ${m.proc.live ? 'text-primary' : 'text-dark'}">${escapeHtml(m.proc.end)}</td>
+                                    <td class="fw-bold ${m.proc.live ? 'text-primary' : 'text-dark'}" id="lcProcDuration">${escapeHtml(formatLifecycleDuration(m.proc.secs, fmt))}</td>
+                                </tr>
+
+                                <!-- SUMMARY -->
+                                <tr class="lifecycle-summary-header">
+                                    <td colspan="3">Summary</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2" class="text-muted fw-semibold">Waiting Time :</td>
+                                    <td class="fw-bold ${m.wait.live ? 'text-primary' : 'text-dark'}" id="lcSumWait">${escapeHtml(formatLifecycleDuration(m.wait.secs, fmt))}</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2" class="text-muted fw-semibold">Calling Time :</td>
+                                    <td class="fw-bold ${m.call.live ? 'text-primary' : 'text-dark'}" id="lcSumCall">${escapeHtml(formatLifecycleDuration(m.call.secs, fmt))}</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2" class="text-muted fw-semibold">Processing Time :</td>
+                                    <td class="fw-bold ${m.proc.live ? 'text-primary' : 'text-dark'}" id="lcSumProc">${escapeHtml(formatLifecycleDuration(m.proc.secs, fmt))}</td>
+                                </tr>
+                                <tr class="lifecycle-total-row">
+                                    <td colspan="2">Total Duration</td>
+                                    <td class="${m.isAnyLive ? 'text-primary' : ''}" id="lcSumTotal">${escapeHtml(formatLifecycleDuration(m.totalSecs, fmt))}</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="3" class="text-muted fw-semibold">
+                                        <div class="d-inline-flex align-items-center gap-2">
+                                            <span>Status:</span>
+                                            ${formatStatusBadge(m.status)}
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+
+        function startModalLifecycleTicker() {
+            stopModalLifecycleTicker();
+            if (!activeModalTicketRef) return;
+
+            const setLiveTextColor = (el, isLive) => {
+                if (!el) return;
+                el.classList.toggle('text-primary', isLive);
+                el.classList.toggle('text-dark', !isLive);
+            };
+
+            const updateLiveCells = () => {
+                if (!activeModalTicketRef) return;
+                const m = computeQueueLifecycleMetrics(activeModalTicketRef);
+                const fmt = selectedDurationFormat;
+
+                const elWait = document.getElementById('lcWaitDuration');
+                const elCall = document.getElementById('lcCallDuration');
+                const elProc = document.getElementById('lcProcDuration');
+                const elSumWait = document.getElementById('lcSumWait');
+                const elSumCall = document.getElementById('lcSumCall');
+                const elSumProc = document.getElementById('lcSumProc');
+                const elSumTotal = document.getElementById('lcSumTotal');
+
+                if (elWait) {
+                    elWait.textContent = formatLifecycleDuration(m.wait.secs, fmt);
+                    setLiveTextColor(elWait, m.wait.live);
+                }
+                if (elCall) {
+                    elCall.textContent = formatLifecycleDuration(m.call.secs, fmt);
+                    setLiveTextColor(elCall, m.call.live);
+                }
+                if (elProc) {
+                    elProc.textContent = formatLifecycleDuration(m.proc.secs, fmt);
+                    setLiveTextColor(elProc, m.proc.live);
+                }
+                if (elSumWait) {
+                    elSumWait.textContent = formatLifecycleDuration(m.wait.secs, fmt);
+                    setLiveTextColor(elSumWait, m.wait.live);
+                }
+                if (elSumCall) {
+                    elSumCall.textContent = formatLifecycleDuration(m.call.secs, fmt);
+                    setLiveTextColor(elSumCall, m.call.live);
+                }
+                if (elSumProc) {
+                    elSumProc.textContent = formatLifecycleDuration(m.proc.secs, fmt);
+                    setLiveTextColor(elSumProc, m.proc.live);
+                }
+                if (elSumTotal) {
+                    elSumTotal.textContent = formatLifecycleDuration(m.totalSecs, fmt);
+                    elSumTotal.classList.toggle('text-primary', m.isAnyLive);
+                }
+            };
+
+            const initialMetrics = computeQueueLifecycleMetrics(activeModalTicketRef);
+            if (initialMetrics.isAnyLive) {
+                modalLifecycleInterval = setInterval(updateLiveCells, 1000);
+            }
+        }
+
+        function stopModalLifecycleTicker() {
+            if (modalLifecycleInterval) {
+                clearInterval(modalLifecycleInterval);
+                modalLifecycleInterval = null;
+            }
+        }
+
+        window.setLifecycleTimeFormat = function(fmtKey) {
+            selectedDurationFormat = fmtKey;
+            const container = document.getElementById('queueLifecycleTableContainer');
+            if (container && activeModalTicketRef) {
+                container.innerHTML = buildLifecycleTableHtml(activeModalTicketRef);
+                startModalLifecycleTicker();
+            }
+        };
+
+        document.getElementById('ticketDetailsModal')?.addEventListener('hidden.bs.modal', () => {
+            stopModalLifecycleTicker();
+            activeModalTicketRef = null;
+        });
+
+        // Build exact Student Logbook & Queue Controller Receipt Style for Primary Transactions & Sub-Transactions
         function buildLogbookStyleConcerns(ticket) {
             let html = '';
             const otherText = ticket.other_concern_text ? ticket.other_concern_text.trim() : '';
+
+            const renderConcernCard = (mainTitle, subs = []) => {
+                let subSectionHtml = '';
+                if (Array.isArray(subs) && subs.length > 0) {
+                    const subRows = subs.map(sub => `
+                        <div class="text-dark fw-bold" style="font-size: 0.875rem; line-height: 1.35;">
+                            ${escapeHtml(sub)}
+                        </div>
+                    `).join('');
+
+                    subSectionHtml = `
+                        <div class="mt-2 pt-2 border-top d-flex flex-column gap-1">
+                            <div class="text-muted fw-bold" style="font-size: 0.875rem; line-height: 1.35;">Sub-Transaction</div>
+                            ${subRows}
+                        </div>
+                    `;
+                }
+
+                return `
+                    <div class="receipt-concern-item">
+                        <div class="text-dark fw-bold" style="font-size: 0.875rem; line-height: 1.35;">${escapeHtml(mainTitle)}</div>
+                        ${subSectionHtml}
+                    </div>
+                `;
+            };
 
             if (Array.isArray(ticket.concerns_list) && ticket.concerns_list.length > 0) {
                 let grouped = {};
@@ -431,22 +908,7 @@ if ($db_connect && $user_id > 0) {
                 });
 
                 Object.entries(grouped).forEach(([mainTitle, subs]) => {
-                    let subTagsHtml = '';
-                    if (subs && subs.length > 0) {
-                        const tags = subs.map(sub => `
-                            <span class="receipt-subconcern-tag me-1 mb-1">
-                                <i class="bi bi-tag-fill me-1"></i>${escapeHtml(sub)}
-                            </span>
-                        `).join('');
-                        subTagsHtml = `<div class="mt-1 d-flex flex-wrap align-items-center">${tags}</div>`;
-                    }
-
-                    html += `
-                        <div class="receipt-concern-item">
-                            <div class="receipt-concern-title">${escapeHtml(mainTitle)}</div>
-                            ${subTagsHtml}
-                        </div>
-                    `;
+                    html += renderConcernCard(mainTitle, subs);
                 });
             } else if (ticket.transaction_name) {
                 const mainConcerns = ticket.transaction_name.split(',').map(s => s.trim()).filter(Boolean);
@@ -454,41 +916,26 @@ if ($db_connect && $user_id > 0) {
 
                 mainConcerns.forEach((main, idx) => {
                     if (main.toLowerCase().includes('other') && otherText) return;
-
-                    let subTagsHtml = '';
-                    if (idx === 0 && subConcerns.length > 0) {
-                        const tags = subConcerns.map(sub => `
-                            <span class="receipt-subconcern-tag me-1 mb-1">
-                                <i class="bi bi-tag-fill me-1"></i>${escapeHtml(sub)}
-                            </span>
-                        `).join('');
-                        subTagsHtml = `<div class="mt-1 d-flex flex-wrap align-items-center">${tags}</div>`;
-                    }
-
-                    html += `
-                        <div class="receipt-concern-item">
-                            <div class="receipt-concern-title">${escapeHtml(main)}</div>
-                            ${subTagsHtml}
-                        </div>
-                    `;
+                    const subs = (idx === 0 && subConcerns.length > 0) ? subConcerns : [];
+                    html += renderConcernCard(main, subs);
                 });
             }
 
             if (otherText) {
                 html += `
                     <div class="receipt-concern-item">
-                        <div class="receipt-concern-title"><i class="bi bi-pen me-1 text-primary"></i>Others / Custom Concern</div>
-                        <div class="text-muted small mt-1 fw-semibold" style="word-break: break-word;">${escapeHtml(otherText)}</div>
+                        <div class="text-dark fw-bold" style="font-size: 0.875rem; line-height: 1.35;">
+                            <i class="bi bi-pen me-1 text-primary"></i>Others / Custom Concern
+                        </div>
+                        <div class="text-dark fw-bold mt-1" style="font-size: 0.875rem; line-height: 1.35; word-break: break-word;">
+                            ${escapeHtml(otherText)}
+                        </div>
                     </div>
                 `;
             }
 
             if (!html) {
-                html = `
-                    <div class="receipt-concern-item">
-                        <div class="receipt-concern-title">General Concern</div>
-                    </div>
-                `;
+                html = renderConcernCard('General Concern', []);
             }
 
             return html;
@@ -685,7 +1132,7 @@ if ($db_connect && $user_id > 0) {
             document.getElementById('export-excel')?.addEventListener('click', () => recordsTable.download("xlsx", "transaction_records.xlsx", { sheetName: "Records" }));
             document.getElementById('export-json')?.addEventListener('click', () => recordsTable.download("json", "transaction_records.json"));
 
-            // --- GLOBAL SEARCH HANDLER (works together with the per-column filters) ---
+            // --- GLOBAL SEARCH HANDLER ---
             $('#global-search').on('input', function() {
                 const kw = this.value.trim().toLowerCase();
                 if (!kw) { recordsTable.clearFilter(); return; }
@@ -725,6 +1172,9 @@ if ($db_connect && $user_id > 0) {
             const modal = bootstrap.Modal.getOrCreateInstance(modalElem);
             const modalBody = $('#modalTicketBody');
             
+            stopModalLifecycleTicker();
+            activeModalTicketRef = null;
+
             modalBody.html(`
                 <div class="text-center py-5">
                     <div class="spinner-border text-primary" role="status"></div>
@@ -740,6 +1190,8 @@ if ($db_connect && $user_id > 0) {
             .then(res => {
                 if (res.success && res.data) {
                     const t = res.data;
+                    activeModalTicketRef = t;
+
                     const visitorTypeFormatted = formatCapitalized(t.visitor_type);
                     const statusUpper = (t.status || 'WAITING').toUpperCase();
 
@@ -752,9 +1204,9 @@ if ($db_connect && $user_id > 0) {
                     let statusBadgeHtml = `<span class="badge ${statusBadgeCls} px-3 py-1.5 rounded-pill fw-bold">${statusUpper}</span>`;
                     let visitorBadgeHtml = `<span class="badge bg-secondary px-3 py-1.5 rounded-pill fw-bold">${visitorTypeFormatted}</span>`;
 
-                    let name = t.full_name || 'N/A';
-                    let email = t.email || 'N/A';
-                    let officeCounterDisplay = `${t.office_name || 'N/A'}${t.counter_name ? ' (' + t.counter_name + ')' : ''}`;
+                    let name = escapeHtml(t.full_name || 'N/A');
+                    let email = escapeHtml(t.email || 'N/A');
+                    let officeCounterDisplay = escapeHtml(`${t.office_name || 'N/A'}${t.counter_name ? ' (' + t.counter_name + ')' : ''}`);
 
                     const concernsHtml = buildLogbookStyleConcerns(t);
 
@@ -780,7 +1232,7 @@ if ($db_connect && $user_id > 0) {
                         <!-- HERO TICKET HEADER CARD -->
                         <div class="modal-ticket-hero p-4 text-center mb-4">
                             <span class="text-white-50 text-uppercase fw-bold small tracking-wide">Queue Ticket Number</span>
-                            <h1 class="display-4 fw-bold text-info font-monospace my-1 mb-0">${t.ticket_number || '---'}</h1>
+                            <h1 class="display-4 fw-bold text-info font-monospace my-1 mb-0">${escapeHtml(t.ticket_number) || '---'}</h1>
                         </div>
 
                         <!-- DETAILS GRID -->
@@ -790,43 +1242,22 @@ if ($db_connect && $user_id > 0) {
                             ${renderDetailTile('bi-person-fill', 'Visitor Name', `<strong>${name}</strong>`)}
                             ${renderDetailTile('bi-envelope-fill', 'Email Address', `<strong>${email}</strong>`)}
                             ${renderDetailTile('bi-building', 'Office & Counter', `<strong>${officeCounterDisplay}</strong>`)}
-                            ${renderDetailTile('bi-person-badge-fill', 'Served By Staff', `<strong>${t.served_by_name || 'N/A'}</strong>`)}
+                            ${renderDetailTile('bi-person-badge-fill', 'Served By Staff', `<strong>${escapeHtml(t.served_by_name || 'N/A')}</strong>`)}
                             
                             <!-- STRUCTURED CONCERNS CARD -->
                             ${concernsBlockHtml}
                         </div>
 
-                        <!-- LIFECYCLE TIMESTAMPS GRID -->
-                        <h6 class="fw-bold text-dark mb-2 ms-1"><i class="bi bi-clock-history me-1 text-primary"></i>Queue Lifecycle Timestamps</h6>
-                        <div class="row g-2">
-                            <div class="col-6 col-md-3">
-                                <div class="timeline-step-card text-center">
-                                    <small class="text-muted d-block fw-semibold">Entry / Issued</small>
-                                    <span class="fw-bold text-dark small">${t.created_at || '---'}</span>
-                                </div>
-                            </div>
-                            <div class="col-6 col-md-3">
-                                <div class="timeline-step-card text-center">
-                                    <small class="text-muted d-block fw-semibold">Called Time</small>
-                                    <span class="fw-bold text-dark small">${t.called_at || '---'}</span>
-                                </div>
-                            </div>
-                            <div class="col-6 col-md-3">
-                                <div class="timeline-step-card text-center">
-                                    <small class="text-muted d-block fw-semibold">Served Time</small>
-                                    <span class="fw-bold text-dark small">${t.served_at || '---'}</span>
-                                </div>
-                            </div>
-                            <div class="col-6 col-md-3">
-                                <div class="timeline-step-card text-center">
-                                    <small class="text-muted d-block fw-semibold">Completed Time</small>
-                                    <span class="fw-bold text-dark small">${t.completed_at || '---'}</span>
-                                </div>
-                            </div>
+                        <!-- QUEUE LIFECYCLE TIMESTAMPS -->
+                        <h6 class="fw-bold text-dark mb-2 text-center"><i class="bi bi-clock-history me-1 text-primary"></i>Queue Lifecycle Timestamps</h6>
+                        <div id="queueLifecycleTableContainer">
+                            ${buildLifecycleTableHtml(t)}
                         </div>
                     `);
+
+                    startModalLifecycleTicker();
                 } else {
-                    modalBody.html(`<div class="alert alert-warning mb-0">${res.message || 'Details unavailable.'}</div>`);
+                    modalBody.html(`<div class="alert alert-warning mb-0">${escapeHtml(res.message || 'Details unavailable.')}</div>`);
                 }
             })
             .catch(err => {
