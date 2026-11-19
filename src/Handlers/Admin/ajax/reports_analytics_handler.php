@@ -80,196 +80,227 @@ $action = $_REQUEST['action'] ?? '';
 
 switch ($action) {
 
+        case 'fetch_counters':
+        $office_id = (int)($_REQUEST['office_id'] ?? 0);
+        if ($g_user_role_upper === 'ADMIN_STAFF' && $assigned_office_id > 0) {
+            $office_id = $assigned_office_id;
+        }
+
+        $counters = [];
+        if ($office_id > 0) {
+            $stmt = $db_connect->prepare("SELECT id, counter_name FROM counters WHERE office_id = ? AND flag_status = 0 ORDER BY counter_name ASC");
+            $stmt->bind_param("i", $office_id);
+            $stmt->execute();
+            $counters = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+            $stmt->close();
+        }
+
+        echo json_encode(['success' => true, 'data' => $counters]);
+        exit();
+
     case 'fetch_analytics':
         try {
             $office_id    = (int)($_REQUEST['office_id'] ?? 0);
-            $visitor_type = trim($_REQUEST['visitor_type'] ?? '');
-            $date_from    = trim($_REQUEST['date_from'] ?? date('Y-m-d'));
-            $date_to      = trim($_REQUEST['date_to'] ?? date('Y-m-d'));
+            $counter_id   = (int)($_REQUEST['counter_id'] ?? 0);
+            $visitor_type = strtoupper(trim($_REQUEST['visitor_type'] ?? ''));
+            $date_from    = trim($_REQUEST['date_from'] ?? '');
+            $date_to      = trim($_REQUEST['date_to'] ?? '');
+
+            // Sanitize filters
+            if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date_from)) $date_from = date('Y-m-d');
+            if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date_to))   $date_to   = date('Y-m-d');
+            if ($date_from > $date_to) {
+                [$date_from, $date_to] = [$date_to, $date_from];
+            }
+            if (!in_array($visitor_type, ['STUDENT', 'EMPLOYEE', 'GUEST'], true)) {
+                $visitor_type = '';
+            }
 
             // Enforce assigned office for ADMIN_STAFF
             if ($g_user_role_upper === 'ADMIN_STAFF' && $assigned_office_id > 0) {
                 $office_id = $assigned_office_id;
             }
 
-            $whereClauses = ["1=1"];
-            $params       = [];
-            $paramTypes   = "";
+            $whereClauses = ["q.queue_date BETWEEN ? AND ?"];
+            $params       = [$date_from, $date_to];
+            $paramTypes   = "ss";
 
             if ($office_id > 0) {
                 $whereClauses[] = "q.office_id = ?";
                 $params[]       = $office_id;
                 $paramTypes    .= "i";
             }
-
-            if (!empty($visitor_type)) {
+            if ($counter_id > 0) {
+                $whereClauses[] = "q.counter_id = ?";
+                $params[]       = $counter_id;
+                $paramTypes    .= "i";
+            }
+            if ($visitor_type !== '') {
                 $whereClauses[] = "UPPER(TRIM(l.visitor_type)) = ?";
-                $params[]       = strtoupper($visitor_type);
+                $params[]       = $visitor_type;
                 $paramTypes    .= "s";
             }
 
-            if (!empty($date_from) && !empty($date_to)) {
-                $whereClauses[] = "q.queue_date BETWEEN ? AND ?";
-                $params[]       = $date_from;
-                $params[]       = $date_to;
-                $paramTypes    .= "ss";
-            }
-
             $whereSql = implode(" AND ", $whereClauses);
+            $base     = "FROM queue_tickets q INNER JOIN logbooks l ON q.logbook_id = l.id";
 
-            // A. KPI METRICS
-            $kpiSql = "
-                SELECT 
+            $fetchAll = function (string $sql) use ($db_connect, $params, $paramTypes): array {
+                $stmt = $db_connect->prepare($sql);
+                $stmt->bind_param($paramTypes, ...$params);
+                $stmt->execute();
+                $rows = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+                $stmt->close();
+                return $rows;
+            };
+
+            // A. KPI METRICS + AVERAGE STAGE TIMES (same stages as the Transaction Records lifecycle)
+            $kpi = $fetchAll("
+                SELECT
                     COUNT(q.id) AS total_tickets,
-                    SUM(CASE WHEN q.status = 'COMPLETED' THEN 1 ELSE 0 END) AS completed_tickets,
-                    SUM(CASE WHEN q.status = 'SKIPPED' THEN 1 ELSE 0 END) AS skipped_tickets,
-                    ROUND(AVG(CASE WHEN q.served_at IS NOT NULL AND q.completed_at IS NOT NULL 
-                                   THEN TIMESTAMPDIFF(MINUTE, q.served_at, q.completed_at) ELSE NULL END), 1) AS avg_service_minutes
-                FROM queue_tickets q
-                INNER JOIN logbooks l ON q.logbook_id = l.id
+                    SUM(q.status = 'COMPLETED') AS completed_tickets,
+                    SUM(q.status = 'SKIPPED') AS skipped_tickets,
+                    SUM(q.status IN ('WAITING','CALLED','SERVING')) AS pending_tickets,
+                    SUM(q.is_priority = 1) AS priority_tickets,
+                    ROUND(AVG(CASE WHEN q.called_at IS NOT NULL
+                        THEN TIMESTAMPDIFF(SECOND, l.created_at, q.called_at) END) / 60, 1) AS avg_wait_minutes,
+                    ROUND(AVG(CASE WHEN q.called_at IS NOT NULL AND q.served_at IS NOT NULL
+                        THEN TIMESTAMPDIFF(SECOND, q.called_at, q.served_at) END) / 60, 1) AS avg_call_minutes,
+                    ROUND(AVG(CASE WHEN q.served_at IS NOT NULL AND q.completed_at IS NOT NULL
+                        THEN TIMESTAMPDIFF(SECOND, q.served_at, q.completed_at) END) / 60, 1) AS avg_service_minutes
+                {$base}
                 WHERE {$whereSql}
-            ";
-            $stmtKpi = $db_connect->prepare($kpiSql);
-            if (!empty($params)) {
-                $stmtKpi->bind_param($paramTypes, ...$params);
-            }
-            $stmtKpi->execute();
-            $kpiData = $stmtKpi->get_result()->fetch_assoc();
+            ")[0] ?? [];
 
-            if ($kpiData) {
-                $kpiData['total_tickets']       = (int)($kpiData['total_tickets'] ?? 0);
-                $kpiData['completed_tickets']   = (int)($kpiData['completed_tickets'] ?? 0);
-                $kpiData['skipped_tickets']     = (int)($kpiData['skipped_tickets'] ?? 0);
-                $kpiData['avg_service_minutes'] = (float)($kpiData['avg_service_minutes'] ?? 0);
+            foreach (['total_tickets', 'completed_tickets', 'skipped_tickets', 'pending_tickets', 'priority_tickets'] as $k) {
+                $kpi[$k] = (int)($kpi[$k] ?? 0);
+            }
+            foreach (['avg_wait_minutes', 'avg_call_minutes', 'avg_service_minutes'] as $k) {
+                $kpi[$k] = (float)($kpi[$k] ?? 0);
             }
 
             // B. VOLUME TREND
             $isSingleDay = ($date_from === $date_to);
-            if ($isSingleDay) {
-                $trendSql = "
-                    SELECT HOUR(l.created_at) AS hr, COUNT(q.id) AS total
-                    FROM queue_tickets q
-                    INNER JOIN logbooks l ON q.logbook_id = l.id
-                    WHERE {$whereSql}
-                    GROUP BY HOUR(l.created_at)
-                    ORDER BY hr ASC
-                ";
-            } else {
-                $trendSql = "
-                    SELECT q.queue_date AS label_date, COUNT(q.id) AS total
-                    FROM queue_tickets q
-                    INNER JOIN logbooks l ON q.logbook_id = l.id
-                    WHERE {$whereSql}
-                    GROUP BY q.queue_date
-                    ORDER BY q.queue_date ASC
-                ";
-            }
-
-            $stmtTrend = $db_connect->prepare($trendSql);
-            if (!empty($params)) {
-                $stmtTrend->bind_param($paramTypes, ...$params);
-            }
-            $stmtTrend->execute();
-            $resTrend = $stmtTrend->get_result();
-
             $volumeTrend = [];
-            while ($row = $resTrend->fetch_assoc()) {
-                if ($isSingleDay) {
-                    $hr = (int)$row['hr'];
-                    $formattedHr = date("g A", strtotime("{$hr}:00"));
-                    $volumeTrend[] = ['label' => $formattedHr, 'total' => (int)$row['total']];
-                } else {
-                    $volumeTrend[] = ['label' => $row['label_date'], 'total' => (int)$row['total']];
+            if ($isSingleDay) {
+                $rows = $fetchAll("SELECT HOUR(l.created_at) AS hr, COUNT(q.id) AS total {$base} WHERE {$whereSql} GROUP BY HOUR(l.created_at) ORDER BY hr ASC");
+                foreach ($rows as $r) {
+                    $volumeTrend[] = ['label' => date("g A", strtotime(((int)$r['hr']) . ":00")), 'total' => (int)$r['total']];
+                }
+            } else {
+                $rows = $fetchAll("SELECT q.queue_date AS label_date, COUNT(q.id) AS total {$base} WHERE {$whereSql} GROUP BY q.queue_date ORDER BY q.queue_date ASC");
+                foreach ($rows as $r) {
+                    $volumeTrend[] = ['label' => $r['label_date'], 'total' => (int)$r['total']];
                 }
             }
 
             // C. VISITOR DISTRIBUTION
-            $visitorSql = "
-                SELECT UPPER(TRIM(l.visitor_type)) AS type, COUNT(q.id) AS total
-                FROM queue_tickets q
-                INNER JOIN logbooks l ON q.logbook_id = l.id
-                WHERE {$whereSql}
-                GROUP BY UPPER(TRIM(l.visitor_type))
-            ";
-            $stmtVisitor = $db_connect->prepare($visitorSql);
-            if (!empty($params)) {
-                $stmtVisitor->bind_param($paramTypes, ...$params);
-            }
-            $stmtVisitor->execute();
-            $resVisitor = $stmtVisitor->get_result();
-
             $visitorDistribution = [];
-            while ($row = $resVisitor->fetch_assoc()) {
-                $visitorDistribution[] = [
-                    'type'  => ucfirst(strtolower($row['type'] ?: 'Unknown')),
-                    'total' => (int)$row['total']
-                ];
+            foreach ($fetchAll("SELECT UPPER(TRIM(l.visitor_type)) AS type, COUNT(q.id) AS total {$base} WHERE {$whereSql} GROUP BY UPPER(TRIM(l.visitor_type))") as $r) {
+                $visitorDistribution[] = ['type' => ucfirst(strtolower($r['type'] ?: 'Unknown')), 'total' => (int)$r['total']];
             }
 
-            // D. TOP TRANSACTION CONCERNS (Query logbook_transaction_items with fallback to logbooks)
-            $concernsSql = "
-                SELECT 
-                    COALESCE(tt_item.transaction_name, tt_main.transaction_name, 'General Concern') AS concern,
-                    COUNT(*) AS total
-                FROM queue_tickets q
-                INNER JOIN logbooks l ON q.logbook_id = l.id
-                LEFT JOIN logbook_transaction_items lti ON l.id = lti.logbook_id
-                LEFT JOIN transaction_types tt_item ON lti.transaction_type_id = tt_item.id
-                LEFT JOIN transaction_types tt_main ON l.transaction_type_id = tt_main.id
-                WHERE {$whereSql} AND (tt_item.id IS NOT NULL OR tt_main.id IS NOT NULL)
-                GROUP BY COALESCE(tt_item.id, tt_main.id), concern
-                ORDER BY total DESC 
-                LIMIT 5
-            ";
-            $stmtConcerns = $db_connect->prepare($concernsSql);
-            if (!empty($params)) {
-                $stmtConcerns->bind_param($paramTypes, ...$params);
+            // D. QUEUE STATUS DISTRIBUTION
+            $statusDistribution = [];
+            foreach ($fetchAll("SELECT q.status, COUNT(q.id) AS total {$base} WHERE {$whereSql} GROUP BY q.status") as $r) {
+                $statusDistribution[] = ['status' => strtoupper((string)$r['status']), 'total' => (int)$r['total']];
             }
-            $stmtConcerns->execute();
-            $resConcerns = $stmtConcerns->get_result();
 
+            // E. TOP SERVICES (transaction types) - a ticket is counted once per service
             $topConcerns = [];
-            while ($row = $resConcerns->fetch_assoc()) {
-                $topConcerns[] = [
-                    'concern' => $row['concern'],
-                    'total'   => (int)$row['total']
+            foreach ($fetchAll("
+                SELECT COALESCE(tt.transaction_name, 'Others / General Concern') AS concern,
+                       COUNT(DISTINCT q.id) AS total
+                {$base}
+                LEFT JOIN logbook_transaction_items lti ON lti.logbook_id = l.id
+                LEFT JOIN transaction_types tt ON tt.id = COALESCE(lti.transaction_type_id, l.transaction_type_id)
+                WHERE {$whereSql}
+                GROUP BY tt.id, concern
+                ORDER BY total DESC
+                LIMIT 5
+            ") as $r) {
+                $topConcerns[] = ['concern' => $r['concern'], 'total' => (int)$r['total']];
+            }
+
+            // F. TOP SUB-CONCERNS (per service)
+            $subConcerns = [];
+            foreach ($fetchAll("
+                SELECT tt.transaction_name, tsc.sub_concern_name, COUNT(DISTINCT q.id) AS total
+                {$base}
+                INNER JOIN logbook_transaction_items lti ON lti.logbook_id = l.id AND lti.sub_concern_id IS NOT NULL
+                INNER JOIN transaction_sub_concerns tsc ON tsc.id = lti.sub_concern_id
+                LEFT JOIN transaction_types tt ON tt.id = tsc.transaction_type_id
+                WHERE {$whereSql}
+                GROUP BY tsc.id, tt.transaction_name, tsc.sub_concern_name
+                ORDER BY total DESC
+                LIMIT 10
+            ") as $r) {
+                $subConcerns[] = [
+                    'transaction_name'  => $r['transaction_name'] ?? 'N/A',
+                    'sub_concern_name'  => $r['sub_concern_name'],
+                    'total'             => (int)$r['total']
                 ];
             }
 
-            // E. STAFF PERFORMANCE BREAKDOWN
-            $staffSql = "
-                SELECT 
-                    CONCAT(su.first_name, ' ', su.last_name) AS staff_name,
-                    COUNT(q.id) AS total_served,
-                    SUM(CASE WHEN q.status = 'COMPLETED' THEN 1 ELSE 0 END) AS total_completed
-                FROM queue_tickets q
-                INNER JOIN logbooks l ON q.logbook_id = l.id
-                INNER JOIN users su ON q.served_by_user_id = su.id
+            // G. WINDOW (COUNTER) PERFORMANCE
+            $counterBreakdown = [];
+            foreach ($fetchAll("
+                SELECT CONCAT(o.office_code, ' - ', c.counter_name) AS counter_label,
+                       COUNT(q.id) AS total_tickets,
+                       SUM(q.status = 'COMPLETED') AS total_completed,
+                       SUM(q.status = 'SKIPPED') AS total_skipped,
+                       ROUND(AVG(CASE WHEN q.served_at IS NOT NULL AND q.completed_at IS NOT NULL
+                           THEN TIMESTAMPDIFF(SECOND, q.served_at, q.completed_at) END) / 60, 1) AS avg_service_minutes
+                {$base}
+                INNER JOIN counters c ON c.id = q.counter_id
+                INNER JOIN office o ON o.office_id = c.office_id
                 WHERE {$whereSql}
-                GROUP BY su.id
-                ORDER BY total_served DESC
-            ";
-            $stmtStaff = $db_connect->prepare($staffSql);
-            if (!empty($params)) {
-                $stmtStaff->bind_param($paramTypes, ...$params);
+                GROUP BY c.id, o.office_code, c.counter_name
+                ORDER BY total_tickets DESC, counter_label ASC
+            ") as $r) {
+                $counterBreakdown[] = [
+                    'counter_label'       => $r['counter_label'],
+                    'total_tickets'       => (int)$r['total_tickets'],
+                    'total_completed'     => (int)$r['total_completed'],
+                    'total_skipped'       => (int)$r['total_skipped'],
+                    'avg_service_minutes' => (float)($r['avg_service_minutes'] ?? 0)
+                ];
             }
-            $stmtStaff->execute();
-            $resStaff = $stmtStaff->get_result();
 
+            // H. STAFF PERFORMANCE
             $staffBreakdown = [];
-            while ($row = $resStaff->fetch_assoc()) {
-                $row['total_served']    = (int)($row['total_served'] ?? 0);
-                $row['total_completed'] = (int)($row['total_completed'] ?? 0);
-                $staffBreakdown[]       = $row;
+            foreach ($fetchAll("
+                SELECT CONCAT(su.first_name, ' ', su.last_name) AS staff_name,
+                       GROUP_CONCAT(DISTINCT c.counter_name ORDER BY c.counter_name SEPARATOR ', ') AS windows,
+                       COUNT(q.id) AS total_served,
+                       SUM(q.status = 'COMPLETED') AS total_completed,
+                       ROUND(AVG(CASE WHEN q.served_at IS NOT NULL AND q.completed_at IS NOT NULL
+                           THEN TIMESTAMPDIFF(SECOND, q.served_at, q.completed_at) END) / 60, 1) AS avg_service_minutes
+                {$base}
+                INNER JOIN users su ON q.served_by_user_id = su.id
+                LEFT JOIN counters c ON c.id = q.counter_id
+                WHERE {$whereSql}
+                GROUP BY su.id, su.first_name, su.last_name
+                ORDER BY total_served DESC
+            ") as $r) {
+                $staffBreakdown[] = [
+                    'staff_name'          => $r['staff_name'],
+                    'windows'             => $r['windows'] ?? '',
+                    'total_served'        => (int)$r['total_served'],
+                    'total_completed'     => (int)$r['total_completed'],
+                    'avg_service_minutes' => (float)($r['avg_service_minutes'] ?? 0)
+                ];
             }
 
             echo json_encode([
                 'success' => true,
                 'data'    => [
-                    'kpi'                  => $kpiData,
+                    'kpi'                  => $kpi,
                     'volume_trend'         => $volumeTrend,
                     'visitor_distribution' => $visitorDistribution,
+                    'status_distribution'  => $statusDistribution,
                     'top_concerns'         => $topConcerns,
+                    'sub_concerns'         => $subConcerns,
+                    'counter_breakdown'    => $counterBreakdown,
                     'staff_breakdown'      => $staffBreakdown
                 ]
             ]);
@@ -279,8 +310,6 @@ switch ($action) {
             echo json_encode(['success' => false, 'message' => 'Analytics fetch error: ' . $e->getMessage()]);
             exit();
         }
-
-    default:
         echo json_encode(['success' => false, 'message' => 'Invalid action.']);
         exit();
 }

@@ -49,8 +49,11 @@ $g_user_role_upper = strtoupper(trim((string)$g_user_role));
 // Fetch assigned office or office list for filters
 $assigned_office = null;
 $offices         = [];
+$counters        = [];
+$lock_office     = false;
 
 if ($db_connect && $user_id > 0) {
+    // Priority 1: staff_assignments
     $stmtAssign = $db_connect->prepare("
         SELECT sa.office_id, o.office_code, o.office_name 
         FROM staff_assignments sa
@@ -65,12 +68,42 @@ if ($db_connect && $user_id > 0) {
         $stmtAssign->close();
     }
 
+    // Priority 2: employee table (same fallback the handler uses)
+    if (!$assigned_office && $g_user_role_upper === 'ADMIN_STAFF') {
+        $stmtEmp = $db_connect->prepare("
+            SELECT e.office_id, o.office_code, o.office_name 
+            FROM employee e
+            INNER JOIN office o ON e.office_id = o.office_id
+            WHERE e.user_id = ? LIMIT 1
+        ");
+        if ($stmtEmp) {
+            $stmtEmp->bind_param("i", $user_id);
+            $stmtEmp->execute();
+            $assigned_office = $stmtEmp->get_result()->fetch_assoc();
+            $stmtEmp->close();
+        }
+    }
+
+    $lock_office = ($g_user_role_upper === 'ADMIN_STAFF' && !empty($assigned_office));
+
     if ($g_user_role_upper === 'ADMIN' || $g_user_role_upper === 'STATION_ADMIN' || !$assigned_office) {
         $stmt = $db_connect->query("SELECT office_id, office_code, office_name FROM office WHERE flag_status = 0 ORDER BY office_name ASC");
         if ($stmt) {
             while ($row = $stmt->fetch_assoc()) {
                 $offices[] = $row;
             }
+        }
+    }
+
+    // Preload windows when the office is fixed (Admin Staff)
+    if ($lock_office) {
+        $stmtC = $db_connect->prepare("SELECT id, counter_name FROM counters WHERE office_id = ? AND flag_status = 0 ORDER BY counter_name ASC");
+        if ($stmtC) {
+            $oid = (int)$assigned_office['office_id'];
+            $stmtC->bind_param("i", $oid);
+            $stmtC->execute();
+            $counters = $stmtC->get_result()->fetch_all(MYSQLI_ASSOC);
+            $stmtC->close();
         }
     }
 }
@@ -137,7 +170,7 @@ if ($db_connect && $user_id > 0) {
         }
 
         /* Tabulator Custom Layout Styling */
-        #staffBreakdownTable {
+        .report-table-box {
             border-radius: 0.5rem;
             border: 1px solid #e2e8f0;
             width: 100%;
@@ -168,15 +201,16 @@ if ($db_connect && $user_id > 0) {
                         <?php echo is_array($page_header) ? '' : $page_header; ?>
                     </div>
 
-                    <!-- FILTERS CARD -->
+                                        <!-- FILTERS CARD -->
                     <div class="card filter-card mb-4">
                         <div class="card-body p-3 p-sm-4">
                             <form id="analyticsFilterForm" class="row g-3 align-items-end">
-                                
-                                <!-- OFFICE SELECTION -->
+
                                 <div class="col-12 col-md-3">
-                                    <label for="filterOfficeId" class="form-label fw-bold small text-muted">Office Location</label>
-                                    <select id="filterOfficeId" class="form-select form-select-sm">
+                                    <label for="filterOfficeId" class="form-label fw-bold small text-muted">
+                                        Office Location <?php if ($lock_office): ?><i class="bi bi-lock-fill ms-1" title="Locked to your assigned office"></i><?php endif; ?>
+                                    </label>
+                                    <select id="filterOfficeId" class="form-select form-select-sm" <?= $lock_office ? 'disabled style="pointer-events:none; background-color:#f1f5f9;"' : ''; ?>>
                                         <?php if ($g_user_role_upper === 'ADMIN' || $g_user_role_upper === 'STATION_ADMIN'): ?>
                                             <option value="0">-- All Offices --</option>
                                             <?php foreach ($offices as $off): ?>
@@ -195,7 +229,16 @@ if ($db_connect && $user_id > 0) {
                                     </select>
                                 </div>
 
-                                <!-- VISITOR TYPE -->
+                                <div class="col-12 col-sm-6 col-md-2">
+                                    <label for="filterCounterId" class="form-label fw-bold small text-muted">Window / Counter</label>
+                                    <select id="filterCounterId" class="form-select form-select-sm">
+                                        <option value="0">All Windows</option>
+                                        <?php foreach ($counters as $c): ?>
+                                            <option value="<?= (int)$c['id']; ?>"><?= htmlspecialchars($c['counter_name']); ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+
                                 <div class="col-12 col-sm-6 col-md-2">
                                     <label for="filterVisitorType" class="form-label fw-bold small text-muted">Visitor Type</label>
                                     <select id="filterVisitorType" class="form-select form-select-sm">
@@ -206,144 +249,132 @@ if ($db_connect && $user_id > 0) {
                                     </select>
                                 </div>
 
-                                <!-- DATE FROM -->
                                 <div class="col-6 col-md-2">
                                     <label for="filterDateFrom" class="form-label fw-bold small text-muted">Date From</label>
                                     <input type="date" id="filterDateFrom" class="form-control form-control-sm" value="<?= date('Y-m-d'); ?>">
                                 </div>
 
-                                <!-- DATE TO -->
-                                <div class="col-6 col-md-2">
+                                <div class="col-6 col-md-3">
                                     <label for="filterDateTo" class="form-label fw-bold small text-muted">Date To</label>
                                     <input type="date" id="filterDateTo" class="form-control form-control-sm" value="<?= date('Y-m-d'); ?>">
                                 </div>
 
-                                <!-- ACTION BUTTONS & EXPORT DROPDOWN -->
-                                <div class="col-12 col-md-3 d-flex gap-2">
-                                    <button type="submit" class="btn btn-primary btn-sm w-100 fw-bold">
+                                <div class="col-12 d-flex flex-wrap gap-2 justify-content-end">
+                                    <button type="submit" class="btn btn-primary btn-sm fw-bold px-4">
                                         <i class="bi bi-filter me-1"></i>Apply
                                     </button>
                                     <button type="button" id="btnResetFilters" class="btn btn-outline-secondary btn-sm" title="Reset Filters">
                                         <i class="bi bi-arrow-counterclockwise"></i>
                                     </button>
 
-                                    <!-- Export Options Dropdown -->
                                     <div class="dropdown">
-                                        <button class="btn btn-action btn-sm dropdown-toggle d-inline-flex align-items-center fw-semibold text-nowrap" type="button" id="exportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <button class="btn btn-action btn-sm dropdown-toggle d-inline-flex align-items-center fw-semibold text-nowrap" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                                             <i class="bi bi-download me-1"></i>Export / Download
                                         </button>
-                                        <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="exportDropdown">
-                                            <li><a class="dropdown-item text-slate-700" href="javascript:void(0)" id="export-csv"><i class="bi bi-filetype-csv text-success me-2"></i> Export CSV</a></li>
-                                            <li><a class="dropdown-item text-slate-700" href="javascript:void(0)" id="export-excel"><i class="bi bi-file-earmark-excel text-success me-2"></i> Export Excel (.xlsx)</a></li>
-                                            <li><a class="dropdown-item text-slate-700" href="javascript:void(0)" id="export-json"><i class="bi bi-filetype-json text-warning me-2"></i> Export JSON</a></li>
-                                            <li>
-                                                <hr class="dropdown-divider">
-                                            </li>
-                                            <li><a class="dropdown-item text-slate-700" href="javascript:void(0)" id="export-pdf-report"><i class="bi bi-file-earmark-pdf-fill text-danger me-2"></i> PDF Report</a></li>
+                                        <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                                            <?php foreach (['staff' => 'Staff Performance', 'counter' => 'Window Performance', 'sub' => 'Services & Sub-Concerns'] as $key => $label): ?>
+                                                <li class="px-3 py-1">
+                                                    <div class="small fw-bold text-muted"><?= $label; ?></div>
+                                                    <div class="d-flex gap-3 small">
+                                                        <a href="javascript:void(0)" data-export="<?= $key; ?>:csv">CSV</a>
+                                                        <a href="javascript:void(0)" data-export="<?= $key; ?>:xlsx">Excel</a>
+                                                        <a href="javascript:void(0)" data-export="<?= $key; ?>:json">JSON</a>
+                                                    </div>
+                                                </li>
+                                            <?php endforeach; ?>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li><a class="dropdown-item" href="javascript:void(0)" id="export-pdf-report"><i class="bi bi-file-earmark-pdf-fill text-danger me-2"></i> PDF Report</a></li>
                                         </ul>
                                     </div>
                                 </div>
-
                             </form>
                         </div>
                     </div>
 
-                    <!-- KPI SUMMARY CARDS ROW -->
+                    <!-- KPI CARDS -->
                     <div class="row g-3 mb-4">
-                        <div class="col-12 col-sm-6 col-xl-3">
-                            <div class="kpi-card d-flex align-items-center">
-                                <div class="kpi-icon primary flex-shrink-0 me-3">
-                                    <i class="bi bi-ticket-perforated-fill"></i>
-                                </div>
-                                <div>
-                                    <span class="fw-semibold text-muted small d-block mb-1">Total Tickets</span>
-                                    <h3 class="fw-bold text-dark mb-0 font-monospace" id="kpiTotalTickets">0</h3>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-12 col-sm-6 col-xl-3">
-                            <div class="kpi-card d-flex align-items-center">
-                                <div class="kpi-icon success flex-shrink-0 me-3">
-                                    <i class="bi bi-check-circle-fill"></i>
-                                </div>
-                                <div>
-                                    <span class="fw-semibold text-muted small d-block mb-1">Completed</span>
-                                    <h3 class="fw-bold text-dark mb-0 font-monospace" id="kpiCompletedTickets">0</h3>
+                        <?php
+                        $kpi_cards = [
+                            ['kpiTotalTickets',     'Total Tickets',      'primary', 'bi-ticket-perforated-fill', '0'],
+                            ['kpiCompletedTickets', 'Completed',          'success', 'bi-check-circle-fill',      '0'],
+                            ['kpiSkippedTickets',   'Skipped / Missed',   'danger',  'bi-x-circle-fill',          '0'],
+                            ['kpiPriorityTickets',  'Priority Tickets',   'warning', 'bi-star-fill',              '0'],
+                            ['kpiAvgWaitTime',      'Avg. Waiting Time',  'info',    'bi-hourglass-split',        '0m'],
+                            ['kpiAvgServiceTime',   'Avg. Service Time',  'info',    'bi-clock-history',          '0m'],
+                        ];
+                        foreach ($kpi_cards as [$id, $label, $tone, $icon, $default]): ?>
+                            <div class="col-6 col-lg-4 col-xl-2">
+                                <div class="kpi-card d-flex align-items-center">
+                                    <div class="kpi-icon <?= $tone; ?> flex-shrink-0 me-3"><i class="bi <?= $icon; ?>"></i></div>
+                                    <div class="min-w-0">
+                                        <span class="fw-semibold text-muted small d-block mb-1"><?= $label; ?></span>
+                                        <h4 class="fw-bold text-dark mb-0 font-monospace" id="<?= $id; ?>"><?= $default; ?></h4>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="col-12 col-sm-6 col-xl-3">
-                            <div class="kpi-card d-flex align-items-center">
-                                <div class="kpi-icon danger flex-shrink-0 me-3">
-                                    <i class="bi bi-x-circle-fill"></i>
-                                </div>
-                                <div>
-                                    <span class="fw-semibold text-muted small d-block mb-1">Skipped / Missed</span>
-                                    <h3 class="fw-bold text-dark mb-0 font-monospace" id="kpiSkippedTickets">0</h3>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-12 col-sm-6 col-xl-3">
-                            <div class="kpi-card d-flex align-items-center">
-                                <div class="kpi-icon info flex-shrink-0 me-3">
-                                    <i class="bi bi-clock-history"></i>
-                                </div>
-                                <div>
-                                    <span class="fw-semibold text-muted small d-block mb-1">Avg. Service Time</span>
-                                    <h3 class="fw-bold text-dark mb-0 font-monospace" id="kpiAvgServiceTime">0m</h3>
-                                </div>
-                            </div>
-                        </div>
+                        <?php endforeach; ?>
                     </div>
 
-                    <!-- CHARTS GRID -->
+                    <!-- ROW 1: TREND + VISITORS -->
                     <div class="row g-4 mb-4">
-                        <!-- HOURLY / DAILY VOLUME TREND CHART -->
                         <div class="col-12 col-lg-8">
                             <div class="card chart-card p-3 p-sm-4">
-                                <div class="d-flex align-items-center justify-content-between mb-3">
-                                    <h6 class="fw-bold text-dark mb-0"><i class="bi bi-graph-up-arrow me-2 text-primary"></i>Queue Volume Trend</h6>
-                                    <span class="badge bg-light text-muted border small">Time Distribution</span>
-                                </div>
-                                <div class="chart-container">
-                                    <canvas id="volumeTrendChart"></canvas>
-                                </div>
+                                <h6 class="fw-bold text-dark mb-3"><i class="bi bi-graph-up-arrow me-2 text-primary"></i>Queue Volume Trend</h6>
+                                <div class="chart-container"><canvas id="volumeTrendChart"></canvas></div>
                             </div>
                         </div>
-
-                        <!-- VISITOR TYPE BREAKDOWN CHART -->
                         <div class="col-12 col-lg-4">
                             <div class="card chart-card p-3 p-sm-4">
-                                <div class="d-flex align-items-center justify-content-between mb-3">
-                                    <h6 class="fw-bold text-dark mb-0"><i class="bi bi-pie-chart-fill me-2 text-primary"></i>Visitor Distribution</h6>
-                                    <span class="badge bg-light text-muted border small">Demographics</span>
-                                </div>
-                                <div class="chart-container">
-                                    <canvas id="visitorTypeChart"></canvas>
-                                </div>
+                                <h6 class="fw-bold text-dark mb-3"><i class="bi bi-pie-chart-fill me-2 text-primary"></i>Visitor Distribution</h6>
+                                <div class="chart-container"><canvas id="visitorTypeChart"></canvas></div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- TOP CONCERNS BAR CHART & TABULATOR STAFF BREAKDOWN TABLE -->
+                    <!-- ROW 2: STATUS + STAGE TIMES + TOP SERVICES -->
+                    <div class="row g-4 mb-4">
+                        <div class="col-12 col-lg-4">
+                            <div class="card chart-card p-3 p-sm-4">
+                                <h6 class="fw-bold text-dark mb-3"><i class="bi bi-activity me-2 text-primary"></i>Queue Status</h6>
+                                <div class="chart-container"><canvas id="statusChart"></canvas></div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <div class="card chart-card p-3 p-sm-4">
+                                <h6 class="fw-bold text-dark mb-3"><i class="bi bi-stopwatch-fill me-2 text-primary"></i>Average Time per Stage (min)</h6>
+                                <div class="chart-container"><canvas id="stageTimeChart"></canvas></div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <div class="card chart-card p-3 p-sm-4">
+                                <h6 class="fw-bold text-dark mb-3"><i class="bi bi-card-checklist me-2 text-primary"></i>Top Services</h6>
+                                <div class="chart-container"><canvas id="topConcernsChart"></canvas></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ROW 3: WINDOWS + STAFF -->
                     <div class="row g-4 mb-4">
                         <div class="col-12 col-lg-6">
                             <div class="card chart-card p-3 p-sm-4">
-                                <h6 class="fw-bold text-dark mb-3"><i class="bi bi-bar-chart-line-fill me-2 text-primary"></i>Top Transaction Concerns</h6>
-                                <div class="chart-container">
-                                    <canvas id="topConcernsChart"></canvas>
-                                </div>
+                                <h6 class="fw-bold text-dark mb-3"><i class="bi bi-window-stack me-2 text-primary"></i>Window Performance</h6>
+                                <div id="counterTable" class="report-table-box"></div>
                             </div>
                         </div>
-
                         <div class="col-12 col-lg-6">
                             <div class="card chart-card p-3 p-sm-4">
-                                <div class="d-flex align-items-center justify-content-between mb-3">
-                                    <h6 class="fw-bold text-dark mb-0"><i class="bi bi-person-workspace me-2 text-primary"></i>Staff Performance Breakdown</h6>
-                                </div>
+                                <h6 class="fw-bold text-dark mb-3"><i class="bi bi-person-workspace me-2 text-primary"></i>Staff Performance</h6>
+                                <div id="staffBreakdownTable" class="report-table-box"></div>
+                            </div>
+                        </div>
+                    </div>
 
-                                <!-- TABULATOR MOUNT CONTAINER -->
-                                <div id="staffBreakdownTable"></div>
+                    <!-- ROW 4: SUB-CONCERNS -->
+                    <div class="row g-4 mb-4">
+                        <div class="col-12">
+                            <div class="card chart-card p-3 p-sm-4">
+                                <h6 class="fw-bold text-dark mb-3"><i class="bi bi-list-nested me-2 text-primary"></i>Top Services & Sub-Concerns</h6>
+                                <div id="subConcernTable" class="report-table-box"></div>
                             </div>
                         </div>
                     </div>
@@ -360,211 +391,198 @@ if ($db_connect && $user_id > 0) {
     <script>
         (function() {
             const HANDLER_URL = '<?= BASE_URL; ?>admin/ajax/reports-analytics';
+            const PDF_URL     = '<?= BASE_URL; ?>admin/reports-analytics-pdf';
 
-            let volumeTrendChart = null;
-            let visitorTypeChart = null;
-            let topConcernsChart  = null;
-            let staffTabulator    = null;
-
-            const getTodayDate = () => {
-                const today = new Date();
-                const year = today.getFullYear();
-                const month = String(today.getMonth() + 1).padStart(2, '0');
-                const day = String(today.getDate()).padStart(2, '0');
-                return `${year}-${month}-${day}`;
+            const charts = {};
+            const tables = {};
+            const STATUS_COLORS = {
+                COMPLETED: '#16a34a', SKIPPED: '#dc2626', SERVING: '#2563eb',
+                CALLED: '#ca8a04', WAITING: '#94a3b8', CANCELLED: '#6b7280'
             };
 
-            function initStaffTable() {
-                staffTabulator = new Tabulator("#staffBreakdownTable", {
-                    data: [],
-                    layout: "fitColumns",
-                    responsiveLayout: false,
-                    placeholder: "No staff activity recorded for selected range.",
-                    downloadConfig: {
-                        columnHeaders: true,
-                        columnGroups: false,
-                        rowGroups: false,
-                        formatCells: false
-                    },
+            const getTodayDate = () => {
+                const t = new Date();
+                return `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}`;
+            };
+
+            const escapeHtml = (s) => String(s ?? '')
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+
+            const fmtMin = (v) => `${(parseFloat(v) || 0).toFixed(1)}m`;
+
+            function drawChart(key, canvasId, config) {
+                if (charts[key]) charts[key].destroy();
+                charts[key] = new Chart(document.getElementById(canvasId).getContext('2d'), config);
+            }
+
+            const downloadConfig = { columnHeaders: true, columnGroups: false, rowGroups: false, formatCells: false };
+
+            function initTables() {
+                tables.counter = new Tabulator("#counterTable", {
+                    data: [], layout: "fitColumns", downloadConfig,
+                    placeholder: "No window activity for the selected filters.",
                     columns: [
-                        { 
-                            title: "Staff Name", 
-                            field: "staff_name",
-                            headerSort: true,
-                            formatter: (cell) => `<span class="fw-semibold text-wrap">${cell.getValue() || 'Unassigned'}</span>` 
-                        },
-                        { 
-                            title: "Served", 
-                            field: "total_served", 
-                            hozAlign: "center", 
-                            headerHozAlign: "center",
-                            sorter: "number" 
-                        },
-                        { 
-                            title: "Completed", 
-                            field: "total_completed", 
-                            hozAlign: "center", 
-                            headerHozAlign: "center",
-                            sorter: "number" 
-                        },
-                        { 
-                            title: "Completion Rate", 
-                            field: "rate", 
-                            hozAlign: "center", 
-                            headerHozAlign: "center",
-                            sorter: "number",
+                        { title: "Window", field: "counter_label", formatter: c => `<span class="fw-semibold">${escapeHtml(c.getValue())}</span>` },
+                        { title: "Tickets", field: "total_tickets", hozAlign: "center", headerHozAlign: "center", sorter: "number" },
+                        { title: "Completed", field: "total_completed", hozAlign: "center", headerHozAlign: "center", sorter: "number" },
+                        { title: "Skipped", field: "total_skipped", hozAlign: "center", headerHozAlign: "center", sorter: "number" },
+                        { title: "Avg. Service", field: "avg_service_minutes", hozAlign: "center", headerHozAlign: "center", sorter: "number", formatter: c => fmtMin(c.getValue()) }
+                    ]
+                });
+
+                tables.staff = new Tabulator("#staffBreakdownTable", {
+                    data: [], layout: "fitColumns", downloadConfig,
+                    placeholder: "No staff activity recorded for selected range.",
+                    columns: [
+                        { title: "Staff Name", field: "staff_name", formatter: c => `<span class="fw-semibold text-wrap">${escapeHtml(c.getValue() || 'Unassigned')}</span>` },
+                        { title: "Window(s)", field: "windows", formatter: c => escapeHtml(c.getValue() || '---') },
+                        { title: "Served", field: "total_served", hozAlign: "center", headerHozAlign: "center", sorter: "number" },
+                        { title: "Completed", field: "total_completed", hozAlign: "center", headerHozAlign: "center", sorter: "number" },
+                        {
+                            title: "Completion", field: "rate", hozAlign: "center", headerHozAlign: "center", sorter: "number",
                             formatter: function(cell) {
                                 const rate = cell.getValue();
-                                const isHigh = rate >= 80;
-                                const bgClass = isHigh ? 'bg-success-subtle text-success border-success-subtle' : 'bg-primary-subtle text-primary';
-                                return `<span class="badge ${bgClass} px-2 py-1 rounded-pill font-monospace">${rate}%</span>`;
+                                const cls = rate >= 80 ? 'bg-success-subtle text-success border-success-subtle' : 'bg-primary-subtle text-primary';
+                                return `<span class="badge ${cls} px-2 py-1 rounded-pill font-monospace">${rate}%</span>`;
                             }
                         }
                     ]
                 });
+
+                tables.sub = new Tabulator("#subConcernTable", {
+                    data: [], layout: "fitColumns", downloadConfig,
+                    placeholder: "No sub-concerns recorded for selected range.",
+                    columns: [
+                        { title: "Service / Transaction Type", field: "transaction_name", formatter: c => escapeHtml(c.getValue()) },
+                        { title: "Sub-Concern", field: "sub_concern_name", formatter: c => `<span class="fw-semibold">${escapeHtml(c.getValue())}</span>` },
+                        { title: "Requests", field: "total", width: 120, hozAlign: "center", headerHozAlign: "center", sorter: "number" }
+                    ]
+                });
+            }
+
+            function loadCounters() {
+                const fd = new FormData();
+                fd.append('action', 'fetch_counters');
+                fd.append('office_id', $('#filterOfficeId').val() || 0);
+
+                fetch(HANDLER_URL, { method: 'POST', body: fd })
+                    .then(r => r.json())
+                    .then(res => {
+                        const $sel = $('#filterCounterId').empty().append('<option value="0">All Windows</option>');
+                        (res.data || []).forEach(c => $sel.append($('<option>').val(c.id).text(c.counter_name)));
+                    })
+                    .catch(err => console.error("Counter fetch error:", err));
             }
 
             function loadAnalytics() {
-                const formData = new FormData();
-                formData.append('action', 'fetch_analytics');
-                formData.append('office_id', $('#filterOfficeId').val());
-                formData.append('visitor_type', $('#filterVisitorType').val());
-                formData.append('date_from', $('#filterDateFrom').val());
-                formData.append('date_to', $('#filterDateTo').val());
+                const fd = new FormData();
+                fd.append('action', 'fetch_analytics');
+                fd.append('office_id', $('#filterOfficeId').val());
+                fd.append('counter_id', $('#filterCounterId').val());
+                fd.append('visitor_type', $('#filterVisitorType').val());
+                fd.append('date_from', $('#filterDateFrom').val());
+                fd.append('date_to', $('#filterDateTo').val());
 
-                fetch(HANDLER_URL, { method: 'POST', body: formData })
-                .then(res => res.json())
-                .then(res => {
-                    if (res.success && res.data) {
-                        renderKPICards(res.data.kpi);
-                        renderVolumeTrendChart(res.data.volume_trend);
-                        renderVisitorTypeChart(res.data.visitor_distribution);
-                        renderTopConcernsChart(res.data.top_concerns);
-                        renderStaffBreakdownTable(res.data.staff_breakdown);
-                    } else {
-                        console.warn("Analytics response error:", res.message);
-                    }
-                })
-                .catch(err => console.error("Analytics fetch error:", err));
+                fetch(HANDLER_URL, { method: 'POST', body: fd })
+                    .then(res => res.json())
+                    .then(res => {
+                        if (!(res.success && res.data)) {
+                            console.warn("Analytics response error:", res.message);
+                            return;
+                        }
+                        const d = res.data;
+                        renderKPIs(d.kpi);
+                        renderVolumeTrend(d.volume_trend);
+                        renderVisitorType(d.visitor_distribution);
+                        renderStatus(d.status_distribution);
+                        renderStageTimes(d.kpi);
+                        renderTopConcerns(d.top_concerns);
+                        tables.counter.setData(d.counter_breakdown || []);
+                        tables.sub.setData(d.sub_concerns || []);
+                        tables.staff.setData((d.staff_breakdown || []).map(s => {
+                            const served = parseInt(s.total_served || 0), completed = parseInt(s.total_completed || 0);
+                            return { ...s, rate: served > 0 ? Math.round((completed / served) * 100) : 0 };
+                        }));
+                    })
+                    .catch(err => console.error("Analytics fetch error:", err));
             }
 
-            function renderKPICards(kpi) {
-                if (!kpi) return;
-                $('#kpiTotalTickets').text(kpi.total_tickets || 0);
-                $('#kpiCompletedTickets').text(kpi.completed_tickets || 0);
-                $('#kpiSkippedTickets').text(kpi.skipped_tickets || 0);
-                $('#kpiAvgServiceTime').text(`${kpi.avg_service_minutes || 0}m`);
+            function renderKPIs(k) {
+                if (!k) return;
+                $('#kpiTotalTickets').text(k.total_tickets || 0);
+                $('#kpiCompletedTickets').text(k.completed_tickets || 0);
+                $('#kpiSkippedTickets').text(k.skipped_tickets || 0);
+                $('#kpiPriorityTickets').text(k.priority_tickets || 0);
+                $('#kpiAvgWaitTime').text(fmtMin(k.avg_wait_minutes));
+                $('#kpiAvgServiceTime').text(fmtMin(k.avg_service_minutes));
             }
 
-            function renderVolumeTrendChart(data) {
-                const ctx = document.getElementById('volumeTrendChart').getContext('2d');
-                if (volumeTrendChart) volumeTrendChart.destroy();
-
-                const labels = data ? data.map(d => d.label) : [];
-                const counts = data ? data.map(d => d.total) : [];
-
-                volumeTrendChart = new Chart(ctx, {
+            function renderVolumeTrend(data) {
+                drawChart('volume', 'volumeTrendChart', {
                     type: 'line',
                     data: {
-                        labels: labels,
+                        labels: (data || []).map(d => d.label),
                         datasets: [{
-                            label: 'Tickets Issued',
-                            data: counts,
-                            borderColor: '#2563eb',
-                            backgroundColor: 'rgba(37, 99, 235, 0.08)',
-                            fill: true,
-                            lineTension: 0.35,
-                            borderWidth: 2,
-                            pointBackgroundColor: '#2563eb',
-                            pointRadius: 4
+                            label: 'Tickets Issued', data: (data || []).map(d => d.total),
+                            borderColor: '#2563eb', backgroundColor: 'rgba(37, 99, 235, 0.08)',
+                            fill: true, lineTension: 0.35, borderWidth: 2, pointBackgroundColor: '#2563eb', pointRadius: 4
                         }]
                     },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        legend: { display: false },
-                        scales: {
-                            yAxes: [{
-                                ticks: { beginAtZero: true, precision: 0 }
-                            }]
-                        }
-                    }
+                    options: { responsive: true, maintainAspectRatio: false, legend: { display: false },
+                        scales: { yAxes: [{ ticks: { beginAtZero: true, precision: 0 } }] } }
                 });
             }
 
-            function renderVisitorTypeChart(data) {
-                const ctx = document.getElementById('visitorTypeChart').getContext('2d');
-                if (visitorTypeChart) visitorTypeChart.destroy();
-
-                const labels = data ? data.map(d => d.type) : ['Student', 'Employee', 'Guest'];
-                const counts = data ? data.map(d => d.total) : [0, 0, 0];
-
-                visitorTypeChart = new Chart(ctx, {
+            function renderVisitorType(data) {
+                drawChart('visitor', 'visitorTypeChart', {
                     type: 'doughnut',
                     data: {
-                        labels: labels,
-                        datasets: [{
-                            data: counts,
-                            backgroundColor: ['#2563eb', '#0284c7', '#ca8a04'],
-                            borderWidth: 2,
-                            borderColor: '#ffffff'
-                        }]
+                        labels: (data || []).map(d => d.type),
+                        datasets: [{ data: (data || []).map(d => d.total), backgroundColor: ['#2563eb', '#0284c7', '#ca8a04'], borderWidth: 2, borderColor: '#ffffff' }]
                     },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        legend: { position: 'bottom' }
-                    }
+                    options: { responsive: true, maintainAspectRatio: false, legend: { position: 'bottom' } }
                 });
             }
 
-            function renderTopConcernsChart(data) {
-                const ctx = document.getElementById('topConcernsChart').getContext('2d');
-                if (topConcernsChart) topConcernsChart.destroy();
+            function renderStatus(data) {
+                drawChart('status', 'statusChart', {
+                    type: 'doughnut',
+                    data: {
+                        labels: (data || []).map(d => d.status.charAt(0) + d.status.slice(1).toLowerCase()),
+                        datasets: [{ data: (data || []).map(d => d.total), backgroundColor: (data || []).map(d => STATUS_COLORS[d.status] || '#94a3b8'), borderWidth: 2, borderColor: '#ffffff' }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, legend: { position: 'bottom' } }
+                });
+            }
 
-                const labels = data ? data.map(d => d.concern) : [];
-                const counts = data ? data.map(d => d.total) : [];
+            function renderStageTimes(k) {
+                k = k || {};
+                drawChart('stage', 'stageTimeChart', {
+                    type: 'bar',
+                    data: {
+                        labels: ['Waiting', 'Calling', 'Processing'],
+                        datasets: [{ label: 'Minutes', data: [k.avg_wait_minutes || 0, k.avg_call_minutes || 0, k.avg_service_minutes || 0], backgroundColor: ['#94a3b8', '#ca8a04', '#2563eb'] }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, legend: { display: false },
+                        scales: { yAxes: [{ ticks: { beginAtZero: true } }] } }
+                });
+            }
 
-                topConcernsChart = new Chart(ctx, {
+            function renderTopConcerns(data) {
+                drawChart('concerns', 'topConcernsChart', {
                     type: 'horizontalBar',
                     data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'Requests',
-                            data: counts,
-                            backgroundColor: '#0284c7'
-                        }]
+                        labels: (data || []).map(d => d.concern),
+                        datasets: [{ label: 'Requests', data: (data || []).map(d => d.total), backgroundColor: '#0284c7' }]
                     },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        legend: { display: false },
-                        scales: {
-                            xAxes: [{
-                                ticks: { beginAtZero: true, precision: 0 }
-                            }]
-                        }
-                    }
+                    options: { responsive: true, maintainAspectRatio: false, legend: { display: false },
+                        scales: { xAxes: [{ ticks: { beginAtZero: true, precision: 0 } }] } }
                 });
             }
 
-            function renderStaffBreakdownTable(staffList) {
-                if (!staffTabulator) return;
-
-                const formattedData = (staffList || []).map(staff => {
-                    const served = parseInt(staff.total_served || 0);
-                    const completed = parseInt(staff.total_completed || 0);
-                    const rate = served > 0 ? Math.round((completed / served) * 100) : 0;
-                    return {
-                        staff_name: staff.staff_name || 'Unassigned',
-                        total_served: served,
-                        total_completed: completed,
-                        rate: rate
-                    };
-                });
-
-                staffTabulator.setData(formattedData);
-            }
+            // Events
+            $('#filterOfficeId').on('change', loadCounters);
 
             $('#analyticsFilterForm').on('submit', function(e) {
                 e.preventDefault();
@@ -573,50 +591,45 @@ if ($db_connect && $user_id > 0) {
 
             $('#btnResetFilters').on('click', function() {
                 const todayStr = getTodayDate();
+                $('#filterCounterId').val('0');
                 $('#filterVisitorType').val('');
                 $('#filterDateFrom').val(todayStr);
                 $('#filterDateTo').val(todayStr);
                 loadAnalytics();
             });
 
-            document.getElementById('export-csv')?.addEventListener('click', () => {
-                if (staffTabulator) staffTabulator.download("csv", "staff_performance_report.csv");
-            });
-
-            document.getElementById('export-excel')?.addEventListener('click', () => {
-                if (staffTabulator) staffTabulator.download("xlsx", "staff_performance_report.xlsx", { sheetName: "Staff Performance" });
-            });
-
-            document.getElementById('export-json')?.addEventListener('click', () => {
-                if (staffTabulator) staffTabulator.download("json", "staff_performance_report.json");
+            document.querySelectorAll('[data-export]').forEach(el => {
+                el.addEventListener('click', () => {
+                    const [name, fmt] = el.dataset.export.split(':');
+                    const table = tables[name];
+                    if (!table) return;
+                    const file = `${name}_report`;
+                    if (fmt === 'xlsx') table.download('xlsx', `${file}.xlsx`, { sheetName: name });
+                    else table.download(fmt, `${file}.${fmt}`);
+                });
             });
 
             document.getElementById('export-pdf-report')?.addEventListener('click', function() {
-                const officeId    = $('#filterOfficeId').val() || 0;
-                const visitorType = $('#filterVisitorType').val() || '';
-                const dateFrom    = $('#filterDateFrom').val() || '';
-                const dateTo      = $('#filterDateTo').val() || '';
+                const qs = new URLSearchParams({
+                    office_id: $('#filterOfficeId').val() || 0,
+                    counter_id: $('#filterCounterId').val() || 0,
+                    visitor_type: $('#filterVisitorType').val() || '',
+                    date_from: $('#filterDateFrom').val() || '',
+                    date_to: $('#filterDateTo').val() || ''
+                });
 
-                const printUrl = `<?= BASE_URL; ?>admin/reports-analytics-pdf?office_id=${officeId}&visitor_type=${encodeURIComponent(visitorType)}&date_from=${dateFrom}&date_to=${dateTo}`;
-
-                let printFrame = document.getElementById('silentPrintIframe');
-                if (!printFrame) {
-                    printFrame = document.createElement('iframe');
-                    printFrame.id = 'silentPrintIframe';
-                    printFrame.style.position = 'fixed';
-                    printFrame.style.right = '0';
-                    printFrame.style.bottom = '0';
-                    printFrame.style.width = '0';
-                    printFrame.style.height = '0';
-                    printFrame.style.border = '0';
-                    document.body.appendChild(printFrame);
+                let frame = document.getElementById('silentPrintIframe');
+                if (!frame) {
+                    frame = document.createElement('iframe');
+                    frame.id = 'silentPrintIframe';
+                    frame.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;';
+                    document.body.appendChild(frame);
                 }
-
-                printFrame.src = printUrl;
+                frame.src = `${PDF_URL}?${qs.toString()}`;
             });
 
             $(document).ready(function() {
-                initStaffTable();
+                initTables();
                 loadAnalytics();
             });
         })();

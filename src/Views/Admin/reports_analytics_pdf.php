@@ -45,28 +45,43 @@ if ($db_connect && $user_id > 0) {
 
 // 2. Resolve URL Query Parameters & Enforce Staff Office Scoping
 $office_id    = (int)($_GET['office_id'] ?? 0);
-$visitor_type = trim($_GET['visitor_type'] ?? '');
-$date_from    = trim($_GET['date_from'] ?? date('Y-m-d'));
-$date_to      = trim($_GET['date_to'] ?? date('Y-m-d'));
+$counter_id   = (int)($_GET['counter_id'] ?? 0);
+$visitor_type = strtoupper(trim($_GET['visitor_type'] ?? ''));
+$date_from    = trim($_GET['date_from'] ?? '');
+$date_to      = trim($_GET['date_to'] ?? '');
+
+if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date_from)) $date_from = date('Y-m-d');
+if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date_to))   $date_to   = date('Y-m-d');
+if ($date_from > $date_to) { [$date_from, $date_to] = [$date_to, $date_from]; }
+if (!in_array($visitor_type, ['STUDENT', 'EMPLOYEE', 'GUEST'], true)) $visitor_type = '';
 
 if ($g_user_role_upper === 'ADMIN_STAFF' && $user_id > 0 && $db_connect) {
-    $stmtAssign = $db_connect->prepare("
-        SELECT office_id FROM staff_assignments 
-        WHERE user_id = ? AND flag_status = 0 ORDER BY id DESC LIMIT 1
-    ");
+    $staff_office_id = 0;
+
+    $stmtAssign = $db_connect->prepare("SELECT office_id FROM staff_assignments WHERE user_id = ? AND flag_status = 0 ORDER BY id DESC LIMIT 1");
     if ($stmtAssign) {
         $stmtAssign->bind_param("i", $user_id);
         $stmtAssign->execute();
-        $assignRes = $stmtAssign->get_result()->fetch_assoc();
-        if (!empty($assignRes['office_id'])) {
-            $office_id = (int)$assignRes['office_id'];
-        }
+        $staff_office_id = (int)($stmtAssign->get_result()->fetch_assoc()['office_id'] ?? 0);
         $stmtAssign->close();
+    }
+    if ($staff_office_id <= 0) {
+        $stmtEmp = $db_connect->prepare("SELECT office_id FROM employee WHERE user_id = ? LIMIT 1");
+        if ($stmtEmp) {
+            $stmtEmp->bind_param("i", $user_id);
+            $stmtEmp->execute();
+            $staff_office_id = (int)($stmtEmp->get_result()->fetch_assoc()['office_id'] ?? 0);
+            $stmtEmp->close();
+        }
+    }
+    if ($staff_office_id > 0) {
+        $office_id = $staff_office_id;
     }
 }
 
-// 3. Resolve Office Name
-$office_name = "All Campus Offices";
+// 3. Resolve Office & Window names
+$office_name  = "All Campus Offices";
+$counter_name = "All Windows";
 if ($db_connect && $office_id > 0) {
     $stmtOffice = $db_connect->prepare("SELECT office_name, office_code FROM office WHERE office_id = ? LIMIT 1");
     if ($stmtOffice) {
@@ -79,6 +94,17 @@ if ($db_connect && $office_id > 0) {
         $stmtOffice->close();
     }
 }
+if ($db_connect && $counter_id > 0) {
+    $stmtC = $db_connect->prepare("SELECT counter_name FROM counters WHERE id = ? LIMIT 1");
+    if ($stmtC) {
+        $stmtC->bind_param("i", $counter_id);
+        $stmtC->execute();
+        $counter_name = $stmtC->get_result()->fetch_assoc()['counter_name'] ?? $counter_name;
+        $stmtC->close();
+    }
+}
+
+$prepared_by_role = ucwords(strtolower(str_replace('_', ' ', $g_user_role_upper ?: 'Staff')));
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -86,8 +112,6 @@ if ($db_connect && $office_id > 0) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Analytics_Report_<?= preg_replace('/[^A-Za-z0-9_\-]/', '_', $office_name); ?>_<?= htmlspecialchars($date_from); ?></title>
-    
-    <link rel="stylesheet" href="<?= BASE_ADMIN_ASSETS_PATH; ?>css/bootstrap.min.css">
     
     <style>
         :root {
@@ -235,6 +259,8 @@ if ($db_connect && $office_id > 0) {
             .section-heading {
                 color: #000 !important;
             }
+            thead { display: table-header-group; }
+            tr { page-break-inside: avoid; }
         }
     </style>
 </head>
@@ -252,107 +278,113 @@ if ($db_connect && $office_id > 0) {
         </div>
     </div>
 
-    <!-- OFFICIAL REPORT HEADER -->
+        <!-- OFFICIAL REPORT HEADER -->
     <div class="report-header text-center">
         <h5 class="fw-bold mb-1 text-uppercase">City College of Calamba</h5>
         <h6 class="text-muted mb-2">Management Information Systems Division (MISD)</h6>
         <div class="report-title my-2">Queue Management & Analytics Comprehensive Report</div>
-        
+
         <div class="meta-pill d-inline-block mt-2">
-            <strong>Office:</strong> <?= htmlspecialchars($office_name); ?> &nbsp;|&nbsp; 
-            <strong>Date Range:</strong> <?= htmlspecialchars($date_from); ?> to <?= htmlspecialchars($date_to); ?> &nbsp;|&nbsp; 
+            <strong>Office:</strong> <?= htmlspecialchars($office_name); ?> &nbsp;|&nbsp;
+            <strong>Window:</strong> <?= htmlspecialchars($counter_name); ?> &nbsp;|&nbsp;
+            <strong>Date Range:</strong> <?= htmlspecialchars($date_from); ?> to <?= htmlspecialchars($date_to); ?> &nbsp;|&nbsp;
             <strong>Visitor Type:</strong> <?= $visitor_type ? htmlspecialchars(ucfirst(strtolower($visitor_type))) : 'All Demographics'; ?>
         </div>
     </div>
 
-    <!-- SECTION I: KPI METRICS -->
+    <!-- I. KPIs -->
     <div class="section-heading">I. Key Performance Indicators (KPIs)</div>
-    <div class="row g-3 mb-3">
-        <div class="col-3">
-            <div class="kpi-box">
-                <div class="kpi-title">Total Tickets</div>
-                <div class="kpi-value text-dark" id="kpiTotal">0</div>
+    <div class="row g-3 mb-2">
+        <?php
+        $kpis = [
+            ['kpiTotal', 'Total Tickets', 'text-dark', '0'],
+            ['kpiCompleted', 'Completed', 'text-success', '0'],
+            ['kpiSkipped', 'Skipped / Missed', 'text-danger', '0'],
+            ['kpiPriority', 'Priority Tickets', 'text-warning', '0'],
+            ['kpiWait', 'Avg. Waiting Time', 'text-primary', '0m'],
+            ['kpiService', 'Avg. Service Time', 'text-primary', '0m'],
+        ];
+        foreach ($kpis as [$id, $label, $cls, $def]): ?>
+            <div class="col-4">
+                <div class="kpi-box">
+                    <div class="kpi-title"><?= $label; ?></div>
+                    <div class="kpi-value <?= $cls; ?>" id="<?= $id; ?>"><?= $def; ?></div>
+                </div>
             </div>
-        </div>
-        <div class="col-3">
-            <div class="kpi-box">
-                <div class="kpi-title">Completed</div>
-                <div class="kpi-value text-success" id="kpiCompleted">0</div>
-            </div>
-        </div>
-        <div class="col-3">
-            <div class="kpi-box">
-                <div class="kpi-title">Skipped / Missed</div>
-                <div class="kpi-value text-danger" id="kpiSkipped">0</div>
-            </div>
-        </div>
-        <div class="col-3">
-            <div class="kpi-box">
-                <div class="kpi-title">Avg. Service Time</div>
-                <div class="kpi-value text-primary" id="kpiAvgTime">0m</div>
-            </div>
-        </div>
+        <?php endforeach; ?>
     </div>
+    <p class="small text-muted mb-0">Average calling time (called to serving): <strong id="kpiCall">0m</strong></p>
 
-    <!-- SECTION II: DEMOGRAPHICS & TOP CONCERNS GRID -->
+    <!-- II. DEMOGRAPHICS & STATUS -->
     <div class="row g-4 mb-3">
-        <!-- Visitor Demographics Table -->
         <div class="col-6">
             <div class="section-heading">II. Visitor Demographics</div>
             <table class="report-table" id="visitorDistributionTable">
-                <thead>
-                    <tr>
-                        <th>Visitor Category</th>
-                        <th class="text-center">Ticket Count</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr><td colspan="2" class="text-center py-2 text-muted">Loading data...</td></tr>
-                </tbody>
+                <thead><tr><th>Visitor Category</th><th class="text-center">Ticket Count</th></tr></thead>
+                <tbody><tr><td colspan="2" class="text-center py-2 text-muted">Loading data...</td></tr></tbody>
             </table>
         </div>
-
-        <!-- Top Transaction Concerns Table -->
         <div class="col-6">
-            <div class="section-heading">III. Top Transaction Concerns</div>
-            <table class="report-table" id="topConcernsTable">
-                <thead>
-                    <tr>
-                        <th>Transaction / Purpose</th>
-                        <th class="text-center">Requests</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr><td colspan="2" class="text-center py-2 text-muted">Loading data...</td></tr>
-                </tbody>
+            <div class="section-heading">III. Queue Status Summary</div>
+            <table class="report-table" id="statusTable">
+                <thead><tr><th>Status</th><th class="text-center">Ticket Count</th></tr></thead>
+                <tbody><tr><td colspan="2" class="text-center py-2 text-muted">Loading data...</td></tr></tbody>
             </table>
         </div>
     </div>
 
-    <!-- SECTION III: STAFF PERFORMANCE BREAKDOWN TABLE -->
-    <div class="section-heading">IV. Staff Performance Breakdown</div>
+    <!-- IV. SERVICES & SUB-CONCERNS -->
+    <div class="section-heading">IV. Top Services</div>
+    <table class="report-table mb-3" id="topConcernsTable">
+        <thead><tr><th>Service / Transaction Type</th><th class="text-center" style="width: 140px;">Requests</th></tr></thead>
+        <tbody><tr><td colspan="2" class="text-center py-2 text-muted">Loading data...</td></tr></tbody>
+    </table>
+
+    <div class="section-heading">V. Top Sub-Concerns</div>
+    <table class="report-table mb-3" id="subConcernTable">
+        <thead><tr><th>Service</th><th>Sub-Concern</th><th class="text-center" style="width: 140px;">Requests</th></tr></thead>
+        <tbody><tr><td colspan="3" class="text-center py-2 text-muted">Loading data...</td></tr></tbody>
+    </table>
+
+    <!-- VI. WINDOW PERFORMANCE -->
+    <div class="section-heading">VI. Window Performance</div>
+    <table class="report-table mb-3" id="counterTable">
+        <thead>
+            <tr>
+                <th>Window</th>
+                <th class="text-center" style="width: 90px;">Tickets</th>
+                <th class="text-center" style="width: 100px;">Completed</th>
+                <th class="text-center" style="width: 90px;">Skipped</th>
+                <th class="text-center" style="width: 120px;">Avg. Service</th>
+            </tr>
+        </thead>
+        <tbody><tr><td colspan="5" class="text-center py-2 text-muted">Loading data...</td></tr></tbody>
+    </table>
+
+    <!-- VII. STAFF PERFORMANCE -->
+    <div class="section-heading">VII. Staff Performance Breakdown</div>
     <table class="report-table align-middle mb-4" id="pdfStaffTable">
         <thead>
             <tr>
                 <th>Staff Name</th>
-                <th class="text-center" style="width: 120px;">Total Served</th>
-                <th class="text-center" style="width: 140px;">Total Completed</th>
-                <th class="text-center" style="width: 140px;">Completion Rate</th>
+                <th>Window(s)</th>
+                <th class="text-center" style="width: 90px;">Served</th>
+                <th class="text-center" style="width: 100px;">Completed</th>
+                <th class="text-center" style="width: 110px;">Avg. Service</th>
+                <th class="text-center" style="width: 110px;">Completion</th>
             </tr>
         </thead>
-        <tbody>
-            <tr><td colspan="4" class="text-center py-3 text-muted">Loading staff activity data...</td></tr>
-        </tbody>
+        <tbody><tr><td colspan="6" class="text-center py-3 text-muted">Loading staff activity data...</td></tr></tbody>
     </table>
 
-    <!-- ADMINISTRATIVE SIGNATURE BLOCK -->
+    <!-- SIGNATURE BLOCK -->
     <div class="signature-block">
         <div class="row">
             <div class="col-6">
                 <p class="small text-muted mb-0">Prepared By:</p>
                 <div class="signature-line"></div>
                 <p class="fw-bold mb-0 mt-1"><?= htmlspecialchars($generated_by_name); ?></p>
-                <p class="small text-muted mb-0">Staff / Administrator</p>
+                <p class="small text-muted mb-0"><?= htmlspecialchars($prepared_by_role); ?></p>
             </div>
             <div class="col-6 text-end">
                 <p class="small text-muted mb-0">Report Generated On:</p>
@@ -369,96 +401,78 @@ if ($db_connect && $office_id > 0) {
                 $('#previewActionBar').hide();
             }
 
-            const escapeHtml = (str) => {
-                return String(str || '').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-            };
+            const esc = (s) => String(s ?? '').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+            const fmtMin = (v) => `${(parseFloat(v) || 0).toFixed(1)}m`;
 
-            const officeId    = <?= json_encode($office_id); ?>;
-            const visitorType = <?= json_encode($visitor_type); ?>;
-            const dateFrom    = <?= json_encode($date_from); ?>;
-            const dateTo      = <?= json_encode($date_to); ?>;
+            // Fill a table body from rows; renderRow returns the <td> cells
+            function fillTable(selector, rows, colspan, renderRow) {
+                const $tbody = $(`${selector} tbody`).empty();
+                if (!rows || rows.length === 0) {
+                    $tbody.html(`<tr><td colspan="${colspan}" class="text-center py-2 text-muted">No records.</td></tr>`);
+                    return;
+                }
+                rows.forEach(r => $tbody.append(`<tr>${renderRow(r)}</tr>`));
+            }
 
             $.ajax({
                 url: '<?= BASE_URL; ?>admin/ajax/reports-analytics',
                 type: 'POST',
+                dataType: 'json',
                 data: {
                     action: 'fetch_analytics',
-                    office_id: officeId,
-                    visitor_type: visitorType,
-                    date_from: dateFrom,
-                    date_to: dateTo
+                    office_id: <?= json_encode($office_id); ?>,
+                    counter_id: <?= json_encode($counter_id); ?>,
+                    visitor_type: <?= json_encode($visitor_type); ?>,
+                    date_from: <?= json_encode($date_from); ?>,
+                    date_to: <?= json_encode($date_to); ?>
                 },
-                dataType: 'json',
                 success: function(res) {
-                    if (res.success && res.data) {
-                        const data = res.data;
-
-                        // 1. Render KPIs
-                        if (data.kpi) {
-                            $('#kpiTotal').text(data.kpi.total_tickets || 0);
-                            $('#kpiCompleted').text(data.kpi.completed_tickets || 0);
-                            $('#kpiSkipped').text(data.kpi.skipped_tickets || 0);
-                            $('#kpiAvgTime').text((data.kpi.avg_service_minutes || 0) + 'm');
-                        }
-
-                        // 2. Render Visitor Distribution
-                        const tbodyVisitor = $('#visitorDistributionTable tbody').empty();
-                        if (data.visitor_distribution && data.visitor_distribution.length > 0) {
-                            data.visitor_distribution.forEach(item => {
-                                tbodyVisitor.append(`
-                                    <tr>
-                                        <td class="fw-semibold">${escapeHtml(item.type)}</td>
-                                        <td class="text-center font-monospace">${parseInt(item.total || 0)}</td>
-                                    </tr>
-                                `);
-                            });
-                        } else {
-                            tbodyVisitor.html('<tr><td colspan="2" class="text-center py-2 text-muted">No records.</td></tr>');
-                        }
-
-                        // 3. Render Top Concerns
-                        const tbodyConcerns = $('#topConcernsTable tbody').empty();
-                        if (data.top_concerns && data.top_concerns.length > 0) {
-                            data.top_concerns.forEach(item => {
-                                tbodyConcerns.append(`
-                                    <tr>
-                                        <td class="fw-semibold">${escapeHtml(item.concern)}</td>
-                                        <td class="text-center font-monospace">${parseInt(item.total || 0)}</td>
-                                    </tr>
-                                `);
-                            });
-                        } else {
-                            tbodyConcerns.html('<tr><td colspan="2" class="text-center py-2 text-muted">No records.</td></tr>');
-                        }
-
-                        // 4. Render Staff Performance Table
-                        const tbodyStaff = $('#pdfStaffTable tbody').empty();
-                        if (data.staff_breakdown && data.staff_breakdown.length > 0) {
-                            data.staff_breakdown.forEach(staff => {
-                                const served = parseInt(staff.total_served || 0);
-                                const completed = parseInt(staff.total_completed || 0);
-                                const rate = served > 0 ? Math.round((completed / served) * 100) : 0;
-
-                                tbodyStaff.append(`
-                                    <tr>
-                                        <td class="fw-semibold">${escapeHtml(staff.staff_name || 'Unassigned')}</td>
-                                        <td class="text-center font-monospace">${served}</td>
-                                        <td class="text-center font-monospace">${completed}</td>
-                                        <td class="text-center font-monospace fw-bold ${rate >= 80 ? 'text-success' : 'text-primary'}">${rate}%</td>
-                                    </tr>
-                                `);
-                            });
-                        } else {
-                            tbodyStaff.html('<tr><td colspan="4" class="text-center py-3 text-muted">No staff activity recorded for selected range.</td></tr>');
-                        }
-
-                        setTimeout(() => {
-                            window.focus();
-                            window.print();
-                        }, 400);
-                    } else {
+                    if (!(res.success && res.data)) {
                         alert("Error loading report data: " + (res.message || "Unknown error"));
+                        return;
                     }
+                    const d = res.data;
+                    const k = d.kpi || {};
+
+                    $('#kpiTotal').text(k.total_tickets || 0);
+                    $('#kpiCompleted').text(k.completed_tickets || 0);
+                    $('#kpiSkipped').text(k.skipped_tickets || 0);
+                    $('#kpiPriority').text(k.priority_tickets || 0);
+                    $('#kpiWait').text(fmtMin(k.avg_wait_minutes));
+                    $('#kpiService').text(fmtMin(k.avg_service_minutes));
+                    $('#kpiCall').text(fmtMin(k.avg_call_minutes));
+
+                    fillTable('#visitorDistributionTable', d.visitor_distribution, 2, r =>
+                        `<td class="fw-semibold">${esc(r.type)}</td><td class="text-center font-monospace">${parseInt(r.total || 0)}</td>`);
+
+                    fillTable('#statusTable', d.status_distribution, 2, r =>
+                        `<td class="fw-semibold">${esc(r.status.charAt(0) + r.status.slice(1).toLowerCase())}</td><td class="text-center font-monospace">${parseInt(r.total || 0)}</td>`);
+
+                    fillTable('#topConcernsTable', d.top_concerns, 2, r =>
+                        `<td class="fw-semibold">${esc(r.concern)}</td><td class="text-center font-monospace">${parseInt(r.total || 0)}</td>`);
+
+                    fillTable('#subConcernTable', d.sub_concerns, 3, r =>
+                        `<td>${esc(r.transaction_name)}</td><td class="fw-semibold">${esc(r.sub_concern_name)}</td><td class="text-center font-monospace">${parseInt(r.total || 0)}</td>`);
+
+                    fillTable('#counterTable', d.counter_breakdown, 5, r =>
+                        `<td class="fw-semibold">${esc(r.counter_label)}</td>
+                         <td class="text-center font-monospace">${r.total_tickets}</td>
+                         <td class="text-center font-monospace">${r.total_completed}</td>
+                         <td class="text-center font-monospace">${r.total_skipped}</td>
+                         <td class="text-center font-monospace">${fmtMin(r.avg_service_minutes)}</td>`);
+
+                    fillTable('#pdfStaffTable', d.staff_breakdown, 6, r => {
+                        const served = parseInt(r.total_served || 0), completed = parseInt(r.total_completed || 0);
+                        const rate = served > 0 ? Math.round((completed / served) * 100) : 0;
+                        return `<td class="fw-semibold">${esc(r.staff_name || 'Unassigned')}</td>
+                                <td>${esc(r.windows || '---')}</td>
+                                <td class="text-center font-monospace">${served}</td>
+                                <td class="text-center font-monospace">${completed}</td>
+                                <td class="text-center font-monospace">${fmtMin(r.avg_service_minutes)}</td>
+                                <td class="text-center font-monospace fw-bold ${rate >= 80 ? 'text-success' : 'text-primary'}">${rate}%</td>`;
+                    });
+
+                    setTimeout(() => { window.focus(); window.print(); }, 400);
                 },
                 error: function(xhr, status, error) {
                     console.error("AJAX Report Fetch Error:", error);
