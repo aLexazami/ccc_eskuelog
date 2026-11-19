@@ -2175,8 +2175,13 @@ $window_page_url      = strtok($_SERVER['REQUEST_URI'] ?? '', '?');
             }
         }
 
+        let queueActionInFlight = false;
+
         function sendQueueAction(actionName, additionalParams = {}) {
             if (!HAS_ASSIGNMENT || !activeOfficeId || parseInt(activeCounterId, 10) <= 0) return;
+            // Ignore double clicks / rapid repeat presses while a request is still running
+            if (queueActionInFlight) return;
+            queueActionInFlight = true;
 
             const formData = new FormData();
             formData.append('action', actionName);
@@ -2202,6 +2207,9 @@ $window_page_url      = strtok($_SERVER['REQUEST_URI'] ?? '', '?');
             .catch(err => {
                 console.error(`Queue Action (${actionName}) Error:`, err);
                 showSwalAlert("Error", "An unexpected error occurred while communicating with the server.", "error");
+            })
+            .finally(() => {
+                queueActionInFlight = false;
             });
         }
 

@@ -488,121 +488,163 @@ switch ($action) {
             exit();
         }
 
+        // Serialize Call Next per window so two staff on the same window can never interleave.
+        // (Lock is per office+window; it is released automatically if the request dies.)
+        $lock_name     = "eq_call_{$office_id}_{$counter_id}";
+        $lock_held     = false;
+        $in_tx         = false;
+        $guard_seconds = 4;   // a ticket called less than this long ago at this window blocks a second Call Next
+        $response      = ['success' => false, 'message' => 'Call next failed.'];
+
+        $lane_filters = [
+            'PRIORITY' => "AND q.is_priority = 1",
+            'REGULAR'  => "AND q.is_priority = 0 AND UPPER(TRIM(l.visitor_type)) IN ('STUDENT', 'GUEST')",
+            'EMPLOYEE' => "AND q.is_priority = 0 AND UPPER(TRIM(l.visitor_type)) = 'EMPLOYEE'",
+        ];
+        $lane_sql = $lane_filters[$category];
+
         try {
-            // Auto-complete any currently active ticket at this window before calling the next one
-            if ($counter_id > 0) {
-                $stmtCompletePrev = $db_connect->prepare("
-                    UPDATE queue_tickets 
-                    SET status = 'COMPLETED', completed_at = NOW() 
-                    WHERE office_id = ? AND counter_id = ? AND queue_date = ? AND status IN ('CALLED', 'SERVING')
-                ");
-                $stmtCompletePrev->bind_param("iis", $office_id, $counter_id, $today);
+            $stmtLock = $db_connect->prepare("SELECT GET_LOCK(?, 5) AS got");
+            $stmtLock->bind_param("s", $lock_name);
+            $stmtLock->execute();
+            $lock_held = ((int)($stmtLock->get_result()->fetch_assoc()['got'] ?? 0) === 1);
+            $stmtLock->close();
+
+            if (!$lock_held) {
+                $response = ['success' => false, 'message' => 'This window is busy handling another Call Next. Please try again.'];
             } else {
-                $stmtCompletePrev = $db_connect->prepare("
-                    UPDATE queue_tickets 
-                    SET status = 'COMPLETED', completed_at = NOW() 
-                    WHERE office_id = ? AND queue_date = ? AND status IN ('CALLED', 'SERVING')
-                ");
-                $stmtCompletePrev->bind_param("is", $office_id, $today);
-            }
-            $stmtCompletePrev->execute();
+                $db_connect->begin_transaction();
+                $in_tx = true;
 
-            // Select next FIFO ticket in the chosen category (PRIORITY, REGULAR [STUDENT/GUEST], EMPLOYEE)
-            if ($category === 'PRIORITY') {
-                $stmtNextTicket = $db_connect->prepare("
-                    SELECT q.id, q.ticket_number 
-                    FROM queue_tickets q
-                    INNER JOIN logbooks l ON q.logbook_id = l.id
-                    WHERE q.office_id = ? 
-                      AND q.queue_date = ? 
-                      AND q.status = 'WAITING'
-                      AND (? = 0 OR q.counter_id IS NULL OR q.counter_id = ?)
-                      AND q.is_priority = 1
-                    ORDER BY q.queue_sequence ASC 
+                // 1. Guard: someone at this window JUST called a ticket -> do not complete it, do not call another.
+                $stmtGuard = $db_connect->prepare("
+                    SELECT ticket_number, called_at
+                    FROM queue_tickets
+                    WHERE office_id = ? AND queue_date = ? AND status = 'CALLED'
+                      AND (? = 0 OR counter_id = ?)
+                    ORDER BY called_at DESC, id DESC
                     LIMIT 1
                 ");
-                $stmtNextTicket->bind_param("isii", $office_id, $today, $counter_id, $counter_id);
-            } elseif ($category === 'REGULAR') {
-                $stmtNextTicket = $db_connect->prepare("
-                    SELECT q.id, q.ticket_number 
-                    FROM queue_tickets q
-                    INNER JOIN logbooks l ON q.logbook_id = l.id
-                    WHERE q.office_id = ? 
-                      AND q.queue_date = ? 
-                      AND q.status = 'WAITING'
-                      AND (? = 0 OR q.counter_id IS NULL OR q.counter_id = ?)
-                      AND q.is_priority = 0
-                      AND UPPER(TRIM(l.visitor_type)) IN ('STUDENT', 'GUEST')
-                    ORDER BY q.queue_sequence ASC 
-                    LIMIT 1
-                ");
-                $stmtNextTicket->bind_param("isii", $office_id, $today, $counter_id, $counter_id);
-            } else {
-                $stmtNextTicket = $db_connect->prepare("
-                    SELECT q.id, q.ticket_number 
-                    FROM queue_tickets q
-                    INNER JOIN logbooks l ON q.logbook_id = l.id
-                    WHERE q.office_id = ? 
-                      AND q.queue_date = ? 
-                      AND q.status = 'WAITING'
-                      AND (? = 0 OR q.counter_id IS NULL OR q.counter_id = ?)
-                      AND q.is_priority = 0
-                      AND UPPER(TRIM(l.visitor_type)) = 'EMPLOYEE'
-                    ORDER BY q.queue_sequence ASC 
-                    LIMIT 1
-                ");
-                $stmtNextTicket->bind_param("isii", $office_id, $today, $counter_id, $counter_id);
-            }
+                $stmtGuard->bind_param("isii", $office_id, $today, $counter_id, $counter_id);
+                $stmtGuard->execute();
+                $justCalled = $stmtGuard->get_result()->fetch_assoc();
+                $stmtGuard->close();
 
-            $stmtNextTicket->execute();
-            $nextRes = $stmtNextTicket->get_result();
-
-            if ($ticket = $nextRes->fetch_assoc()) {
-                $ticket_id = (int)$ticket['id'];
-                $now       = date('Y-m-d H:i:s');
-
-                // Atomic claim: only succeeds if the ticket is still WAITING and still callable by this window,
-                // so two windows pressing "Call Next" at the same time can never take the same ticket.
-                if ($counter_id > 0) {
-                    $stmtUpdate = $db_connect->prepare("
-                        UPDATE queue_tickets
-                        SET status = 'CALLED',
-                            called_at = ?,
-                            counter_id = ?,
-                            served_by_user_id = ?
-                        WHERE id = ?
-                          AND status = 'WAITING'
-                          AND (counter_id IS NULL OR counter_id = ?)
-                    ");
-                    $stmtUpdate->bind_param("siiii", $now, $counter_id, $user_id, $ticket_id, $counter_id);
+                if ($justCalled && !empty($justCalled['called_at'])
+                    && (time() - strtotime($justCalled['called_at'])) < $guard_seconds) {
+                    $db_connect->rollback();
+                    $in_tx = false;
+                    $response = [
+                        'success' => false,
+                        'message' => "Ticket {$justCalled['ticket_number']} was just called at this window. Please wait a moment before calling the next one."
+                    ];
                 } else {
-                    $stmtUpdate = $db_connect->prepare("
-                        UPDATE queue_tickets
-                        SET status = 'CALLED',
-                            called_at = ?,
-                            served_by_user_id = ?
-                        WHERE id = ?
-                          AND status = 'WAITING'
-                    ");
-                    $stmtUpdate->bind_param("sii", $now, $user_id, $ticket_id);
-                }
-                $stmtUpdate->execute();
+                    // 2. Auto-complete the ticket currently active at this window
+                    if ($counter_id > 0) {
+                        $stmtCompletePrev = $db_connect->prepare("
+                            UPDATE queue_tickets
+                            SET status = 'COMPLETED', completed_at = NOW()
+                            WHERE office_id = ? AND counter_id = ? AND queue_date = ? AND status IN ('CALLED', 'SERVING')
+                        ");
+                        $stmtCompletePrev->bind_param("iis", $office_id, $counter_id, $today);
+                    } else {
+                        $stmtCompletePrev = $db_connect->prepare("
+                            UPDATE queue_tickets
+                            SET status = 'COMPLETED', completed_at = NOW()
+                            WHERE office_id = ? AND queue_date = ? AND status IN ('CALLED', 'SERVING')
+                        ");
+                        $stmtCompletePrev->bind_param("is", $office_id, $today);
+                    }
+                    $stmtCompletePrev->execute();
+                    $stmtCompletePrev->close();
 
-                if ($stmtUpdate->affected_rows < 1) {
-                    echo json_encode(['success' => false, 'message' => 'That ticket was just taken. Please press Call Next again.']);
-                    exit();
-                }
+                    // 3. Pick + atomically claim the next FIFO ticket of the lane (retry if another window takes a shared ticket first)
+                    $claimed_number = null;
+                    $lane_empty     = false;
 
-                echo json_encode(['success' => true, 'message' => "Ticket {$ticket['ticket_number']} called."]);
-            } else {
-                echo json_encode(['success' => false, 'message' => "No waiting tickets in the {$category} lane."]);
+                    for ($attempt = 0; $attempt < 3 && $claimed_number === null; $attempt++) {
+                        $stmtNextTicket = $db_connect->prepare("
+                            SELECT q.id, q.ticket_number
+                            FROM queue_tickets q
+                            INNER JOIN logbooks l ON q.logbook_id = l.id
+                            WHERE q.office_id = ?
+                              AND q.queue_date = ?
+                              AND q.status = 'WAITING'
+                              AND (? = 0 OR q.counter_id IS NULL OR q.counter_id = ?)
+                              {$lane_sql}
+                            ORDER BY q.queue_sequence ASC
+                            LIMIT 1
+                        ");
+                        $stmtNextTicket->bind_param("isii", $office_id, $today, $counter_id, $counter_id);
+                        $stmtNextTicket->execute();
+                        $ticket = $stmtNextTicket->get_result()->fetch_assoc();
+                        $stmtNextTicket->close();
+
+                        if (!$ticket) {
+                            $lane_empty = true;
+                            break;
+                        }
+
+                        $ticket_id = (int)$ticket['id'];
+                        $now       = date('Y-m-d H:i:s');
+
+                        if ($counter_id > 0) {
+                            $stmtUpdate = $db_connect->prepare("
+                                UPDATE queue_tickets
+                                SET status = 'CALLED', called_at = ?, counter_id = ?, served_by_user_id = ?
+                                WHERE id = ? AND status = 'WAITING' AND (counter_id IS NULL OR counter_id = ?)
+                            ");
+                            $stmtUpdate->bind_param("siiii", $now, $counter_id, $user_id, $ticket_id, $counter_id);
+                        } else {
+                            $stmtUpdate = $db_connect->prepare("
+                                UPDATE queue_tickets
+                                SET status = 'CALLED', called_at = ?, served_by_user_id = ?
+                                WHERE id = ? AND status = 'WAITING'
+                            ");
+                            $stmtUpdate->bind_param("sii", $now, $user_id, $ticket_id);
+                        }
+                        $stmtUpdate->execute();
+                        if ($stmtUpdate->affected_rows > 0) {
+                            $claimed_number = $ticket['ticket_number'];
+                        }
+                        $stmtUpdate->close();
+                    }
+
+                    if ($claimed_number !== null) {
+                        $db_connect->commit();
+                        $in_tx = false;
+                        $response = ['success' => true, 'message' => "Ticket {$claimed_number} called."];
+                    } else {
+                        // Nothing was called: undo the auto-complete so the current ticket is not lost
+                        $db_connect->rollback();
+                        $in_tx = false;
+                        $response = [
+                            'success' => false,
+                            'message' => $lane_empty
+                                ? "No waiting tickets in the {$category} lane."
+                                : 'That ticket was just taken. Please press Call Next again.'
+                        ];
+                    }
+                }
             }
-            exit();
-
-        } catch (Exception $e) {
-            echo json_encode(['success' => false, 'message' => 'Call next failed: ' . $e->getMessage()]);
-            exit();
+        } catch (Throwable $e) {
+            if ($in_tx) {
+                try { $db_connect->rollback(); } catch (Throwable $ignore) {}
+            }
+            $response = ['success' => false, 'message' => 'Call next failed: ' . $e->getMessage()];
         }
+
+        if ($lock_held) {
+            try {
+                $stmtRel = $db_connect->prepare("SELECT RELEASE_LOCK(?)");
+                $stmtRel->bind_param("s", $lock_name);
+                $stmtRel->execute();
+                $stmtRel->close();
+            } catch (Throwable $ignore) {}
+        }
+
+        echo json_encode($response);
+        exit();
 
     case 'serve_ticket':
         if ($office_id <= 0) {
