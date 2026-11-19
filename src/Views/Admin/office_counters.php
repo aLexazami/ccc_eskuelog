@@ -159,6 +159,26 @@ $action_buttons = [
 <head>
     <?php include_once ADMIN_META_DATA_PATH; ?>
     <?php include_once ADMIN_LINK_PATH; ?>
+
+    <style>
+        /* Enforce strict horizontal alignment inside Tabulator cells */
+        #tabulator-container .tabulator-cell[tabulator-field="office_label"],
+        #tabulator-container .tabulator-cell[tabulator-field="staff_label"] {
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: flex-start !important;
+            text-align: left !important;
+        }
+
+        #tabulator-container .tabulator-cell[tabulator-field="counter_name"],
+        #tabulator-container .tabulator-cell[tabulator-field="status_label"],
+        #tabulator-container .tabulator-cell:first-child {
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            text-align: center !important;
+        }
+    </style>
 </head>
 
 <body>
@@ -437,17 +457,21 @@ $action_buttons = [
         /* Formatters */
         function counterNameFormatter(cell) {
             const val = cell.getValue() || '';
-            return `<span class="badge bg-light text-dark border font-monospace">${escapeHtml(val)}</span>`;
+            return `<div class="w-100 text-center"><span class="badge bg-light text-dark border font-monospace">${escapeHtml(val)}</span></div>`;
         }
 
         // Plain left-aligned list (normal text color, no badge/background)
         function staffFormatter(cell) {
             const val = cell.getValue();
             if (!val || String(val).trim() === '' || val === 'Unassigned') {
-                return 'Unassigned';
+                return '<div class="w-100 text-start">Unassigned</div>';
             }
             const names = String(val).split(',').map(s => s.trim()).filter(Boolean);
-            return `<div class="text-start">${names.map(name => `<div>${escapeHtml(name)}</div>`).join('')}</div>`;
+            return `<div class="w-100 text-start">${names.map(name => `<div>${escapeHtml(name)}</div>`).join('')}</div>`;
+        }
+
+        function statusFormatter(cell) {
+            return `<div class="w-100 text-center">${escapeHtml(cell.getValue())}</div>`;
         }
 
         function statusFormatter(cell) {
