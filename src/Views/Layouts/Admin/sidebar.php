@@ -202,6 +202,14 @@ function render_action_links($links = [])
                             <p>Transaction Records</p>
                         </a>
                     </li>
+
+                    <!-- REPORTS & ANALYTICS FOR ALL OFFICES -->
+                    <li class="nav-item <?php echo navigation_active("reports-analytics"); ?>">
+                        <a href="<?php echo BASE_URL . "admin/reports-analytics"; ?>">
+                            <i class="bi bi-bar-chart-line-fill"></i>
+                            <p>Reports & Analytics</p>
+                        </a>
+                    </li>
                 <?php endif; ?>
 
                 <?php if ($g_user_role == 'ADMIN_STAFF'): ?>

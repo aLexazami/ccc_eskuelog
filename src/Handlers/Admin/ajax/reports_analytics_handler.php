@@ -1,17 +1,26 @@
 <?php
 // src/Handlers/Admin/ajax/reports_analytics_handler.php
 
+ob_start();
+
 /** @var \mysqli $db_connect */
 global $db_connect, $session_class;
 $db_connect = $db_connect ?? null;
 
-header('Content-Type: application/json');
+header('Content-Type: application/json; charset=utf-8');
 
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
-if (!$db_connect) {
-    echo json_encode(['success' => false, 'message' => 'Database connection unavailable.']);
+$sendJson = static function (array $payload): void {
+    if (ob_get_length() > 0) {
+        ob_clean();
+    }
+    echo json_encode($payload);
     exit();
+};
+
+if (!$db_connect) {
+    $sendJson(['success' => false, 'message' => 'Database connection unavailable.']);
 }
 
 if (session_status() === PHP_SESSION_NONE) {
@@ -76,6 +85,7 @@ if ($g_user_role_upper === 'ADMIN_STAFF' && $user_id > 0) {
 }
 
 $action = $_REQUEST['action'] ?? '';
+$today  = defined('DATE_NOW') ? DATE_NOW : date('Y-m-d');
 
 switch ($action) {
 
@@ -94,8 +104,8 @@ switch ($action) {
             $stmt->close();
         }
 
-        echo json_encode(['success' => true, 'data' => $counters]);
-        exit();
+        $sendJson(['success' => true, 'data' => $counters]);
+        break;
 
     case 'fetch_analytics':
         try {
@@ -106,8 +116,8 @@ switch ($action) {
             $date_to      = trim($_REQUEST['date_to'] ?? '');
 
             // Sanitize filters
-            if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date_from)) $date_from = date('Y-m-d');
-            if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date_to))   $date_to   = date('Y-m-d');
+            if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date_from)) $date_from = $today;
+            if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date_to))   $date_to   = $today;
             if ($date_from > $date_to) {
                 [$date_from, $date_to] = [$date_to, $date_from];
             }
@@ -118,6 +128,11 @@ switch ($action) {
             // Enforce assigned office for ADMIN_STAFF
             if ($g_user_role_upper === 'ADMIN_STAFF' && $assigned_office_id > 0) {
                 $office_id = $assigned_office_id;
+            }
+
+            // Counter filter is only valid when scoped to a specific office
+            if ($office_id === 0) {
+                $counter_id = 0;
             }
 
             $whereClauses = ["q.queue_date BETWEEN ? AND ?"];
@@ -177,6 +192,40 @@ switch ($action) {
                 $kpi[$k] = (float)($kpi[$k] ?? 0);
             }
 
+            // A2. OFFICE PERFORMANCE BREAKDOWN (When viewing All Offices: office_id === 0)
+            $officeBreakdown = [];
+            if ($office_id === 0) {
+                foreach ($fetchAll("
+                    SELECT
+                        o.office_id,
+                        o.office_code,
+                        o.office_name,
+                        COUNT(q.id) AS total_tickets,
+                        SUM(q.status = 'COMPLETED') AS total_completed,
+                        SUM(q.status = 'SKIPPED') AS total_skipped,
+                        ROUND(AVG(CASE WHEN q.called_at IS NOT NULL
+                            THEN TIMESTAMPDIFF(SECOND, l.created_at, q.called_at) END) / 60, 1) AS avg_wait_minutes,
+                        ROUND(AVG(CASE WHEN q.served_at IS NOT NULL AND q.completed_at IS NOT NULL
+                            THEN TIMESTAMPDIFF(SECOND, q.served_at, q.completed_at) END) / 60, 1) AS avg_service_minutes
+                    {$base}
+                    INNER JOIN office o ON o.office_id = q.office_id
+                    WHERE {$whereSql}
+                    GROUP BY o.office_id, o.office_code, o.office_name
+                    ORDER BY total_tickets DESC, o.office_name ASC
+                ") as $r) {
+                    $officeBreakdown[] = [
+                        'office_id'           => (int)$r['office_id'],
+                        'office_code'         => $r['office_code'],
+                        'office_name'         => $r['office_name'],
+                        'total_tickets'       => (int)$r['total_tickets'],
+                        'total_completed'     => (int)$r['total_completed'],
+                        'total_skipped'       => (int)$r['total_skipped'],
+                        'avg_wait_minutes'    => (float)($r['avg_wait_minutes'] ?? 0),
+                        'avg_service_minutes' => (float)($r['avg_service_minutes'] ?? 0)
+                    ];
+                }
+            }
+
             // B. VOLUME TREND
             $isSingleDay = ($date_from === $date_to);
             $volumeTrend = [];
@@ -219,10 +268,12 @@ switch ($action) {
                 ['status' => 'SKIPPED',   'total' => $statusCounts['SKIPPED']]
             ];
 
-            // E. TOP TRANSACTIONS (Primary + Sub-Transactions combined if present, minimum 5 rows returned when available)
+            // E. TOP TRANSACTIONS (Includes office_code when All Offices is selected)
             $topConcerns = [];
+            $concernGroupBy = ($office_id === 0) ? "o.office_id, o.office_code, concern" : "concern";
             foreach ($fetchAll("
                 SELECT
+                    o.office_code,
                     CASE
                         WHEN tsc.id IS NOT NULL AND TRIM(tsc.sub_concern_name) <> ''
                             THEN CONCAT(COALESCE(tt.transaction_name, 'Others / General Concern'), ' / ', tsc.sub_concern_name)
@@ -230,21 +281,28 @@ switch ($action) {
                     END AS concern,
                     COUNT(DISTINCT q.id) AS total
                 {$base}
+                INNER JOIN office o ON o.office_id = q.office_id
                 LEFT JOIN logbook_transaction_items lti ON lti.logbook_id = l.id
                 LEFT JOIN transaction_sub_concerns tsc ON tsc.id = lti.sub_concern_id
                 LEFT JOIN transaction_types tt ON tt.id = COALESCE(lti.transaction_type_id, tsc.transaction_type_id, l.transaction_type_id)
                 WHERE {$whereSql}
-                GROUP BY concern
+                GROUP BY {$concernGroupBy}
                 ORDER BY total DESC, concern ASC
                 LIMIT 10
             ") as $r) {
-                $topConcerns[] = ['concern' => $r['concern'], 'total' => (int)$r['total']];
+                $topConcerns[] = [
+                    'office_code' => $r['office_code'] ?? '',
+                    'concern'     => $r['concern'],
+                    'total'       => (int)$r['total']
+                ];
             }
 
-            // F. WINDOW (COUNTER) PERFORMANCE (Avg. Waiting, Avg. Calling, Avg. Processing)
+            // F. WINDOW (COUNTER) PERFORMANCE
             $counterBreakdown = [];
             foreach ($fetchAll("
-                SELECT CONCAT(o.office_code, ' - ', c.counter_name) AS counter_label,
+                SELECT o.office_code,
+                       o.office_name,
+                       c.counter_name AS counter_label,
                        COUNT(q.id) AS total_tickets,
                        SUM(q.status = 'COMPLETED') AS total_completed,
                        SUM(q.status = 'SKIPPED') AS total_skipped,
@@ -258,10 +316,12 @@ switch ($action) {
                 INNER JOIN counters c ON c.id = q.counter_id
                 INNER JOIN office o ON o.office_id = c.office_id
                 WHERE {$whereSql}
-                GROUP BY c.id, o.office_code, c.counter_name
-                ORDER BY total_tickets DESC, counter_label ASC
+                GROUP BY c.id, o.office_code, o.office_name, c.counter_name
+                ORDER BY total_tickets DESC, o.office_code ASC, counter_label ASC
             ") as $r) {
                 $counterBreakdown[] = [
+                    'office_code'         => $r['office_code'],
+                    'office_name'         => $r['office_name'],
                     'counter_label'       => $r['counter_label'],
                     'total_tickets'       => (int)$r['total_tickets'],
                     'total_completed'     => (int)$r['total_completed'],
@@ -272,10 +332,12 @@ switch ($action) {
                 ];
             }
 
-            // G. STAFF PERFORMANCE (Separate row per Staff + Window so multi-window staff show each window individually)
+            // G. STAFF PERFORMANCE (Includes office_code & office_name for All Offices view)
             $staffBreakdown = [];
             foreach ($fetchAll("
-                SELECT CONCAT(su.first_name, ' ', su.last_name) AS staff_name,
+                SELECT o.office_code,
+                       o.office_name,
+                       CONCAT(su.first_name, ' ', su.last_name) AS staff_name,
                        COALESCE(c.counter_name, 'Unassigned Window') AS window_label,
                        COUNT(q.id) AS total_served,
                        SUM(q.status = 'COMPLETED') AS total_completed,
@@ -283,13 +345,16 @@ switch ($action) {
                        ROUND(AVG(CASE WHEN q.served_at IS NOT NULL AND q.completed_at IS NOT NULL
                            THEN TIMESTAMPDIFF(SECOND, q.served_at, q.completed_at) END) / 60, 1) AS avg_service_minutes
                 {$base}
+                INNER JOIN office o ON o.office_id = q.office_id
                 INNER JOIN users su ON q.served_by_user_id = su.id
                 LEFT JOIN counters c ON c.id = q.counter_id
                 WHERE {$whereSql}
-                GROUP BY su.id, su.first_name, su.last_name, c.id, c.counter_name
-                ORDER BY staff_name ASC, window_label ASC
+                GROUP BY o.office_id, o.office_code, o.office_name, su.id, su.first_name, su.last_name, c.id, c.counter_name
+                ORDER BY o.office_code ASC, staff_name ASC, window_label ASC
             ") as $r) {
                 $staffBreakdown[] = [
+                    'office_code'         => $r['office_code'],
+                    'office_name'         => $r['office_name'],
                     'staff_name'          => $r['staff_name'],
                     'window_label'        => $r['window_label'],
                     'total_served'        => (int)$r['total_served'],
@@ -299,10 +364,11 @@ switch ($action) {
                 ];
             }
 
-            echo json_encode([
+            $sendJson([
                 'success' => true,
                 'data'    => [
                     'kpi'                  => $kpi,
+                    'office_breakdown'     => $officeBreakdown,
                     'volume_trend'         => $volumeTrend,
                     'visitor_distribution' => $visitorDistribution,
                     'status_distribution'  => $statusDistribution,
@@ -311,12 +377,13 @@ switch ($action) {
                     'staff_breakdown'      => $staffBreakdown
                 ]
             ]);
-            exit();
 
         } catch (Exception $e) {
-            echo json_encode(['success' => false, 'message' => 'Analytics fetch error: ' . $e->getMessage()]);
-            exit();
+            $sendJson(['success' => false, 'message' => 'Analytics fetch error: ' . $e->getMessage()]);
         }
-        echo json_encode(['success' => false, 'message' => 'Invalid action.']);
-        exit();
+        break;
+
+    default:
+        $sendJson(['success' => false, 'message' => 'Invalid action.']);
+        break;
 }

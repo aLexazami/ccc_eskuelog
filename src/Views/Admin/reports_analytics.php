@@ -109,6 +109,8 @@ if ($db_connect && $user_id > 0) {
         }
     }
 }
+
+$today_date = defined('DATE_NOW') ? DATE_NOW : date('Y-m-d');
 ?>
 <!DOCTYPE html>
 <html lang="en" class="h-100">
@@ -177,7 +179,8 @@ if ($db_connect && $user_id > 0) {
             width: 100%;
         }
 
-        /* Clean Flat Tabulator Styling (Removes header background/shadow effects) */
+        /* Clean Flat Tabulator Styling */
+        #officeTable.tabulator,
         #counterTable.tabulator,
         #staffBreakdownTable.tabulator {
             border: 1px solid #e2e8f0;
@@ -186,6 +189,8 @@ if ($db_connect && $user_id > 0) {
             box-shadow: none !important;
         }
 
+        #officeTable .tabulator-header,
+        #officeTable .tabulator-header .tabulator-col,
         #counterTable .tabulator-header,
         #counterTable .tabulator-header .tabulator-col,
         #staffBreakdownTable .tabulator-header,
@@ -199,6 +204,7 @@ if ($db_connect && $user_id > 0) {
             color: #475569;
         }
 
+        #officeTable .tabulator-header .tabulator-col:hover,
         #counterTable .tabulator-header .tabulator-col:hover,
         #staffBreakdownTable .tabulator-header .tabulator-col:hover {
             background: #ffffff !important;
@@ -206,6 +212,8 @@ if ($db_connect && $user_id > 0) {
             box-shadow: none !important;
         }
 
+        #officeTable .tabulator-header-filter input,
+        #officeTable .tabulator-header-filter select,
         #counterTable .tabulator-header-filter input,
         #counterTable .tabulator-header-filter select,
         #staffBreakdownTable .tabulator-header-filter input,
@@ -218,6 +226,10 @@ if ($db_connect && $user_id > 0) {
             box-sizing: border-box;
         }
 
+        #officeTable .tabulator-row,
+        #officeTable .tabulator-row.tabulator-row-even,
+        #officeTable .tabulator-row.tabulator-row-odd,
+        #officeTable .tabulator-row:hover,
         #counterTable .tabulator-row,
         #counterTable .tabulator-row.tabulator-row-even,
         #counterTable .tabulator-row.tabulator-row-odd,
@@ -230,6 +242,7 @@ if ($db_connect && $user_id > 0) {
             box-shadow: none !important;
         }
 
+        #officeTable .tabulator-cell,
         #counterTable .tabulator-cell,
         #staffBreakdownTable .tabulator-cell {
             background-color: #ffffff !important;
@@ -238,11 +251,13 @@ if ($db_connect && $user_id > 0) {
             white-space: normal;
         }
 
+        #officeTable .tabulator-cell:last-child,
         #counterTable .tabulator-cell:last-child,
         #staffBreakdownTable .tabulator-cell:last-child {
             border-right: none;
         }
 
+        #officeTable .tabulator-footer,
         #counterTable .tabulator-footer,
         #staffBreakdownTable .tabulator-footer {
             background-color: #ffffff !important;
@@ -250,13 +265,13 @@ if ($db_connect && $user_id > 0) {
             border-top: 1px solid #e2e8f0;
         }
 
-        /* Bootstrap Tabulator Scrollbar Support (Y and X) */
         .tabulator .tabulator-tableholder {
             overflow-x: auto !important;
             overflow-y: auto !important;
         }
 
-        /* Force alignment on both Tabulator cells and inner wrappers */
+        /* Left-align label/name columns; center Office Code and metric columns */
+        #officeTable .tabulator-cell[tabulator-field="office_label"],
         #counterTable .tabulator-cell[tabulator-field="counter_label"],
         #staffBreakdownTable .tabulator-cell[tabulator-field="staff_name"] {
             display: inline-flex !important;
@@ -265,8 +280,7 @@ if ($db_connect && $user_id > 0) {
             text-align: left !important;
         }
 
-        #staffBreakdownTable .tabulator-cell[tabulator-field="window_label"],
-        #staffBreakdownTable .tabulator-cell[tabulator-field="rate"],
+        #officeTable .tabulator-cell:not([tabulator-field="office_label"]),
         #counterTable .tabulator-cell:not([tabulator-field="counter_label"]),
         #staffBreakdownTable .tabulator-cell:not([tabulator-field="staff_name"]) {
             display: inline-flex !important;
@@ -310,7 +324,6 @@ if ($db_connect && $user_id > 0) {
             margin-top: 0.15rem;
         }
 
-        /* Tabulator Empty Placeholder Styling */
         .tabulator .tabulator-tableholder .tabulator-placeholder {
             padding: 2rem 1rem !important;
         }
@@ -340,7 +353,7 @@ if ($db_connect && $user_id > 0) {
                     <!-- FILTERS CARD -->
                     <div class="card filter-card mb-4">
                         <div class="card-body p-3 p-sm-4">
-                            <form id="analyticsFilterForm">
+                            <form id="analyticsFilterForm" autocomplete="off">
 
                                 <!-- ROW 1: SOLO OFFICE LOCATION -->
                                 <div class="row g-3 mb-3">
@@ -348,9 +361,9 @@ if ($db_connect && $user_id > 0) {
                                         <label for="filterOfficeId" class="form-label fw-bold small text-muted">
                                             Office Location
                                         </label>
-                                        <select id="filterOfficeId" class="form-select form-select-sm" <?= $lock_office ? 'disabled style="pointer-events:none; background-color:#f1f5f9;"' : ''; ?>>
+                                        <select id="filterOfficeId" class="form-select form-select-sm" autocomplete="off" <?= $lock_office ? 'disabled style="pointer-events:none; background-color:#f1f5f9;"' : ''; ?>>
                                             <?php if ($g_user_role_upper === 'ADMIN' || $g_user_role_upper === 'STATION_ADMIN'): ?>
-                                                <option value="0">-- All Offices --</option>
+                                                <option value="0" selected>-- All Offices --</option>
                                                 <?php foreach ($offices as $off): ?>
                                                     <option value="<?= $off['office_id']; ?>"><?= htmlspecialchars($off['office_name']); ?> (<?= htmlspecialchars($off['office_code']); ?>)</option>
                                                 <?php endforeach; ?>
@@ -358,7 +371,7 @@ if ($db_connect && $user_id > 0) {
                                                 <?php if ($assigned_office): ?>
                                                     <option value="<?= $assigned_office['office_id']; ?>" selected><?= htmlspecialchars($assigned_office['office_name']); ?> (<?= htmlspecialchars($assigned_office['office_code']); ?>)</option>
                                                 <?php else: ?>
-                                                    <option value="0">-- All Offices --</option>
+                                                    <option value="0" selected>-- All Offices --</option>
                                                     <?php foreach ($offices as $off): ?>
                                                         <option value="<?= $off['office_id']; ?>"><?= htmlspecialchars($off['office_name']); ?></option>
                                                     <?php endforeach; ?>
@@ -372,8 +385,8 @@ if ($db_connect && $user_id > 0) {
                                 <div class="row g-2 align-items-end">
                                     <div class="col-12 col-sm-6 col-xl-2">
                                         <label for="filterCounterId" class="form-label fw-bold small text-muted">Window / Counter</label>
-                                        <select id="filterCounterId" class="form-select form-select-sm">
-                                            <option value="0">All Windows</option>
+                                        <select id="filterCounterId" class="form-select form-select-sm" autocomplete="off" <?= !$lock_office ? 'disabled' : ''; ?>>
+                                            <option value="0" selected><?= $lock_office ? 'All Windows' : 'Select office first'; ?></option>
                                             <?php foreach ($counters as $c): ?>
                                                 <option value="<?= (int)$c['id']; ?>"><?= htmlspecialchars($c['counter_name']); ?></option>
                                             <?php endforeach; ?>
@@ -382,8 +395,8 @@ if ($db_connect && $user_id > 0) {
 
                                     <div class="col-12 col-sm-6 col-xl-2">
                                         <label for="filterVisitorType" class="form-label fw-bold small text-muted">Visitor Type</label>
-                                        <select id="filterVisitorType" class="form-select form-select-sm">
-                                            <option value="">All Types</option>
+                                        <select id="filterVisitorType" class="form-select form-select-sm" autocomplete="off">
+                                            <option value="" selected>All Types</option>
                                             <option value="STUDENT">Student</option>
                                             <option value="EMPLOYEE">Employee</option>
                                             <option value="GUEST">Guest</option>
@@ -392,12 +405,12 @@ if ($db_connect && $user_id > 0) {
 
                                     <div class="col-6 col-sm-6 col-xl-2">
                                         <label for="filterDateFrom" class="form-label fw-bold small text-muted">Date From</label>
-                                        <input type="date" id="filterDateFrom" class="form-control form-control-sm" value="<?= date('Y-m-d'); ?>">
+                                        <input type="date" id="filterDateFrom" class="form-control form-control-sm" autocomplete="off" value="<?= htmlspecialchars($today_date); ?>">
                                     </div>
 
                                     <div class="col-6 col-sm-6 col-xl-2">
                                         <label for="filterDateTo" class="form-label fw-bold small text-muted">Date To</label>
-                                        <input type="date" id="filterDateTo" class="form-control form-control-sm" value="<?= date('Y-m-d'); ?>">
+                                        <input type="date" id="filterDateTo" class="form-control form-control-sm" autocomplete="off" value="<?= htmlspecialchars($today_date); ?>">
                                     </div>
 
                                     <div class="col-12 col-xl-4 d-flex flex-wrap flex-xl-nowrap gap-2 justify-content-xl-end">
@@ -413,8 +426,14 @@ if ($db_connect && $user_id > 0) {
                                                 <i class="bi bi-download me-1"></i>Export / Download
                                             </button>
                                             <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                                                <?php foreach (['staff' => 'Staff Performance', 'counter' => 'Window Performance'] as $key => $label): ?>
-                                                    <li class="px-3 py-1">
+                                                <?php
+                                                $export_groups = [
+                                                    'office'  => 'Office Performance',
+                                                    'staff'   => 'Staff Performance',
+                                                    'counter' => 'Window Performance'
+                                                ];
+                                                foreach ($export_groups as $key => $label): ?>
+                                                    <li class="px-3 py-1" id="exportGroup_<?= $key; ?>">
                                                         <div class="small fw-bold text-muted"><?= $label; ?></div>
                                                         <div class="d-flex gap-3 small">
                                                             <a href="javascript:void(0)" data-export="<?= $key; ?>:csv">CSV</a>
@@ -456,6 +475,27 @@ if ($db_connect && $user_id > 0) {
                                 </div>
                             </div>
                         <?php endforeach; ?>
+                    </div>
+
+                    <!-- ROW 0 (ALL OFFICES ONLY): OFFICE PERFORMANCE COMPARISON -->
+                    <div id="allOfficesComparisonSection">
+                        <div class="row g-4 mb-4">
+                            <div class="col-12">
+                                <div class="card chart-card p-3 p-sm-4">
+                                    <h6 class="fw-bold text-dark mb-3"><i class="bi bi-building me-2 text-primary"></i>Ticket Volume by Office</h6>
+                                    <div class="chart-container"><canvas id="officeVolumeChart"></canvas></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row g-4 mb-4">
+                            <div class="col-12">
+                                <div class="card chart-card p-3 p-sm-4">
+                                    <h6 class="fw-bold text-dark mb-3"><i class="bi bi-buildings me-2 text-primary"></i>Office Performance Breakdown</h6>
+                                    <div id="officeTable" style="min-height: 380px;"></div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- ROW 1: QUEUE VOLUME TREND (1 COLUMN) -->
@@ -536,9 +576,13 @@ if ($db_connect && $user_id > 0) {
 
         const charts = {};
         const tables = {};
+        let isInitialized = false;
+
         const STATUS_COLORS = {
             COMPLETED: '#16a34a', SKIPPED: '#dc2626'
         };
+
+        const isAllOfficesMode = () => parseInt($('#filterOfficeId').val() || '0', 10) === 0;
 
         const getTodayDate = () => {
             const t = new Date();
@@ -551,7 +595,6 @@ if ($db_connect && $user_id > 0) {
 
         const fmtMin = (v) => `${(parseFloat(v) || 0).toFixed(1)}m`;
 
-        // Wrap long transaction labels into multi-line arrays so Chart.js never truncates them
         function wrapChartLabel(str, maxLineLen = 58) {
             const text = String(str || '');
             if (text.length <= maxLineLen) return text;
@@ -572,7 +615,9 @@ if ($db_connect && $user_id > 0) {
 
         function drawChart(key, canvasId, config) {
             if (charts[key]) charts[key].destroy();
-            charts[key] = new Chart(document.getElementById(canvasId).getContext('2d'), config);
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+            charts[key] = new Chart(canvas.getContext('2d'), config);
         }
 
         function toggleChartEmptyState(key, canvasId, isEmpty, title = 'No data available', subtitle = 'Try adjusting your office, window, or date filters.') {
@@ -636,38 +681,75 @@ if ($db_connect && $user_id > 0) {
         };
 
         function initTables() {
-            // Window Performance: Window aligned left, metrics centered
-            tables.counter = new Tabulator("#counterTable", Object.assign({}, baseTabulatorOptions, {
-                placeholder: buildTablePlaceholder("No window activity found", "No tickets were routed to any window for the selected filters."),
+            // 0. Office Performance Breakdown (All Offices Mode)
+            tables.office = new Tabulator("#officeTable", Object.assign({}, baseTabulatorOptions, {
+                height: "380px",
+                placeholder: buildTablePlaceholder("No office activity found", "No tickets were recorded across offices for the selected date range."),
                 columns: [
-                    Object.assign({ title: "Window", field: "counter_label", widthGrow: 1, minWidth: 160, vertAlign: "middle", hozAlign: "left",
-                        formatter: c => `<div class="w-100 text-start"><span class="badge bg-light text-dark border font-monospace">${escapeHtml(c.getValue())}</span></div>` }, colFilter),
-                    Object.assign({ title: "Tickets", field: "total_tickets", widthGrow: 1, minWidth: 120, vertAlign: "middle", hozAlign: "center", sorter: "number" }, colFilter),
-                    Object.assign({ title: "Completed", field: "total_completed", widthGrow: 1, minWidth: 120, vertAlign: "middle", hozAlign: "center", sorter: "number" }, colFilter),
-                    Object.assign({ title: "Skipped", field: "total_skipped", widthGrow: 1, minWidth: 120, vertAlign: "middle", hozAlign: "center", sorter: "number" }, colFilter),
-                    Object.assign({ title: "Avg. Waiting", field: "avg_wait_minutes", widthGrow: 1, minWidth: 130, vertAlign: "middle", hozAlign: "center", sorter: "number", formatter: c => fmtMin(c.getValue()) }, colFilter),
-                    Object.assign({ title: "Avg. Calling", field: "avg_call_minutes", widthGrow: 1, minWidth: 130, vertAlign: "middle", hozAlign: "center", sorter: "number", formatter: c => fmtMin(c.getValue()) }, colFilter),
-                    Object.assign({ title: "Avg. Processing", field: "avg_service_minutes", widthGrow: 1, minWidth: 140, vertAlign: "middle", hozAlign: "center", sorter: "number", formatter: c => fmtMin(c.getValue()) }, colFilter)
+                    Object.assign({ title: "Office", field: "office_label", widthGrow: 2, minWidth: 220, vertAlign: "middle", hozAlign: "left",
+                        formatter: c => `<div class="w-100 text-start"><span class="fw-semibold">${escapeHtml(c.getValue())}</span></div>` }, colFilter),
+                    Object.assign({ title: "Tickets", field: "total_tickets", widthGrow: 1, minWidth: 110, vertAlign: "middle", hozAlign: "center", sorter: "number" }, colFilter),
+                    Object.assign({ title: "Completed", field: "total_completed", widthGrow: 1, minWidth: 110, vertAlign: "middle", hozAlign: "center", sorter: "number" }, colFilter),
+                    Object.assign({ title: "Skipped", field: "total_skipped", widthGrow: 1, minWidth: 110, vertAlign: "middle", hozAlign: "center", sorter: "number" }, colFilter),
+                    Object.assign({ title: "Avg. Waiting", field: "avg_wait_minutes", widthGrow: 1, minWidth: 120, vertAlign: "middle", hozAlign: "center", sorter: "number", formatter: c => fmtMin(c.getValue()) }, colFilter),
+                    Object.assign({ title: "Avg. Processing", field: "avg_service_minutes", widthGrow: 1, minWidth: 130, vertAlign: "middle", hozAlign: "center", sorter: "number", formatter: c => fmtMin(c.getValue()) }, colFilter),
+                    Object.assign({ title: "Completion", field: "rate", widthGrow: 1, minWidth: 115, vertAlign: "middle", hozAlign: "center", sorter: "number", formatter: c => `${c.getValue()}%` }, colFilter)
                 ]
             }));
 
-            // Staff Performance: Staff Name left, Window & Completion centered, Skipped column added
+            // 1. Window Performance (Permanent Office Code column across All Offices & Single Office)
+            tables.counter = new Tabulator("#counterTable", Object.assign({}, baseTabulatorOptions, {
+                placeholder: buildTablePlaceholder("No window activity found", "No tickets were routed to any window for the selected filters."),
+                columns: [
+                    Object.assign({ title: "Office Code", field: "office_code", widthGrow: 1, minWidth: 120, vertAlign: "middle", hozAlign: "center",
+                        formatter: c => `<div class="w-100 text-center"><span class="badge bg-light text-dark border font-monospace">${escapeHtml(c.getValue() || '---')}</span></div>` }, colFilter),
+                    Object.assign({ title: "Window", field: "counter_label", widthGrow: 1, minWidth: 150, vertAlign: "middle", hozAlign: "left",
+                        formatter: c => `<div class="w-100 text-start"><span class="badge bg-light text-dark border font-monospace">${escapeHtml(c.getValue())}</span></div>` }, colFilter),
+                    Object.assign({ title: "Tickets", field: "total_tickets", widthGrow: 1, minWidth: 110, vertAlign: "middle", hozAlign: "center", sorter: "number" }, colFilter),
+                    Object.assign({ title: "Completed", field: "total_completed", widthGrow: 1, minWidth: 110, vertAlign: "middle", hozAlign: "center", sorter: "number" }, colFilter),
+                    Object.assign({ title: "Skipped", field: "total_skipped", widthGrow: 1, minWidth: 110, vertAlign: "middle", hozAlign: "center", sorter: "number" }, colFilter),
+                    Object.assign({ title: "Avg. Waiting", field: "avg_wait_minutes", widthGrow: 1, minWidth: 120, vertAlign: "middle", hozAlign: "center", sorter: "number", formatter: c => fmtMin(c.getValue()) }, colFilter),
+                    Object.assign({ title: "Avg. Calling", field: "avg_call_minutes", widthGrow: 1, minWidth: 120, vertAlign: "middle", hozAlign: "center", sorter: "number", formatter: c => fmtMin(c.getValue()) }, colFilter),
+                    Object.assign({ title: "Avg. Processing", field: "avg_service_minutes", widthGrow: 1, minWidth: 130, vertAlign: "middle", hozAlign: "center", sorter: "number", formatter: c => fmtMin(c.getValue()) }, colFilter)
+                ]
+            }));
+
+            // 2. Staff Performance (Permanent Office Code column across All Offices & Single Office)
             tables.staff = new Tabulator("#staffBreakdownTable", Object.assign({}, baseTabulatorOptions, {
                 placeholder: buildTablePlaceholder("No staff activity recorded", "Staff performance metrics will appear once tickets are served."),
                 columns: [
+                    Object.assign({ title: "Office Code", field: "office_code", widthGrow: 1, minWidth: 120, vertAlign: "middle", hozAlign: "center",
+                        formatter: c => `<div class="w-100 text-center"><span class="badge bg-light text-dark border font-monospace">${escapeHtml(c.getValue() || '---')}</span></div>` }, colFilter),
                     Object.assign({ title: "Staff Name", field: "staff_name", widthGrow: 1, minWidth: 180, vertAlign: "middle", hozAlign: "left",
                         formatter: c => `<div class="w-100 text-start"><span class="fw-semibold text-wrap">${escapeHtml(c.getValue() || 'Unassigned')}</span></div>` }, colFilter),
-                    Object.assign({ title: "Window", field: "window_label", widthGrow: 1, minWidth: 150, vertAlign: "middle", hozAlign: "center",
+                    Object.assign({ title: "Window", field: "window_label", widthGrow: 1, minWidth: 140, vertAlign: "middle", hozAlign: "center",
                         formatter: c => `<div class="w-100 text-center"><span class="badge bg-light text-dark border font-monospace">${escapeHtml(c.getValue() || '---')}</span></div>` }, colFilter),
-                    Object.assign({ title: "Served", field: "total_served", widthGrow: 1, minWidth: 115, vertAlign: "middle", hozAlign: "center", sorter: "number" }, colFilter),
-                    Object.assign({ title: "Completed", field: "total_completed", widthGrow: 1, minWidth: 115, vertAlign: "middle", hozAlign: "center", sorter: "number" }, colFilter),
-                    Object.assign({ title: "Skipped", field: "total_skipped", widthGrow: 1, minWidth: 115, vertAlign: "middle", hozAlign: "center", sorter: "number" }, colFilter),
+                    Object.assign({ title: "Served", field: "total_served", widthGrow: 1, minWidth: 110, vertAlign: "middle", hozAlign: "center", sorter: "number" }, colFilter),
+                    Object.assign({ title: "Completed", field: "total_completed", widthGrow: 1, minWidth: 110, vertAlign: "middle", hozAlign: "center", sorter: "number" }, colFilter),
+                    Object.assign({ title: "Skipped", field: "total_skipped", widthGrow: 1, minWidth: 110, vertAlign: "middle", hozAlign: "center", sorter: "number" }, colFilter),
                     Object.assign({
-                        title: "Completion", field: "rate", widthGrow: 1, minWidth: 130, vertAlign: "middle", hozAlign: "center", sorter: "number",
+                        title: "Completion", field: "rate", widthGrow: 1, minWidth: 120, vertAlign: "middle", hozAlign: "center", sorter: "number",
                         formatter: c => `${c.getValue()}%`
                     }, colFilter)
                 ]
             }));
+        }
+
+        function redrawAllTables() {
+            requestAnimationFrame(() => {
+                if (tables.office) tables.office.redraw(true);
+                if (tables.counter) tables.counter.redraw(true);
+                if (tables.staff) tables.staff.redraw(true);
+            });
+        }
+
+        function syncScopeLayout() {
+            const allOffices = isAllOfficesMode();
+
+            $('#allOfficesComparisonSection').toggle(allOffices);
+            $('#exportGroup_office').toggle(allOffices);
+
+            redrawAllTables();
         }
 
         function resetAllEmptyStates() {
@@ -679,35 +761,65 @@ if ($db_connect && $user_id > 0) {
                 avg_wait_minutes: 0,
                 avg_service_minutes: 0
             });
+            renderOfficeComparison([]);
             renderVolumeTrend([]);
             renderVisitorType([]);
             renderStatus([]);
             renderStageTimes({});
             renderTopConcerns([]);
+            if (tables.office) tables.office.setData([]);
             if (tables.counter) tables.counter.setData([]);
             if (tables.staff) tables.staff.setData([]);
         }
 
         function loadCounters() {
+            const officeId = parseInt($('#filterOfficeId').val() || '0', 10);
+            const $sel = $('#filterCounterId');
+
+            if (officeId === 0) {
+                $sel.empty().append('<option value="0" selected>Select office first</option>').prop('disabled', true);
+                return;
+            }
+
+            $sel.prop('disabled', false);
             const fd = new FormData();
             fd.append('action', 'fetch_counters');
-            fd.append('office_id', $('#filterOfficeId').val() || 0);
+            fd.append('office_id', officeId);
 
             fetch(HANDLER_URL, { method: 'POST', body: fd })
                 .then(r => r.json())
                 .then(res => {
-                    const $sel = $('#filterCounterId').empty().append('<option value="0">All Windows</option>');
+                    $sel.empty().append('<option value="0" selected>All Windows</option>');
                     (res.data || []).forEach(c => $sel.append($('<option>').val(c.id).text(c.counter_name)));
                 })
                 .catch(err => console.error("Counter fetch error:", err));
         }
 
+        function normalizeDefaultFilters() {
+            const todayStr = getTodayDate();
+            if (!$('#filterOfficeId').prop('disabled') && !$('#filterOfficeId').val()) {
+                $('#filterOfficeId').val('0');
+            }
+            if (!$('#filterCounterId').val()) {
+                $('#filterCounterId').val('0');
+            }
+            if (!$('#filterDateFrom').val()) {
+                $('#filterDateFrom').val(todayStr);
+            }
+            if (!$('#filterDateTo').val()) {
+                $('#filterDateTo').val(todayStr);
+            }
+        }
+
         function loadAnalytics() {
+            normalizeDefaultFilters();
+            syncScopeLayout();
+
             const fd = new FormData();
             fd.append('action', 'fetch_analytics');
-            fd.append('office_id', $('#filterOfficeId').val());
-            fd.append('counter_id', $('#filterCounterId').val());
-            fd.append('visitor_type', $('#filterVisitorType').val());
+            fd.append('office_id', $('#filterOfficeId').val() || '0');
+            fd.append('counter_id', $('#filterCounterId').val() || '0');
+            fd.append('visitor_type', $('#filterVisitorType').val() || '');
             fd.append('date_from', $('#filterDateFrom').val());
             fd.append('date_to', $('#filterDateTo').val());
 
@@ -721,16 +833,46 @@ if ($db_connect && $user_id > 0) {
                     }
                     const d = res.data;
                     renderKPIs(d.kpi);
+
+                    if (isAllOfficesMode()) {
+                        const officeRows = (d.office_breakdown || []).map(o => {
+                            const total = parseInt(o.total_tickets || 0, 10);
+                            const completed = parseInt(o.total_completed || 0, 10);
+                            return {
+                                ...o,
+                                office_label: o.office_code ? `${o.office_code} - ${o.office_name}` : (o.office_name || 'Unknown Office'),
+                                rate: total > 0 ? Math.round((completed / total) * 100) : 0
+                            };
+                        });
+                        renderOfficeComparison(officeRows);
+                        if (tables.office) tables.office.setData(officeRows);
+                    }
+
                     renderVolumeTrend(d.volume_trend);
                     renderVisitorType(d.visitor_distribution);
                     renderStatus(d.status_distribution);
                     renderStageTimes(d.kpi);
                     renderTopConcerns(d.top_concerns);
-                    tables.counter.setData(d.counter_breakdown || []);
-                    tables.staff.setData((d.staff_breakdown || []).map(s => {
-                        const served = parseInt(s.total_served || 0), completed = parseInt(s.total_completed || 0);
-                        return { ...s, rate: served > 0 ? Math.round((completed / served) * 100) : 0 };
-                    }));
+
+                    if (tables.counter) {
+                        tables.counter.setData((d.counter_breakdown || []).map(c => ({
+                            ...c,
+                            office_code: c.office_code || '---'
+                        })));
+                    }
+
+                    if (tables.staff) {
+                        tables.staff.setData((d.staff_breakdown || []).map(s => {
+                            const served = parseInt(s.total_served || 0, 10), completed = parseInt(s.total_completed || 0, 10);
+                            return {
+                                ...s,
+                                office_code: s.office_code || '---',
+                                rate: served > 0 ? Math.round((completed / served) * 100) : 0
+                            };
+                        }));
+                    }
+
+                    redrawAllTables();
                 })
                 .catch(err => {
                     console.error("Analytics fetch error:", err);
@@ -746,6 +888,31 @@ if ($db_connect && $user_id > 0) {
             $('#kpiPriorityTickets').text(k.priority_tickets || 0);
             $('#kpiAvgWaitTime').text(fmtMin(k.avg_wait_minutes));
             $('#kpiAvgServiceTime').text(fmtMin(k.avg_service_minutes));
+        }
+
+        function renderOfficeComparison(rows) {
+            if (!isAllOfficesMode()) return;
+            const items = (rows || []).filter(r => (parseInt(r.total_tickets, 10) || 0) > 0);
+            const hasData = items.length > 0;
+            toggleChartEmptyState('office', 'officeVolumeChart', !hasData, 'No office volume recorded', 'No tickets were issued across offices for the selected filters.');
+            if (!hasData) return;
+
+            drawChart('office', 'officeVolumeChart', {
+                type: 'bar',
+                data: {
+                    labels: items.map(o => o.office_code || o.office_name),
+                    datasets: [
+                        { label: 'Completed', data: items.map(o => o.total_completed || 0), backgroundColor: '#16a34a' },
+                        { label: 'Skipped',   data: items.map(o => o.total_skipped || 0),   backgroundColor: '#dc2626' },
+                        { label: 'Total',     data: items.map(o => o.total_tickets || 0),   backgroundColor: '#2563eb' }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { yAxes: [{ ticks: { beginAtZero: true, precision: 0 } }] }
+                }
+            });
         }
 
         function renderVolumeTrend(data) {
@@ -859,7 +1026,7 @@ if ($db_connect && $user_id > 0) {
 
             toggleChartEmptyState('concerns', 'topConcernsChart', false);
 
-            const rawLabels = items.map(d => d.concern);
+            const rawLabels = items.map(d => (isAllOfficesMode() && d.office_code) ? `[${d.office_code}] ${d.concern}` : d.concern);
             const wrappedLabels = rawLabels.map(lbl => wrapChartLabel(lbl, 60));
             const dynamicHeight = Math.max(360, items.length * 52);
             container.style.minHeight = `${dynamicHeight}px`;
@@ -895,6 +1062,32 @@ if ($db_connect && $user_id > 0) {
             });
         }
 
+        function resetFiltersToDefault() {
+            const todayStr = getTodayDate();
+            if (!$('#filterOfficeId').prop('disabled')) {
+                $('#filterOfficeId').val('0');
+                loadCounters();
+            }
+            $('#filterCounterId').val('0');
+            $('#filterVisitorType').val('');
+            $('#filterDateFrom').val(todayStr);
+            $('#filterDateTo').val(todayStr);
+            if (tables.office) tables.office.clearHeaderFilter();
+            if (tables.counter) tables.counter.clearHeaderFilter();
+            if (tables.staff) tables.staff.clearHeaderFilter();
+        }
+
+        function initPageData() {
+            if (isInitialized) return;
+            isInitialized = true;
+
+            initTables();
+            resetFiltersToDefault();
+            requestAnimationFrame(() => {
+                loadAnalytics();
+            });
+        }
+
         // Events
         $('#filterOfficeId').on('change', loadCounters);
 
@@ -904,13 +1097,7 @@ if ($db_connect && $user_id > 0) {
         });
 
         $('#btnResetFilters').on('click', function() {
-            const todayStr = getTodayDate();
-            $('#filterCounterId').val('0');
-            $('#filterVisitorType').val('');
-            $('#filterDateFrom').val(todayStr);
-            $('#filterDateTo').val(todayStr);
-            if (tables.counter) tables.counter.clearHeaderFilter();
-            if (tables.staff) tables.staff.clearHeaderFilter();
+            resetFiltersToDefault();
             loadAnalytics();
         });
 
@@ -944,9 +1131,17 @@ if ($db_connect && $user_id > 0) {
             frame.src = `${PDF_URL}?${qs.toString()}`;
         });
 
-        $(document).ready(function() {
-            initTables();
-            loadAnalytics();
+        if (document.readyState === 'complete') {
+            initPageData();
+        } else {
+            window.addEventListener('load', initPageData);
+        }
+
+        window.addEventListener('pageshow', function(event) {
+            if (event.persisted) {
+                resetFiltersToDefault();
+                loadAnalytics();
+            }
         });
     })();
 </script>
