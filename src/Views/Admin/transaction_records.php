@@ -1,4 +1,6 @@
 <?php
+// src/Views/Admin/transaction_records.php
+
 # Core Config Dependencies
 global $session_class, $db_connect;
 $db_connect = $db_connect ?? null;
@@ -107,6 +109,26 @@ if ($db_connect && $user_id > 0) {
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
         }
 
+        .search-input-group {
+            position: relative;
+        }
+        .search-input-group .search-icon {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+            pointer-events: none;
+            z-index: 4;
+            font-size: 0.875rem;
+        }
+        .search-input-group .form-control {
+            padding-left: 2.15rem !important;
+            padding-top: 0.42rem;
+            padding-bottom: 0.42rem;
+            min-height: 36px;
+        }
+
         /* Queue Status Badge Styles */
         .badge-status-completed { background-color: #dcfce7; color: #166534; border: 1px solid #86efac; }
         .badge-status-skipped   { background-color: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
@@ -114,26 +136,62 @@ if ($db_connect && $user_id > 0) {
         .badge-status-called    { background-color: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
         .badge-status-waiting   { background-color: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
 
-        /* Tabulator Responsive Polish */
-        .tabulator {
+        /* Clean Flat Tabulator Styling (Preserves Tabulator row/cell layout) */
+        #transactionRecordsTable.tabulator {
             border: 1px solid #e2e8f0;
             border-radius: 0.5rem;
             background-color: #ffffff;
+            box-shadow: none !important;
         }
-        .tabulator .tabulator-header {
-            background-color: #f8fafc;
-            border-bottom: 2px solid #e2e8f0;
+        #transactionRecordsTable .tabulator-header,
+        #transactionRecordsTable .tabulator-header .tabulator-col {
+            background-color: #ffffff !important;
+            border-bottom: 1px solid #e2e8f0;
+            box-shadow: none !important;
             font-weight: 600;
             color: #475569;
         }
-        #transactionRecordsTable .tabulator-cell { white-space: normal; }
+        #transactionRecordsTable .tabulator-row,
+        #transactionRecordsTable .tabulator-row.tabulator-row-even,
+        #transactionRecordsTable .tabulator-row.tabulator-row-odd,
+        #transactionRecordsTable .tabulator-row:hover {
+            background-color: #ffffff !important;
+            box-shadow: none !important;
+        }
+        #transactionRecordsTable .tabulator-cell {
+            background-color: #ffffff !important;
+            border-right: 1px solid #f1f5f9;
+            white-space: normal;
+        }
+        #transactionRecordsTable .tabulator-cell:last-child {
+            border-right: none;
+        }
+        #transactionRecordsTable .tabulator-footer {
+            background-color: #ffffff !important;
+            box-shadow: none !important;
+            border-top: 1px solid #e2e8f0;
+        }
         .tabulator-responsive-collapse {
             padding: 0.75rem 1rem !important;
-            background-color: #f8fafc !important;
+            background-color: #ffffff !important;
             border-bottom: 1px solid #e2e8f0 !important;
+            box-shadow: none !important;
         }
         .tabulator-responsive-collapse table td {
             padding: 0.35rem 0.75rem;
+        }
+
+        /* Clean Table Concerns List (Flat, no card box or shadow inside table column) */
+        .table-concern-entry {
+            padding: 0.25rem 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .table-concern-entry:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+        .table-concern-entry:first-child {
+            padding-top: 0;
         }
 
         /* Modern Modal Polish */
@@ -143,7 +201,7 @@ if ($db_connect && $user_id > 0) {
             color: #ffffff;
         }
 
-        /* Detail Tile Styling */
+        /* Detail Tile Styling (Modal Only) */
         .detail-tile {
             background: #f8fafc;
             border: 1.5px solid #e2e8f0;
@@ -174,7 +232,7 @@ if ($db_connect && $user_id > 0) {
             margin-top: 2px;
         }
 
-        /* RECEIPT CONCERN STYLES (MATCHED EXACTLY FROM STUDENT LOGBOOK & QUEUE CONTROLLER) */
+        /* RECEIPT CONCERN STYLES (MODAL ONLY) */
         .receipt-concern-item {
             background-color: #ffffff;
             border: 1px solid #e2e8f0;
@@ -185,27 +243,7 @@ if ($db_connect && $user_id > 0) {
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
         }
 
-        .receipt-concern-title {
-            font-weight: 700;
-            color: #1e293b;
-            font-size: 0.875rem;
-            line-height: 1.3;
-        }
-
-        .receipt-subconcern-tag {
-            background-color: #eff6ff;
-            color: #1d4ed8;
-            font-weight: 600;
-            font-size: 0.75rem;
-            padding: 0.2rem 0.55rem;
-            border-radius: 0.35rem;
-            display: inline-flex;
-            align-items: center;
-            border: 1px solid #bfdbfe;
-            line-height: 1.2;
-        }
-
-        /* QUEUE LIFECYCLE TIMESTAMPS CARD (MATCHED TO DETAIL-TILE) */
+        /* QUEUE LIFECYCLE TIMESTAMPS CARD (MODAL ONLY) */
         .lifecycle-card {
             background: #ffffff;
             border: 1.5px solid #e2e8f0;
@@ -346,112 +384,138 @@ if ($db_connect && $user_id > 0) {
                     <!-- FILTERS CARD -->
                     <div class="card filter-card mb-4">
                         <div class="card-body p-3 p-sm-4">
-                            <form id="recordsFilterForm" class="row g-3 align-items-end">
-                                
-                                <!-- OFFICE SELECTION -->
-                                <?php $lock_office = ($g_user_role_upper === 'ADMIN_STAFF' && !empty($assigned_office)); ?>
-                                <div class="col-12 col-md-3">
-                                    <label for="filterOfficeId" class="form-label fw-bold small text-muted">
-                                        Office Location <?php if ($lock_office): ?><i class="bi bi-lock-fill ms-1" title="Locked to your assigned office"></i><?php endif; ?>
-                                    </label>
-                                    <select id="filterOfficeId" class="form-select form-select-sm" <?= $lock_office ? 'disabled style="pointer-events:none; background-color:#f1f5f9;"' : ''; ?>>
-                                        <?php if ($g_user_role_upper === 'ADMIN' || $g_user_role_upper === 'STATION_ADMIN'): ?>
-                                            <option value="0">-- All Offices --</option>
-                                            <?php foreach ($offices as $off): ?>
-                                                <option value="<?= $off['office_id']; ?>"><?= htmlspecialchars($off['office_name']); ?> (<?= htmlspecialchars($off['office_code']); ?>)</option>
-                                            <?php endforeach; ?>
-                                        <?php else: ?>
-                                            <?php if ($assigned_office): ?>
-                                                <option value="<?= $assigned_office['office_id']; ?>" selected><?= htmlspecialchars($assigned_office['office_name']); ?> (<?= htmlspecialchars($assigned_office['office_code']); ?>)</option>
-                                            <?php else: ?>
+                            <form id="recordsFilterForm">
+                                <div class="row g-2 align-items-end">
+                                    
+                                    <!-- OFFICE SELECTION -->
+                                    <?php $lock_office = ($g_user_role_upper === 'ADMIN_STAFF' && !empty($assigned_office)); ?>
+                                    <div class="col-12 col-sm-6 col-md-4 col-xl-3">
+                                        <label for="filterOfficeId" class="form-label fw-bold small text-muted">
+                                            Office Location <?php if ($lock_office): ?><i class="bi bi-lock-fill ms-1" title="Locked to your assigned office"></i><?php endif; ?>
+                                        </label>
+                                        <select id="filterOfficeId" class="form-select form-select-sm" <?= $lock_office ? 'disabled style="pointer-events:none; background-color:#f1f5f9;"' : ''; ?>>
+                                            <?php if ($g_user_role_upper === 'ADMIN' || $g_user_role_upper === 'STATION_ADMIN'): ?>
                                                 <option value="0">-- All Offices --</option>
                                                 <?php foreach ($offices as $off): ?>
-                                                    <option value="<?= $off['office_id']; ?>"><?= htmlspecialchars($off['office_name']); ?></option>
+                                                    <option value="<?= $off['office_id']; ?>"><?= htmlspecialchars($off['office_name']); ?> (<?= htmlspecialchars($off['office_code']); ?>)</option>
                                                 <?php endforeach; ?>
+                                            <?php else: ?>
+                                                <?php if ($assigned_office): ?>
+                                                    <option value="<?= $assigned_office['office_id']; ?>" selected><?= htmlspecialchars($assigned_office['office_name']); ?> (<?= htmlspecialchars($assigned_office['office_code']); ?>)</option>
+                                                <?php else: ?>
+                                                    <option value="0">-- All Offices --</option>
+                                                    <?php foreach ($offices as $off): ?>
+                                                        <option value="<?= $off['office_id']; ?>"><?= htmlspecialchars($off['office_name']); ?></option>
+                                                    <?php endforeach; ?>
+                                                <?php endif; ?>
                                             <?php endif; ?>
-                                        <?php endif; ?>
-                                    </select>
-                                </div>
+                                        </select>
+                                    </div>
 
-                                <!-- VISITOR TYPE -->
-                                <div class="col-12 col-sm-6 col-md-2">
-                                    <label for="filterVisitorType" class="form-label fw-bold small text-muted">Visitor Type</label>
-                                    <select id="filterVisitorType" class="form-select form-select-sm">
-                                        <option value="">All Types</option>
-                                        <option value="STUDENT">Student</option>
-                                        <option value="EMPLOYEE">Employee</option>
-                                        <option value="GUEST">Guest</option>
-                                    </select>
-                                </div>
+                                    <!-- VISITOR TYPE -->
+                                    <div class="col-6 col-sm-6 col-md-4 col-xl-2">
+                                        <label for="filterVisitorType" class="form-label fw-bold small text-muted">Visitor Type</label>
+                                        <select id="filterVisitorType" class="form-select form-select-sm">
+                                            <option value="">All Types</option>
+                                            <option value="STUDENT">Student</option>
+                                            <option value="EMPLOYEE">Employee</option>
+                                            <option value="GUEST">Guest</option>
+                                        </select>
+                                    </div>
 
-                                <!-- STATUS -->
-                                <div class="col-12 col-sm-6 col-md-2">
-                                    <label for="filterStatus" class="form-label fw-bold small text-muted">Queue Status</label>
-                                    <select id="filterStatus" class="form-select form-select-sm">
-                                        <option value="">All Statuses</option>
-                                        <option value="COMPLETED">Completed</option>
-                                        <option value="SKIPPED">Skipped</option>
-                                        <option value="SERVING">Serving</option>
-                                        <option value="CALLED">Called</option>
-                                        <option value="WAITING">Waiting</option>
-                                    </select>
-                                </div>
+                                    <!-- STATUS -->
+                                    <div class="col-6 col-sm-6 col-md-4 col-xl-2">
+                                        <label for="filterStatus" class="form-label fw-bold small text-muted">Queue Status</label>
+                                        <select id="filterStatus" class="form-select form-select-sm">
+                                            <option value="">All Statuses</option>
+                                            <option value="COMPLETED">Completed</option>
+                                            <option value="SKIPPED">Skipped</option>
+                                            <option value="SERVING">Serving</option>
+                                            <option value="CALLED">Called</option>
+                                            <option value="WAITING">Waiting</option>
+                                        </select>
+                                    </div>
 
-                                <!-- DATE FROM -->
-                                <div class="col-6 col-md-2">
-                                    <label for="filterDateFrom" class="form-label fw-bold small text-muted">Date From</label>
-                                    <input type="date" id="filterDateFrom" class="form-input form-control form-control-sm" value="<?= date('Y-m-d'); ?>">
-                                </div>
+                                    <!-- DATE FROM (Wider) -->
+                                    <div class="col-12 col-sm-6 col-md-4 col-xl-2">
+                                        <label for="filterDateFrom" class="form-label fw-bold small text-muted">Date From</label>
+                                        <input type="date" id="filterDateFrom" class="form-control form-control-sm" value="<?= date('Y-m-d'); ?>">
+                                    </div>
 
-                                <!-- DATE TO -->
-                                <div class="col-6 col-md-2">
-                                    <label for="filterDateTo" class="form-label fw-bold small text-muted">Date To</label>
-                                    <input type="date" id="filterDateTo" class="form-input form-control form-control-sm" value="<?= date('Y-m-d'); ?>">
-                                </div>
+                                    <!-- DATE TO (Wider) -->
+                                    <div class="col-12 col-sm-6 col-md-4 col-xl-2">
+                                        <label for="filterDateTo" class="form-label fw-bold small text-muted">Date To</label>
+                                        <input type="date" id="filterDateTo" class="form-control form-control-sm" value="<?= date('Y-m-d'); ?>">
+                                    </div>
 
-                                <!-- ACTION BUTTONS -->
-                                <div class="col-12 col-md-1 d-flex gap-2">
-                                    <button type="submit" class="btn btn-primary btn-sm w-100 fw-bold">
-                                        <i class="bi bi-search"></i>
-                                    </button>
-                                    <button type="button" id="btnResetFilters" class="btn btn-outline-secondary btn-sm" title="Reset Filters">
-                                        <i class="bi bi-arrow-counterclockwise"></i>
-                                    </button>
-                                </div>
+                                    <!-- ACTION BUTTONS -->
+                                    <div class="col-12 col-md-4 col-xl-1 d-flex gap-2">
+                                        <button type="submit" class="btn btn-primary btn-sm fw-bold px-3 text-nowrap flex-grow-1">
+                                            <i class="bi bi-filter me-1"></i>Apply
+                                        </button>
+                                        <button type="button" id="btnResetFilters" class="btn btn-outline-secondary btn-sm text-nowrap" title="Reset Filters">
+                                            <i class="bi bi-arrow-counterclockwise"></i>
+                                        </button>
+                                    </div>
 
+                                </div>
                             </form>
                         </div>
                     </div>
 
                     <!-- TABULATOR TABLE CONTAINER CARD -->
-                    <div class="card border-0 shadow-sm rounded-3">
-                        <div class="card-body p-3 p-sm-4">
-                            <!-- Row 1: Export + Refresh -->
-                            <div class="d-flex justify-content-end align-items-center gap-2 mb-3">
-                                <div class="dropdown">
-                                    <button class="btn btn-action dropdown-toggle d-inline-flex align-items-center" type="button" data-bs-toggle="dropdown">
-                                        <i class="bi bi-download me-2"></i>Export / Download
-                                    </button>
-                                    <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                                        <li><a class="dropdown-item" href="javascript:void(0)" id="export-csv"><i class="bi bi-filetype-csv text-success me-2"></i> Export CSV</a></li>
-                                        <li><a class="dropdown-item" href="javascript:void(0)" id="export-excel"><i class="bi bi-file-earmark-excel text-success me-2"></i> Export Excel (.xlsx)</a></li>
-                                        <li><a class="dropdown-item" href="javascript:void(0)" id="export-json"><i class="bi bi-filetype-json text-warning me-2"></i> Export JSON</a></li>
-                                    </ul>
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header d-flex align-items-center justify-content-between">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="bg-primary-subtle text-primary rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 44px; height: 44px;">
+                                            <i class="bi bi-receipt-cutoff fs-4"></i>
+                                        </div>
+                                        <div>
+                                            <div class="text-uppercase text-muted fw-bold tracking-wide small" style="font-size: 0.95rem;">
+                                                Transaction Records
+                                            </div>
+                                            <div class="d-flex align-items-center text-muted small mt-0.5" style="font-size: 0.75rem;">
+                                                <i class="bi bi-info-circle me-1"></i> View and audit visitor queue tickets, service concerns, and lifecycle timestamps
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <button type="button" id="btn-refresh" class="btn btn-action d-inline-flex align-items-center">
-                                    <i class="bi bi-arrow-clockwise me-2"></i>Refresh Data
-                                </button>
-                            </div>
 
-                            <!-- Row 2: Search bar on its own row -->
-                            <div class="d-flex mb-3">
-                                <div class="search-input-group flex-grow-1">
-                                    <i class="bi bi-search search-icon"></i>
-                                    <input type="text" id="global-search" class="form-control" placeholder="Search...">
+                                <div class="card-body">
+                                    <!-- Unified Top Toolbar: Global Search + Export/Download + Refresh Data -->
+                                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+                                        <!-- Global Search -->
+                                        <div class="flex-grow-1" style="min-width: 240px; max-width: 420px;">
+                                            <div class="search-input-group">
+                                                <i class="bi bi-search search-icon"></i>
+                                                <input type="text" id="global-search" class="form-control form-control-sm" placeholder="Search" aria-label="Search">
+                                            </div>
+                                        </div>
+
+                                        <!-- Export & Refresh Actions -->
+                                        <div class="d-flex flex-wrap align-items-center gap-2 ms-auto">
+                                            <div class="dropdown">
+                                                <button class="btn btn-action btn-sm dropdown-toggle d-inline-flex align-items-center" type="button" id="exportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                                    <i class="bi bi-download me-1"></i>Export / Download
+                                                </button>
+                                                <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="exportDropdown">
+                                                    <li><a class="dropdown-item" href="javascript:void(0)" id="export-csv"><i class="bi bi-filetype-csv text-success me-2"></i> Export CSV</a></li>
+                                                    <li><a class="dropdown-item" href="javascript:void(0)" id="export-excel"><i class="bi bi-file-earmark-excel text-success me-2"></i> Export Excel (.xlsx)</a></li>
+                                                    <li><a class="dropdown-item" href="javascript:void(0)" id="export-json"><i class="bi bi-filetype-json text-warning me-2"></i> Export JSON</a></li>
+                                                </ul>
+                                            </div>
+
+                                            <button type="button" id="btn-refresh" class="btn btn-action btn-sm d-inline-flex align-items-center">
+                                                <i class="bi bi-arrow-clockwise me-1"></i>Refresh Data
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div id="transactionRecordsTable"></div>
                                 </div>
                             </div>
-
-                            <div id="transactionRecordsTable"></div>
                         </div>
                     </div>
 
@@ -860,12 +924,29 @@ if ($db_connect && $user_id > 0) {
             activeModalTicketRef = null;
         });
 
-        // Build exact Student Logbook & Queue Controller Receipt Style for Primary Transactions & Sub-Transactions
-        function buildLogbookStyleConcerns(ticket) {
+        // Render concerns cleanly: flat text for table cells, receipt card style for modal
+        function buildLogbookStyleConcerns(ticket, isTableCell = false) {
             let html = '';
             const otherText = ticket.other_concern_text ? ticket.other_concern_text.trim() : '';
 
             const renderConcernCard = (mainTitle, subs = []) => {
+                if (isTableCell) {
+                    let subHtml = '';
+                    if (Array.isArray(subs) && subs.length > 0) {
+                        subHtml = subs.map(sub => `
+                            <div class="text-muted small ps-2" style="line-height: 1.35;">
+                                &bull; ${escapeHtml(sub)}
+                            </div>
+                        `).join('');
+                    }
+                    return `
+                        <div class="table-concern-entry">
+                            <div class="text-dark fw-semibold" style="font-size: 0.85rem; line-height: 1.35;">${escapeHtml(mainTitle)}</div>
+                            ${subHtml}
+                        </div>
+                    `;
+                }
+
                 let subSectionHtml = '';
                 if (Array.isArray(subs) && subs.length > 0) {
                     const subRows = subs.map(sub => `
@@ -925,16 +1006,25 @@ if ($db_connect && $user_id > 0) {
             }
 
             if (otherText) {
-                html += `
-                    <div class="receipt-concern-item">
-                        <div class="text-dark fw-bold" style="font-size: 0.875rem; line-height: 1.35;">
-                            <i class="bi bi-pen me-1 text-primary"></i>Others / Custom Concern
+                if (isTableCell) {
+                    html += `
+                        <div class="table-concern-entry">
+                            <div class="text-dark fw-semibold" style="font-size: 0.85rem; line-height: 1.35;">Others / Custom Concern</div>
+                            <div class="text-muted small ps-2" style="line-height: 1.35; word-break: break-word;">&bull; ${escapeHtml(otherText)}</div>
                         </div>
-                        <div class="text-dark fw-bold mt-1" style="font-size: 0.875rem; line-height: 1.35; word-break: break-word;">
-                            ${escapeHtml(otherText)}
+                    `;
+                } else {
+                    html += `
+                        <div class="receipt-concern-item">
+                            <div class="text-dark fw-bold" style="font-size: 0.875rem; line-height: 1.35;">
+                                <i class="bi bi-pen me-1 text-primary"></i>Others / Custom Concern
+                            </div>
+                            <div class="text-dark fw-bold mt-1" style="font-size: 0.875rem; line-height: 1.35; word-break: break-word;">
+                                ${escapeHtml(otherText)}
+                            </div>
                         </div>
-                    </div>
-                `;
+                    `;
+                }
             }
 
             if (!html) {
@@ -1017,9 +1107,23 @@ if ($db_connect && $user_id > 0) {
             };
         }
 
+        function applyGlobalSearch(tableInstance) {
+            const kw = $('#global-search').val().trim().toLowerCase();
+            if (!kw) {
+                tableInstance.clearFilter();
+                return;
+            }
+            tableInstance.setFilter(function(data) {
+                return [
+                    data.ticket_number, data.full_name, data.visitor_type, data.concerns_text,
+                    data.office_name, data.counter_name, data.served_by_name, data.status, data.datetime_text
+                ].some(v => String(v ?? '').toLowerCase().includes(kw));
+            });
+        }
+
         function initTabulator() {
             recordsTable = new Tabulator("#transactionRecordsTable", {
-                layout: "fitColumns",
+                layout: "fitDataFill",
                 resizableColumnFit: true,
                 headerFilterPlaceholder: "Search",
                 pagination: "local",
@@ -1097,7 +1201,7 @@ if ($db_connect && $user_id > 0) {
                         field: "concerns_text",
                         minWidth: 300,
                         vertAlign: 'middle',
-                        formatter: cell => `<div class="py-1">${buildLogbookStyleConcerns(cell.getRow().getData())}</div>`
+                        formatter: cell => `<div class="py-1">${buildLogbookStyleConcerns(cell.getRow().getData(), true)}</div>`
                     }, colFilter),
                     Object.assign({
                         title: "Office",
@@ -1148,19 +1252,17 @@ if ($db_connect && $user_id > 0) {
                 ]
             });
 
+            recordsTable.on("dataProcessed", function() {
+                applyGlobalSearch(recordsTable);
+            });
+
             document.getElementById('export-csv')?.addEventListener('click', () => recordsTable.download("csv", "transaction_records.csv"));
             document.getElementById('export-excel')?.addEventListener('click', () => recordsTable.download("xlsx", "transaction_records.xlsx", { sheetName: "Records" }));
             document.getElementById('export-json')?.addEventListener('click', () => recordsTable.download("json", "transaction_records.json"));
 
             // --- GLOBAL SEARCH HANDLER ---
             $('#global-search').on('input', function() {
-                const kw = this.value.trim().toLowerCase();
-                if (!kw) { recordsTable.clearFilter(); return; }
-                recordsTable.setFilter(function(data) {
-                    return [data.ticket_number, data.full_name, data.visitor_type, data.concerns_text,
-        data.office_name, data.counter_name, data.served_by_name, data.status, data.datetime_text]
-    .some(v => String(v ?? '').toLowerCase().includes(kw));
-                });
+                applyGlobalSearch(recordsTable);
             });
 
             // --- REFRESH DATA HANDLER ---
@@ -1179,11 +1281,19 @@ if ($db_connect && $user_id > 0) {
 
         $('#btnResetFilters').on('click', function() {
             const todayStr = getTodayDate();
+            if (!$('#filterOfficeId').prop('disabled')) {
+                $('#filterOfficeId').val('0');
+            }
             $('#filterVisitorType').val('');
             $('#filterStatus').val('');
             $('#filterDateFrom').val(todayStr);
             $('#filterDateTo').val(todayStr);
-            if (recordsTable) recordsTable.setData();
+            $('#global-search').val('');
+            if (recordsTable) {
+                recordsTable.clearFilter();
+                recordsTable.clearHeaderFilter();
+                recordsTable.setData();
+            }
         });
 
         window.viewTicketDetails = function(ticketId) {
@@ -1229,7 +1339,7 @@ if ($db_connect && $user_id > 0) {
                     let email = escapeHtml(t.email || 'N/A');
                     let officeCounterDisplay = escapeHtml(`${t.office_name || 'N/A'}${t.counter_name ? ' (' + t.counter_name + ')' : ''}`);
 
-                    const concernsHtml = buildLogbookStyleConcerns(t);
+                    const concernsHtml = buildLogbookStyleConcerns(t, false);
 
                     let concernsBlockHtml = `
                         <div class="col-12">
