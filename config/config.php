@@ -243,6 +243,7 @@ define('UPLOAD_HANDLER',    SRC_PATH . 'Common/UploaderHandler.php');
 define('DATA_HELPER',       SRC_PATH . 'Common/DataHelper.php');
 define('VALIDATOR_PATH',    SRC_PATH . 'Common/validator.php');
 define('ALERT_SESSION',     SRC_PATH . 'Common/alert_session.php');
+define('ACTIVITY_LOGGER',   SRC_PATH . 'Common/activity_logger.php');
 
 # CONTROLLERS Files 
 define('HELPER',             SRC_PATH . 'Controllers/Helper.php');
