@@ -203,6 +203,14 @@ $action_buttons = [
             font-weight: 600;
             color: #475569;
         }
+        #tabulator-container .tabulator-header-filter input,
+        #tabulator-container .tabulator-header-filter select {
+            height: 32px !important;
+            min-height: 32px !important;
+            padding: 0.25rem 0.5rem !important;
+            font-size: 0.8125rem !important;
+            box-sizing: border-box;
+        }
         #tabulator-container .tabulator-row,
         #tabulator-container .tabulator-row.tabulator-row-even,
         #tabulator-container .tabulator-row.tabulator-row-odd,
@@ -565,21 +573,6 @@ $action_buttons = [
             headerFilterParams: { allowEmpty: true }
         };
 
-        // Dropdown header filter for the Status column (All / Active / Disabled)
-        function statusHeaderFilter(cell, onRendered, success, cancel) {
-            const select = document.createElement('select');
-            select.className = 'form-select form-select-sm';
-            select.style.width = '100%';
-            [['', 'All'], ['Active', 'Active'], ['Disabled', 'Disabled']].forEach(([val, label]) => {
-                const opt = document.createElement('option');
-                opt.value = val;
-                opt.textContent = label;
-                select.appendChild(opt);
-            });
-            select.addEventListener('change', () => success(select.value));
-            return select;
-        }
-
         function applyGlobalSearch(tableInstance) {
             const keyword = $('#global-search').val().trim().toLowerCase();
             if (!keyword) {
@@ -684,8 +677,23 @@ $action_buttons = [
                         formatter: (cell) => escapeHtml(cell.getValue()) }, colFilter),
                     Object.assign({ title: "Counter Name", field: "counter_name", formatter: counterNameFormatter, minWidth: 160, vertAlign: 'middle', hozAlign: 'center' }, colFilter),
                     Object.assign({ title: "Assigned Staff", field: "staff_label", formatter: staffFormatter, minWidth: 260, vertAlign: 'middle', hozAlign: 'left' }, colFilter),
-                    { title: "Status", field: "status_label", formatter: statusFormatter, minWidth: 140, vertAlign: 'middle', hozAlign: 'center',
-                        headerFilter: statusHeaderFilter, headerFilterFunc: "=" }
+                    {
+                        title: "Status",
+                        field: "status_label",
+                        formatter: statusFormatter,
+                        minWidth: 140,
+                        vertAlign: 'middle',
+                        hozAlign: 'center',
+                        headerFilter: "select",
+                        headerFilterLiveFilter: false,
+                        headerFilterParams: {
+                            values: {
+                                "": "All",
+                                "Active": "Active",
+                                "Disabled": "Disabled"
+                            }
+                        }
+                    }
                 ]
             });
 
