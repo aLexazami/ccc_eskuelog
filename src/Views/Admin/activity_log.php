@@ -1,8 +1,12 @@
 <?php
 // src/Views/Admin/activity_log.php
+global $db_connect, $session_class, $g_user_role, $g_user_id;
 $db_connect  = $db_connect ?? null;
 $g_user_role = $g_user_role ?? '';
 
+require_once HELPER;
+require_once ISLOGIN;
+require_once API_CONNECT;
 require_once ADMIN_PAGE_HEADER_PATH;
 
 $title_page   = "Activity Log";
@@ -10,9 +14,20 @@ $active_links = [
     ['label' => $title_page, 'url' => '']
 ];
 $page_header  = render_page_header((string)$title_page, $active_links) ?? '';
+
+# Validate Access using SYSTEM_ACCESS from config.php
+$system_auth_login = $session_class->getValue(SYSTEM_ACCESS[SYSTEM_ACCESS_NAME]['auth']);
+$role_map          = SYSTEM_ACCESS[SYSTEM_ACCESS_NAME]['role'] ?? [];
+$normalized_role   = $role_map[(string)$g_user_role] ?? strtoupper(trim((string)$g_user_role));
+$allowed_roles     = array_values($role_map);
+
+if (!in_array($normalized_role, $allowed_roles, true) && !($system_auth_login == $g_public_key)) {
+    header("location: " . SYSTEM_ACCESS[SYSTEM_ACCESS_NAME]['link']['main']);
+    exit();
+}
 ?>
 <!DOCTYPE html>
-<html lang="en" class="h-100">
+<html lang="<?= LANG; ?>" class="h-100">
 
 <head>
     <?php include_once ADMIN_META_DATA_PATH; ?>
@@ -118,19 +133,19 @@ $page_header  = render_page_header((string)$title_page, $active_links) ?? '';
                 <div class="page-inner px-2 px-sm-3">
                     <?php echo $page_header; ?>
 
-                    <!-- SEPARATE DATE FILTER CONTAINER (Mirrors reports_analytics.php) -->
+                    <!-- SEPARATE DATE FILTER CONTAINER -->
                     <div class="card filter-card mb-4">
                         <div class="card-body p-3 p-sm-4">
                             <form id="activityFilterForm">
                                 <div class="row g-2 align-items-end">
                                     <div class="col-6 col-sm-4 col-md-3 col-xl-2">
                                         <label for="filterDateFrom" class="form-label fw-bold small text-muted">Date From</label>
-                                        <input type="date" id="filterDateFrom" class="form-control form-control-sm" value="<?= date('Y-m-d'); ?>">
+                                        <input type="date" id="filterDateFrom" class="form-control form-control-sm" value="<?= DATE_NOW; ?>">
                                     </div>
 
                                     <div class="col-6 col-sm-4 col-md-3 col-xl-2">
                                         <label for="filterDateTo" class="form-label fw-bold small text-muted">Date To</label>
-                                        <input type="date" id="filterDateTo" class="form-control form-control-sm" value="<?= date('Y-m-d'); ?>">
+                                        <input type="date" id="filterDateTo" class="form-control form-control-sm" value="<?= DATE_NOW; ?>">
                                     </div>
 
                                     <div class="col-12 col-sm-4 col-md-6 col-xl-8 d-flex flex-wrap gap-2">
@@ -169,7 +184,6 @@ $page_header  = render_page_header((string)$title_page, $active_links) ?? '';
                                 <div class="card-body">
                                     <!-- Unified Top Toolbar: Global Search + Export/Download + Refresh Data -->
                                     <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
-                                        <!-- Global Search (No label, placeholder="Search", slightly taller) -->
                                         <div class="flex-grow-1" style="min-width: 240px; max-width: 420px;">
                                             <div class="search-input-group">
                                                 <i class="bi bi-search search-icon"></i>
@@ -177,7 +191,6 @@ $page_header  = render_page_header((string)$title_page, $active_links) ?? '';
                                             </div>
                                         </div>
 
-                                        <!-- Export & Refresh Actions -->
                                         <div class="d-flex flex-wrap align-items-center gap-2 ms-auto">
                                             <div class="dropdown">
                                                 <button class="btn btn-action btn-sm dropdown-toggle d-inline-flex align-items-center" type="button" id="exportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
@@ -213,12 +226,10 @@ $page_header  = render_page_header((string)$title_page, $active_links) ?? '';
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-    const AJAX_HANDLER = "<?= BASE_URL; ?>admin/ajax/activity-log";
-
-    const getTodayDate = () => {
-        const t = new Date();
-        return `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}`;
-    };
+    const AJAX_HANDLER   = <?= json_encode(BASE_URL . "admin/ajax/activity-log"); ?>;
+    const SERVER_TODAY   = <?= json_encode(DATE_NOW); ?>;
+    const DEFAULT_SYSTEM = <?= json_encode(SYSTEM_ACCESS_NAME); ?>;
+    const EXPORT_PREFIX  = <?= json_encode(strtolower(SCHOOL_ACRONYM) . "_activity_log_" . DATE_NOW); ?>;
 
     function applyGlobalSearch(tableInstance) {
         const q = document.getElementById("global-search").value.toLowerCase().trim();
@@ -341,7 +352,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 vertAlign: "middle",
                 headerFilter: "input",
                 formatter: function (cell) {
-                    const val = cell.getValue() || "E-SKUELOG";
+                    const val = cell.getValue() || DEFAULT_SYSTEM;
                     return `<div class="w-100 text-center">${val}</div>`;
                 }
             },
@@ -371,16 +382,14 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     function resetToTodayAndReload() {
-        const todayStr = getTodayDate();
-        document.getElementById("filterDateFrom").value = todayStr;
-        document.getElementById("filterDateTo").value = todayStr;
+        document.getElementById("filterDateFrom").value = SERVER_TODAY;
+        document.getElementById("filterDateTo").value = SERVER_TODAY;
         document.getElementById("global-search").value = "";
         table.clearFilter();
         table.clearHeaderFilter();
         table.setData();
     }
 
-    // Re-apply global search text whenever AJAX data finishes loading
     table.on("dataProcessed", function () {
         applyGlobalSearch(table);
     });
@@ -397,8 +406,8 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("btnReset").addEventListener("click", resetToTodayAndReload);
     document.getElementById("btn-refresh").addEventListener("click", resetToTodayAndReload);
 
-    document.getElementById("export-csv").addEventListener("click", () => table.download("csv", "activity_log.csv"));
-    document.getElementById("export-excel").addEventListener("click", () => table.download("xlsx", "activity_log.xlsx", { sheetName: "Activity Log" }));
+    document.getElementById("export-csv").addEventListener("click", () => table.download("csv", `${EXPORT_PREFIX}.csv`));
+    document.getElementById("export-excel").addEventListener("click", () => table.download("xlsx", `${EXPORT_PREFIX}.xlsx`, { sheetName: "Activity Log" }));
     document.getElementById("export-print").addEventListener("click", () => table.print(false, true));
 });
 </script>
