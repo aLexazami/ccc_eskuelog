@@ -5,6 +5,8 @@
 global $db_connect, $session_class, $g_user_role, $g_user_id;
 $db_connect = $db_connect ?? null;
 
+require_once ACTIVITY_LOGGER;
+
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -159,7 +161,6 @@ function syncCounterStaffAssignments(mysqli $db, int $counterId, int $officeId, 
     $stmtRemove->close();
 
     // 2. One row per (staff, window): UPDATE when it exists, INSERT otherwise.
-    //    (Avoids INSERT ... ON DUPLICATE KEY UPDATE, which burns an AUTO_INCREMENT id on every save.)
     $saFlagStatus = ($counterFlagStatus === 0) ? 0 : 1;
 
     $stmtFind = $db->prepare("SELECT id FROM staff_assignments WHERE user_id = ? AND counter_id = ? LIMIT 1");
@@ -195,6 +196,50 @@ function syncCounterStaffAssignments(mysqli $db, int $counterId, int $officeId, 
     $stmtFind->close();
     $stmtUpd->close();
     $stmtIns->close();
+}
+
+/**
+ * Build a human-readable office & assigned staff summary for activity logging.
+ */
+function buildCounterLogSummary(mysqli $db, int $officeId, array $userIds): string
+{
+    $officeLabel = "Office #{$officeId}";
+    $stmtOff = $db->prepare("SELECT office_code, office_name FROM office WHERE office_id = ? LIMIT 1");
+    if ($stmtOff) {
+        $stmtOff->bind_param("i", $officeId);
+        $stmtOff->execute();
+        if ($off = $stmtOff->get_result()->fetch_assoc()) {
+            $officeLabel = trim(($off['office_code'] ?? '') . ' - ' . ($off['office_name'] ?? ''), ' -');
+        }
+        $stmtOff->close();
+    }
+
+    if (empty($userIds)) {
+        return "{$officeLabel} | Staff: Unassigned";
+    }
+
+    $placeholders = implode(',', array_fill(0, count($userIds), '?'));
+    $stmtStaff = $db->prepare("
+        SELECT TRIM(CONCAT(first_name, ' ', IFNULL(last_name, ''))) AS full_name
+        FROM users
+        WHERE id IN ({$placeholders})
+        ORDER BY last_name ASC, first_name ASC
+    ");
+    $names = [];
+    if ($stmtStaff) {
+        $stmtStaff->bind_param(str_repeat('i', count($userIds)), ...$userIds);
+        $stmtStaff->execute();
+        $res = $stmtStaff->get_result();
+        while ($r = $res->fetch_assoc()) {
+            if (!empty($r['full_name'])) {
+                $names[] = $r['full_name'];
+            }
+        }
+        $stmtStaff->close();
+    }
+
+    $staffText = !empty($names) ? implode(', ', $names) : 'Unassigned';
+    return "{$officeLabel} | Staff: {$staffText}";
 }
 
 $action = $_REQUEST['action'] ?? $_REQUEST['actionSubmit'] ?? $_REQUEST['actionUpdate'] ?? '';
@@ -282,7 +327,6 @@ switch ($action) {
                 ]);
                 exit();
             }
-
         }
 
         // Check for duplicate counter name in the same office
@@ -318,6 +362,16 @@ switch ($action) {
             syncCounterStaffAssignments($db_connect, $new_counter_id, $office_id, $assigned_user_ids, $flag_status, $assigner);
 
             $db_connect->commit();
+
+            $statusText = ($flag_status === 0) ? 'Active' : 'Disabled';
+            $summary    = buildCounterLogSummary($db_connect, $office_id, $assigned_user_ids);
+            record_activity_log(
+                $db_connect,
+                $admin_user_id,
+                "Created service counter \"{$counter_name}\" (#{$new_counter_id}) [{$statusText}] — {$summary}",
+                $currentRole
+            );
+
             echo json_encode(['msg_status' => true, 'msg_response' => 'Service counter created successfully.']);
             exit();
         } catch (Throwable $e) {
@@ -366,7 +420,6 @@ switch ($action) {
                 ]);
                 exit();
             }
-
         }
 
         // Check for duplicate counter name in the same office (excluding current counter)
@@ -401,6 +454,16 @@ switch ($action) {
             syncCounterStaffAssignments($db_connect, $counter_id, $office_id, $assigned_user_ids, $flag_status, $assigner);
 
             $db_connect->commit();
+
+            $statusText = ($flag_status === 0) ? 'Active' : 'Disabled';
+            $summary    = buildCounterLogSummary($db_connect, $office_id, $assigned_user_ids);
+            record_activity_log(
+                $db_connect,
+                $admin_user_id,
+                "Updated service counter \"{$counter_name}\" (#{$counter_id}) [{$statusText}] — {$summary}",
+                $currentRole
+            );
+
             echo json_encode(['msg_status' => true, 'msg_response' => 'Service counter updated successfully.']);
             exit();
         } catch (Throwable $e) {
@@ -418,17 +481,27 @@ switch ($action) {
             exit();
         }
 
-        if ($isAdminStaff) {
-            $stmtOwner = $db_connect->prepare("SELECT office_id FROM counters WHERE id = ? LIMIT 1");
-            $stmtOwner->bind_param("i", $counter_id);
-            $stmtOwner->execute();
-            $ownerRow = $stmtOwner->get_result()->fetch_assoc();
-            $stmtOwner->close();
+        // Fetch counter metadata before deletion for authorization and audit logging
+        $stmtInfo = $db_connect->prepare("
+            SELECT c.counter_name, c.office_id, o.office_code, o.office_name
+            FROM counters c
+            LEFT JOIN office o ON o.office_id = c.office_id
+            WHERE c.id = ?
+            LIMIT 1
+        ");
+        $stmtInfo->bind_param("i", $counter_id);
+        $stmtInfo->execute();
+        $counterInfo = $stmtInfo->get_result()->fetch_assoc();
+        $stmtInfo->close();
 
-            if (!$ownerRow || (int)$ownerRow['office_id'] !== $lockedOfficeId) {
-                echo json_encode(['msg_status' => false, 'msg_response' => 'You are not authorized to delete counters from another office.']);
-                exit();
-            }
+        if (!$counterInfo) {
+            echo json_encode(['msg_status' => false, 'msg_response' => 'Service counter not found.']);
+            exit();
+        }
+
+        if ($isAdminStaff && (int)$counterInfo['office_id'] !== $lockedOfficeId) {
+            echo json_encode(['msg_status' => false, 'msg_response' => 'You are not authorized to delete counters from another office.']);
+            exit();
         }
 
         $db_connect->begin_transaction();
@@ -448,6 +521,16 @@ switch ($action) {
             $stmtDel->close();
 
             $db_connect->commit();
+
+            $delName   = $counterInfo['counter_name'] ?? "Counter #{$counter_id}";
+            $delOffice = trim(($counterInfo['office_code'] ?? '') . ' - ' . ($counterInfo['office_name'] ?? ''), ' -');
+            record_activity_log(
+                $db_connect,
+                $admin_user_id,
+                "Deleted service counter \"{$delName}\" (#{$counter_id}) from {$delOffice}",
+                $currentRole
+            );
+
             echo json_encode(['msg_status' => true, 'msg_response' => 'Service counter deleted successfully.']);
             exit();
         } catch (Throwable $e) {
