@@ -168,6 +168,33 @@ $action_buttons = [
     <?php include_once ADMIN_META_DATA_PATH; ?>
     <?php include_once ADMIN_LINK_PATH; ?>
     <style>
+        .filter-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 0.85rem;
+            background: #ffffff;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+        }
+
+        .search-input-group {
+            position: relative;
+        }
+        .search-input-group .search-icon {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+            pointer-events: none;
+            z-index: 4;
+            font-size: 0.875rem;
+        }
+        .search-input-group .form-control {
+            padding-left: 2.15rem !important;
+            padding-top: 0.42rem;
+            padding-bottom: 0.42rem;
+            min-height: 36px;
+        }
+
         .sub-concern-card {
             border: 1px solid #dee2e6;
             border-left: 4px solid #1572e8;
@@ -225,9 +252,47 @@ $action_buttons = [
             max-height: calc(100vh - 200px);
             overflow-y: auto;
         }
-        /* Row grouping and block formatting for Tabulator Details column */
-        #tabulator-container .tabulator-row.svc-group-start { border-top: 2px solid #cbd5e1; }
-        #tabulator-container .tabulator-row .tabulator-cell { white-space: normal; }
+
+        /* Clean Flat Tabulator Styling (Preserves Tabulator row/cell layout) */
+        #tabulator-container.tabulator {
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            background-color: #ffffff;
+            box-shadow: none !important;
+        }
+        #tabulator-container .tabulator-header,
+        #tabulator-container .tabulator-header .tabulator-col {
+            background-color: #ffffff !important;
+            border-bottom: 1px solid #e2e8f0;
+            box-shadow: none !important;
+            font-weight: 600;
+            color: #475569;
+        }
+        #tabulator-container .tabulator-row,
+        #tabulator-container .tabulator-row.tabulator-row-even,
+        #tabulator-container .tabulator-row.tabulator-row-odd,
+        #tabulator-container .tabulator-row:hover {
+            background-color: #ffffff !important;
+            box-shadow: none !important;
+        }
+        #tabulator-container .tabulator-row.svc-group-start {
+            border-top: 2px solid #cbd5e1;
+        }
+        #tabulator-container .tabulator-cell {
+            background-color: #ffffff !important;
+            border-right: 1px solid #f1f5f9;
+            box-shadow: none !important;
+            white-space: normal;
+        }
+        #tabulator-container .tabulator-cell:last-child {
+            border-right: none;
+        }
+        #tabulator-container .tabulator-footer {
+            background-color: #ffffff !important;
+            box-shadow: none !important;
+            border-top: 1px solid #e2e8f0;
+        }
+
         .detail-cell-list {
             display: flex;
             flex-direction: column;
@@ -261,9 +326,41 @@ $action_buttons = [
             <?php include_once ADMIN_HEADER_PATH; ?>
 
             <div class="container">
-                <div class="page-inner">
+                <div class="page-inner px-2 px-sm-3">
                     <?php echo $page_header; ?>
 
+                    <!-- SEPARATE OFFICE FILTER CONTAINER -->
+                    <div class="card filter-card mb-4">
+                        <div class="card-body p-3 p-sm-4">
+                            <form id="serviceFilterForm">
+                                <div class="row g-2 align-items-end">
+                                    <div class="col-12 col-sm-9 col-md-7 col-xl-6">
+                                        <label for="filterOffice" class="form-label fw-bold small text-muted">Campus Office</label>
+                                        <select id="filterOffice" class="form-select form-select-sm py-2 px-3" <?= $is_admin_staff ? 'disabled style="pointer-events:none; background-color:#f1f5f9;"' : ''; ?>>
+                                            <?php if (!$is_admin_staff): ?>
+                                                <option value="0">-- All Campus Offices --</option>
+                                            <?php endif; ?>
+                                            <?php foreach ($offices as $off): ?>
+                                                <option value="<?= $off['office_id']; ?>" <?= ($is_admin_staff && (int)$off['office_id'] === $assigned_office_id) ? 'selected' : ''; ?>>
+                                                    <?= htmlspecialchars($off['office_name']); ?> (<?= htmlspecialchars($off['office_code']); ?>)
+                                                </option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+
+                                    <?php if (!$is_admin_staff): ?>
+                                        <div class="col-auto">
+                                            <button type="button" id="btnReset" class="btn btn-outline-secondary btn-sm py-2 px-3 text-nowrap" title="Reset Office Filter">
+                                                <i class="bi bi-arrow-counterclockwise"></i>
+                                            </button>
+                                        </div>
+                                    <?php endif; ?>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- TRANSACTION SERVICES TABLE CONTAINER -->
                     <div class="row">
                         <div class="col-12">
                             <div class="card">
@@ -289,44 +386,36 @@ $action_buttons = [
                                 </div>
 
                                 <div class="card-body">
-                                    <!-- Row 1: Office selection (left) | Export + Refresh (right) -->
-                                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
-                                        <select id="filterOffice" class="form-select" style="width: auto; min-width: 250px; max-width: 100%;" <?= $is_admin_staff ? 'disabled' : ''; ?>>
-                                            <?php if (!$is_admin_staff): ?>
-                                                <option value="0">-- All Campus Offices --</option>
-                                            <?php endif; ?>
-                                            <?php foreach ($offices as $off): ?>
-                                                <option value="<?= $off['office_id']; ?>" <?= ($is_admin_staff && (int)$off['office_id'] === $assigned_office_id) ? 'selected' : ''; ?>>
-                                                    <?= htmlspecialchars($off['office_name']); ?> (<?= htmlspecialchars($off['office_code']); ?>)
-                                                </option>
-                                            <?php endforeach; ?>
-                                        </select>
-                                        <div class="d-flex align-items-center gap-2">
+                                    <!-- Unified Top Toolbar: Global Search + Export/Download + Refresh Data -->
+                                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+                                        <!-- Global Search (No label, placeholder="Search", slightly taller) -->
+                                        <div class="flex-grow-1" style="min-width: 240px; max-width: 420px;">
+                                            <div class="search-input-group">
+                                                <i class="bi bi-search search-icon"></i>
+                                                <input type="text" id="global-search" class="form-control form-control-sm" placeholder="Search" aria-label="Search">
+                                            </div>
+                                        </div>
+
+                                        <!-- Export & Refresh Actions -->
+                                        <div class="d-flex flex-wrap align-items-center gap-2 ms-auto">
                                             <div class="dropdown">
-                                                <button class="btn btn-action dropdown-toggle d-inline-flex align-items-center" type="button" data-bs-toggle="dropdown">
-                                                    <i class="bi bi-download me-2"></i>Export / Download
+                                                <button class="btn btn-action btn-sm dropdown-toggle d-inline-flex align-items-center" type="button" id="exportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                                    <i class="bi bi-download me-1"></i>Export / Download
                                                 </button>
-                                                <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                                                <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="exportDropdown">
                                                     <li><a class="dropdown-item" href="javascript:void(0)" id="export-csv"><i class="bi bi-filetype-csv text-success me-2"></i> Export CSV</a></li>
                                                     <li><a class="dropdown-item" href="javascript:void(0)" id="export-excel"><i class="bi bi-file-earmark-excel text-success me-2"></i> Export Excel (.xlsx)</a></li>
                                                     <li><a class="dropdown-item" href="javascript:void(0)" id="export-json"><i class="bi bi-filetype-json text-warning me-2"></i> Export JSON</a></li>
                                                 </ul>
                                             </div>
-                                            <button id="btn-refresh" class="btn btn-action d-inline-flex align-items-center">
-                                                <i class="bi bi-arrow-clockwise me-2"></i>Refresh Data
+
+                                            <button type="button" id="btn-refresh" class="btn btn-action btn-sm d-inline-flex align-items-center">
+                                                <i class="bi bi-arrow-clockwise me-1"></i>Refresh Data
                                             </button>
                                         </div>
                                     </div>
 
-                                    <!-- Row 2: Search bar on its own row -->
-                                    <div class="d-flex mb-3">
-                                        <div class="search-input-group flex-grow-1">
-                                            <i class="bi bi-search search-icon"></i>
-                                            <input type="text" id="global-search" class="form-control" placeholder="Search...">
-                                        </div>
-                                    </div>
-
-                                    <div id="tabulator-container" class="table table-bordered tabulator" style="min-height: 600px;"></div>
+                                    <div id="tabulator-container" style="min-height: 600px;"></div>
                                 </div>
                             </div>
                         </div>
@@ -1297,6 +1386,18 @@ $action_buttons = [
             return select;
         }
 
+        function applyGlobalSearch(tableInstance) {
+            const kw = $('#global-search').val().trim().toLowerCase();
+            if (!kw) {
+                tableInstance.clearFilter();
+                return;
+            }
+            tableInstance.setFilter(function (data) {
+                return [data.office_name, data.transaction_name, data.sub_name, data.details_text, String(data.process_time), data.window_text, data.status_label]
+                    .some(v => String(v ?? '').toLowerCase().includes(kw));
+            });
+        }
+
         function initTabulatorTable() {
             tabulator = new Tabulator("#tabulator-container", {
                 ajaxURL: AJAX_HANDLER,
@@ -1315,13 +1416,19 @@ $action_buttons = [
                     return flattenServices(response && response.data);
                 },
                 index: "row_key",
-                layout: "fitColumns",
+                layout: "fitDataFill",
                 resizableColumnFit: true,
                 headerFilterPlaceholder: "Search",
                 pagination: "local",
                 paginationSize: 20,
                 paginationSizeSelector: [10, 20, 50, 100, true],
-                placeholder: "No Record Found",
+                placeholder: `
+                    <div class="text-center text-muted py-4">
+                        <i class="bi bi-inbox fs-2 d-block mb-2 opacity-50"></i>
+                        <div class="fw-semibold">No transaction services found</div>
+                        <div class="small">Try adjusting your search keywords or office filter.</div>
+                    </div>
+                `,
                 height: "700px",
                 downloadConfig: {
                     columnHeaders: true,
@@ -1438,30 +1545,38 @@ $action_buttons = [
                 ]
             });
 
-            document.getElementById('export-csv')?.addEventListener('click', () => tabulator.download("csv", "unified_services.csv"));
-            document.getElementById('export-excel')?.addEventListener('click', () => tabulator.download("xlsx", "unified_services.xlsx", { sheetName: "Services" }));
-            document.getElementById('export-json')?.addEventListener('click', () => tabulator.download("json", "unified_services.json"));
-
-            $('#filterOffice').on('change', () => tabulator && tabulator.setData());
-
-            // --- GLOBAL SEARCH HANDLER (works together with the per-column filters) ---
-            $('#global-search').on('input', function () {
-                const kw = this.value.trim().toLowerCase();
-                if (!kw) { tabulator.clearFilter(); return; }
-                tabulator.setFilter(function (data) {
-                    return [data.office_name, data.transaction_name, data.sub_name, data.details_text, String(data.process_time), data.window_text, data.status_label]
-                        .some(v => String(v ?? '').toLowerCase().includes(kw));
-                });
-            });
-
-            // --- REFRESH DATA HANDLER ---
-            $('#btn-refresh').on('click', function () {
+            function resetAndReload() {
                 $('#global-search').val('');
                 $('#filterOffice').val(IS_ADMIN_STAFF ? String(ASSIGNED_OFFICE_ID) : '0');
                 tabulator.clearFilter();
                 tabulator.clearHeaderFilter();
                 tabulator.setData();
+            }
+
+            // Re-apply global search text whenever AJAX data finishes loading
+            tabulator.on("dataProcessed", function () {
+                applyGlobalSearch(tabulator);
             });
+
+            document.getElementById('export-csv')?.addEventListener('click', () => tabulator.download("csv", "unified_services.csv"));
+            document.getElementById('export-excel')?.addEventListener('click', () => tabulator.download("xlsx", "unified_services.xlsx", { sheetName: "Services" }));
+            document.getElementById('export-json')?.addEventListener('click', () => tabulator.download("json", "unified_services.json"));
+
+            $('#serviceFilterForm').on('submit', function (e) {
+                e.preventDefault();
+                if (tabulator) tabulator.setData();
+            });
+
+            $('#filterOffice').on('change', function () {
+                if (tabulator) tabulator.setData();
+            });
+
+            $('#global-search').on('input', function () {
+                applyGlobalSearch(tabulator);
+            });
+
+            $('#btnReset').on('click', resetAndReload);
+            $('#btn-refresh').on('click', resetAndReload);
         }
 
         initTabulatorTable();
