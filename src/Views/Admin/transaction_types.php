@@ -268,6 +268,14 @@ $action_buttons = [
             font-weight: 600;
             color: #475569;
         }
+        #tabulator-container .tabulator-header-filter input,
+        #tabulator-container .tabulator-header-filter select {
+            height: 32px !important;
+            min-height: 32px !important;
+            padding: 0.25rem 0.5rem !important;
+            font-size: 0.8125rem !important;
+            box-sizing: border-box;
+        }
         #tabulator-container .tabulator-row,
         #tabulator-container .tabulator-row.tabulator-row-even,
         #tabulator-container .tabulator-row.tabulator-row-odd,
@@ -1372,20 +1380,6 @@ $action_buttons = [
             headerFilterParams: { allowEmpty: true }
         };
 
-        function statusHeaderFilter(cell, onRendered, success, cancel) {
-            const select = document.createElement('select');
-            select.className = 'form-select form-select-sm';
-            select.style.width = '100%';
-            [['', 'All'], ['Active', 'Active'], ['Disabled', 'Disabled']].forEach(([val, label]) => {
-                const opt = document.createElement('option');
-                opt.value = val;
-                opt.textContent = label;
-                select.appendChild(opt);
-            });
-            select.addEventListener('change', () => success(select.value));
-            return select;
-        }
-
         function applyGlobalSearch(tableInstance) {
             const kw = $('#global-search').val().trim().toLowerCase();
             if (!kw) {
@@ -1530,8 +1524,15 @@ $action_buttons = [
                         minWidth: 130,
                         vertAlign: 'middle',
                         hozAlign: 'center',
-                        headerFilter: statusHeaderFilter,
-                        headerFilterFunc: "=",
+                        headerFilter: "select",
+                        headerFilterLiveFilter: false,
+                        headerFilterParams: {
+                            values: {
+                                "": "All",
+                                "Active": "Active",
+                                "Disabled": "Disabled"
+                            }
+                        },
                         formatter: (cell) => isContinuationRow(cell.getRow()) ? '' : escapeHtml(cell.getValue())
                     },
                     Object.assign({
