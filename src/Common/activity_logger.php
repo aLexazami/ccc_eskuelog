@@ -16,7 +16,7 @@ if (!function_exists('record_activity_log')) {
         \mysqli $db_connect,
         int $user_id,
         string $action_text,
-        string $user_level = 'USER',
+        string $user_level = '',
         int $system_id = 5,
         string $session_id = ''
     ): void {
@@ -24,14 +24,21 @@ if (!function_exists('record_activity_log')) {
             if ($session_id === '') {
                 $session_id = session_id() ?: 'NO_SESSION';
             }
-            $user_level = strtoupper(trim($user_level)) ?: 'USER';
+
+            $raw_level = trim($user_level !== '' ? $user_level : (string)($GLOBALS['g_user_role'] ?? ''));
+            $role_map  = (defined('SYSTEM_ACCESS') && defined('SYSTEM_ACCESS_NAME'))
+                ? (SYSTEM_ACCESS[SYSTEM_ACCESS_NAME]['role'] ?? [])
+                : [];
+
+            $user_level = strtoupper($role_map[$raw_level] ?? $raw_level) ?: 'USER';
+            $date_log   = defined('DATE_TIME') ? DATE_TIME : date('Y-m-d H:i:s');
 
             $stmt = $db_connect->prepare("
                 INSERT INTO activity_log (user_id, date_log, action, session_id, user_level, system_id)
-                VALUES (?, NOW(), ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?)
             ");
             if ($stmt) {
-                $stmt->bind_param("isssi", $user_id, $action_text, $session_id, $user_level, $system_id);
+                $stmt->bind_param("issssi", $user_id, $date_log, $action_text, $session_id, $user_level, $system_id);
                 $stmt->execute();
                 $stmt->close();
             }
