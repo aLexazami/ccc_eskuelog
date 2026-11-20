@@ -2,39 +2,72 @@
 // src/Handlers/Admin/ajax/user_log_handler.php
 
 /** @var \mysqli $db_connect */
-global $db_connect, $session_class;
-$db_connect = $db_connect ?? null;
+/** @var \Src\Common\DataHelper $helper */
+global $db_connect, $session_class, $g_user_role, $g_user_id, $helper;
+$db_connect  = $db_connect ?? null;
+$g_user_role = $g_user_role ?? '';
+
+require_once HELPER;
+require_once ISLOGIN;
+require_once API_CONNECT;
 
 header('Content-Type: application/json');
-mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
 if (!$db_connect) {
     echo json_encode(['success' => false, 'message' => 'Database connection unavailable.']);
     exit();
 }
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+$user_id = (int)($g_user_id ?? 0);
 
-// Resolve current user & role
-$user_id = 0;
-if (isset($session_class) && method_exists($session_class, 'getValue')) {
-    $user_id = (int)($session_class->getValue('user_id') ?? $session_class->getValue('id') ?? $session_class->getValue('sys_user_id') ?? 0);
-}
 if ($user_id <= 0) {
-    $user_id = (int)($_SESSION['user_id'] ?? $_SESSION['id'] ?? $_SESSION['sys_user_id'] ?? 0);
+    http_response_code(401);
+    echo json_encode(['success' => false, 'message' => 'Unauthorized session.']);
+    exit();
 }
 
-$g_user_role = '';
-if (isset($session_class) && method_exists($session_class, 'getValue')) {
-    $g_user_role = $session_class->getValue('user_role') ?? $session_class->getValue('system_role') ?? '';
-}
-if (empty($g_user_role)) {
-    $g_user_role = $_SESSION['user_role'] ?? $_SESSION['g_user_role'] ?? $_SESSION['role'] ?? '';
+// Validate active role against SYSTEM_ACCESS and system_access table
+$role_map         = SYSTEM_ACCESS[SYSTEM_ACCESS_NAME]['role'] ?? [];
+$reverse_role_map = array_map('intval', array_flip($role_map));
+$role_int         = $reverse_role_map[$g_user_role] ?? 0;
+
+if ($role_int <= 0) {
+    http_response_code(403);
+    echo json_encode(['success' => false, 'message' => 'Invalid user role.']);
+    exit();
 }
 
-$role_map = ['1' => 'ADMIN', '2' => 'ADMIN_STAFF', '3' => 'STATION_ADMIN', '4' => 'USER'];
+$hasAccess = $helper->selectDataExists('system_access', [
+    'user_id'     => $user_id,
+    'system_type' => SYSTEM_ACCESS_NAME,
+    'system_role' => $role_int,
+    'flag_access' => 0
+], ['id']);
+
+if (!$hasAccess) {
+    http_response_code(403);
+    echo json_encode(['success' => false, 'message' => 'Access denied for active role.']);
+    exit();
+}
+
+// Resolve assigned office for ADMIN_STAFF using global $helper
+$assigned_office_id = 0;
+if ($g_user_role === 'ADMIN_STAFF') {
+    $assignRows = $helper->getTableData(
+        'staff_assignments',
+        ['user_id' => $user_id, 'flag_status' => 0],
+        'office_id',
+        ['id' => 'DESC'],
+        1
+    );
+    $assigned_office_id = (int)($assignRows[0]['office_id'] ?? 0);
+
+    if ($assigned_office_id <= 0) {
+        $empRows = $helper->getTableData('employee', ['user_id' => $user_id], 'office_id', null, 1);
+        $assigned_office_id = (int)($empRows[0]['office_id'] ?? 0);
+    }
+}
+
 $role_labels = [
     1 => 'Administrator',
     2 => 'Admin Staff',
@@ -42,81 +75,63 @@ $role_labels = [
     4 => 'User'
 ];
 
-if (isset($role_map[(string)$g_user_role])) {
-    $g_user_role = $role_map[(string)$g_user_role];
-}
-$g_user_role_upper = strtoupper(trim((string)$g_user_role));
-
-// Resolve assigned office for ADMIN_STAFF scoping
-$assigned_office_id = 0;
-if ($g_user_role_upper === 'ADMIN_STAFF' && $user_id > 0) {
-    $stmtAssign = $db_connect->prepare("SELECT office_id FROM staff_assignments WHERE user_id = ? AND flag_status = 0 ORDER BY id DESC LIMIT 1");
-    $stmtAssign->bind_param("i", $user_id);
-    $stmtAssign->execute();
-    $res = $stmtAssign->get_result()->fetch_assoc();
-    $assigned_office_id = (int)($res['office_id'] ?? 0);
-    $stmtAssign->close();
-
-    if ($assigned_office_id <= 0) {
-        $stmtEmp = $db_connect->prepare("SELECT office_id FROM employee WHERE user_id = ? LIMIT 1");
-        $stmtEmp->bind_param("i", $user_id);
-        $stmtEmp->execute();
-        $resEmp = $stmtEmp->get_result()->fetch_assoc();
-        $assigned_office_id = (int)($resEmp['office_id'] ?? 0);
-        $stmtEmp->close();
-    }
-}
-
-$action = $_REQUEST['action'] ?? 'fetch';
+$action = $helper->clean($_REQUEST['action'] ?? 'fetch');
 
 if ($action === 'fetch') {
     try {
-        $date_from  = trim($_REQUEST['date_from'] ?? '');
-        $date_to    = trim($_REQUEST['date_to'] ?? '');
-        $login_flag = trim($_REQUEST['login_flag'] ?? '');
+        $date_from  = $helper->clean($_REQUEST['date_from'] ?? '');
+        $date_to    = $helper->clean($_REQUEST['date_to'] ?? '');
+        $login_flag = $helper->clean($_REQUEST['login_flag'] ?? '');
+        $search     = $helper->clean($_REQUEST['search'] ?? '');
 
         $where  = ["1=1"];
         $params = [];
-        $types  = "";
 
-        if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $date_from)) {
+        if ($helper->validateDate($date_from, 'Y-m-d')) {
             $where[]  = "DATE(ul.login_date) >= ?";
             $params[] = $date_from;
-            $types   .= "s";
         }
-        if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $date_to)) {
+        if ($helper->validateDate($date_to, 'Y-m-d')) {
             $where[]  = "DATE(ul.login_date) <= ?";
             $params[] = $date_to;
-            $types   .= "s";
         }
         if ($login_flag !== '' && in_array($login_flag, ['0', '1'], true)) {
             $where[]  = "ul.login_flag = ?";
             $params[] = (int)$login_flag;
-            $types   .= "i";
         }
 
-        // Role-based scoping:
-        // ADMIN sees all logs; ADMIN_STAFF sees their office/own logs; STATION_ADMIN & USER see only their own logs
-        if ($g_user_role_upper === 'ADMIN_STAFF') {
+        // Role & user_level scoping (aligned with activity_log_handler.php)
+        if ($g_user_role === 'ADMIN') {
+            // Unrestricted for ADMIN
+        } elseif ($g_user_role === 'ADMIN_STAFF') {
             if ($assigned_office_id > 0) {
-                $where[]  = "(CAST(ul.user_id AS UNSIGNED) = ? OR CAST(ul.user_id AS UNSIGNED) IN (
-                    SELECT user_id FROM staff_assignments WHERE office_id = ? AND flag_status = 0
-                    UNION
-                    SELECT user_id FROM employee WHERE office_id = ?
-                ))";
+                $where[]  = "CAST(ul.user_level AS UNSIGNED) = 2 AND (
+                    CAST(ul.user_id AS UNSIGNED) = ?
+                    OR CAST(ul.user_id AS UNSIGNED) IN (
+                        SELECT user_id FROM staff_assignments WHERE office_id = ? AND flag_status = 0 AND user_id > 0
+                        UNION
+                        SELECT user_id FROM employee WHERE office_id = ? AND user_id > 0
+                    )
+                )";
                 $params[] = $user_id;
                 $params[] = $assigned_office_id;
                 $params[] = $assigned_office_id;
-                $types   .= "iii";
             } else {
-                $where[]  = "CAST(ul.user_id AS UNSIGNED) = ?";
+                $where[]  = "CAST(ul.user_id AS UNSIGNED) = ? AND CAST(ul.user_level AS UNSIGNED) = 2";
                 $params[] = $user_id;
-                $types   .= "i";
             }
-        } elseif ($g_user_role_upper !== 'ADMIN') {
-            $where[]  = "CAST(ul.user_id AS UNSIGNED) = ?";
+        } elseif ($g_user_role === 'STATION_ADMIN') {
+            $where[]  = "CAST(ul.user_id AS UNSIGNED) = ? AND CAST(ul.user_level AS UNSIGNED) = 3";
             $params[] = $user_id;
-            $types   .= "i";
+        } else {
+            $where[]  = "CAST(ul.user_id AS UNSIGNED) = ? AND CAST(ul.user_level AS UNSIGNED) = 4";
+            $params[] = $user_id;
+        }
+
+        if ($search !== '') {
+            $like     = "%{$search}%";
+            $where[]  = "(ul.ip_address LIKE ? OR ul.action LIKE ? OR CONCAT(u.first_name, ' ', u.last_name) LIKE ? OR u.email LIKE ?)";
+            array_push($params, $like, $like, $like, $like);
         }
 
         $whereSql = implode(" AND ", $where);
@@ -141,13 +156,7 @@ if ($action === 'fetch') {
             LIMIT 1000
         ";
 
-        $stmt = $db_connect->prepare($sql);
-        if (!empty($params)) {
-            $stmt->bind_param($types, ...$params);
-        }
-        $stmt->execute();
-        $rawRows = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
-        $stmt->close();
+        $rawRows = $helper->selectData($sql, $params);
 
         $rows = [];
         foreach ($rawRows as $r) {
@@ -156,11 +165,11 @@ if ($action === 'fetch') {
                 $events = [];
             }
 
-            $levelInt = (int)($r['user_level'] ?? 0);
+            $levelInt            = (int)($r['user_level'] ?? 0);
             $r['role_label']     = $role_labels[$levelInt] ?? 'Unknown';
             $r['session_events'] = $events;
             $r['event_count']    = count($events);
-            unset($r['session_id']); // avoid sending large raw JSON string twice
+            unset($r['session_id']);
 
             $rows[] = $r;
         }
