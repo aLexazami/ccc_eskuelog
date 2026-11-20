@@ -44,6 +44,66 @@ $page_header  = render_page_header((string)$title_page, $active_links) ?? '';
             padding-bottom: 0.42rem;
             min-height: 36px;
         }
+
+        /* Clean Flat Tabulator Styling (Removes header background/shadow effects) */
+        #activity-log-table.tabulator {
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            background-color: #ffffff;
+            box-shadow: none !important;
+        }
+
+        #activity-log-table .tabulator-header,
+        #activity-log-table .tabulator-header .tabulator-col {
+            background: #ffffff !important;
+            background-color: #ffffff !important;
+            background-image: none !important;
+            border-bottom: 1px solid #e2e8f0;
+            box-shadow: none !important;
+            font-weight: 600;
+            color: #475569;
+        }
+
+        #activity-log-table .tabulator-header .tabulator-col:hover {
+            background: #ffffff !important;
+            background-color: #ffffff !important;
+            box-shadow: none !important;
+        }
+
+        #activity-log-table .tabulator-header-filter input,
+        #activity-log-table .tabulator-header-filter select {
+            height: 32px !important;
+            min-height: 32px !important;
+            padding: 0.25rem 0.5rem !important;
+            font-size: 0.8125rem !important;
+            box-shadow: none !important;
+            box-sizing: border-box;
+        }
+
+        #activity-log-table .tabulator-row,
+        #activity-log-table .tabulator-row.tabulator-row-even,
+        #activity-log-table .tabulator-row.tabulator-row-odd,
+        #activity-log-table .tabulator-row:hover {
+            background-color: #ffffff !important;
+            box-shadow: none !important;
+        }
+
+        #activity-log-table .tabulator-cell {
+            background-color: #ffffff !important;
+            border-right: 1px solid #f1f5f9;
+            box-shadow: none !important;
+            white-space: normal;
+        }
+
+        #activity-log-table .tabulator-cell:last-child {
+            border-right: none;
+        }
+
+        #activity-log-table .tabulator-footer {
+            background-color: #ffffff !important;
+            box-shadow: none !important;
+            border-top: 1px solid #e2e8f0;
+        }
     </style>
 </head>
 
@@ -137,7 +197,7 @@ $page_header  = render_page_header((string)$title_page, $active_links) ?? '';
                                         </div>
                                     </div>
 
-                                    <div id="activity-log-table" class="table table-bordered tabulator" style="min-height: 550px;"></div>
+                                    <div id="activity-log-table" style="min-height: 550px;"></div>
                                 </div>
                             </div>
                         </div>
@@ -196,6 +256,7 @@ document.addEventListener("DOMContentLoaded", function () {
         },
         layout: "fitColumns",
         resizableColumnFit: true,
+        headerFilterPlaceholder: "Search",
         height: "550px",
         placeholder: `
             <div class="text-center text-muted py-4">
