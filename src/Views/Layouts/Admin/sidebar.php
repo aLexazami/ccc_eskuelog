@@ -312,7 +312,7 @@ function render_action_links($links = [])
                     </li>
                 <?php endif; ?>
 
-                <?php if (!empty($g_user_role)): ?>
+                <?php if (in_array($g_user_role, ['ADMIN', 'ADMIN_STAFF', 'STATION_ADMIN'], true)): ?>
                     <li class="nav-item <?php echo navigation_active("activity-log"); ?>">
                         <a href="<?php echo BASE_URL . "admin/activity-log"; ?>">
                             <i class="bi bi-clock-history"></i>
