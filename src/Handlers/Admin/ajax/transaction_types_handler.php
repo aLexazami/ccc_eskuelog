@@ -12,6 +12,8 @@ header('Content-Type: application/json; charset=utf-8');
 
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
+require_once ACTIVITY_LOGGER;
+
 $db_connect = $db_connect ?? null;
 $transactionOpen = false;
 
@@ -1094,6 +1096,30 @@ function validateCounterAssignments(
     }
 }
 
+/**
+ * Resolve a readable office label (e.g., "REG (Registrar)") for activity logs.
+ */
+function tt_resolve_office_label(mysqli $db, int $officeId): string
+{
+    if ($officeId <= 0) {
+        return 'Unknown Office';
+    }
+
+    $stmt = $db->prepare("SELECT office_code, office_name FROM office WHERE office_id = ? LIMIT 1");
+    if ($stmt) {
+        $stmt->bind_param('i', $officeId);
+        $stmt->execute();
+        $row = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+
+        if ($row) {
+            return "{$row['office_code']} ({$row['office_name']})";
+        }
+    }
+
+    return "Office #{$officeId}";
+}
+
 if (!function_exists('tt_resolve_user_id')) {
     /**
      * Resolve the logged-in user's ID. The session wrapper does not always
@@ -1588,6 +1614,22 @@ try {
             $db_connect->commit();
             $transactionOpen = false;
 
+            $officeLabel = tt_resolve_office_label($db_connect, $officeId);
+            $subCount    = $hasSubConcerns === 'yes'
+                ? count(array_filter((array)$subConcerns, static fn($s) => trim((string)($s['name'] ?? '')) !== ''))
+                : 0;
+            $structureNote = $hasSubConcerns === 'yes'
+                ? "with {$subCount} sub-transaction(s)"
+                : "standalone ({$estimatedMinutes} min)";
+            $statusNote    = $flagStatus === 0 ? 'Active' : 'Disabled';
+
+            record_activity_log(
+                $db_connect,
+                $currentUserId,
+                "SERVICE_CREATE: Created service \"{$transactionName}\" (ID #{$newTypeId}) for {$officeLabel} [{$structureNote}, {$statusNote}]",
+                $currentRole
+            );
+
             transactionTypesJsonResponse([
                 'msg_status' => true,
                 'msg_response' =>
@@ -1665,7 +1707,7 @@ try {
 
             // Lock and verify the target transaction type & office ownership.
             $checkType = $db_connect->prepare("
-                SELECT id, office_id
+                SELECT id, office_id, transaction_name, flag_status
                 FROM transaction_types
                 WHERE id = ?
                 FOR UPDATE
@@ -1856,6 +1898,25 @@ try {
             $db_connect->commit();
             $transactionOpen = false;
 
+            $officeLabel = tt_resolve_office_label($db_connect, $officeId);
+            $subCount    = $hasSubConcerns === 'yes'
+                ? count(array_filter((array)$subConcerns, static fn($s) => trim((string)($s['name'] ?? '')) !== ''))
+                : 0;
+            $structureNote = $hasSubConcerns === 'yes'
+                ? "with {$subCount} sub-transaction(s)"
+                : "standalone ({$estimatedMinutes} min)";
+            $statusNote    = $flagStatus === 0 ? 'Active' : 'Disabled';
+            $renameNote    = ($typeExists['transaction_name'] !== $transactionName)
+                ? " (renamed from \"{$typeExists['transaction_name']}\")"
+                : '';
+
+            record_activity_log(
+                $db_connect,
+                $currentUserId,
+                "SERVICE_UPDATE: Updated service \"{$transactionName}\"{$renameNote} (ID #{$typeId}) for {$officeLabel} [{$structureNote}, {$statusNote}]",
+                $currentRole
+            );
+
             transactionTypesJsonResponse([
                 'msg_status' => true,
                 'msg_response' =>
@@ -1879,19 +1940,29 @@ try {
                 ]);
             }
 
-            if ($isAdminStaff) {
-                $stmtOwner = $db_connect->prepare("SELECT office_id FROM transaction_types WHERE id = ? LIMIT 1");
-                $stmtOwner->bind_param('i', $id);
-                $stmtOwner->execute();
-                $ownerRow = $stmtOwner->get_result()->fetch_assoc();
-                $stmtOwner->close();
+            $stmtInfo = $db_connect->prepare("
+                SELECT office_id, transaction_name
+                FROM transaction_types
+                WHERE id = ?
+                LIMIT 1
+            ");
+            $stmtInfo->bind_param('i', $id);
+            $stmtInfo->execute();
+            $serviceRow = $stmtInfo->get_result()->fetch_assoc();
+            $stmtInfo->close();
 
-                if (!$ownerRow || (int)$ownerRow['office_id'] !== $lockedOfficeId) {
-                    transactionTypesJsonResponse([
-                        'msg_status' => false,
-                        'msg_response' => 'You are not authorized to delete services from another office.'
-                    ]);
-                }
+            if (!$serviceRow) {
+                transactionTypesJsonResponse([
+                    'msg_status' => false,
+                    'msg_response' => 'Transaction service was not found or has already been deleted.'
+                ]);
+            }
+
+            if ($isAdminStaff && (int)$serviceRow['office_id'] !== $lockedOfficeId) {
+                transactionTypesJsonResponse([
+                    'msg_status' => false,
+                    'msg_response' => 'You are not authorized to delete services from another office.'
+                ]);
             }
 
             $stmtDelete = $db_connect->prepare("
@@ -1913,6 +1984,14 @@ try {
                         'Transaction service was not found or has already been deleted.'
                 ]);
             }
+
+            $officeLabel = tt_resolve_office_label($db_connect, (int)$serviceRow['office_id']);
+            record_activity_log(
+                $db_connect,
+                $currentUserId,
+                "SERVICE_DELETE: Deleted service \"{$serviceRow['transaction_name']}\" (ID #{$id}) from {$officeLabel}",
+                $currentRole
+            );
 
             transactionTypesJsonResponse([
                 'msg_status' => true,
