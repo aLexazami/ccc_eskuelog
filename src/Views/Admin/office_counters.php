@@ -161,6 +161,70 @@ $action_buttons = [
     <?php include_once ADMIN_LINK_PATH; ?>
 
     <style>
+        .filter-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 0.85rem;
+            background: #ffffff;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+        }
+
+        .search-input-group {
+            position: relative;
+        }
+        .search-input-group .search-icon {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+            pointer-events: none;
+            z-index: 4;
+            font-size: 0.875rem;
+        }
+        .search-input-group .form-control {
+            padding-left: 2.15rem !important;
+            padding-top: 0.42rem;
+            padding-bottom: 0.42rem;
+            min-height: 36px;
+        }
+
+        /* Clean Flat Tabulator Styling (Preserves Tabulator row/cell layout) */
+        #tabulator-container.tabulator {
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            background-color: #ffffff;
+            box-shadow: none !important;
+        }
+        #tabulator-container .tabulator-header,
+        #tabulator-container .tabulator-header .tabulator-col {
+            background-color: #ffffff !important;
+            border-bottom: 1px solid #e2e8f0;
+            box-shadow: none !important;
+            font-weight: 600;
+            color: #475569;
+        }
+        #tabulator-container .tabulator-row,
+        #tabulator-container .tabulator-row.tabulator-row-even,
+        #tabulator-container .tabulator-row.tabulator-row-odd,
+        #tabulator-container .tabulator-row:hover {
+            background-color: #ffffff !important;
+            box-shadow: none !important;
+        }
+        #tabulator-container .tabulator-cell {
+            background-color: #ffffff !important;
+            border-right: 1px solid #f1f5f9;
+            box-shadow: none !important;
+            white-space: normal;
+        }
+        #tabulator-container .tabulator-cell:last-child {
+            border-right: none;
+        }
+        #tabulator-container .tabulator-footer {
+            background-color: #ffffff !important;
+            box-shadow: none !important;
+            border-top: 1px solid #e2e8f0;
+        }
+
         /* Enforce strict horizontal alignment inside Tabulator cells */
         #tabulator-container .tabulator-cell[tabulator-field="office_label"],
         #tabulator-container .tabulator-cell[tabulator-field="staff_label"] {
@@ -189,11 +253,43 @@ $action_buttons = [
             <?php include_once ADMIN_HEADER_PATH; ?>
 
             <div class="container">
-                <div class="page-inner">
+                <div class="page-inner px-2 px-sm-3">
 
                     <!-- Page Header -->
                     <?php echo $page_header; ?>
 
+                    <!-- SEPARATE OFFICE FILTER CONTAINER -->
+                    <div class="card filter-card mb-4">
+                        <div class="card-body p-3 p-sm-4">
+                            <form id="counterFilterForm">
+                                <div class="row g-2 align-items-end">
+                                    <div class="col-12 col-sm-9 col-md-7 col-xl-6">
+                                        <label for="filterOffice" class="form-label fw-bold small text-muted">Campus Office</label>
+                                        <select id="filterOffice" class="form-select form-select-sm py-2 px-3" <?= $is_admin_staff ? 'disabled style="pointer-events:none; background-color:#f1f5f9;"' : ''; ?>>
+                                            <?php if (!$is_admin_staff): ?>
+                                                <option value="0">-- All Campus Offices --</option>
+                                            <?php endif; ?>
+                                            <?php foreach ($offices as $off): ?>
+                                                <option value="<?= $off['office_id']; ?>" <?= ($is_admin_staff && (int)$off['office_id'] === $assigned_office_id) ? 'selected' : ''; ?>>
+                                                    <?= htmlspecialchars($off['office_name']); ?> (<?= htmlspecialchars($off['office_code']); ?>)
+                                                </option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+
+                                    <?php if (!$is_admin_staff): ?>
+                                        <div class="col-auto">
+                                            <button type="button" id="btnReset" class="btn btn-outline-secondary btn-sm py-2 px-3 text-nowrap" title="Reset Office Filter">
+                                                <i class="bi bi-arrow-counterclockwise"></i>
+                                            </button>
+                                        </div>
+                                    <?php endif; ?>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- OFFICE SERVICE COUNTERS TABLE CONTAINER -->
                     <div class="row">
                         <div class="col-12">
                             <div class="card">
@@ -223,51 +319,40 @@ $action_buttons = [
                                 </div>
 
                                 <div class="card-body">
-                                    <!-- Row 1: Office selection (left) | Export + Refresh (right) -->
-                                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
-                                        <select id="filterOffice" class="form-select" style="width: auto; min-width: 320px; max-width: 100%;" <?= $is_admin_staff ? 'disabled' : ''; ?>>
-                                            <?php if (!$is_admin_staff): ?>
-                                                <option value="0">-- All Offices --</option>
-                                            <?php endif; ?>
-                                            <?php foreach ($offices as $off): ?>
-                                                <option value="<?= $off['office_id']; ?>" <?= ($is_admin_staff && (int)$off['office_id'] === $assigned_office_id) ? 'selected' : ''; ?>>
-                                                    <?= htmlspecialchars($off['office_name']); ?> (<?= htmlspecialchars($off['office_code']); ?>)
-                                                </option>
-                                            <?php endforeach; ?>
-                                        </select>
+                                    <!-- Unified Top Toolbar: Global Search + Export/Download + Refresh Data -->
+                                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+                                        <!-- Global Search -->
+                                        <div class="flex-grow-1" style="min-width: 240px; max-width: 420px;">
+                                            <div class="search-input-group">
+                                                <i class="bi bi-search search-icon"></i>
+                                                <input type="text" id="global-search" class="form-control form-control-sm" placeholder="Search" aria-label="Search">
+                                            </div>
+                                        </div>
 
-                                        <div class="d-flex align-items-center gap-2">
-                                            <!-- Export Options Dropdown -->
+                                        <!-- Export & Refresh Actions -->
+                                        <div class="d-flex flex-wrap align-items-center gap-2 ms-auto">
                                             <div class="dropdown">
-                                                <button class="btn btn-action dropdown-toggle d-inline-flex align-items-center" type="button" id="exportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                                    <i class="bi bi-download me-2"></i>Export / Download
+                                                <button class="btn btn-action btn-sm dropdown-toggle d-inline-flex align-items-center" type="button" id="exportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                                    <i class="bi bi-download me-1"></i>Export / Download
                                                 </button>
                                                 <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="exportDropdown">
-                                                    <li><a class="dropdown-item text-slate-700" href="javascript:void(0)" id="export-csv"><i class="bi bi-filetype-csv text-success me-2"></i> Export CSV</a></li>
-                                                    <li><a class="dropdown-item text-slate-700" href="javascript:void(0)" id="export-excel"><i class="bi bi-file-earmark-excel text-success me-2"></i> Export Excel (.xlsx)</a></li>
-                                                    <li><a class="dropdown-item text-slate-700" href="javascript:void(0)" id="export-json"><i class="bi bi-filetype-json text-warning me-2"></i> Export JSON</a></li>
+                                                    <li><a class="dropdown-item" href="javascript:void(0)" id="export-csv"><i class="bi bi-filetype-csv text-success me-2"></i> Export CSV</a></li>
+                                                    <li><a class="dropdown-item" href="javascript:void(0)" id="export-excel"><i class="bi bi-file-earmark-excel text-success me-2"></i> Export Excel (.xlsx)</a></li>
+                                                    <li><a class="dropdown-item" href="javascript:void(0)" id="export-json"><i class="bi bi-filetype-json text-warning me-2"></i> Export JSON</a></li>
                                                     <li>
                                                         <hr class="dropdown-divider">
                                                     </li>
-                                                    <li><a class="dropdown-item text-slate-700" href="javascript:void(0)" id="export-print"><i class="bi bi-printer text-primary me-2"></i> Print Table</a></li>
+                                                    <li><a class="dropdown-item" href="javascript:void(0)" id="export-print"><i class="bi bi-printer text-primary me-2"></i> Print Table</a></li>
                                                 </ul>
                                             </div>
 
-                                            <button id="btn-refresh" class="btn btn-action d-inline-flex align-items-center">
-                                                <i class="bi bi-arrow-clockwise me-2"></i>Refresh Data
+                                            <button type="button" id="btn-refresh" class="btn btn-action btn-sm d-inline-flex align-items-center">
+                                                <i class="bi bi-arrow-clockwise me-1"></i>Refresh Data
                                             </button>
                                         </div>
                                     </div>
 
-                                    <!-- Row 2: Search bar on its own row -->
-                                    <div class="d-flex mb-3">
-                                        <div class="search-input-group flex-grow-1">
-                                            <i class="bi bi-search search-icon"></i>
-                                            <input type="text" id="global-search" class="form-control" placeholder="Search...">
-                                        </div>
-                                    </div>
-
-                                    <div id="tabulator-container" class="table table-bordered tabulator" style="min-height: 600px;"></div>
+                                    <div id="tabulator-container" style="min-height: 600px;"></div>
                                 </div>
 
                             </div>
@@ -474,10 +559,6 @@ $action_buttons = [
             return `<div class="w-100 text-center">${escapeHtml(cell.getValue())}</div>`;
         }
 
-        function statusFormatter(cell) {
-            return escapeHtml(cell.getValue());
-        }
-
         const colFilter = {
             headerFilter: "input",
             headerFilterFunc: "like",
@@ -497,6 +578,22 @@ $action_buttons = [
             });
             select.addEventListener('change', () => success(select.value));
             return select;
+        }
+
+        function applyGlobalSearch(tableInstance) {
+            const keyword = $('#global-search').val().trim().toLowerCase();
+            if (!keyword) {
+                tableInstance.clearFilter();
+                return;
+            }
+            tableInstance.setFilter(function(data) {
+                const office  = (data.office_name || '').toLowerCase();
+                const code    = (data.office_code || '').toLowerCase();
+                const counter = (data.counter_name || '').toLowerCase();
+                const staff   = (data.assigned_staff_names || '').toLowerCase();
+                const status  = (data.status_label || '').toLowerCase();
+                return office.includes(keyword) || code.includes(keyword) || counter.includes(keyword) || staff.includes(keyword) || status.includes(keyword);
+            });
         }
 
         /* Tabulator Table Setup */
@@ -527,7 +624,13 @@ $action_buttons = [
                 pagination: "local",
                 paginationSize: 10,
                 paginationSizeSelector: [10, 25, 50, 100, true],
-                placeholder: "No service counters found.",
+                placeholder: `
+                    <div class="text-center text-muted py-4">
+                        <i class="bi bi-inbox fs-2 d-block mb-2 opacity-50"></i>
+                        <div class="fw-semibold">No service counters found</div>
+                        <div class="small">Try adjusting your search keywords or office filter.</div>
+                    </div>
+                `,
                 height: "600px",
                 headerHozAlign: 'center',
                 printAsHtml: true,
@@ -562,7 +665,7 @@ $action_buttons = [
                                             <span style="font-size: 0.75rem;">Update</span>
                                         </button>
                                         <button type="button" class="${classBtnDelete}" data-id="${rowData.counter_id}" title="Delete Counter">
-                                            <i class="bi bi-trash"></i>
+                                            <i class="bi bi-trash text-danger"></i>
                                             <span style="font-size: 0.75rem;">Delete</span>
                                         </button>
                                     </div>`;
@@ -584,6 +687,19 @@ $action_buttons = [
                     { title: "Status", field: "status_label", formatter: statusFormatter, minWidth: 140, vertAlign: 'middle', hozAlign: 'center',
                         headerFilter: statusHeaderFilter, headerFilterFunc: "=" }
                 ]
+            });
+
+            function resetAndReload() {
+                $('#global-search').val('');
+                $('#filterOffice').val(IS_ADMIN_STAFF ? String(ASSIGNED_OFFICE_ID) : '0');
+                tabulator.clearFilter();
+                tabulator.clearHeaderFilter();
+                tabulator.setData();
+            }
+
+            // Re-apply global search text whenever AJAX data finishes loading
+            tabulator.on("dataProcessed", function() {
+                applyGlobalSearch(tabulator);
             });
 
             // Export Actions
@@ -615,45 +731,30 @@ $action_buttons = [
                 }, 250);
             });
 
-            // Filter by Office Handler
+            // Filter Form & Office Handler
+            $('#counterFilterForm').on('submit', function(e) {
+                e.preventDefault();
+                if (tabulator) tabulator.setData();
+            });
+
             $('#filterOffice').on('change', function() {
                 if (tabulator) tabulator.setData();
             });
 
             // Global Search Handler
-            const searchInput = document.getElementById('global-search');
-            if (searchInput) {
-                searchInput.addEventListener('input', function() {
-                    const keyword = this.value.trim().toLowerCase();
-                    if (!keyword) { tabulator.clearFilter(); return; }
-                    tabulator.setFilter(function(data) {
-                        const office  = (data.office_name || '').toLowerCase();
-                        const code    = (data.office_code || '').toLowerCase();
-                        const counter = (data.counter_name || '').toLowerCase();
-                        const staff   = (data.assigned_staff_names || '').toLowerCase();
-                        const status  = (data.status_label || '').toLowerCase();
-                        return office.includes(keyword) || code.includes(keyword) || counter.includes(keyword) || staff.includes(keyword) || status.includes(keyword);
-                    });
-                });
-            }
+            $('#global-search').on('input', function() {
+                applyGlobalSearch(tabulator);
+            });
 
-            // Refresh Data Handler
-            const refreshBtn = document.getElementById('btn-refresh');
-            if (refreshBtn) {
-                refreshBtn.addEventListener('click', function() {
-                    if (searchInput) searchInput.value = '';
-                    $('#filterOffice').val(IS_ADMIN_STAFF ? String(ASSIGNED_OFFICE_ID) : '0');
-                    tabulator.clearFilter();
-                    tabulator.clearHeaderFilter();
-                    tabulator.setData();
-                });
-            }
+            // Reset & Refresh Data Handlers
+            $('#btnReset').on('click', resetAndReload);
+            $('#btn-refresh').on('click', resetAndReload);
         }
 
         /**
          * Rebuild Select2 options based on the target office:
          * - When targetOfficeId > 0: strictly shows employees assigned to targetOfficeId
-         * - When targetOfficeId === 0 (ADMIN with "-- All Offices --"): shows all eligible employees across offices
+         * - When targetOfficeId === 0 (ADMIN with "-- All Campus Offices --"): shows all eligible employees across offices
          * - Staff already serving other windows stay selectable
          */
         function populateStaffDropdown(selector, targetOfficeId = 0, excludeCounterId = 0, preselectedIds = null) {
