@@ -1,4 +1,6 @@
 <?php
+// src/Views/Admin/reports_analytics.php
+
 # Core Config Dependencies
 global $session_class, $db_connect;
 $db_connect = $db_connect ?? null;
@@ -173,6 +175,79 @@ if ($db_connect && $user_id > 0) {
             position: relative;
             min-height: 360px;
             width: 100%;
+        }
+
+        /* Clean Flat Tabulator Styling (Removes header background/shadow effects) */
+        #counterTable.tabulator,
+        #staffBreakdownTable.tabulator {
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            background-color: #ffffff;
+            box-shadow: none !important;
+        }
+
+        #counterTable .tabulator-header,
+        #counterTable .tabulator-header .tabulator-col,
+        #staffBreakdownTable .tabulator-header,
+        #staffBreakdownTable .tabulator-header .tabulator-col {
+            background: #ffffff !important;
+            background-color: #ffffff !important;
+            background-image: none !important;
+            border-bottom: 1px solid #e2e8f0;
+            box-shadow: none !important;
+            font-weight: 600;
+            color: #475569;
+        }
+
+        #counterTable .tabulator-header .tabulator-col:hover,
+        #staffBreakdownTable .tabulator-header .tabulator-col:hover {
+            background: #ffffff !important;
+            background-color: #ffffff !important;
+            box-shadow: none !important;
+        }
+
+        #counterTable .tabulator-header-filter input,
+        #counterTable .tabulator-header-filter select,
+        #staffBreakdownTable .tabulator-header-filter input,
+        #staffBreakdownTable .tabulator-header-filter select {
+            height: 32px !important;
+            min-height: 32px !important;
+            padding: 0.25rem 0.5rem !important;
+            font-size: 0.8125rem !important;
+            box-shadow: none !important;
+            box-sizing: border-box;
+        }
+
+        #counterTable .tabulator-row,
+        #counterTable .tabulator-row.tabulator-row-even,
+        #counterTable .tabulator-row.tabulator-row-odd,
+        #counterTable .tabulator-row:hover,
+        #staffBreakdownTable .tabulator-row,
+        #staffBreakdownTable .tabulator-row.tabulator-row-even,
+        #staffBreakdownTable .tabulator-row.tabulator-row-odd,
+        #staffBreakdownTable .tabulator-row:hover {
+            background-color: #ffffff !important;
+            box-shadow: none !important;
+        }
+
+        #counterTable .tabulator-cell,
+        #staffBreakdownTable .tabulator-cell {
+            background-color: #ffffff !important;
+            border-right: 1px solid #f1f5f9;
+            box-shadow: none !important;
+            white-space: normal;
+        }
+
+        #counterTable .tabulator-cell:last-child,
+        #staffBreakdownTable .tabulator-cell:last-child {
+            border-right: none;
+        }
+
+        #counterTable .tabulator-footer,
+        #staffBreakdownTable .tabulator-footer {
+            background-color: #ffffff !important;
+            box-shadow: none !important;
+            border-top: 1px solid #e2e8f0;
         }
 
         /* Bootstrap Tabulator Scrollbar Support (Y and X) */
@@ -430,7 +505,7 @@ if ($db_connect && $user_id > 0) {
                         <div class="col-12">
                             <div class="card chart-card p-3 p-sm-4">
                                 <h6 class="fw-bold text-dark mb-3"><i class="bi bi-window-stack me-2 text-primary"></i>Window Performance</h6>
-                                <div id="counterTable" class="table table-bordered tabulator" style="min-height: 420px;"></div>
+                                <div id="counterTable" style="min-height: 420px;"></div>
                             </div>
                         </div>
                     </div>
@@ -440,7 +515,7 @@ if ($db_connect && $user_id > 0) {
                         <div class="col-12">
                             <div class="card chart-card p-3 p-sm-4">
                                 <h6 class="fw-bold text-dark mb-3"><i class="bi bi-person-workspace me-2 text-primary"></i>Staff Performance</h6>
-                                <div id="staffBreakdownTable" class="table table-bordered tabulator" style="min-height: 420px;"></div>
+                                <div id="staffBreakdownTable" style="min-height: 420px;"></div>
                             </div>
                         </div>
                     </div>
