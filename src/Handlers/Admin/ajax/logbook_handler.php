@@ -2,16 +2,103 @@
 // src/Handlers/Admin/ajax/logbook_handler.php
 
 /** @var \mysqli $db_connect */
-global $db_connect;
+global $db_connect, $session_class, $g_user_role, $g_user_id;
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
 $db_connect = $db_connect ?? null;
 
 header('Content-Type: application/json; charset=utf-8');
 
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
+require_once ACTIVITY_LOGGER;
+
 if (!$db_connect) {
     echo json_encode(['success' => false, 'message' => 'Database connection unavailable.']);
     exit();
+}
+
+if (!function_exists('lb_resolve_kiosk_user_id')) {
+    /**
+     * Resolve the logged-in Station Admin / operator user_id running the kiosk.
+     */
+    function lb_resolve_kiosk_user_id($session_class, $db_connect, $hint = 0): int
+    {
+        $userId = (int)$hint;
+        $keys   = ['user_id', 'id', 'sys_user_id'];
+
+        if ($userId <= 0 && is_object($session_class) && method_exists($session_class, 'getValue')) {
+            foreach ($keys as $key) {
+                try {
+                    $userId = (int)$session_class->getValue($key);
+                } catch (Throwable $e) {
+                    $userId = 0;
+                }
+                if ($userId > 0) {
+                    break;
+                }
+            }
+        }
+
+        if ($userId <= 0) {
+            foreach ($keys as $key) {
+                $userId = (int)($_SESSION[$key] ?? 0);
+                if ($userId > 0) {
+                    break;
+                }
+            }
+        }
+
+        if ($userId <= 0 && $db_connect instanceof mysqli && session_id() !== '') {
+            try {
+                $sessionId = session_id();
+                $like      = '%' . $sessionId . '%';
+                $stmt      = $db_connect->prepare("
+                    SELECT user_id FROM user_log
+                    WHERE session_id = ? OR token_id LIKE ?
+                    ORDER BY user_log_id DESC LIMIT 1
+                ");
+                $stmt->bind_param('ss', $sessionId, $like);
+                $stmt->execute();
+                $row = $stmt->get_result()->fetch_assoc();
+                $stmt->close();
+                $userId = (int)($row['user_id'] ?? 0);
+            } catch (Throwable $e) {
+                $userId = 0;
+            }
+        }
+
+        return max(0, $userId);
+    }
+}
+
+if (!function_exists('lb_resolve_kiosk_role')) {
+    /**
+     * Resolve the role of the logged-in kiosk account (typically STATION_ADMIN).
+     */
+    function lb_resolve_kiosk_role($session_class, $hint = ''): string
+    {
+        $map  = ['1' => 'ADMIN', '2' => 'ADMIN_STAFF', '3' => 'STATION_ADMIN', '4' => 'USER'];
+        $role = strtoupper(trim((string)$hint));
+
+        if ($role === '' && is_object($session_class) && method_exists($session_class, 'getValue')) {
+            try {
+                $role = strtoupper(trim((string)($session_class->getValue('user_role') ?? $session_class->getValue('role') ?? '')));
+            } catch (Throwable $e) {
+                $role = '';
+            }
+        }
+
+        if ($role === '') {
+            $role = strtoupper(trim((string)($_SESSION['user_role'] ?? $_SESSION['role'] ?? '')));
+        }
+
+        $resolved = $map[$role] ?? $role;
+        return $resolved !== '' ? $resolved : 'STATION_ADMIN';
+    }
 }
 
 $action = $_POST['action'] ?? '';
@@ -667,6 +754,21 @@ switch ($action) {
             $stmtQueue->execute();
 
             $db_connect->commit();
+
+            // Record kiosk check-in in activity_log under the active Station Admin session
+            $kioskUserId = lb_resolve_kiosk_user_id($session_class ?? null, $db_connect, $g_user_id ?? 0);
+            $kioskRole   = lb_resolve_kiosk_role($session_class ?? null, $g_user_role ?? '');
+
+            $visitorFullName = trim(implode(' ', array_filter([$first_name, $middle_name, $last_name, $suffix])));
+            $idSuffix        = $reference_id ? " [{$reference_id}]" : '';
+            $priorityNote    = $is_priority ? " (Priority: {$priority_type})" : '';
+
+            record_activity_log(
+                $db_connect,
+                $kioskUserId,
+                "LOGBOOK_CHECKIN: Issued ticket {$ticket_number} ({$resolvedWindowName}) at {$office_name} for {$visitor_type} {$visitorFullName}{$idSuffix}{$priorityNote} [Logbook #{$logbook_id}]",
+                $kioskRole
+            );
 
             echo json_encode([
                 'success'           => true,
