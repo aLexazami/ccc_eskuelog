@@ -104,7 +104,7 @@ define('SCHOOL_ADDRESS', 'Calamba City, Laguna');
 define('SYSTEM_NAME', getenv('SYSTEM_NAME') ?: 'e-Queueing and Logging System');
 define('SYSTEM_SUB_NAME', 'Management Information System Department');
 define('SYSTEM_TEAM', 'MISD Team');
-define('YEAR_CREATED', '2023');
+define('YEAR_CREATED', '2026');
 define('PAGE_TITLE', getenv('SYSTEM_NAME') ?: 'e-Queueing and Logging System');
 define('PAGE_SUB_TITLE', getenv('SYSTEM_NAME') ?: 'e-Queueing and Logging System');
 
