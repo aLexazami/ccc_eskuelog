@@ -151,6 +151,14 @@ if ($db_connect && $user_id > 0) {
             font-weight: 600;
             color: #475569;
         }
+        #transactionRecordsTable .tabulator-header-filter input,
+        #transactionRecordsTable .tabulator-header-filter select {
+            height: 32px !important;
+            min-height: 32px !important;
+            padding: 0.25rem 0.5rem !important;
+            font-size: 0.8125rem !important;
+            box-sizing: border-box;
+        }
         #transactionRecordsTable .tabulator-row,
         #transactionRecordsTable .tabulator-row.tabulator-row-even,
         #transactionRecordsTable .tabulator-row.tabulator-row-odd,
@@ -1090,23 +1098,6 @@ if ($db_connect && $user_id > 0) {
             headerFilterParams: { allowEmpty: true }
         };
 
-        // Dropdown header filter factory: options = [[value, label], ...]
-        function selectHeaderFilter(options) {
-            return function (cell, onRendered, success, cancel) {
-                const select = document.createElement('select');
-                select.className = 'form-select form-select-sm';
-                select.style.width = '100%';
-                [['', 'All']].concat(options).forEach(([val, label]) => {
-                    const opt = document.createElement('option');
-                    opt.value = val;
-                    opt.textContent = label;
-                    select.appendChild(opt);
-                });
-                select.addEventListener('change', () => success(select.value));
-                return select;
-            };
-        }
-
         function applyGlobalSearch(tableInstance) {
             const kw = $('#global-search').val().trim().toLowerCase();
             if (!kw) {
@@ -1192,8 +1183,17 @@ if ($db_connect && $user_id > 0) {
                         field: "visitor_type",
                         minWidth: 130,
                         vertAlign: 'middle',
-                        headerFilter: selectHeaderFilter([['STUDENT', 'Student'], ['EMPLOYEE', 'Employee'], ['GUEST', 'Guest']]),
-                        headerFilterFunc: "=",
+                        hozAlign: 'center',
+                        headerFilter: "select",
+                        headerFilterLiveFilter: false,
+                        headerFilterParams: {
+                            values: {
+                                "": "All",
+                                "STUDENT": "Student",
+                                "EMPLOYEE": "Employee",
+                                "GUEST": "Guest"
+                            }
+                        },
                         formatter: cell => `<span class="text-dark">${formatCapitalized(cell.getValue())}</span>`
                     },
                     Object.assign({
@@ -1231,11 +1231,18 @@ if ($db_connect && $user_id > 0) {
                         minWidth: 130,
                         vertAlign: 'middle',
                         hozAlign: 'center',
-                        headerFilter: selectHeaderFilter([
-                            ['COMPLETED', 'Completed'], ['SKIPPED', 'Skipped'], ['SERVING', 'Serving'],
-                            ['CALLED', 'Called'], ['WAITING', 'Waiting']
-                        ]),
-                        headerFilterFunc: "=",
+                        headerFilter: "select",
+                        headerFilterLiveFilter: false,
+                        headerFilterParams: {
+                            values: {
+                                "": "All",
+                                "COMPLETED": "Completed",
+                                "SKIPPED": "Skipped",
+                                "SERVING": "Serving",
+                                "CALLED": "Called",
+                                "WAITING": "Waiting"
+                            }
+                        },
                         formatter: cell => escapeHtml(formatCapitalized(cell.getValue()))
                     },
                     Object.assign({
