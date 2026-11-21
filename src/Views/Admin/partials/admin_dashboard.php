@@ -1,495 +1,830 @@
 <?php
-// Prevent direct file access
-if (!defined('DOMAIN_PATH')) {
-    http_response_code(403);
-    exit('Direct access forbidden.');
+// src/Views/Admin/partials/admin_dashboard.php
+global $db_connect, $session_class, $g_user_role, $g_user_id;
+$db_connect  = $db_connect ?? null;
+$g_user_role = $g_user_role ?? '';
+
+# Page Header Initialization
+require_once ADMIN_PAGE_HEADER_PATH;
+
+$title_page   = "System Administrator Dashboard";
+$active_links = [
+    ['label' => $title_page, 'url' => '']
+];
+$page_header = render_page_header((string) $title_page, $active_links) ?? '';
+
+# Resolve Logged-In Administrator First Name & Active Role (from config.php SYSTEM_ACCESS)
+$current_user_id = (int) ($g_user_id ?? 0);
+if ($current_user_id <= 0 && isset($session_class) && method_exists($session_class, 'getValue')) {
+    $current_user_id = (int) (
+        $session_class->getValue('user_id') ??
+        $session_class->getValue('id') ??
+        $session_class->getValue('sys_user_id') ??
+        0
+    );
+}
+if ($current_user_id <= 0) {
+    $current_user_id = (int) ($_SESSION['user_id'] ?? $_SESSION['id'] ?? $_SESSION['sys_user_id'] ?? 0);
 }
 
-global $db_connect;
+$role_map         = SYSTEM_ACCESS[SYSTEM_ACCESS_NAME]['role'] ?? [];
+$reverse_role_map = array_map('intval', array_flip($role_map));
 
-// Helper using connect.php's native mysqli_query_return()
-$fetchAll = function (string $sql): array {
-    return function_exists('mysqli_query_return') ? mysqli_query_return($sql) : [];
-};
+$raw_role = (string) ($g_user_role ?? '');
+if ($raw_role === '' && isset($session_class) && method_exists($session_class, 'getValue')) {
+    $raw_role = (string) (
+        $session_class->getValue('user_role') ??
+        $session_class->getValue('system_role') ??
+        ''
+    );
+}
+if ($raw_role === '') {
+    $raw_role = (string) ($_SESSION['user_role'] ?? $_SESSION['role'] ?? '');
+}
 
-$fetchOne = function (string $sql) use ($fetchAll): array {
-    $rows = $fetchAll($sql);
-    return $rows[0] ?? [];
-};
+$raw_role_upper = strtoupper(trim($raw_role));
+$active_role_id = isset($role_map[$raw_role_upper])
+    ? (int) $raw_role_upper
+    : ($reverse_role_map[$raw_role_upper] ?? (int) (isset($session_class) && method_exists($session_class, 'getValue') ? ($session_class->getValue('user_role_id') ?? 0) : 0));
 
-// 1. System Configuration KPIs (flag_status = 0 = active)
-$kpiConfig = $fetchOne("
-    SELECT
-        (SELECT COUNT(*) FROM office WHERE flag_status = 0) AS total_offices,
-        (SELECT COUNT(*) FROM counters WHERE flag_status = 0) AS total_counters,
-        (SELECT COUNT(*) FROM transaction_types WHERE flag_status = 0) AS total_services,
-        (SELECT COUNT(*) FROM transaction_sub_concerns WHERE flag_status = 0) AS total_sub_concerns,
-        (SELECT COUNT(*) FROM staff_assignments WHERE flag_status = 0) AS on_duty_staff
-");
+$admin_first_name = 'Administrator';
+if ($db_connect && $current_user_id > 0) {
+    $stmtUser = $db_connect->prepare("SELECT first_name FROM users WHERE id = ? AND flag_status = 0 LIMIT 1");
+    if ($stmtUser) {
+        $stmtUser->bind_param("i", $current_user_id);
+        $stmtUser->execute();
+        if ($uRow = $stmtUser->get_result()->fetch_assoc()) {
+            $rawFirstName = trim((string) ($uRow['first_name'] ?? ''));
+            if ($rawFirstName !== '') {
+                $admin_first_name = ucwords(strtolower($rawFirstName));
+            }
+        }
+        $stmtUser->close();
+    }
 
-// 2. Today's Operational Queue KPIs
-$kpiToday = $fetchOne("
-    SELECT
-        COUNT(*) AS total_tickets,
-        SUM(CASE WHEN status = 'WAITING' THEN 1 ELSE 0 END) AS waiting_count,
-        SUM(CASE WHEN status IN ('CALLED', 'SERVING') THEN 1 ELSE 0 END) AS serving_count,
-        SUM(CASE WHEN status = 'COMPLETED' THEN 1 ELSE 0 END) AS completed_count,
-        SUM(CASE WHEN is_priority = 1 THEN 1 ELSE 0 END) AS priority_count
-    FROM queue_tickets
-    WHERE queue_date = CURDATE()
-");
-
-// 3. Office Operational Overview (Counters, On-Duty Staff, Today's Queue)
-$officeOverview = $fetchAll("
-    SELECT
-        o.office_id,
-        o.office_code,
-        o.office_name,
-        COUNT(DISTINCT c.id) AS counter_count,
-        COUNT(DISTINCT CASE WHEN sa.flag_status = 0 THEN sa.id END) AS active_staff,
-        COUNT(DISTINCT CASE WHEN qt.queue_date = CURDATE() AND qt.status = 'WAITING' THEN qt.id END) AS waiting_today,
-        COUNT(DISTINCT CASE WHEN qt.queue_date = CURDATE() AND qt.status = 'COMPLETED' THEN qt.id END) AS completed_today,
-        COUNT(DISTINCT CASE WHEN qt.queue_date = CURDATE() THEN qt.id END) AS total_today
-    FROM office o
-    LEFT JOIN counters c ON c.office_id = o.office_id AND c.flag_status = 0
-    LEFT JOIN staff_assignments sa ON sa.office_id = o.office_id
-    LEFT JOIN queue_tickets qt ON qt.office_id = o.office_id AND qt.queue_date = CURDATE()
-    WHERE o.flag_status = 0
-    GROUP BY o.office_id, o.office_code, o.office_name
-    ORDER BY total_today DESC, o.office_code ASC
-");
-
-// 4. Visitor Type Distribution (Today)
-$visitorStats = $fetchAll("
-    SELECT
-        l.visitor_type,
-        COUNT(*) AS total
-    FROM logbooks l
-    INNER JOIN queue_tickets qt ON qt.logbook_id = l.id
-    WHERE qt.queue_date = CURDATE()
-    GROUP BY l.visitor_type
-");
-
-$visitorMap = ['STUDENT' => 0, 'EMPLOYEE' => 0, 'GUEST' => 0];
-foreach ($visitorStats as $row) {
-    $type = strtoupper($row['visitor_type'] ?? '');
-    if (isset($visitorMap[$type])) {
-        $visitorMap[$type] = (int) $row['total'];
+    // Verify active role against system_access table
+    $sysName = SYSTEM_ACCESS_NAME;
+    if ($active_role_id > 0) {
+        $stmtRole = $db_connect->prepare("
+            SELECT system_role
+            FROM system_access
+            WHERE user_id = ? AND system_type = ? AND system_role = ? AND flag_access = 0
+            LIMIT 1
+        ");
+        if ($stmtRole) {
+            $stmtRole->bind_param("isi", $current_user_id, $sysName, $active_role_id);
+            $stmtRole->execute();
+            if ($roleRow = $stmtRole->get_result()->fetch_assoc()) {
+                $active_role_id = (int) $roleRow['system_role'];
+            }
+            $stmtRole->close();
+        }
+    } else {
+        $stmtRole = $db_connect->prepare("
+            SELECT system_role
+            FROM system_access
+            WHERE user_id = ? AND system_type = ? AND flag_access = 0
+            ORDER BY system_role ASC
+            LIMIT 1
+        ");
+        if ($stmtRole) {
+            $stmtRole->bind_param("is", $current_user_id, $sysName);
+            $stmtRole->execute();
+            if ($roleRow = $stmtRole->get_result()->fetch_assoc()) {
+                $active_role_id = (int) $roleRow['system_role'];
+            }
+            $stmtRole->close();
+        }
     }
 }
 
-// 5. Recent Queue Transactions (Latest 8)
-$recentTickets = $fetchAll("
-    SELECT
-        qt.ticket_number,
-        qt.status,
-        qt.is_priority,
-        o.office_code,
-        l.visitor_type,
-        CONCAT(l.first_name, ' ', l.last_name) AS visitor_name,
-        tt.transaction_name,
-        c.counter_name,
-        l.created_at
-    FROM queue_tickets qt
-    INNER JOIN logbooks l ON l.id = qt.logbook_id
-    INNER JOIN office o ON o.office_id = qt.office_id
-    LEFT JOIN transaction_types tt ON tt.id = l.transaction_type_id
-    LEFT JOIN counters c ON c.id = qt.counter_id
-    ORDER BY qt.id DESC
-    LIMIT 8
-");
+$resolved_role_code = $role_map[(string) $active_role_id] ?? ($raw_role_upper !== '' ? $raw_role_upper : 'USER');
+$display_role_label = (defined('ACCESS_NAME') && isset(ACCESS_NAME[$resolved_role_code]))
+    ? ACCESS_NAME[$resolved_role_code]
+    : ucwords(strtolower(str_replace('_', ' ', $resolved_role_code)));
 
-// Prepare Chart.js JSON payloads
-$chartOfficeLabels = array_column($officeOverview, 'office_code');
-$chartOfficeWaiting = array_map('intval', array_column($officeOverview, 'waiting_today'));
-$chartOfficeCompleted = array_map('intval', array_column($officeOverview, 'completed_today'));
-
-$adminLayoutDir = SRC_PATH . '/Views/Layouts/Admin';
+$today_date = defined('DATE_NOW') ? DATE_NOW : date('Y-m-d');
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<?= LANG; ?>">
+
 <head>
-    <?php include $adminLayoutDir . '/meta_data.php'; ?>
-    <title>Admin Dashboard | E-ESKUELOG</title>
-    <?php include $adminLayoutDir . '/link.php'; ?>
+    <?php include_once ADMIN_META_DATA_PATH; ?>
+    <?php include_once ADMIN_LINK_PATH; ?>
+
+    <style>
+        /* E-ESKUELOG | System Administrator Dashboard */
+        .admin-dashboard {
+            --sd-ink: #172b4d;
+            --sd-muted: #718096;
+            --sd-line: #e8edf4;
+            --sd-blue: #2457c5;
+            padding-bottom: 2rem;
+            color: var(--sd-ink);
+        }
+        .admin-dashboard .card {
+            border: 1px solid var(--sd-line) !important;
+            border-radius: 1rem !important;
+            box-shadow: 0 4px 16px rgba(27,46,77,.045) !important;
+            transition: box-shadow .18s ease, transform .18s ease;
+        }
+        .admin-dashboard .card-header {
+            background: #fff;
+            border-color: var(--sd-line) !important;
+            border-radius: 1rem 1rem 0 0 !important;
+        }
+
+        /* Live AJAX Status Pill */
+        .admin-dashboard .live-sync-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 999px;
+            padding: 0.3rem 0.75rem;
+            font-size: 0.78rem;
+            color: #475569;
+            font-weight: 600;
+        }
+        .admin-dashboard .live-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #16a34a;
+            box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.55);
+            animation: livePulse 2s infinite;
+        }
+        .admin-dashboard .live-dot.is-syncing {
+            background: #2563eb;
+        }
+        @keyframes livePulse {
+            0%   { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.55); }
+            70%  { box-shadow: 0 0 0 6px rgba(22, 163, 74, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0); }
+        }
+
+        /* Daily KPI Metric Cards (aligned with reports_analytics.php) */
+        .admin-dashboard .kpi-card {
+            background: #ffffff;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 0.95rem;
+            padding: 1.15rem;
+            box-shadow: 0 4px 14px rgba(27, 46, 77, 0.035);
+            transition: all 0.2s ease;
+            height: 100%;
+        }
+        .admin-dashboard .kpi-card:hover {
+            border-color: #cbd5e1;
+            box-shadow: 0 6px 16px rgba(27, 46, 77, 0.06);
+        }
+        .admin-dashboard .kpi-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.35rem;
+        }
+        .admin-dashboard .kpi-icon.primary { background: #eff6ff; color: #2563eb; }
+        .admin-dashboard .kpi-icon.success { background: #f0fdf4; color: #16a34a; }
+        .admin-dashboard .kpi-icon.warning { background: #fefce8; color: #ca8a04; }
+        .admin-dashboard .kpi-icon.danger  { background: #fef2f2; color: #dc2626; }
+
+        /* 6 Square Quick-Navigation Wrapper Background Design */
+        .admin-dashboard .quick-nav-wrapper {
+            position: relative;
+            overflow: hidden;
+            background: radial-gradient(circle at 95% 15%, rgba(36, 87, 197, 0.12), transparent 40%),
+                        linear-gradient(120deg, #ffffff 0%, #f4f8ff 65%, #eaf1ff 100%);
+            border: 1px solid #dbe6f8;
+            border-radius: 1.15rem;
+            padding: 1.25rem;
+            box-shadow: 0 4px 16px rgba(27, 46, 77, 0.045);
+        }
+        .admin-dashboard .quick-nav-wrapper::after {
+            content: "";
+            position: absolute;
+            width: 140px;
+            height: 140px;
+            right: -45px;
+            bottom: -75px;
+            border: 18px solid rgba(36, 87, 197, 0.06);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        /* 6 Compact Square Shortcut Cards */
+        .admin-dashboard .square-shortcut-card {
+            aspect-ratio: 1 / 1;
+            width: 100%;
+            max-width: 195px;
+            margin: 0 auto;
+            background: #ffffff;
+            border: 1px solid var(--sd-line);
+            border-radius: 1rem;
+            box-shadow: 0 3px 12px rgba(27, 46, 77, 0.04);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 1rem;
+            gap: 0.75rem;
+            transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease;
+        }
+        .admin-dashboard .square-shortcut-card:hover {
+            border-color: #b8cafa;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(36, 87, 197, 0.1);
+        }
+        .admin-dashboard .square-shortcut-icon {
+            width: 54px;
+            height: 54px;
+            border-radius: 0.95rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.65rem;
+            flex-shrink: 0;
+        }
+        .admin-dashboard .square-shortcut-title {
+            color: var(--sd-ink);
+            font-size: 0.92rem;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            line-height: 1.25;
+            margin: 0;
+        }
+
+        /* Chart Containers & Horizontal Scroll Wrapper for >12 Offices */
+        .admin-dashboard .chart-container {
+            position: relative;
+            min-height: 300px;
+            width: 100%;
+        }
+        .admin-dashboard .chart-scroll-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            overflow-y: hidden;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: 0.35rem;
+        }
+        .admin-dashboard .chart-scroll-wrapper::-webkit-scrollbar {
+            height: 7px;
+        }
+        .admin-dashboard .chart-scroll-wrapper::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 999px;
+        }
+        .admin-dashboard .chart-scroll-wrapper::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 999px;
+        }
+        .admin-dashboard .chart-scroll-wrapper::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        .admin-dashboard .chart-scroll-inner {
+            position: relative;
+            height: 300px;
+            min-width: 100%;
+        }
+        .admin-dashboard .chart-empty-state {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            background: #f8fafc;
+            border: 1px dashed #cbd5e1;
+            border-radius: 0.75rem;
+            color: #64748b;
+            padding: 1.5rem;
+            z-index: 2;
+        }
+        .admin-dashboard .chart-empty-state i {
+            font-size: 2rem;
+            color: #94a3b8;
+            margin-bottom: 0.5rem;
+        }
+        .admin-dashboard .chart-empty-state .empty-title {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #475569;
+        }
+        .admin-dashboard .chart-empty-state .empty-sub {
+            font-size: 0.78rem;
+            color: #94a3b8;
+            margin-top: 0.15rem;
+        }
+
+        .admin-dashboard .section-heading {
+            color: var(--sd-ink);
+            font-size: .96rem;
+            font-weight: 750;
+            letter-spacing: -.015em;
+        }
+        .admin-dashboard .text-muted {
+            color: var(--sd-muted) !important;
+        }
+        @media (max-width: 767.98px) {
+            .admin-dashboard .square-shortcut-card {
+                max-width: 165px;
+                padding: 0.85rem;
+                gap: 0.6rem;
+            }
+            .admin-dashboard .square-shortcut-icon {
+                width: 46px;
+                height: 46px;
+                font-size: 1.4rem;
+            }
+            .admin-dashboard .square-shortcut-title {
+                font-size: 0.84rem;
+            }
+            .admin-dashboard .card-header {
+                padding-left: 1rem !important;
+                padding-right: 1rem !important;
+            }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .admin-dashboard .card,
+            .admin-dashboard .kpi-card,
+            .admin-dashboard .square-shortcut-card,
+            .admin-dashboard .live-dot {
+                transition: none;
+                animation: none;
+            }
+        }
+    </style>
 </head>
+
 <body>
     <div class="wrapper">
-        <!-- Sidebar -->
-        <?php include $adminLayoutDir . '/sidebar.php'; ?>
+        <?php include_once ADMIN_SIDEBAR_PATH; ?>
 
         <div class="main-panel">
-            <!-- Header / Navbar -->
-            <?php include $adminLayoutDir . '/header.php'; ?>
+            <?php include_once ADMIN_HEADER_PATH; ?>
 
             <div class="container">
-                <div class="page-inner">
-                    <!-- Page Title & Quick Navigation -->
-                    <div class="d-flex align-items-left align-items-md-center flex-column flex-md-row pt-2 pb-4">
+                <div class="page-inner px-2 px-sm-3 admin-dashboard">
+
+                    <!-- SYSTEM ADMINISTRATOR GREETING & LIVE AJAX STATUS -->
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 border-start border-4 border-primary ps-3 py-1 mb-4">
                         <div>
-                            <h3 class="fw-bold mb-1">System Administration Dashboard</h3>
-                            <h6 class="op-7 mb-0">Overview of office setups, service configurations, and campus-wide queue operations</h6>
+                            <h1 class="fw-bold mb-1" style="color: #1e293b; font-size: 2.15rem; letter-spacing: -0.02em;">
+                                Welcome, <span class="text-primary"><?= htmlspecialchars($admin_first_name); ?></span>!
+                            </h1>
+                            <p class="text-muted mb-0" style="font-size: 0.95rem;">
+                                <i class="bi bi-shield-check text-primary me-1"></i>
+                                You are logged in as <span class="fw-semibold text-dark"><?= htmlspecialchars($display_role_label); ?></span>
+                            </p>
                         </div>
-                        <div class="ms-md-auto py-2 py-md-0 d-flex flex-wrap gap-2">
-                            <a href="<?php echo BASE_URL . 'admin/office-counters'; ?>" class="btn btn-outline-primary btn-round btn-sm">
-                                <i class="bi bi-building-gear me-1"></i> Office Counters
-                            </a>
-                            <a href="<?php echo BASE_URL . 'admin/transaction-types'; ?>" class="btn btn-outline-primary btn-round btn-sm">
-                                <i class="bi bi-card-checklist me-1"></i> Services
-                            </a>
-                            <a href="<?php echo BASE_URL . 'admin/reports-analytics'; ?>" class="btn btn-primary btn-round btn-sm">
-                                <i class="bi bi-bar-chart-line-fill me-1"></i> Reports & Analytics
-                            </a>
+
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="live-sync-pill" id="liveSyncStatus" title="Automatically updates via AJAX every 10 seconds">
+                                <span class="live-dot" id="liveSyncDot"></span>
+                                <span id="liveSyncText">Live Sync</span>
+                            </span>
+                            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3" id="btnManualRefresh" title="Refresh Now">
+                                <i class="bi bi-arrow-clockwise"></i>
+                            </button>
                         </div>
                     </div>
 
-                    <!-- Top KPI Cards Row -->
-                    <div class="row">
-                        <div class="col-sm-6 col-md-3">
-                            <div class="card card-stats card-round">
-                                <div class="card-body">
-                                    <div class="row align-items-center">
-                                        <div class="col-icon">
-                                            <div class="icon-big text-center icon-primary bubble-shadow-small">
-                                                <i class="bi bi-building"></i>
-                                            </div>
-                                        </div>
-                                        <div class="col col-stats ms-3 ms-sm-0">
-                                            <div class="numbers">
-                                                <p class="card-category">Offices & Counters</p>
-                                                <h4 class="card-title">
-                                                    <?php echo (int) ($kpiConfig['total_offices'] ?? 0); ?>
-                                                    <small class="text-muted fs-6 fw-normal">
-                                                        (<?php echo (int) ($kpiConfig['total_counters'] ?? 0); ?> windows)
-                                                    </small>
-                                                </h4>
-                                            </div>
-                                        </div>
+                    <!-- DAILY KPI CARDS (Mirrors reports_analytics.php) -->
+                    <div class="row g-3 mb-4">
+                        <?php
+                        $kpi_cards = [
+                            ['kpiTotalQueue',    'Total Queue',      'primary', 'bi-ticket-perforated-fill', '0'],
+                            ['kpiCompleted',     'Completed',        'success', 'bi-check-circle-fill',      '0'],
+                            ['kpiSkipped',       'Skipped / Missed', 'danger',  'bi-x-circle-fill',          '0'],
+                            ['kpiPriorityQueue', 'Priority Queue',   'warning', 'bi-star-fill',              '0'],
+                        ];
+                        foreach ($kpi_cards as [$id, $label, $tone, $icon, $default]): ?>
+                            <div class="col-6 col-xl-3">
+                                <div class="kpi-card d-flex align-items-center">
+                                    <div class="kpi-icon <?= $tone; ?> flex-shrink-0 me-3">
+                                        <i class="bi <?= $icon; ?>"></i>
+                                    </div>
+                                    <div class="min-w-0">
+                                        <span class="fw-semibold text-muted small d-block mb-1"><?= $label; ?></span>
+                                        <h4 class="fw-bold text-dark mb-0 font-monospace" id="<?= $id; ?>"><?= $default; ?></h4>
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        <?php endforeach; ?>
+                    </div>
 
-                        <div class="col-sm-6 col-md-3">
-                            <div class="card card-stats card-round">
-                                <div class="card-body">
-                                    <div class="row align-items-center">
-                                        <div class="col-icon">
-                                            <div class="icon-big text-center icon-info bubble-shadow-small">
-                                                <i class="bi bi-list-check"></i>
-                                            </div>
+                    <!-- 6 SQUARE QUICK-NAVIGATION CARDS -->
+                    <div class="quick-nav-wrapper mb-4">
+                        <div class="row row-cols-2 row-cols-sm-3 row-cols-lg-6 g-3 position-relative" style="z-index: 1;">
+                            <div class="col">
+                                <a href="<?= BASE_URL; ?>admin/office-counters" class="text-decoration-none d-block h-100">
+                                    <div class="square-shortcut-card">
+                                        <div class="square-shortcut-icon bg-primary-subtle text-primary">
+                                            <i class="bi bi-building-gear"></i>
                                         </div>
-                                        <div class="col col-stats ms-3 ms-sm-0">
-                                            <div class="numbers">
-                                                <p class="card-category">Services & Concerns</p>
-                                                <h4 class="card-title">
-                                                    <?php echo (int) ($kpiConfig['total_services'] ?? 0); ?>
-                                                    <small class="text-muted fs-6 fw-normal">
-                                                        (<?php echo (int) ($kpiConfig['total_sub_concerns'] ?? 0); ?> sub)
-                                                    </small>
-                                                </h4>
-                                            </div>
-                                        </div>
+                                        <h5 class="square-shortcut-title">Office Counters</h5>
                                     </div>
-                                </div>
+                                </a>
                             </div>
-                        </div>
 
-                        <div class="col-sm-6 col-md-3">
-                            <div class="card card-stats card-round">
-                                <div class="card-body">
-                                    <div class="row align-items-center">
-                                        <div class="col-icon">
-                                            <div class="icon-big text-center icon-success bubble-shadow-small">
-                                                <i class="bi bi-ticket-perforated"></i>
-                                            </div>
+                            <div class="col">
+                                <a href="<?= BASE_URL; ?>admin/transaction-types" class="text-decoration-none d-block h-100">
+                                    <div class="square-shortcut-card">
+                                        <div class="square-shortcut-icon bg-success-subtle text-success">
+                                            <i class="bi bi-card-checklist"></i>
                                         </div>
-                                        <div class="col col-stats ms-3 ms-sm-0">
-                                            <div class="numbers">
-                                                <p class="card-category">Tickets Today</p>
-                                                <h4 class="card-title">
-                                                    <?php echo (int) ($kpiToday['total_tickets'] ?? 0); ?>
-                                                    <small class="text-success fs-6 fw-normal">
-                                                        (<?php echo (int) ($kpiToday['completed_count'] ?? 0); ?> done)
-                                                    </small>
-                                                </h4>
-                                            </div>
-                                        </div>
+                                        <h5 class="square-shortcut-title">Transaction Services</h5>
                                     </div>
-                                </div>
+                                </a>
                             </div>
-                        </div>
 
-                        <div class="col-sm-6 col-md-3">
-                            <div class="card card-stats card-round">
-                                <div class="card-body">
-                                    <div class="row align-items-center">
-                                        <div class="col-icon">
-                                            <div class="icon-big text-center icon-secondary bubble-shadow-small">
-                                                <i class="bi bi-person-badge"></i>
-                                            </div>
+                            <div class="col">
+                                <a href="<?= BASE_URL; ?>admin/transaction-records" class="text-decoration-none d-block h-100">
+                                    <div class="square-shortcut-card">
+                                        <div class="square-shortcut-icon bg-info-subtle text-info">
+                                            <i class="bi bi-folder-check"></i>
                                         </div>
-                                        <div class="col col-stats ms-3 ms-sm-0">
-                                            <div class="numbers">
-                                                <p class="card-category">On-Duty Staff</p>
-                                                <h4 class="card-title">
-                                                    <?php echo (int) ($kpiConfig['on_duty_staff'] ?? 0); ?>
-                                                    <small class="text-warning fs-6 fw-normal">
-                                                        (<?php echo (int) ($kpiToday['waiting_count'] ?? 0); ?> waiting)
-                                                    </small>
-                                                </h4>
-                                            </div>
-                                        </div>
+                                        <h5 class="square-shortcut-title">Transaction Records</h5>
                                     </div>
-                                </div>
+                                </a>
+                            </div>
+
+                            <div class="col">
+                                <a href="<?= BASE_URL; ?>admin/reports-analytics" class="text-decoration-none d-block h-100">
+                                    <div class="square-shortcut-card">
+                                        <div class="square-shortcut-icon bg-warning-subtle text-warning">
+                                            <i class="bi bi-bar-chart-line-fill"></i>
+                                        </div>
+                                        <h5 class="square-shortcut-title">Report</h5>
+                                    </div>
+                                </a>
+                            </div>
+
+                            <div class="col">
+                                <a href="<?= BASE_URL; ?>admin/activity-log" class="text-decoration-none d-block h-100">
+                                    <div class="square-shortcut-card">
+                                        <div class="square-shortcut-icon bg-danger-subtle text-danger">
+                                            <i class="bi bi-clock-history"></i>
+                                        </div>
+                                        <h5 class="square-shortcut-title">Activity Log</h5>
+                                    </div>
+                                </a>
+                            </div>
+
+                            <div class="col">
+                                <a href="<?= BASE_URL; ?>admin/user-log" class="text-decoration-none d-block h-100">
+                                    <div class="square-shortcut-card">
+                                        <div class="square-shortcut-icon bg-secondary-subtle text-secondary">
+                                            <i class="bi bi-person-lines-fill"></i>
+                                        </div>
+                                        <h5 class="square-shortcut-title">User Log</h5>
+                                    </div>
+                                </a>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Charts Row -->
-                    <div class="row">
-                        <div class="col-md-8">
-                            <div class="card card-round">
-                                <div class="card-header d-flex justify-content-between align-items-center">
-                                    <div class="card-title">Today's Queue Volume by Office</div>
-                                    <span class="badge badge-primary"><?php echo date('F d, Y'); ?></span>
+                    <!-- REPORTS & ANALYTICS SUMMARY (2 COLUMNS) -->
+                    <div class="row g-4">
+                        <!-- Left Column: Queue Volume by Office (Horizontal Scroll when >12 offices) -->
+                        <div class="col-12 col-lg-8">
+                            <div class="card border-0 shadow-sm rounded-4 h-100">
+                                <div class="card-header bg-white border-bottom py-3 px-4 d-flex flex-wrap align-items-center justify-content-between gap-2">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <h6 class="section-heading mb-0">
+                                            <i class="bi bi-building me-2 text-primary"></i>Queue Volume by Office
+                                        </h6>
+                                        <span class="badge bg-light text-muted border small d-none" id="officeScrollHint">
+                                            <i class="bi bi-arrows-expand-vertical me-1" style="transform: rotate(90deg); display:inline-block;"></i>Scroll horizontally
+                                        </span>
+                                    </div>
+                                    <a href="<?= BASE_URL; ?>admin/reports-analytics" class="btn btn-sm btn-outline-secondary">
+                                        Full Analytics
+                                    </a>
                                 </div>
-                                <div class="card-body">
-                                    <div class="chart-container" style="min-height: 280px;">
-                                        <canvas id="officeQueueChart"></canvas>
+                                <div class="card-body p-3 p-sm-4">
+                                    <div class="chart-container" id="officeChartContainer">
+                                        <div class="chart-scroll-wrapper" id="officeChartScrollWrapper">
+                                            <div class="chart-scroll-inner" id="officeChartScrollInner">
+                                                <canvas id="officeVolumeChart"></canvas>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="col-md-4">
-                            <div class="card card-round">
-                                <div class="card-header">
-                                    <div class="card-title">Visitors by Type (Today)</div>
+                        <!-- Right Column: Visitor Distribution (Student, Employee, Guest) -->
+                        <div class="col-12 col-lg-4">
+                            <div class="card border-0 shadow-sm rounded-4 h-100">
+                                <div class="card-header bg-white border-bottom py-3 px-4 d-flex align-items-center justify-content-between">
+                                    <h6 class="section-heading mb-0">
+                                        <i class="bi bi-pie-chart-fill me-2 text-primary"></i>Visitor Distribution
+                                    </h6>
+                                    <span class="badge bg-light text-muted border small">Today</span>
                                 </div>
-                                <div class="card-body">
-                                    <div class="chart-container" style="min-height: 220px;">
+                                <div class="card-body p-3 p-sm-4">
+                                    <div class="chart-container" id="visitorChartContainer">
                                         <canvas id="visitorTypeChart"></canvas>
                                     </div>
-                                    <div class="mt-3 d-flex justify-content-around text-center border-top pt-2">
-                                        <div>
-                                            <span class="text-muted d-block small">Students</span>
-                                            <span class="fw-bold"><?php echo $visitorMap['STUDENT']; ?></span>
-                                        </div>
-                                        <div>
-                                            <span class="text-muted d-block small">Employees</span>
-                                            <span class="fw-bold"><?php echo $visitorMap['EMPLOYEE']; ?></span>
-                                        </div>
-                                        <div>
-                                            <span class="text-muted d-block small">Guests</span>
-                                            <span class="fw-bold"><?php echo $visitorMap['GUEST']; ?></span>
-                                        </div>
-                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Office Readiness & Recent Transactions Row -->
-                    <div class="row">
-                        <!-- Office & Counter Readiness Table -->
-                        <div class="col-lg-6">
-                            <div class="card card-round">
-                                <div class="card-header d-flex justify-content-between align-items-center">
-                                    <div class="card-title">Office & Counter Readiness</div>
-                                    <a href="<?php echo BASE_URL . 'admin/office-counters'; ?>" class="btn btn-sm btn-link">
-                                        Configure <i class="bi bi-arrow-right"></i>
-                                    </a>
-                                </div>
-                                <div class="card-body p-0">
-                                    <div class="table-responsive">
-                                        <table class="table align-items-center mb-0">
-                                            <thead class="thead-light">
-                                                <tr>
-                                                    <th>Office</th>
-                                                    <th class="text-center">Counters</th>
-                                                    <th class="text-center">On-Duty</th>
-                                                    <th class="text-center">Waiting</th>
-                                                    <th class="text-center">Completed</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <?php if (empty($officeOverview)): ?>
-                                                    <tr>
-                                                        <td colspan="5" class="text-center text-muted py-4">No active offices configured.</td>
-                                                    </tr>
-                                                <?php else: ?>
-                                                    <?php foreach ($officeOverview as $office): ?>
-                                                        <tr>
-                                                            <td>
-                                                                <span class="fw-bold text-primary"><?php echo htmlspecialchars($office['office_code']); ?></span>
-                                                                <div class="small text-muted text-truncate" style="max-width: 200px;" title="<?php echo htmlspecialchars($office['office_name']); ?>">
-                                                                    <?php echo htmlspecialchars($office['office_name']); ?>
-                                                                </div>
-                                                            </td>
-                                                            <td class="text-center"><?php echo (int) $office['counter_count']; ?></td>
-                                                            <td class="text-center">
-                                                                <?php if ((int) $office['active_staff'] > 0): ?>
-                                                                    <span class="badge badge-success"><?php echo (int) $office['active_staff']; ?></span>
-                                                                <?php else: ?>
-                                                                    <span class="badge badge-light text-muted">0</span>
-                                                                <?php endif; ?>
-                                                            </td>
-                                                            <td class="text-center fw-bold text-warning"><?php echo (int) $office['waiting_today']; ?></td>
-                                                            <td class="text-center fw-bold text-success"><?php echo (int) $office['completed_today']; ?></td>
-                                                        </tr>
-                                                    <?php endforeach; ?>
-                                                <?php endif; ?>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Recent System Transactions -->
-                        <div class="col-lg-6">
-                            <div class="card card-round">
-                                <div class="card-header d-flex justify-content-between align-items-center">
-                                    <div class="card-title">Recent Queue Transactions</div>
-                                    <a href="<?php echo BASE_URL . 'admin/transaction-records'; ?>" class="btn btn-sm btn-link">
-                                        View All <i class="bi bi-arrow-right"></i>
-                                    </a>
-                                </div>
-                                <div class="card-body p-0">
-                                    <div class="table-responsive">
-                                        <table class="table align-items-center mb-0">
-                                            <thead class="thead-light">
-                                                <tr>
-                                                    <th>Ticket</th>
-                                                    <th>Visitor</th>
-                                                    <th>Transaction</th>
-                                                    <th class="text-end">Status</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <?php if (empty($recentTickets)): ?>
-                                                    <tr>
-                                                        <td colspan="4" class="text-center text-muted py-4">No transaction records found.</td>
-                                                    </tr>
-                                                <?php else: ?>
-                                                    <?php foreach ($recentTickets as $ticket): ?>
-                                                        <?php
-                                                        $statusBadge = match ($ticket['status']) {
-                                                            'WAITING'   => 'badge-warning',
-                                                            'CALLED'    => 'badge-info',
-                                                            'SERVING'   => 'badge-primary',
-                                                            'COMPLETED' => 'badge-success',
-                                                            'SKIPPED', 'CANCELLED' => 'badge-danger',
-                                                            default     => 'badge-secondary'
-                                                        };
-                                                        ?>
-                                                        <tr>
-                                                            <td>
-                                                                <span class="fw-bold"><?php echo htmlspecialchars($ticket['ticket_number']); ?></span>
-                                                                <?php if ((int) $ticket['is_priority'] === 1): ?>
-                                                                    <span class="badge badge-danger ms-1" title="Priority Lane">P</span>
-                                                                <?php endif; ?>
-                                                                <div class="small text-muted"><?php echo htmlspecialchars($ticket['office_code']); ?></div>
-                                                            </td>
-                                                            <td>
-                                                                <div class="fw-semibold"><?php echo htmlspecialchars($ticket['visitor_name']); ?></div>
-                                                                <span class="small text-muted"><?php echo htmlspecialchars($ticket['visitor_type']); ?></span>
-                                                            </td>
-                                                            <td>
-                                                                <div class="small text-truncate" style="max-width: 170px;" title="<?php echo htmlspecialchars($ticket['transaction_name'] ?? 'General'); ?>">
-                                                                    <?php echo htmlspecialchars($ticket['transaction_name'] ?? 'General Inquiry'); ?>
-                                                                </div>
-                                                                <span class="small text-muted">
-                                                                    <?php echo date('M d, h:i A', strtotime($ticket['created_at'])); ?>
-                                                                </span>
-                                                            </td>
-                                                            <td class="text-end">
-                                                                <span class="badge <?php echo $statusBadge; ?>">
-                                                                    <?php echo htmlspecialchars($ticket['status']); ?>
-                                                                </span>
-                                                            </td>
-                                                        </tr>
-                                                    <?php endforeach; ?>
-                                                <?php endif; ?>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
 
-            <!-- Footer -->
-            <?php include $adminLayoutDir . '/footer.php'; ?>
+            <?php include_once ADMIN_FOOTER_PATH; ?>
         </div>
     </div>
 
-    <!-- Scripts -->
-    <?php include $adminLayoutDir . '/script.php'; ?>
+    <?php include_once ADMIN_SCRIPT_PATH; ?>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const officeCtx = document.getElementById('officeQueueChart');
-            if (officeCtx && typeof Chart !== 'undefined') {
-                new Chart(officeCtx, {
+        (function() {
+            const HANDLER_URL       = '<?= BASE_URL; ?>admin/ajax/reports-analytics';
+            const POLL_INTERVAL_MS  = 10000; // Auto-refresh via AJAX every 10 seconds
+            const MAX_VISIBLE_BARS  = 12;    // Enable horizontal scroll if > 12 offices
+            const PX_PER_OFFICE_BAR = 68;    // Minimum width per office group when scrolling
+
+            const charts = {};
+            let pollTimer = null;
+            let isFetching = false;
+            let lastPayloadHash = '';
+
+            const escapeHtml = (s) => String(s ?? '')
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+
+            const getTodayDate = () => {
+                const now = new Date();
+                return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+            };
+
+            function setSyncIndicator(state, label) {
+                const dot  = document.getElementById('liveSyncDot');
+                const text = document.getElementById('liveSyncText');
+                if (dot)  dot.classList.toggle('is-syncing', state === 'syncing');
+                if (text && label) text.textContent = label;
+            }
+
+            function renderKPIs(k) {
+                k = k || {};
+                const totalEl     = document.getElementById('kpiTotalQueue');
+                const completedEl = document.getElementById('kpiCompleted');
+                const skippedEl   = document.getElementById('kpiSkipped');
+                const priorityEl  = document.getElementById('kpiPriorityQueue');
+
+                if (totalEl)     totalEl.textContent     = (parseInt(k.total_tickets, 10) || 0).toLocaleString();
+                if (completedEl) completedEl.textContent = (parseInt(k.completed_tickets, 10) || 0).toLocaleString();
+                if (skippedEl)   skippedEl.textContent   = (parseInt(k.skipped_tickets, 10) || 0).toLocaleString();
+                if (priorityEl)  priorityEl.textContent  = (parseInt(k.priority_tickets, 10) || 0).toLocaleString();
+            }
+
+            function drawChart(key, canvasId, config) {
+                if (charts[key]) charts[key].destroy();
+                const canvas = document.getElementById(canvasId);
+                if (!canvas) return;
+                charts[key] = new Chart(canvas.getContext('2d'), config);
+            }
+
+            function toggleChartEmptyState(key, outerContainerId, toggleTargetEl, isEmpty, title = 'No data available', subtitle = 'No records found for today.') {
+                const outerContainer = document.getElementById(outerContainerId);
+                if (!outerContainer || !toggleTargetEl) return;
+                let emptyEl = outerContainer.querySelector('.chart-empty-state');
+
+                if (isEmpty) {
+                    if (charts[key]) {
+                        charts[key].destroy();
+                        delete charts[key];
+                    }
+                    toggleTargetEl.style.display = 'none';
+                    if (!emptyEl) {
+                        emptyEl = document.createElement('div');
+                        emptyEl.className = 'chart-empty-state';
+                        outerContainer.appendChild(emptyEl);
+                    }
+                    emptyEl.innerHTML = `
+                        <i class="bi bi-bar-chart-line"></i>
+                        <div class="empty-title">${escapeHtml(title)}</div>
+                        <div class="empty-sub">${escapeHtml(subtitle)}</div>
+                    `;
+                } else {
+                    if (emptyEl) emptyEl.remove();
+                    toggleTargetEl.style.display = 'block';
+                }
+            }
+
+            function renderOfficeComparison(rows) {
+                const items         = (rows || []).filter(r => (parseInt(r.total_tickets, 10) || 0) > 0);
+                const hasData       = items.length > 0;
+                const scrollWrapper = document.getElementById('officeChartScrollWrapper');
+                const scrollInner   = document.getElementById('officeChartScrollInner');
+                const scrollHint    = document.getElementById('officeScrollHint');
+
+                toggleChartEmptyState(
+                    'office',
+                    'officeChartContainer',
+                    scrollWrapper,
+                    !hasData,
+                    'No office queue volume recorded',
+                    'No queue tickets were issued across offices today.'
+                );
+
+                if (!hasData) {
+                    if (scrollHint) scrollHint.classList.add('d-none');
+                    return;
+                }
+
+                // Dynamically expand chart width and enable horizontal scrollbar if > 12 offices
+                const needsHorizontalScroll = items.length > MAX_VISIBLE_BARS;
+                if (scrollInner) {
+                    scrollInner.style.width = needsHorizontalScroll
+                        ? `${items.length * PX_PER_OFFICE_BAR}px`
+                        : '100%';
+                }
+                if (scrollHint) {
+                    scrollHint.classList.toggle('d-none', !needsHorizontalScroll);
+                }
+
+                drawChart('office', 'officeVolumeChart', {
                     type: 'bar',
                     data: {
-                        labels: <?php echo json_encode($chartOfficeLabels); ?>,
+                        labels: items.map(o => o.office_code || o.office_name),
                         datasets: [
-                            {
-                                label: 'Waiting',
-                                backgroundColor: '#ffad46',
-                                borderColor: '#ffad46',
-                                data: <?php echo json_encode($chartOfficeWaiting); ?>
-                            },
-                            {
-                                label: 'Completed',
-                                backgroundColor: '#31ce36',
-                                borderColor: '#31ce36',
-                                data: <?php echo json_encode($chartOfficeCompleted); ?>
-                            }
+                            { label: 'Completed', data: items.map(o => o.total_completed || 0), backgroundColor: '#16a34a' },
+                            { label: 'Skipped',   data: items.map(o => o.total_skipped || 0),   backgroundColor: '#dc2626' },
+                            { label: 'Total',     data: items.map(o => o.total_tickets || 0),   backgroundColor: '#2563eb' }
                         ]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
+                        animation: { duration: 250 },
                         scales: {
-                            x: { stacked: false },
-                            y: { beginAtZero: true, ticks: { precision: 0 } }
+                            xAxes: [{
+                                ticks: {
+                                    autoSkip: false,
+                                    maxRotation: 0,
+                                    minRotation: 0
+                                }
+                            }],
+                            yAxes: [{
+                                ticks: { beginAtZero: true, precision: 0 }
+                            }]
                         }
                     }
                 });
             }
 
-            const visitorCtx = document.getElementById('visitorTypeChart');
-            if (visitorCtx && typeof Chart !== 'undefined') {
-                new Chart(visitorCtx, {
+            function renderVisitorType(data) {
+                const counts = { Student: 0, Employee: 0, Guest: 0 };
+                (data || []).forEach(d => {
+                    const key = String(d.type || '').trim().toLowerCase();
+                    if (key === 'student') counts.Student = parseInt(d.total || 0, 10);
+                    else if (key === 'employee') counts.Employee = parseInt(d.total || 0, 10);
+                    else if (key === 'guest') counts.Guest = parseInt(d.total || 0, 10);
+                });
+
+                const labels  = ['Student', 'Employee', 'Guest'];
+                const values  = [counts.Student, counts.Employee, counts.Guest];
+                const hasData = values.some(v => v > 0);
+                const canvas  = document.getElementById('visitorTypeChart');
+
+                toggleChartEmptyState(
+                    'visitor',
+                    'visitorChartContainer',
+                    canvas,
+                    !hasData,
+                    'No visitor records found',
+                    'No student, employee, or guest activity recorded today.'
+                );
+                if (!hasData) return;
+
+                drawChart('visitor', 'visitorTypeChart', {
                     type: 'doughnut',
                     data: {
-                        labels: ['Students', 'Employees', 'Guests'],
+                        labels: labels,
                         datasets: [{
-                            data: [
-                                <?php echo $visitorMap['STUDENT']; ?>,
-                                <?php echo $visitorMap['EMPLOYEE']; ?>,
-                                <?php echo $visitorMap['GUEST']; ?>
-                            ],
-                            backgroundColor: ['#1572e8', '#6861ce', '#f25961'],
-                            borderWidth: 1
+                            data: values,
+                            backgroundColor: ['#2563eb', '#7c3aed', '#16a34a'],
+                            borderWidth: 2,
+                            borderColor: '#ffffff'
                         }]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
-                        plugins: {
-                            legend: { position: 'bottom' }
-                        }
+                        animation: { duration: 250 },
+                        legend: { position: 'bottom' }
                     }
                 });
             }
-        });
+
+            function loadDashboardAnalytics(forceRender = false) {
+                if (isFetching) return;
+                isFetching = true;
+                setSyncIndicator('syncing', 'Syncing...');
+
+                const today = getTodayDate();
+                const fd = new FormData();
+                fd.append('action', 'fetch_analytics');
+                fd.append('office_id', '0');
+                fd.append('counter_id', '0');
+                fd.append('visitor_type', '');
+                fd.append('date_from', today);
+                fd.append('date_to', today);
+
+                fetch(HANDLER_URL, {
+                    method: 'POST',
+                    body: fd,
+                    cache: 'no-store'
+                })
+                    .then(res => res.json())
+                    .then(res => {
+                        if (!(res.success && res.data)) {
+                            if (forceRender) {
+                                renderKPIs({});
+                                renderOfficeComparison([]);
+                                renderVisitorType([]);
+                            }
+                            return;
+                        }
+
+                        // Only re-render charts if underlying data changed (prevents unnecessary chart flicker)
+                        const payloadHash = JSON.stringify({
+                            kpi: res.data.kpi || {},
+                            office: res.data.office_breakdown || [],
+                            visitor: res.data.visitor_distribution || []
+                        });
+
+                        if (forceRender || payloadHash !== lastPayloadHash) {
+                            lastPayloadHash = payloadHash;
+                            renderKPIs(res.data.kpi);
+                            renderOfficeComparison(res.data.office_breakdown || []);
+                            renderVisitorType(res.data.visitor_distribution || []);
+                        }
+
+                        const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                        setSyncIndicator('idle', `Live • ${timeStr}`);
+                    })
+                    .catch(() => {
+                        setSyncIndicator('idle', 'Retrying...');
+                    })
+                    .finally(() => {
+                        isFetching = false;
+                    });
+            }
+
+            function startPolling() {
+                stopPolling();
+                pollTimer = setInterval(() => {
+                    if (!document.hidden) {
+                        loadDashboardAnalytics(false);
+                    }
+                }, POLL_INTERVAL_MS);
+            }
+
+            function stopPolling() {
+                if (pollTimer) {
+                    clearInterval(pollTimer);
+                    pollTimer = null;
+                }
+            }
+
+            // Pause polling when tab is hidden; immediately refresh when returning to tab
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) {
+                    stopPolling();
+                } else {
+                    loadDashboardAnalytics(false);
+                    startPolling();
+                }
+            });
+
+            // Manual instant refresh button
+            document.getElementById('btnManualRefresh')?.addEventListener('click', () => {
+                loadDashboardAnalytics(true);
+            });
+
+            const bootDashboard = () => {
+                loadDashboardAnalytics(true);
+                startPolling();
+            };
+
+            if (document.readyState === 'complete') {
+                bootDashboard();
+            } else {
+                window.addEventListener('load', bootDashboard);
+            }
+        })();
     </script>
 </body>
+
 </html>
