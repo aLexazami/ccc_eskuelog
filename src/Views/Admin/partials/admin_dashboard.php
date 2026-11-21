@@ -231,7 +231,7 @@ $today_date = defined('DATE_NOW') ? DATE_NOW : date('Y-m-d');
             justify-content: center;
             text-align: center;
             padding: 1rem;
-            gap: 0.75rem;
+            gap: 0.7rem;
             transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease;
         }
         .admin-dashboard .square-shortcut-card:hover {
@@ -255,6 +255,12 @@ $today_date = defined('DATE_NOW') ? DATE_NOW : date('Y-m-d');
             font-weight: 700;
             letter-spacing: -0.01em;
             line-height: 1.25;
+            margin: 0;
+        }
+        .admin-dashboard .square-shortcut-sub {
+            color: var(--sd-muted);
+            font-size: 0.74rem;
+            line-height: 1.2;
             margin: 0;
         }
 
@@ -334,7 +340,7 @@ $today_date = defined('DATE_NOW') ? DATE_NOW : date('Y-m-d');
             .admin-dashboard .square-shortcut-card {
                 max-width: 165px;
                 padding: 0.85rem;
-                gap: 0.6rem;
+                gap: 0.55rem;
             }
             .admin-dashboard .square-shortcut-icon {
                 width: 46px;
@@ -427,7 +433,10 @@ $today_date = defined('DATE_NOW') ? DATE_NOW : date('Y-m-d');
                                         <div class="square-shortcut-icon bg-primary-subtle text-primary">
                                             <i class="bi bi-building-gear"></i>
                                         </div>
-                                        <h5 class="square-shortcut-title">Office Counters</h5>
+                                        <div>
+                                            <h5 class="square-shortcut-title">Office Counters</h5>
+                                            <p class="square-shortcut-sub mt-1">Manage service windows</p>
+                                        </div>
                                     </div>
                                 </a>
                             </div>
@@ -438,7 +447,10 @@ $today_date = defined('DATE_NOW') ? DATE_NOW : date('Y-m-d');
                                         <div class="square-shortcut-icon bg-success-subtle text-success">
                                             <i class="bi bi-card-checklist"></i>
                                         </div>
-                                        <h5 class="square-shortcut-title">Transaction Services</h5>
+                                        <div>
+                                            <h5 class="square-shortcut-title">Transaction Services</h5>
+                                            <p class="square-shortcut-sub mt-1">Services &amp; sub-concerns</p>
+                                        </div>
                                     </div>
                                 </a>
                             </div>
@@ -449,7 +461,10 @@ $today_date = defined('DATE_NOW') ? DATE_NOW : date('Y-m-d');
                                         <div class="square-shortcut-icon bg-info-subtle text-info">
                                             <i class="bi bi-folder-check"></i>
                                         </div>
-                                        <h5 class="square-shortcut-title">Transaction Records</h5>
+                                        <div>
+                                            <h5 class="square-shortcut-title">Transaction Records</h5>
+                                            <p class="square-shortcut-sub mt-1">Queue &amp; logbook history</p>
+                                        </div>
                                     </div>
                                 </a>
                             </div>
@@ -460,7 +475,10 @@ $today_date = defined('DATE_NOW') ? DATE_NOW : date('Y-m-d');
                                         <div class="square-shortcut-icon bg-warning-subtle text-warning">
                                             <i class="bi bi-bar-chart-line-fill"></i>
                                         </div>
-                                        <h5 class="square-shortcut-title">Report</h5>
+                                        <div>
+                                            <h5 class="square-shortcut-title">Report</h5>
+                                            <p class="square-shortcut-sub mt-1">Analytics &amp; summaries</p>
+                                        </div>
                                     </div>
                                 </a>
                             </div>
@@ -471,7 +489,10 @@ $today_date = defined('DATE_NOW') ? DATE_NOW : date('Y-m-d');
                                         <div class="square-shortcut-icon bg-danger-subtle text-danger">
                                             <i class="bi bi-clock-history"></i>
                                         </div>
-                                        <h5 class="square-shortcut-title">Activity Log</h5>
+                                        <div>
+                                            <h5 class="square-shortcut-title">Activity Log</h5>
+                                            <p class="square-shortcut-sub mt-1">System audit trail</p>
+                                        </div>
                                     </div>
                                 </a>
                             </div>
@@ -482,7 +503,10 @@ $today_date = defined('DATE_NOW') ? DATE_NOW : date('Y-m-d');
                                         <div class="square-shortcut-icon bg-secondary-subtle text-secondary">
                                             <i class="bi bi-person-lines-fill"></i>
                                         </div>
-                                        <h5 class="square-shortcut-title">User Log</h5>
+                                        <div>
+                                            <h5 class="square-shortcut-title">User Log</h5>
+                                            <p class="square-shortcut-sub mt-1">Session activity</p>
+                                        </div>
                                     </div>
                                 </a>
                             </div>
