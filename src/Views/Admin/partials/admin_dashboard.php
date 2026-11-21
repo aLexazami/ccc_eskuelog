@@ -134,36 +134,6 @@ $today_date = defined('DATE_NOW') ? DATE_NOW : date('Y-m-d');
             border-radius: 1rem 1rem 0 0 !important;
         }
 
-        /* Live AJAX Status Pill */
-        .admin-dashboard .live-sync-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.45rem;
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 999px;
-            padding: 0.3rem 0.75rem;
-            font-size: 0.78rem;
-            color: #475569;
-            font-weight: 600;
-        }
-        .admin-dashboard .live-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #16a34a;
-            box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.55);
-            animation: livePulse 2s infinite;
-        }
-        .admin-dashboard .live-dot.is-syncing {
-            background: #2563eb;
-        }
-        @keyframes livePulse {
-            0%   { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.55); }
-            70%  { box-shadow: 0 0 0 6px rgba(22, 163, 74, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0); }
-        }
-
         /* Daily KPI Metric Cards (aligned with reports_analytics.php) */
         .admin-dashboard .kpi-card {
             background: #ffffff;
@@ -358,8 +328,7 @@ $today_date = defined('DATE_NOW') ? DATE_NOW : date('Y-m-d');
         @media (prefers-reduced-motion: reduce) {
             .admin-dashboard .card,
             .admin-dashboard .kpi-card,
-            .admin-dashboard .square-shortcut-card,
-            .admin-dashboard .live-dot {
+            .admin-dashboard .square-shortcut-card {
                 transition: none;
                 animation: none;
             }
@@ -377,27 +346,15 @@ $today_date = defined('DATE_NOW') ? DATE_NOW : date('Y-m-d');
             <div class="container">
                 <div class="page-inner px-2 px-sm-3 admin-dashboard">
 
-                    <!-- SYSTEM ADMINISTRATOR GREETING & LIVE AJAX STATUS -->
-                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 border-start border-4 border-primary ps-3 py-1 mb-4">
-                        <div>
-                            <h1 class="fw-bold mb-1" style="color: #1e293b; font-size: 2.15rem; letter-spacing: -0.02em;">
-                                Welcome, <span class="text-primary"><?= htmlspecialchars($admin_first_name); ?></span>!
-                            </h1>
-                            <p class="text-muted mb-0" style="font-size: 0.95rem;">
-                                <i class="bi bi-shield-check text-primary me-1"></i>
-                                You are logged in as <span class="fw-semibold text-dark"><?= htmlspecialchars($display_role_label); ?></span>
-                            </p>
-                        </div>
-
-                        <div class="d-flex align-items-center gap-2">
-                            <span class="live-sync-pill" id="liveSyncStatus" title="Automatically updates via AJAX every 10 seconds">
-                                <span class="live-dot" id="liveSyncDot"></span>
-                                <span id="liveSyncText">Live Sync</span>
-                            </span>
-                            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3" id="btnManualRefresh" title="Refresh Now">
-                                <i class="bi bi-arrow-clockwise"></i>
-                            </button>
-                        </div>
+                    <!-- SYSTEM ADMINISTRATOR GREETING -->
+                    <div class="border-start border-4 border-primary ps-3 py-1 mb-4">
+                        <h1 class="fw-bold mb-1" style="color: #1e293b; font-size: 2.15rem; letter-spacing: -0.02em;">
+                            Welcome, <span class="text-primary"><?= htmlspecialchars($admin_first_name); ?></span>!
+                        </h1>
+                        <p class="text-muted mb-0" style="font-size: 0.95rem;">
+                            <i class="bi bi-shield-check text-primary me-1"></i>
+                            You are logged in as <span class="fw-semibold text-dark"><?= htmlspecialchars($display_role_label); ?></span>
+                        </p>
                     </div>
 
                     <!-- DAILY KPI CARDS (Mirrors reports_analytics.php) -->
@@ -591,13 +548,6 @@ $today_date = defined('DATE_NOW') ? DATE_NOW : date('Y-m-d');
                 return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
             };
 
-            function setSyncIndicator(state, label) {
-                const dot  = document.getElementById('liveSyncDot');
-                const text = document.getElementById('liveSyncText');
-                if (dot)  dot.classList.toggle('is-syncing', state === 'syncing');
-                if (text && label) text.textContent = label;
-            }
-
             function renderKPIs(k) {
                 k = k || {};
                 const totalEl     = document.getElementById('kpiTotalQueue');
@@ -754,7 +704,6 @@ $today_date = defined('DATE_NOW') ? DATE_NOW : date('Y-m-d');
             function loadDashboardAnalytics(forceRender = false) {
                 if (isFetching) return;
                 isFetching = true;
-                setSyncIndicator('syncing', 'Syncing...');
 
                 const today = getTodayDate();
                 const fd = new FormData();
@@ -794,13 +743,8 @@ $today_date = defined('DATE_NOW') ? DATE_NOW : date('Y-m-d');
                             renderOfficeComparison(res.data.office_breakdown || []);
                             renderVisitorType(res.data.visitor_distribution || []);
                         }
-
-                        const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-                        setSyncIndicator('idle', `Live • ${timeStr}`);
                     })
-                    .catch(() => {
-                        setSyncIndicator('idle', 'Retrying...');
-                    })
+                    .catch(() => {})
                     .finally(() => {
                         isFetching = false;
                     });
@@ -830,11 +774,6 @@ $today_date = defined('DATE_NOW') ? DATE_NOW : date('Y-m-d');
                     loadDashboardAnalytics(false);
                     startPolling();
                 }
-            });
-
-            // Manual instant refresh button
-            document.getElementById('btnManualRefresh')?.addEventListener('click', () => {
-                loadDashboardAnalytics(true);
             });
 
             const bootDashboard = () => {
