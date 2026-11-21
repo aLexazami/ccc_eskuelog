@@ -725,21 +725,38 @@ switch ($action) {
                 $stmtItem->execute();
             }
 
-            // STEP D: Resolve daily sequence & insert queue ticket
+            // STEP D: Resolve unified queue_sequence (for FCFS ordering) + separate ticket display number
             $stmtSeq = $db_connect->prepare("
-                SELECT COALESCE(MAX(queue_sequence), 0) + 1 AS next_seq
-                FROM queue_tickets
-                WHERE office_id = ? AND queue_date = ?
+                SELECT
+                    COALESCE(MAX(qt.queue_sequence), 0) + 1 AS next_seq,
+                    COALESCE(SUM(CASE WHEN l.visitor_type = 'EMPLOYEE' THEN 1 ELSE 0 END), 0) + 1 AS next_emp_num,
+                    COALESCE(SUM(CASE WHEN l.visitor_type IN ('STUDENT', 'GUEST') THEN 1 ELSE 0 END), 0) + 1 AS next_reg_num
+                FROM queue_tickets qt
+                INNER JOIN logbooks l ON qt.logbook_id = l.id
+                WHERE qt.office_id = ?
+                  AND qt.queue_date = ?
             ");
             $stmtSeq->bind_param("is", $office_id, $today);
             $stmtSeq->execute();
             $resSeq = $stmtSeq->get_result()->fetch_assoc();
 
-            $office_name   = $resOffice['office_name'] ?? 'Office';
-            $base_prefix   = !empty($resOffice['prefix']) ? $resOffice['prefix'] : 'Q';
-            $prefix        = $is_priority ? "P-" . $base_prefix : $base_prefix;
-            $sequence      = (int)($resSeq['next_seq'] ?? 1);
-            $ticket_number = sprintf("%s-%03d", $prefix, $sequence);
+            $office_name = $resOffice['office_name'] ?? 'Office';
+            $base_prefix = !empty($resOffice['prefix']) ? $resOffice['prefix'] : 'Q';
+
+            // Unified sequence stored in DB so Monitor & Calling preserve exact FCFS order (1, 2, 3, 4, 5...)
+            $sequence = (int)($resSeq['next_seq'] ?? 1);
+
+            // Independent display counter for ticket_number formatting
+            if ($visitor_type === 'EMPLOYEE') {
+                $display_num    = (int)($resSeq['next_emp_num'] ?? 1);
+                $visitor_prefix = "E-" . $base_prefix;
+            } else {
+                $display_num    = (int)($resSeq['next_reg_num'] ?? 1);
+                $visitor_prefix = $base_prefix;
+            }
+
+            $prefix        = $is_priority ? "P-" . $visitor_prefix : $visitor_prefix;
+            $ticket_number = sprintf("%s-%03d", $prefix, $display_num);
 
             // Designated window: all selected items share ONE window (single-window rule above).
             // NULL = "Any Window" -> every window of this office may call the ticket.
