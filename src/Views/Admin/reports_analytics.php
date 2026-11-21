@@ -457,12 +457,12 @@ $today_date = defined('DATE_NOW') ? DATE_NOW : date('Y-m-d');
                     <div class="row g-3 mb-4">
                         <?php
                         $kpi_cards = [
-                            ['kpiTotalTickets',     'Total Tickets',      'primary', 'bi-ticket-perforated-fill', '0'],
+                            ['kpiTotalTickets',     'Total Queue',      'primary', 'bi-ticket-perforated-fill', '0'],
                             ['kpiCompletedTickets', 'Completed',          'success', 'bi-check-circle-fill',      '0'],
                             ['kpiSkippedTickets',   'Skipped / Missed',   'danger',  'bi-x-circle-fill',          '0'],
-                            ['kpiPriorityTickets',  'Priority Tickets',   'warning', 'bi-star-fill',              '0'],
+                            ['kpiPriorityTickets',  'Priority Queue',   'warning', 'bi-star-fill',              '0'],
                             ['kpiAvgWaitTime',      'Avg. Waiting Time',  'info',    'bi-hourglass-split',        '0m'],
-                            ['kpiAvgServiceTime',   'Avg. Service Time',  'info',    'bi-clock-history',          '0m'],
+                            ['kpiAvgServiceTime',   'Avg. Processing Time',  'info',    'bi-clock-history',          '0m'],
                         ];
                         foreach ($kpi_cards as [$id, $label, $tone, $icon, $default]): ?>
                             <div class="col-6 col-lg-4 col-xl-2">
@@ -482,7 +482,7 @@ $today_date = defined('DATE_NOW') ? DATE_NOW : date('Y-m-d');
                         <div class="row g-4 mb-4">
                             <div class="col-12">
                                 <div class="card chart-card p-3 p-sm-4">
-                                    <h6 class="fw-bold text-dark mb-3"><i class="bi bi-building me-2 text-primary"></i>Ticket Volume by Office</h6>
+                                    <h6 class="fw-bold text-dark mb-3"><i class="bi bi-building me-2 text-primary"></i>Queue Volume by Office</h6>
                                     <div class="chart-container"><canvas id="officeVolumeChart"></canvas></div>
                                 </div>
                             </div>
