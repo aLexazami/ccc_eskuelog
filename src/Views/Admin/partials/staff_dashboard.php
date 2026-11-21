@@ -7,23 +7,111 @@ $g_user_role = $g_user_role ?? '';
 # Page Header Initialization
 require_once ADMIN_PAGE_HEADER_PATH;
 
-$current_user_id = (int) ($g_user_id ?? $session_class->getValue('user_id') ?? 0);
+$title_page   = "Office Staff Dashboard";
+$active_links = [
+    ['label' => $title_page, 'url' => '']
+];
+$page_header = render_page_header((string) $title_page, $active_links) ?? '';
 
 # -------------------------------------------------------------------------
-# 1. RESOLVE ASSIGNED OFFICE FOR ADMIN_STAFF
+# 1. RESOLVE LOGGED-IN STAFF NAME, ACTIVE ROLE, ASSIGNED OFFICE & WINDOWS
 # -------------------------------------------------------------------------
+$current_user_id = (int) ($g_user_id ?? 0);
+if ($current_user_id <= 0 && isset($session_class) && method_exists($session_class, 'getValue')) {
+    $current_user_id = (int) (
+        $session_class->getValue('user_id') ??
+        $session_class->getValue('id') ??
+        $session_class->getValue('sys_user_id') ??
+        0
+    );
+}
+if ($current_user_id <= 0) {
+    $current_user_id = (int) ($_SESSION['user_id'] ?? $_SESSION['id'] ?? $_SESSION['sys_user_id'] ?? 0);
+}
+
+$role_map         = SYSTEM_ACCESS[SYSTEM_ACCESS_NAME]['role'] ?? [];
+$reverse_role_map = array_map('intval', array_flip($role_map));
+
+$raw_role = (string) ($g_user_role ?? '');
+if ($raw_role === '' && isset($session_class) && method_exists($session_class, 'getValue')) {
+    $raw_role = (string) (
+        $session_class->getValue('user_role') ??
+        $session_class->getValue('system_role') ??
+        ''
+    );
+}
+if ($raw_role === '') {
+    $raw_role = (string) ($_SESSION['user_role'] ?? $_SESSION['role'] ?? '');
+}
+
+$raw_role_upper = strtoupper(trim($raw_role));
+$active_role_id = isset($role_map[$raw_role_upper])
+    ? (int) $raw_role_upper
+    : ($reverse_role_map[$raw_role_upper] ?? (int) (isset($session_class) && method_exists($session_class, 'getValue') ? ($session_class->getValue('user_role_id') ?? 0) : 0));
+
+$staff_first_name     = 'Staff';
 $assigned_office_id   = 0;
 $assigned_office_name = 'Unassigned Office';
 $assigned_office_code = '';
 $my_counters          = [];
 
 if ($db_connect && $current_user_id > 0) {
-    // Primary lookup from staff_assignments[cite: 13]
+    // Resolve Staff First Name
+    $stmtUser = $db_connect->prepare("SELECT first_name FROM users WHERE id = ? AND flag_status = 0 LIMIT 1");
+    if ($stmtUser) {
+        $stmtUser->bind_param("i", $current_user_id);
+        $stmtUser->execute();
+        if ($uRow = $stmtUser->get_result()->fetch_assoc()) {
+            $rawFirstName = trim((string) ($uRow['first_name'] ?? ''));
+            if ($rawFirstName !== '') {
+                $staff_first_name = ucwords(strtolower($rawFirstName));
+            }
+        }
+        $stmtUser->close();
+    }
+
+    // Verify active role against system_access table
+    $sysName = SYSTEM_ACCESS_NAME;
+    if ($active_role_id > 0) {
+        $stmtRole = $db_connect->prepare("
+            SELECT system_role
+            FROM system_access
+            WHERE user_id = ? AND system_type = ? AND system_role = ? AND flag_access = 0
+            LIMIT 1
+        ");
+        if ($stmtRole) {
+            $stmtRole->bind_param("isi", $current_user_id, $sysName, $active_role_id);
+            $stmtRole->execute();
+            if ($roleRow = $stmtRole->get_result()->fetch_assoc()) {
+                $active_role_id = (int) $roleRow['system_role'];
+            }
+            $stmtRole->close();
+        }
+    } else {
+        $stmtRole = $db_connect->prepare("
+            SELECT system_role
+            FROM system_access
+            WHERE user_id = ? AND system_type = ? AND flag_access = 0
+            ORDER BY system_role ASC
+            LIMIT 1
+        ");
+        if ($stmtRole) {
+            $stmtRole->bind_param("is", $current_user_id, $sysName);
+            $stmtRole->execute();
+            if ($roleRow = $stmtRole->get_result()->fetch_assoc()) {
+                $active_role_id = (int) $roleRow['system_role'];
+            }
+            $stmtRole->close();
+        }
+    }
+
+    // Primary lookup from staff_assignments
     $stmtAssign = $db_connect->prepare("
         SELECT o.office_id, o.office_name, o.office_code
         FROM staff_assignments sa
         INNER JOIN office o ON o.office_id = sa.office_id
         WHERE sa.user_id = ? AND sa.flag_status = 0 AND o.flag_status = 0
+        ORDER BY sa.id DESC
         LIMIT 1
     ");
     if ($stmtAssign) {
@@ -37,7 +125,7 @@ if ($db_connect && $current_user_id > 0) {
         $stmtAssign->close();
     }
 
-    // Fallback to employee.office_id[cite: 13]
+    // Fallback to employee.office_id
     if ($assigned_office_id === 0) {
         $stmtEmp = $db_connect->prepare("
             SELECT o.office_id, o.office_name, o.office_code
@@ -59,127 +147,52 @@ if ($db_connect && $current_user_id > 0) {
     }
 }
 
-$title_page   = "Office Staff Dashboard";
-$active_links = [
-    ['label' => $title_page, 'url' => '']
-];
-$page_header = render_page_header((string) $title_page, $active_links) ?? '';
+$resolved_role_code = $role_map[(string) $active_role_id] ?? ($raw_role_upper !== '' ? $raw_role_upper : 'ADMIN_STAFF');
+$display_role_label = (defined('ACCESS_NAME') && isset(ACCESS_NAME[$resolved_role_code]))
+    ? ACCESS_NAME[$resolved_role_code]
+    : ucwords(strtolower(str_replace('_', ' ', $resolved_role_code)));
 
 # -------------------------------------------------------------------------
-# 2. FETCH TODAY'S OFFICE QUEUE & SERVICE METRICS
+# 2. FETCH TODAY'S OFFICE KPI COUNTS & ASSIGNED SERVICE WINDOWS
 # -------------------------------------------------------------------------
-$waiting_count      = 0;
-$priority_waiting   = 0;
-$serving_count      = 0;
-$completed_count    = 0;
-$skipped_count      = 0;
-$total_today        = 0;
-$avg_service_mins   = 0;
-
-$live_queue_list    = [];
-$office_counters    = [];
-$top_services       = [];
+$total_today     = 0;
+$completed_count = 0;
+$skipped_count   = 0;
+$priority_today  = 0;
 
 if ($db_connect && $assigned_office_id > 0) {
-    // A. Queue Status Counts Today for this Office (queue_tickets.queue_date & status)[cite: 13]
+    // Initial Today's KPI Counts for Assigned Office
     $stmtMetrics = $db_connect->prepare("
         SELECT 
-            UPPER(COALESCE(q.status, 'WAITING')) AS q_status,
-            COUNT(*) AS total,
-            SUM(CASE WHEN q.is_priority = 1 AND UPPER(COALESCE(q.status, 'WAITING')) = 'WAITING' THEN 1 ELSE 0 END) AS prio_wait,
-            AVG(
-                CASE 
-                    WHEN UPPER(q.status) = 'COMPLETED' AND q.served_at IS NOT NULL AND q.completed_at IS NOT NULL 
-                    THEN TIMESTAMPDIFF(MINUTE, q.served_at, q.completed_at)
-                    ELSE NULL 
-                END
-            ) AS avg_mins
+            COUNT(*) AS total_tickets,
+            SUM(CASE WHEN UPPER(COALESCE(q.status, 'WAITING')) = 'COMPLETED' THEN 1 ELSE 0 END) AS completed_tickets,
+            SUM(CASE WHEN UPPER(COALESCE(q.status, 'WAITING')) IN ('SKIPPED', 'CANCELLED') THEN 1 ELSE 0 END) AS skipped_tickets,
+            SUM(CASE WHEN q.is_priority = 1 THEN 1 ELSE 0 END) AS priority_tickets
         FROM queue_tickets q
         WHERE q.office_id = ?
           AND q.queue_date = CURDATE()
-        GROUP BY UPPER(COALESCE(q.status, 'WAITING'))
     ");
     if ($stmtMetrics) {
         $stmtMetrics->bind_param("i", $assigned_office_id);
         $stmtMetrics->execute();
-        $resMetrics = $stmtMetrics->get_result();
-        while ($m = $resMetrics->fetch_assoc()) {
-            $st  = $m['q_status'];
-            $cnt = (int) $m['total'];
-            $total_today += $cnt;
-
-            if ($st === 'WAITING') {
-                $waiting_count    = $cnt;
-                $priority_waiting = (int) ($m['prio_wait'] ?? 0);
-            } elseif ($st === 'CALLED' || $st === 'SERVING') {
-                $serving_count += $cnt;
-            } elseif ($st === 'COMPLETED') {
-                $completed_count  = $cnt;
-                $avg_service_mins = (int) round((float) ($m['avg_mins'] ?? 0));
-            } elseif ($st === 'SKIPPED' || $st === 'CANCELLED') {
-                $skipped_count += $cnt;
-            }
+        if ($m = $stmtMetrics->get_result()->fetch_assoc()) {
+            $total_today     = (int) ($m['total_tickets'] ?? 0);
+            $completed_count = (int) ($m['completed_tickets'] ?? 0);
+            $skipped_count   = (int) ($m['skipped_tickets'] ?? 0);
+            $priority_today  = (int) ($m['priority_tickets'] ?? 0);
         }
         $stmtMetrics->close();
     }
 
-    // B. Active & Waiting Queue List (Currently Called/Serving first, then Priority, then queue_sequence)[cite: 13]
-    $stmtQueue = $db_connect->prepare("
-        SELECT 
-            q.id AS ticket_id,
-            q.ticket_number,
-            q.queue_sequence,
-            UPPER(COALESCE(q.status, 'WAITING')) AS queue_status,
-            q.is_priority,
-            l.created_at,
-            l.visitor_type,
-            l.first_name,
-            l.last_name,
-            l.priority_type,
-            tt.transaction_name,
-            c.counter_name,
-            (
-                SELECT GROUP_CONCAT(DISTINCT tsc.sub_concern_name ORDER BY lti.id ASC SEPARATOR ', ')
-                FROM logbook_transaction_items lti
-                INNER JOIN transaction_sub_concerns tsc ON tsc.id = lti.sub_concern_id
-                WHERE lti.logbook_id = l.id
-            ) AS sub_concerns
-        FROM queue_tickets q
-        INNER JOIN logbooks l ON l.id = q.logbook_id
-        LEFT JOIN transaction_types tt ON tt.id = l.transaction_type_id
-        LEFT JOIN counters c ON c.id = q.counter_id
-        WHERE q.office_id = ?
-          AND q.queue_date = CURDATE()
-          AND UPPER(COALESCE(q.status, 'WAITING')) IN ('CALLED', 'SERVING', 'WAITING')
-        ORDER BY 
-            CASE WHEN UPPER(COALESCE(q.status, 'WAITING')) IN ('CALLED', 'SERVING') THEN 0 ELSE 1 END ASC,
-            q.is_priority DESC,
-            q.queue_sequence ASC
-        LIMIT 12
-    ");
-    if ($stmtQueue) {
-        $stmtQueue->bind_param("i", $assigned_office_id);
-        $stmtQueue->execute();
-        $resQueue = $stmtQueue->get_result();
-        while ($row = $resQueue->fetch_assoc()) {
-            $live_queue_list[] = $row;
-        }
-        $stmtQueue->close();
-    }
-
-    // C. Office Service Counters & Staff Assignments (counters + staff_assignments)[cite: 13]
+    // Assigned Service Windows for Current Staff
     $stmtCounters = $db_connect->prepare("
-        SELECT 
-            c.id AS counter_id,
-            c.counter_name,
-            c.flag_status,
-            GROUP_CONCAT(DISTINCT CONCAT(u.first_name, ' ', u.last_name) ORDER BY u.last_name SEPARATOR ', ') AS staff_names,
-            MAX(CASE WHEN sa.user_id = ? THEN 1 ELSE 0 END) AS is_my_counter
-        FROM counters c
-        LEFT JOIN staff_assignments sa ON sa.counter_id = c.id AND sa.flag_status = 0
-        LEFT JOIN users u ON u.id = sa.user_id AND u.flag_status = 0
-        WHERE c.office_id = ? AND c.flag_status = 0
-        GROUP BY c.id, c.counter_name, c.flag_status
+        SELECT DISTINCT c.counter_name
+        FROM staff_assignments sa
+        INNER JOIN counters c ON c.id = sa.counter_id
+        WHERE sa.user_id = ?
+          AND sa.office_id = ?
+          AND sa.flag_status = 0
+          AND c.flag_status = 0
         ORDER BY c.counter_name ASC
     ");
     if ($stmtCounters) {
@@ -187,38 +200,15 @@ if ($db_connect && $assigned_office_id > 0) {
         $stmtCounters->execute();
         $resCounters = $stmtCounters->get_result();
         while ($c = $resCounters->fetch_assoc()) {
-            $office_counters[] = $c;
-            if ((int) $c['is_my_counter'] === 1) {
+            if (!empty($c['counter_name'])) {
                 $my_counters[] = $c['counter_name'];
             }
         }
         $stmtCounters->close();
     }
-
-    // D. Top Requested Services Today in this Office[cite: 13]
-    $stmtServices = $db_connect->prepare("
-        SELECT 
-            COALESCE(tt.transaction_name, 'General Inquiry') AS service_name,
-            COUNT(q.id) AS request_count
-        FROM queue_tickets q
-        INNER JOIN logbooks l ON l.id = q.logbook_id
-        LEFT JOIN transaction_types tt ON tt.id = l.transaction_type_id
-        WHERE q.office_id = ?
-          AND q.queue_date = CURDATE()
-        GROUP BY tt.id, tt.transaction_name
-        ORDER BY request_count DESC
-        LIMIT 5
-    ");
-    if ($stmtServices) {
-        $stmtServices->bind_param("i", $assigned_office_id);
-        $stmtServices->execute();
-        $resServices = $stmtServices->get_result();
-        while ($s = $resServices->fetch_assoc()) {
-            $top_services[] = $s;
-        }
-        $stmtServices->close();
-    }
 }
+
+$assigned_windows_display = !empty($my_counters) ? implode(', ', $my_counters) : 'Unassigned Window';
 ?>
 <!DOCTYPE html>
 <html lang="<?= LANG; ?>">
@@ -237,140 +227,190 @@ if ($db_connect && $assigned_office_id > 0) {
             padding-bottom: 2rem;
             color: var(--sd-ink);
         }
-        .staff-dashboard .office-banner {
-            position: relative; overflow: hidden;
-            border: 1px solid #dfe8f5; border-radius: 1.15rem;
-            background: radial-gradient(circle at 92% 5%, rgba(93,151,255,.19), transparent 28%),
-                        linear-gradient(120deg,#fff 0%,#f5f8ff 68%,#edf4ff 100%);
-            box-shadow: 0 8px 24px rgba(28,52,91,.055);
-        }
-        .staff-dashboard .office-banner::after {
-            content: ""; position: absolute; width: 190px; height: 190px;
-            right: -75px; bottom: -125px; border: 24px solid rgba(36,87,197,.055);
-            border-radius: 50%; pointer-events: none;
-        }
-        .staff-dashboard .office-banner h3 {
-            color: var(--sd-ink) !important; letter-spacing: -.035em;
-            font-size: clamp(1.35rem,2vw,1.8rem);
-        }
-        .staff-dashboard .office-banner p { max-width: 680px; line-height: 1.6; }
-        .staff-dashboard .office-heading h3 {
-            color: #142b50 !important;
-            font-size: clamp(1.55rem, 2.5vw, 2.15rem);
-            line-height: 1.15;
-            letter-spacing: -.035em;
-        }
-        .staff-dashboard .office-code-chip {
-            display: inline-flex; align-items: center;
-            padding: .35rem .7rem; border-radius: 999px;
-            background: #e8efff; border: 1px solid #cbd9fb;
-            color: #214da8; font-size: .76rem; font-weight: 800;
-            letter-spacing: .045em;
-        }
-        .staff-dashboard .assigned-windows-panel {
-            display: inline-block; min-width: min(100%, 360px);
-            margin-top: .15rem; padding: .75rem .9rem;
-            border: 1px solid #c9d9f6; border-left: 4px solid #2457c5;
-            border-radius: .8rem; background: #edf3ff;
-        }
-        .staff-dashboard .assigned-windows-label {
-            color: #234b91; font-size: .72rem; font-weight: 850;
-            letter-spacing: .075em;
-        }
-        .staff-dashboard .assigned-window-chip {
-            display: inline-flex; align-items: center;
-            padding: .4rem .7rem; border-radius: .55rem;
-            background: #fff; border: 1px solid #b9cdf4;
-            color: #173e82; font-size: .88rem; font-weight: 750;
-            box-shadow: 0 1px 2px rgba(23, 62, 130, .06);
-        }
-        .staff-dashboard .assigned-window-empty {
-            color: #684b12; font-size: .84rem; font-weight: 650;
-        }
-        .staff-dashboard .office-banner .btn {
-            border-radius: .7rem !important; font-size: .86rem;
-            padding: .7rem 1rem !important; position: relative; z-index: 1;
-        }
         .staff-dashboard .card {
-            border: 1px solid var(--sd-line) !important; border-radius: 1rem !important;
+            border: 1px solid var(--sd-line) !important;
+            border-radius: 1rem !important;
             box-shadow: 0 4px 16px rgba(27,46,77,.045) !important;
             transition: box-shadow .18s ease, transform .18s ease;
         }
         .staff-dashboard .card-header {
-            background: #fff; border-color: var(--sd-line) !important;
+            background: #fff;
+            border-color: var(--sd-line) !important;
             border-radius: 1rem 1rem 0 0 !important;
         }
-        .staff-dashboard .stat-icon-wrapper {
-            width: 66px; height: 66px; border-radius: 17px;
-            display: inline-flex; align-items: center; justify-content: center;
-            font-size: 1.9rem; flex: 0 0 66px;
+
+        /* Daily KPI Metric Cards */
+        .staff-dashboard .kpi-card {
+            background: #ffffff;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 0.95rem;
+            padding: 1.15rem;
+            box-shadow: 0 4px 14px rgba(27, 46, 77, 0.035);
+            transition: all 0.2s ease;
+            height: 100%;
         }
-        .staff-dashboard .dashboard-kpis .card > .d-flex {
-            justify-content: flex-start !important;
-            align-items: center !important;
+        .staff-dashboard .kpi-card:hover {
+            border-color: #cbd5e1;
+            box-shadow: 0 6px 16px rgba(27, 46, 77, 0.06);
+        }
+        .staff-dashboard .kpi-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.35rem;
+        }
+        .staff-dashboard .kpi-icon.primary { background: #eff6ff; color: #2563eb; }
+        .staff-dashboard .kpi-icon.success { background: #f0fdf4; color: #16a34a; }
+        .staff-dashboard .kpi-icon.warning { background: #fefce8; color: #ca8a04; }
+        .staff-dashboard .kpi-icon.danger  { background: #fef2f2; color: #dc2626; }
+
+        /* Quick-Navigation Wrapper Background Design */
+        .staff-dashboard .quick-nav-wrapper {
+            position: relative;
+            overflow: hidden;
+            background: radial-gradient(circle at 95% 15%, rgba(36, 87, 197, 0.12), transparent 40%),
+                        linear-gradient(120deg, #ffffff 0%, #f4f8ff 65%, #eaf1ff 100%);
+            border: 1px solid #dbe6f8;
+            border-radius: 1.15rem;
+            padding: 1.35rem;
+            box-shadow: 0 4px 16px rgba(27, 46, 77, 0.045);
+        }
+        .staff-dashboard .quick-nav-wrapper::after {
+            content: "";
+            position: absolute;
+            width: 140px;
+            height: 140px;
+            right: -45px;
+            bottom: -75px;
+            border: 18px solid rgba(36, 87, 197, 0.06);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        /* Spacious Evenly Distributed Shortcut Cards (4x2 Grid) */
+        .staff-dashboard .square-shortcut-card {
+            width: 100%;
+            height: 100%;
+            min-height: 92px;
+            background: #ffffff;
+            border: 1px solid var(--sd-line);
+            border-radius: 0.95rem;
+            box-shadow: 0 3px 12px rgba(27, 46, 77, 0.04);
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: flex-start;
+            text-align: left;
+            padding: 1.15rem 1.25rem;
             gap: 1rem;
+            transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease;
         }
-        .staff-dashboard .dashboard-kpis .kpi-content {
-            min-width: 0; flex: 1 1 auto;
+        .staff-dashboard .square-shortcut-card:hover {
+            border-color: #b8cafa;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(36, 87, 197, 0.1);
         }
-        .staff-dashboard .dashboard-kpis .card {
-            min-height: 128px; padding: 1.15rem !important;
-            position: relative; overflow: hidden;
+        .staff-dashboard .square-shortcut-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
         }
-        .staff-dashboard .dashboard-kpis .card::before {
-            content: ""; position: absolute; inset: 0 auto 0 0;
-            width: 4px; background: #d5dfef;
+        .staff-dashboard .square-shortcut-title {
+            color: var(--sd-ink);
+            font-size: 0.94rem;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            line-height: 1.25;
+            margin: 0;
         }
-        .staff-dashboard .dashboard-kpis .col-12:nth-child(1) .card::before { background: #e8ae35; }
-        .staff-dashboard .dashboard-kpis .col-12:nth-child(2) .card::before { background: #3478db; }
-        .staff-dashboard .dashboard-kpis .col-12:nth-child(3) .card::before { background: #25a477; }
-        .staff-dashboard .dashboard-kpis .col-12:nth-child(4) .card::before { background: #8492a6; }
-        .staff-dashboard .dashboard-kpis h2 {
-            font-size: clamp(1.65rem,2.4vw,2rem); letter-spacing: -.04em; line-height: 1.1;
+        .staff-dashboard .square-shortcut-sub {
+            color: var(--sd-muted);
+            font-size: 0.78rem;
+            line-height: 1.3;
+            margin: 0;
         }
-        .staff-dashboard .staff-shortcut-card {
-            border: 1px solid var(--sd-line); border-radius: .85rem;
-            background: #fff; min-height: 88px;
-            transition: border-color .18s ease,box-shadow .18s ease,transform .18s ease;
+
+        /* Chart Containers */
+        .staff-dashboard .chart-container {
+            position: relative;
+            min-height: 300px;
+            width: 100%;
         }
-        .staff-dashboard .staff-shortcut-card:hover {
-            border-color: #b8cafa; transform: translateY(-2px);
-            box-shadow: 0 9px 20px rgba(36,87,197,.09);
+        .staff-dashboard .chart-empty-state {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            background: #f8fafc;
+            border: 1px dashed #cbd5e1;
+            border-radius: 0.75rem;
+            color: #64748b;
+            padding: 1.5rem;
+            z-index: 2;
         }
-        .staff-dashboard .staff-shortcut-card h6 { font-size: .9rem; letter-spacing: -.01em; }
-        .staff-dashboard .table { --bs-table-hover-bg: #f7f9fd; color: #34445d; }
-        .staff-dashboard .table thead th {
-            background: #f7f9fc; color: #718096; border-bottom: 1px solid var(--sd-line);
-            font-size: .7rem; font-weight: 700; letter-spacing: .055em;
-            text-transform: uppercase; white-space: nowrap;
-            padding-top: .9rem; padding-bottom: .9rem;
+        .staff-dashboard .chart-empty-state i {
+            font-size: 2rem;
+            color: #94a3b8;
+            margin-bottom: 0.5rem;
         }
-        .staff-dashboard .table tbody td {
-            border-color: #eef1f6; padding-top: .9rem; padding-bottom: .9rem;
+        .staff-dashboard .chart-empty-state .empty-title {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #475569;
         }
-        .staff-dashboard .table tbody tr:last-child td { border-bottom: 0; }
-        .staff-dashboard .table .badge,
-        .staff-dashboard .office-counters .badge {
-            border-radius: 999px; padding: .38rem .62rem;
-            font-weight: 650; letter-spacing: .01em;
+        .staff-dashboard .chart-empty-state .empty-sub {
+            font-size: 0.78rem;
+            color: #94a3b8;
+            margin-top: 0.15rem;
         }
-        .staff-dashboard .office-counter-item {
-            border-radius: .8rem !important; border-color: var(--sd-line) !important;
-        }
+
         .staff-dashboard .section-heading {
-            color: var(--sd-ink); font-size: .96rem;
-            font-weight: 750; letter-spacing: -.015em;
+            color: var(--sd-ink);
+            font-size: .96rem;
+            font-weight: 750;
+            letter-spacing: -.015em;
         }
-        .staff-dashboard .text-muted { color: var(--sd-muted) !important; }
+        .staff-dashboard .text-muted {
+            color: var(--sd-muted) !important;
+        }
         @media (max-width: 767.98px) {
-            .staff-dashboard .office-banner { padding: 1.15rem !important; }
-            .staff-dashboard .dashboard-kpis .card { min-height: 112px; }
-            .staff-dashboard .table { min-width: 720px; }
-            .staff-dashboard .card-header { padding-left: 1rem !important; padding-right: 1rem !important; }
+            .staff-dashboard .square-shortcut-card {
+                flex-direction: column;
+                text-align: center;
+                justify-content: center;
+                padding: 1rem 0.75rem;
+                gap: 0.65rem;
+            }
+            .staff-dashboard .square-shortcut-icon {
+                width: 44px;
+                height: 44px;
+                font-size: 1.35rem;
+            }
+            .staff-dashboard .square-shortcut-title {
+                font-size: 0.85rem;
+            }
+            .staff-dashboard .card-header {
+                padding-left: 1rem !important;
+                padding-right: 1rem !important;
+            }
         }
         @media (prefers-reduced-motion: reduce) {
             .staff-dashboard .card,
-            .staff-dashboard .staff-shortcut-card { transition: none; }
+            .staff-dashboard .kpi-card,
+            .staff-dashboard .square-shortcut-card {
+                transition: none;
+            }
         }
     </style>
 </head>
@@ -385,45 +425,23 @@ if ($db_connect && $assigned_office_id > 0) {
             <div class="container">
                 <div class="page-inner px-2 px-sm-3 staff-dashboard">
 
-                    <!-- OFFICE WORKSTATION HEADER BANNER -->
-                    <div class="office-banner p-3 p-md-4 mb-4 shadow-sm">
-                        <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
-                            <div class="office-heading">
-                                <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
-                                    <h3 class="fw-bold mb-0"><?= htmlspecialchars($assigned_office_name, ENT_QUOTES, 'UTF-8'); ?></h3>
-                                    <?php if ($assigned_office_code !== ''): ?>
-                                        <span class="office-code-chip"><?= htmlspecialchars($assigned_office_code, ENT_QUOTES, 'UTF-8'); ?></span>
-                                    <?php endif; ?>
-                                </div>
-
-                                <div class="assigned-windows-panel">
-                                    <span class="assigned-windows-label">
-                                        <i class="bi bi-window-dock me-2"></i>YOUR ASSIGNED WINDOW<?= count($my_counters) === 1 ? '' : 'S'; ?>
-                                    </span>
-                                    <div class="d-flex flex-wrap gap-2 mt-2">
-                                        <?php if (!empty($my_counters)): ?>
-                                            <?php foreach ($my_counters as $counterName): ?>
-                                                <span class="assigned-window-chip">
-                                                    <i class="bi bi-check-circle-fill me-1"></i>
-                                                    <?= htmlspecialchars($counterName, ENT_QUOTES, 'UTF-8'); ?>
-                                                </span>
-                                            <?php endforeach; ?>
-                                        <?php else: ?>
-                                            <span class="assigned-window-empty">No service window assigned to your account</span>
-                                        <?php endif; ?>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="d-flex flex-wrap gap-2">
-                                <a href="<?= BASE_URL; ?>admin/live-queue" target="_blank" class="btn btn-outline-primary rounded-3 fw-semibold px-3 py-2">
-                                    <i class="bi bi-tv-fill me-1"></i> Live Queue Monitor
-                                </a>
-                                <a href="<?= BASE_URL; ?>admin/queue-controller" target="_blank" class="btn btn-primary rounded-3 fw-bold px-3 py-2 shadow-sm">
-                                    <i class="bi bi-person-workspace me-1"></i> Open Service Counter
-                                </a>
-                            </div>
-                        </div>
+                    <!-- STAFF GREETING, ROLE, ASSIGNED OFFICE & WINDOW -->
+                    <div class="border-start border-4 border-primary ps-3 py-1 mb-4">
+                        <h1 class="fw-bold mb-1" style="color: #1e293b; font-size: 2.15rem; letter-spacing: -0.02em;">
+                            Welcome, <span class="text-primary"><?= htmlspecialchars($staff_first_name, ENT_QUOTES, 'UTF-8'); ?></span>!
+                        </h1>
+                        <p class="text-muted mb-1" style="font-size: 0.95rem;">
+                            <i class="bi bi-shield-check text-primary me-1"></i>
+                            You are logged in as <span class="fw-semibold text-dark"><?= htmlspecialchars($display_role_label, ENT_QUOTES, 'UTF-8'); ?></span>
+                        </p>
+                        <p class="text-muted mb-1" style="font-size: 0.95rem;">
+                            <i class="bi bi-building text-primary me-1"></i>
+                            You are assigned in <span class="fw-semibold text-dark"><?= htmlspecialchars($assigned_office_name, ENT_QUOTES, 'UTF-8'); ?></span>
+                        </p>
+                        <p class="text-muted mb-0" style="font-size: 0.95rem;">
+                            <i class="bi bi-window-dock text-primary me-1"></i>
+                            You are assigned in <span class="fw-semibold text-dark"><?= htmlspecialchars($assigned_windows_display, ENT_QUOTES, 'UTF-8'); ?></span>
+                        </p>
                     </div>
 
                     <?php if ($assigned_office_id === 0): ?>
@@ -436,293 +454,181 @@ if ($db_connect && $assigned_office_id > 0) {
                         </div>
                     <?php endif; ?>
 
-                    <!-- 1. TODAY'S OFFICE QUEUE KPI CARDS -->
-                    <div class="row g-3 mb-4 dashboard-kpis">
-                        <!-- Waiting in Queue -->
-                        <div class="col-12 col-sm-6 col-xl-3">
-                            <div class="card border-0 shadow-sm rounded-4 h-100 p-3">
-                                <div class="d-flex align-items-center gap-3">
-                                    <div class="stat-icon-wrapper bg-warning-subtle text-warning">
-                                        <i class="bi bi-hourglass-split"></i>
-                                    </div>
-                                    <div class="kpi-content">
-                                        <span class="text-muted small fw-semibold d-block">Waiting in Queue</span>
-                                        <h2 class="fw-bold text-warning mb-0 mt-1"><?= number_format($waiting_count); ?></h2>
-                                        <span class="text-muted" style="font-size: 0.75rem;">
-                                            <?= number_format($priority_waiting); ?> priority waiting
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Currently Serving -->
-                        <div class="col-12 col-sm-6 col-xl-3">
-                            <div class="card border-0 shadow-sm rounded-4 h-100 p-3">
-                                <div class="d-flex align-items-center gap-3">
-                                    <div class="stat-icon-wrapper bg-primary-subtle text-primary">
-                                        <i class="bi bi-megaphone-fill"></i>
-                                    </div>
-                                    <div class="kpi-content">
-                                        <span class="text-muted small fw-semibold d-block">Currently Serving</span>
-                                        <h2 class="fw-bold text-primary mb-0 mt-1"><?= number_format($serving_count); ?></h2>
-                                        <span class="text-muted" style="font-size: 0.75rem;">
-                                            Across <?= count($office_counters); ?> active counter(s)
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Completed Today -->
-                        <div class="col-12 col-sm-6 col-xl-3">
-                            <div class="card border-0 shadow-sm rounded-4 h-100 p-3">
-                                <div class="d-flex align-items-center gap-3">
-                                    <div class="stat-icon-wrapper bg-success-subtle text-success">
-                                        <i class="bi bi-check-circle-fill"></i>
-                                    </div>
-                                    <div class="kpi-content">
-                                        <span class="text-muted small fw-semibold d-block">Completed Today</span>
-                                        <h2 class="fw-bold text-success mb-0 mt-1"><?= number_format($completed_count); ?></h2>
-                                        <span class="text-muted" style="font-size: 0.75rem;">
-                                            <?= $avg_service_mins > 0 ? "Avg. {$avg_service_mins} min/client" : "Out of {$total_today} total tickets"; ?>
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Skipped / Cancelled -->
-                        <div class="col-12 col-sm-6 col-xl-3">
-                            <div class="card border-0 shadow-sm rounded-4 h-100 p-3">
-                                <div class="d-flex align-items-center gap-3">
-                                    <div class="stat-icon-wrapper bg-secondary-subtle text-secondary">
-                                        <i class="bi bi-skip-forward-circle-fill"></i>
-                                    </div>
-                                    <div class="kpi-content">
-                                        <span class="text-muted small fw-semibold d-block">Skipped / Cancelled</span>
-                                        <h2 class="fw-bold text-secondary mb-0 mt-1"><?= number_format($skipped_count); ?></h2>
-                                        <span class="text-muted" style="font-size: 0.75rem;">
-                                            Total tickets today: <?= number_format($total_today); ?>
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 2. WORKSTATION QUICK ACCESS -->
+                    <!-- DAILY OFFICE KPI CARDS -->
                     <div class="row g-3 mb-4">
-                        <div class="col-12">
-                            <div class="card border-0 shadow-sm rounded-4 p-3 p-md-4">
-                                <h6 class="fw-bold text-dark mb-3">
-                                    <i class="bi bi-grid-fill text-primary me-2"></i>Staff Workstation Quick Access
-                                </h6>
-                                <div class="row g-3">
-                                    <div class="col-12 col-sm-6 col-xl-3">
-                                        <a href="<?= BASE_URL; ?>admin/queue-controller" target="_blank" class="text-decoration-none">
-                                            <div class="staff-shortcut-card p-3 d-flex align-items-center gap-3">
-                                                <div class="stat-icon-wrapper bg-primary text-white">
-                                                    <i class="bi bi-person-workspace"></i>
-                                                </div>
-                                                <div>
-                                                    <h6 class="fw-bold text-dark mb-0">Service Counter</h6>
-                                                    <span class="text-muted small">Call, serve & complete tickets</span>
-                                                </div>
-                                            </div>
-                                        </a>
+                        <?php
+                        $kpi_cards = [
+                            ['kpiTotalQueue',    'Total Queue',      'primary', 'bi-ticket-perforated-fill', number_format($total_today)],
+                            ['kpiCompleted',     'Completed',        'success', 'bi-check-circle-fill',      number_format($completed_count)],
+                            ['kpiSkipped',       'Skipped / Missed', 'danger',  'bi-x-circle-fill',          number_format($skipped_count)],
+                            ['kpiPriorityQueue', 'Priority Queue',   'warning', 'bi-star-fill',              number_format($priority_today)],
+                        ];
+                        foreach ($kpi_cards as [$id, $label, $tone, $icon, $default]): ?>
+                            <div class="col-6 col-xl-3">
+                                <div class="kpi-card d-flex align-items-center">
+                                    <div class="kpi-icon <?= $tone; ?> flex-shrink-0 me-3">
+                                        <i class="bi <?= $icon; ?>"></i>
                                     </div>
-
-                                    <div class="col-12 col-sm-6 col-xl-3">
-                                        <a href="<?= BASE_URL; ?>admin/transaction-records" class="text-decoration-none">
-                                            <div class="staff-shortcut-card p-3 d-flex align-items-center gap-3">
-                                                <div class="stat-icon-wrapper bg-success text-white">
-                                                    <i class="bi bi-folder-check"></i>
-                                                </div>
-                                                <div>
-                                                    <h6 class="fw-bold text-dark mb-0">Transaction Records</h6>
-                                                    <span class="text-muted small">View office service logs</span>
-                                                </div>
-                                            </div>
-                                        </a>
-                                    </div>
-
-                                    <div class="col-12 col-sm-6 col-xl-3">
-                                        <a href="<?= BASE_URL; ?>admin/office-counters" class="text-decoration-none">
-                                            <div class="staff-shortcut-card p-3 d-flex align-items-center gap-3">
-                                                <div class="stat-icon-wrapper bg-info text-white">
-                                                    <i class="bi bi-building-gear"></i>
-                                                </div>
-                                                <div>
-                                                    <h6 class="fw-bold text-dark mb-0">Office Counters</h6>
-                                                    <span class="text-muted small">Manage windows & staff</span>
-                                                </div>
-                                            </div>
-                                        </a>
-                                    </div>
-
-                                    <div class="col-12 col-sm-6 col-xl-3">
-                                        <a href="<?= BASE_URL; ?>admin/reports-analytics" class="text-decoration-none">
-                                            <div class="staff-shortcut-card p-3 d-flex align-items-center gap-3">
-                                                <div class="stat-icon-wrapper bg-dark text-white">
-                                                    <i class="bi bi-bar-chart-line-fill"></i>
-                                                </div>
-                                                <div>
-                                                    <h6 class="fw-bold text-dark mb-0">Reports & Analytics</h6>
-                                                    <span class="text-muted small">Office performance insights</span>
-                                                </div>
-                                            </div>
-                                        </a>
+                                    <div class="min-w-0">
+                                        <span class="fw-semibold text-muted small d-block mb-1"><?= $label; ?></span>
+                                        <h4 class="fw-bold text-dark mb-0 font-monospace" id="<?= $id; ?>"><?= $default; ?></h4>
                                     </div>
                                 </div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+
+                    <!-- 8 QUICK-NAVIGATION CARDS (Even 4x2 spacious grid) -->
+                    <div class="quick-nav-wrapper mb-4">
+                        <div class="row row-cols-2 row-cols-md-4 g-3 position-relative" style="z-index: 1;">
+                            <div class="col">
+                                <a href="<?= BASE_URL; ?>admin/queue-controller" target="_blank" class="text-decoration-none d-block h-100">
+                                    <div class="square-shortcut-card">
+                                        <div class="square-shortcut-icon bg-primary-subtle text-primary">
+                                            <i class="bi bi-person-workspace"></i>
+                                        </div>
+                                        <div class="min-w-0">
+                                            <h5 class="square-shortcut-title">Service Counter</h5>
+                                            <p class="square-shortcut-sub mt-1">Call &amp; serve tickets</p>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+
+                            <div class="col">
+                                <a href="<?= BASE_URL; ?>admin/live-queue" target="_blank" class="text-decoration-none d-block h-100">
+                                    <div class="square-shortcut-card">
+                                        <div class="square-shortcut-icon bg-info-subtle text-info">
+                                            <i class="bi bi-tv-fill"></i>
+                                        </div>
+                                        <div class="min-w-0">
+                                            <h5 class="square-shortcut-title">Live Queue Monitor</h5>
+                                            <p class="square-shortcut-sub mt-1">Display queue screen</p>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+
+                            <div class="col">
+                                <a href="<?= BASE_URL; ?>admin/transaction-records" class="text-decoration-none d-block h-100">
+                                    <div class="square-shortcut-card">
+                                        <div class="square-shortcut-icon bg-success-subtle text-success">
+                                            <i class="bi bi-folder-check"></i>
+                                        </div>
+                                        <div class="min-w-0">
+                                            <h5 class="square-shortcut-title">Transaction Records</h5>
+                                            <p class="square-shortcut-sub mt-1">Office service logs</p>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+
+                            <div class="col">
+                                <a href="<?= BASE_URL; ?>admin/office-counters" class="text-decoration-none d-block h-100">
+                                    <div class="square-shortcut-card">
+                                        <div class="square-shortcut-icon bg-primary-subtle text-primary">
+                                            <i class="bi bi-building-gear"></i>
+                                        </div>
+                                        <div class="min-w-0">
+                                            <h5 class="square-shortcut-title">Office Counters</h5>
+                                            <p class="square-shortcut-sub mt-1">Windows &amp; assignments</p>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+
+                            <div class="col">
+                                <a href="<?= BASE_URL; ?>admin/transaction-types" class="text-decoration-none d-block h-100">
+                                    <div class="square-shortcut-card">
+                                        <div class="square-shortcut-icon bg-success-subtle text-success">
+                                            <i class="bi bi-card-checklist"></i>
+                                        </div>
+                                        <div class="min-w-0">
+                                            <h5 class="square-shortcut-title">Services &amp; Sub-Concerns</h5>
+                                            <p class="square-shortcut-sub mt-1">Manage office services</p>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+
+                            <div class="col">
+                                <a href="<?= BASE_URL; ?>admin/reports-analytics" class="text-decoration-none d-block h-100">
+                                    <div class="square-shortcut-card">
+                                        <div class="square-shortcut-icon bg-warning-subtle text-warning">
+                                            <i class="bi bi-bar-chart-line-fill"></i>
+                                        </div>
+                                        <div class="min-w-0">
+                                            <h5 class="square-shortcut-title">Reports &amp; Analytics</h5>
+                                            <p class="square-shortcut-sub mt-1">Office queue insights</p>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+
+                            <div class="col">
+                                <a href="<?= BASE_URL; ?>admin/activity-log" class="text-decoration-none d-block h-100">
+                                    <div class="square-shortcut-card">
+                                        <div class="square-shortcut-icon bg-danger-subtle text-danger">
+                                            <i class="bi bi-clock-history"></i>
+                                        </div>
+                                        <div class="min-w-0">
+                                            <h5 class="square-shortcut-title">Activity Log</h5>
+                                            <p class="square-shortcut-sub mt-1">System audit trail</p>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+
+                            <div class="col">
+                                <a href="<?= BASE_URL; ?>admin/user-log" class="text-decoration-none d-block h-100">
+                                    <div class="square-shortcut-card">
+                                        <div class="square-shortcut-icon bg-secondary-subtle text-secondary">
+                                            <i class="bi bi-person-lines-fill"></i>
+                                        </div>
+                                        <div class="min-w-0">
+                                            <h5 class="square-shortcut-title">User Log</h5>
+                                            <p class="square-shortcut-sub mt-1">Session activity</p>
+                                        </div>
+                                    </div>
+                                </a>
                             </div>
                         </div>
                     </div>
 
-                    <!-- 3. LIVE OFFICE QUEUE & COUNTER STATUS -->
-                    <div class="row g-3">
-                        <!-- Live Queue Table -->
+                    <!-- REPORTS & ANALYTICS SUMMARY (2 COLUMNS: QUEUE VOLUME & VISITOR DISTRIBUTION) -->
+                    <div class="row g-4">
+                        <!-- Left Column: Queue Volume (Office-Scoped) -->
                         <div class="col-12 col-lg-8">
                             <div class="card border-0 shadow-sm rounded-4 h-100">
                                 <div class="card-header bg-white border-bottom py-3 px-4 d-flex flex-wrap align-items-center justify-content-between gap-2">
                                     <h6 class="section-heading mb-0">
-                                        <i class="bi bi-list-ol me-2 text-primary"></i>Active & Waiting Queue Today
+                                        <i class="bi bi-graph-up-arrow me-2 text-primary"></i>Queue Volume
                                     </h6>
-                                    <a href="<?= BASE_URL; ?>admin/transaction-records" class="btn btn-sm btn-outline-secondary">
-                                        View All Records
+                                    <a href="<?= BASE_URL; ?>admin/reports-analytics" class="btn btn-sm btn-outline-secondary">
+                                        Full Analytics
                                     </a>
                                 </div>
-                                <div class="card-body p-0">
-                                    <div class="table-responsive">
-                                        <table class="table table-hover align-middle mb-0" style="font-size: 0.875rem;">
-                                            <thead class="table-light">
-                                                <tr>
-                                                    <th class="ps-4">Ticket / Client</th>
-                                                    <th>Service Requested</th>
-                                                    <th class="text-center">Counter</th>
-                                                    <th class="text-center">Queued At</th>
-                                                    <th class="pe-4 text-end">Status</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <?php if (!empty($live_queue_list)): ?>
-                                                    <?php foreach ($live_queue_list as $q): ?>
-                                                        <?php
-                                                            $vType      = strtoupper($q['visitor_type'] ?? 'GUEST');
-                                                            $qStatus    = strtoupper($q['queue_status'] ?? 'WAITING');
-                                                            $isServing  = in_array($qStatus, ['CALLED', 'SERVING'], true);
-                                                            $badgeClass = $isServing ? 'bg-primary' : 'bg-warning text-dark';
-                                                            $prioLabel  = !empty($q['priority_type']) ? strtoupper($q['priority_type']) : 'PRIORITY';
-                                                        ?>
-                                                        <tr>
-                                                            <td class="ps-4">
-                                                                <div class="fw-bold text-dark">
-                                                                    <?= htmlspecialchars($q['ticket_number'] ?? '---'); ?>
-                                                                    <?php if (!empty($q['is_priority'])): ?>
-                                                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle ms-1" style="font-size: 0.68rem;">
-                                                                            <?= htmlspecialchars($prioLabel); ?>
-                                                                        </span>
-                                                                    <?php endif; ?>
-                                                                </div>
-                                                                <div class="text-muted small">
-                                                                    <?= htmlspecialchars(trim(($q['first_name'] ?? '') . ' ' . ($q['last_name'] ?? ''))); ?>
-                                                                    <span class="text-secondary">&bull; <?= htmlspecialchars($vType); ?></span>
-                                                                </div>
-                                                            </td>
-                                                            <td>
-                                                                <div class="fw-semibold text-dark"><?= htmlspecialchars($q['transaction_name'] ?? 'General Service'); ?></div>
-                                                                <?php if (!empty($q['sub_concerns'])): ?>
-                                                                    <div class="text-muted small"><?= htmlspecialchars($q['sub_concerns']); ?></div>
-                                                                <?php endif; ?>
-                                                            </td>
-                                                            <td class="text-center">
-                                                                <?php if (!empty($q['counter_name'])): ?>
-                                                                    <span class="badge bg-light text-dark border"><?= htmlspecialchars($q['counter_name']); ?></span>
-                                                                <?php else: ?>
-                                                                    <span class="text-muted small">—</span>
-                                                                <?php endif; ?>
-                                                            </td>
-                                                            <td class="text-center text-muted small">
-                                                                <?= !empty($q['created_at']) ? date('h:i A', strtotime($q['created_at'])) : '—'; ?>
-                                                            </td>
-                                                            <td class="pe-4 text-end">
-                                                                <span class="badge <?= $badgeClass; ?> fw-semibold"><?= htmlspecialchars($qStatus); ?></span>
-                                                            </td>
-                                                        </tr>
-                                                    <?php endforeach; ?>
-                                                <?php else: ?>
-                                                    <tr>
-                                                        <td colspan="5" class="text-center py-5 text-muted">
-                                                            <i class="bi bi-check2-all fs-2 d-block mb-2 opacity-50"></i>
-                                                            <div class="fw-semibold">Queue is currently clear</div>
-                                                            <div class="small">No waiting or active tickets in your office right now.</div>
-                                                        </td>
-                                                    </tr>
-                                                <?php endif; ?>
-                                            </tbody>
-                                        </table>
+                                <div class="card-body p-3 p-sm-4">
+                                    <div class="chart-container" id="volumeChartContainer">
+                                        <canvas id="volumeTrendChart"></canvas>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Right Column: Office Windows & Top Services -->
-                        <div class="col-12 col-lg-4 d-flex flex-column gap-3">
-                            <!-- Office Service Counters -->
-                            <div class="card border-0 shadow-sm rounded-4">
+                        <!-- Right Column: Visitor Distribution (Office-Scoped) -->
+                        <div class="col-12 col-lg-4">
+                            <div class="card border-0 shadow-sm rounded-4 h-100">
                                 <div class="card-header bg-white border-bottom py-3 px-4 d-flex align-items-center justify-content-between">
                                     <h6 class="section-heading mb-0">
-                                        <i class="bi bi-window-stack me-2 text-primary"></i>Office Windows
+                                        <i class="bi bi-pie-chart-fill me-2 text-primary"></i>Visitor Distribution
                                     </h6>
-                                    <a href="<?= BASE_URL; ?>admin/office-counters" class="small text-decoration-none">Manage</a>
+                                    <span class="badge bg-light text-muted border small">Today</span>
                                 </div>
-                                <div class="card-body p-3">
-                                    <?php if (!empty($office_counters)): ?>
-                                        <div class="d-flex flex-column gap-2">
-                                            <?php foreach ($office_counters as $cnt): ?>
-                                                <div class="office-counter-item p-3 rounded-3 border <?= (int)$cnt['is_my_counter'] === 1 ? 'bg-primary-subtle border-primary-subtle' : 'bg-light'; ?>">
-                                                    <div class="d-flex align-items-center justify-content-between mb-1">
-                                                        <span class="fw-bold text-dark"><?= htmlspecialchars($cnt['counter_name']); ?></span>
-                                                        <?php if ((int)$cnt['is_my_counter'] === 1): ?>
-                                                            <span class="badge bg-primary">Your Window</span>
-                                                        <?php else: ?>
-                                                            <span class="badge bg-success-subtle text-success border border-success-subtle">Active</span>
-                                                        <?php endif; ?>
-                                                    </div>
-                                                    <div class="text-muted small">
-                                                        <i class="bi bi-person me-1"></i>
-                                                        <?= htmlspecialchars($cnt['staff_names'] ?: 'Unassigned'); ?>
-                                                    </div>
-                                                </div>
-                                            <?php endforeach; ?>
-                                        </div>
-                                    <?php else: ?>
-                                        <div class="text-center py-3 text-muted small">No active service counters configured for this office.</div>
-                                    <?php endif; ?>
-                                </div>
-                            </div>
-
-                            <!-- Top Requested Services Today -->
-                            <div class="card border-0 shadow-sm rounded-4 flex-grow-1">
-                                <div class="card-header bg-white border-bottom py-3 px-4 d-flex align-items-center justify-content-between">
-                                    <h6 class="section-heading mb-0">
-                                        <i class="bi bi-card-checklist me-2 text-primary"></i>Top Services Today
-                                    </h6>
-                                    <a href="<?= BASE_URL; ?>admin/transaction-types" class="small text-decoration-none">Services</a>
-                                </div>
-                                <div class="card-body p-3">
-                                    <?php if (!empty($top_services)): ?>
-                                        <div class="d-flex flex-column gap-2">
-                                            <?php foreach ($top_services as $srv): ?>
-                                                <div class="d-flex align-items-center justify-content-between p-2 px-3 bg-light rounded-3 border">
-                                                    <span class="fw-semibold text-dark small text-truncate me-2"><?= htmlspecialchars($srv['service_name']); ?></span>
-                                                    <span class="badge bg-primary rounded-pill"><?= number_format($srv['request_count']); ?></span>
-                                                </div>
-                                            <?php endforeach; ?>
-                                        </div>
-                                    <?php else: ?>
-                                        <div class="text-center py-3 text-muted small">No service requests recorded today.</div>
-                                    <?php endif; ?>
+                                <div class="card-body p-3 p-sm-4">
+                                    <div class="chart-container" id="visitorChartContainer">
+                                        <canvas id="visitorTypeChart"></canvas>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -736,6 +642,256 @@ if ($db_connect && $assigned_office_id > 0) {
     </div>
 
     <?php include_once ADMIN_SCRIPT_PATH; ?>
+
+    <script>
+        (function() {
+            const HANDLER_URL        = '<?= BASE_URL; ?>admin/ajax/reports-analytics';
+            const ASSIGNED_OFFICE_ID = '<?= (int) $assigned_office_id; ?>';
+            const POLL_INTERVAL_MS   = 10000; // Auto-refresh via AJAX every 10 seconds
+
+            const charts = {};
+            let pollTimer = null;
+            let isFetching = false;
+            let lastPayloadHash = '';
+
+            const escapeHtml = (s) => String(s ?? '')
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+
+            const getTodayDate = () => {
+                const now = new Date();
+                return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+            };
+
+            function renderKPIs(k) {
+                k = k || {};
+                const totalEl     = document.getElementById('kpiTotalQueue');
+                const completedEl = document.getElementById('kpiCompleted');
+                const skippedEl   = document.getElementById('kpiSkipped');
+                const priorityEl  = document.getElementById('kpiPriorityQueue');
+
+                if (totalEl)     totalEl.textContent     = (parseInt(k.total_tickets, 10) || 0).toLocaleString();
+                if (completedEl) completedEl.textContent = (parseInt(k.completed_tickets, 10) || 0).toLocaleString();
+                if (skippedEl)   skippedEl.textContent   = (parseInt(k.skipped_tickets, 10) || 0).toLocaleString();
+                if (priorityEl)  priorityEl.textContent  = (parseInt(k.priority_tickets, 10) || 0).toLocaleString();
+            }
+
+            function drawChart(key, canvasId, config) {
+                if (charts[key]) charts[key].destroy();
+                const canvas = document.getElementById(canvasId);
+                if (!canvas) return;
+                charts[key] = new Chart(canvas.getContext('2d'), config);
+            }
+
+            function toggleChartEmptyState(key, outerContainerId, toggleTargetEl, isEmpty, title = 'No data available', subtitle = 'No records found for today.') {
+                const outerContainer = document.getElementById(outerContainerId);
+                if (!outerContainer || !toggleTargetEl) return;
+                let emptyEl = outerContainer.querySelector('.chart-empty-state');
+
+                if (isEmpty) {
+                    if (charts[key]) {
+                        charts[key].destroy();
+                        delete charts[key];
+                    }
+                    toggleTargetEl.style.display = 'none';
+                    if (!emptyEl) {
+                        emptyEl = document.createElement('div');
+                        emptyEl.className = 'chart-empty-state';
+                        outerContainer.appendChild(emptyEl);
+                    }
+                    emptyEl.innerHTML = `
+                        <i class="bi bi-bar-chart-line"></i>
+                        <div class="empty-title">${escapeHtml(title)}</div>
+                        <div class="empty-sub">${escapeHtml(subtitle)}</div>
+                    `;
+                } else {
+                    if (emptyEl) emptyEl.remove();
+                    toggleTargetEl.style.display = 'block';
+                }
+            }
+
+            function renderVolumeTrend(data) {
+                const items   = data || [];
+                const hasData = items.some(d => (parseInt(d.total, 10) || 0) > 0);
+                const canvas  = document.getElementById('volumeTrendChart');
+
+                toggleChartEmptyState(
+                    'volume',
+                    'volumeChartContainer',
+                    canvas,
+                    !hasData,
+                    'No queue volume recorded',
+                    'No tickets were issued for your office today.'
+                );
+                if (!hasData) return;
+
+                drawChart('volume', 'volumeTrendChart', {
+                    type: 'line',
+                    data: {
+                        labels: items.map(d => d.label),
+                        datasets: [{
+                            label: 'Tickets Issued',
+                            data: items.map(d => d.total),
+                            borderColor: '#2563eb',
+                            backgroundColor: 'rgba(37, 99, 235, 0.08)',
+                            fill: true,
+                            lineTension: 0.35,
+                            borderWidth: 2,
+                            pointBackgroundColor: '#2563eb',
+                            pointRadius: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        animation: { duration: 250 },
+                        legend: { display: false },
+                        scales: {
+                            yAxes: [{ ticks: { beginAtZero: true, precision: 0 } }]
+                        }
+                    }
+                });
+            }
+
+            function renderVisitorType(data) {
+                const counts = { Student: 0, Employee: 0, Guest: 0 };
+                (data || []).forEach(d => {
+                    const key = String(d.type || '').trim().toLowerCase();
+                    if (key === 'student') counts.Student = parseInt(d.total || 0, 10);
+                    else if (key === 'employee') counts.Employee = parseInt(d.total || 0, 10);
+                    else if (key === 'guest') counts.Guest = parseInt(d.total || 0, 10);
+                });
+
+                const labels  = ['Student', 'Employee', 'Guest'];
+                const values  = [counts.Student, counts.Employee, counts.Guest];
+                const hasData = values.some(v => v > 0);
+                const canvas  = document.getElementById('visitorTypeChart');
+
+                toggleChartEmptyState(
+                    'visitor',
+                    'visitorChartContainer',
+                    canvas,
+                    !hasData,
+                    'No visitor records found',
+                    'No student, employee, or guest activity recorded today.'
+                );
+                if (!hasData) return;
+
+                drawChart('visitor', 'visitorTypeChart', {
+                    type: 'doughnut',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            data: values,
+                            backgroundColor: ['#2563eb', '#7c3aed', '#16a34a'],
+                            borderWidth: 2,
+                            borderColor: '#ffffff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        animation: { duration: 250 },
+                        legend: { position: 'bottom' }
+                    }
+                });
+            }
+
+            function loadDashboardAnalytics(forceRender = false) {
+                if (ASSIGNED_OFFICE_ID === '0') {
+                    renderVolumeTrend([]);
+                    renderVisitorType([]);
+                    return;
+                }
+                if (isFetching) return;
+                isFetching = true;
+
+                const today = getTodayDate();
+                const fd = new FormData();
+                fd.append('action', 'fetch_analytics');
+                fd.append('office_id', ASSIGNED_OFFICE_ID);
+                fd.append('counter_id', '0');
+                fd.append('visitor_type', '');
+                fd.append('date_from', today);
+                fd.append('date_to', today);
+
+                fetch(HANDLER_URL, {
+                    method: 'POST',
+                    body: fd,
+                    cache: 'no-store'
+                })
+                    .then(res => res.json())
+                    .then(res => {
+                        if (!(res.success && res.data)) {
+                            if (forceRender) {
+                                renderKPIs({});
+                                renderVolumeTrend([]);
+                                renderVisitorType([]);
+                            }
+                            return;
+                        }
+
+                        const payloadHash = JSON.stringify({
+                            kpi: res.data.kpi || {},
+                            volume: res.data.volume_trend || [],
+                            visitor: res.data.visitor_distribution || []
+                        });
+
+                        if (forceRender || payloadHash !== lastPayloadHash) {
+                            lastPayloadHash = payloadHash;
+                            renderKPIs(res.data.kpi);
+                            renderVolumeTrend(res.data.volume_trend || []);
+                            renderVisitorType(res.data.visitor_distribution || []);
+                        }
+                    })
+                    .catch(() => {
+                        if (forceRender) {
+                            renderVolumeTrend([]);
+                            renderVisitorType([]);
+                        }
+                    })
+                    .finally(() => {
+                        isFetching = false;
+                    });
+            }
+
+            function startPolling() {
+                stopPolling();
+                pollTimer = setInterval(() => {
+                    if (!document.hidden) {
+                        loadDashboardAnalytics(false);
+                    }
+                }, POLL_INTERVAL_MS);
+            }
+
+            function stopPolling() {
+                if (pollTimer) {
+                    clearInterval(pollTimer);
+                    pollTimer = null;
+                }
+            }
+
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) {
+                    stopPolling();
+                } else {
+                    loadDashboardAnalytics(false);
+                    startPolling();
+                }
+            });
+
+            const bootDashboard = () => {
+                loadDashboardAnalytics(true);
+                startPolling();
+            };
+
+            if (document.readyState === 'complete') {
+                bootDashboard();
+            } else {
+                window.addEventListener('load', bootDashboard);
+            }
+        })();
+    </script>
 </body>
 
 </html>
