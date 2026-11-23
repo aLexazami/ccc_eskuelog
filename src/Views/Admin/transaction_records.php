@@ -610,6 +610,21 @@ if ($db_connect && $user_id > 0) {
             return isNaN(d.getTime()) ? null : d;
         }
 
+        function formatDateAndTimeParts(ts) {
+            const d = parseSqlTimestamp(ts);
+            if (!d) return { date: '', time: '', full: '' };
+            const yyyy = d.getFullYear();
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const dd = String(d.getDate()).padStart(2, '0');
+            const dateStr = `${yyyy}-${mm}-${dd}`;
+            const timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            return {
+                date: dateStr,
+                time: timeStr,
+                full: `${dateStr} ${timeStr}`.trim()
+            };
+        }
+
         // Displays Hour, Minute, and Second in 12-hour format (e.g., 5:00:00 PM)
         function formatClockTime(dateObj) {
             if (!dateObj) return '---';
@@ -1110,10 +1125,17 @@ if ($db_connect && $user_id > 0) {
                 r.calling_time_text    = formatLifecycleDuration(m.call.secs, selectedDurationFormat);
                 r.processing_time_text = formatLifecycleDuration(m.proc.secs, selectedDurationFormat);
 
-                const d    = r.created_at ? new Date(r.created_at) : null;
-                const time = (d && !isNaN(d)) ? d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
-                r.time_text     = time;
-                r.datetime_text = `${r.queue_date || ''} ${time}`.trim();
+                const createdParts = formatDateAndTimeParts(r.created_at);
+                r.time_text        = createdParts.time;
+                r.datetime_text    = `${r.queue_date || createdParts.date} ${createdParts.time}`.trim();
+
+                const updatedTs    = r.latest_activity_at || r.completed_at || r.served_at || r.called_at || r.created_at || '';
+                const updatedParts = formatDateAndTimeParts(updatedTs);
+                r.latest_activity_at = updatedTs;
+                r.updated_date       = updatedParts.date;
+                r.updated_time       = updatedParts.time;
+                r.updated_text       = updatedParts.full;
+
                 return r;
             });
         }
@@ -1135,7 +1157,7 @@ if ($db_connect && $user_id > 0) {
                     data.ticket_number, data.full_name, data.visitor_type, data.concerns_text,
                     data.office_name, data.counter_name, data.served_by_name,
                     data.waiting_time_text, data.calling_time_text, data.processing_time_text,
-                    data.status, data.datetime_text
+                    data.status, data.datetime_text, data.updated_text
                 ].some(v => String(v ?? '').toLowerCase().includes(kw));
             });
         }
@@ -1149,6 +1171,7 @@ if ($db_connect && $user_id > 0) {
                 paginationSize: 10,
                 paginationSizeSelector: [10, 25, 50, 100],
                 movableColumns: true,
+                initialSort: [{ column: "updated_text", dir: "desc" }],
                 placeholder: "No Record Found",
                 ajaxURL: HANDLER_URL,
                 ajaxConfig: "POST",
@@ -1298,14 +1321,33 @@ if ($db_connect && $user_id > 0) {
                         formatter: cell => escapeHtml(formatCapitalized(cell.getValue()))
                     },
                     Object.assign({
-                        title: "Date & Time",
+                        title: "Created At",
                         field: "datetime_text",
                         minWidth: 150,
                         vertAlign: 'middle',
-                        sorter: (a, b, aRow, bRow) => String(aRow.getData().created_at || '').localeCompare(String(bRow.getData().created_at || '')),
+                        sorter: (a, b, aRow, bRow) => {
+                            const tA = parseSqlTimestamp(aRow.getData().created_at)?.getTime() || 0;
+                            const tB = parseSqlTimestamp(bRow.getData().created_at)?.getTime() || 0;
+                            return tA - tB || (Number(aRow.getData().id) - Number(bRow.getData().id));
+                        },
                         formatter: cell => {
                             const row = cell.getRow().getData();
                             return `<div><span class="d-block text-dark">${escapeHtml(row.queue_date)}</span><small class="text-muted">${escapeHtml(row.time_text)}</small></div>`;
+                        }
+                    }, colFilter),
+                    Object.assign({
+                        title: "Last Updated",
+                        field: "updated_text",
+                        minWidth: 150,
+                        vertAlign: 'middle',
+                        sorter: (a, b, aRow, bRow) => {
+                            const tA = parseSqlTimestamp(aRow.getData().latest_activity_at)?.getTime() || 0;
+                            const tB = parseSqlTimestamp(bRow.getData().latest_activity_at)?.getTime() || 0;
+                            return tA - tB || (Number(aRow.getData().id) - Number(bRow.getData().id));
+                        },
+                        formatter: cell => {
+                            const row = cell.getRow().getData();
+                            return `<div><span class="d-block text-dark">${escapeHtml(row.updated_date || '---')}</span><small class="text-muted">${escapeHtml(row.updated_time || '')}</small></div>`;
                         }
                     }, colFilter)
                 ]

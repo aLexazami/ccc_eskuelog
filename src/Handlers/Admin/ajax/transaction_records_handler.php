@@ -139,6 +139,12 @@ switch ($action) {
                     q.completed_at,
                     l.created_at,
                     l.created_at AS queue_entry_time,
+                    GREATEST(
+                        COALESCE(l.created_at, '1970-01-01 00:00:00'),
+                        COALESCE(q.called_at, '1970-01-01 00:00:00'),
+                        COALESCE(q.served_at, '1970-01-01 00:00:00'),
+                        COALESCE(q.completed_at, '1970-01-01 00:00:00')
+                    ) AS latest_activity_at,
                     l.visitor_type,
                     l.first_name,
                     l.middle_name,
@@ -157,7 +163,7 @@ switch ($action) {
                 LEFT JOIN users su ON q.served_by_user_id = su.id
                 LEFT JOIN transaction_types tt_main ON l.transaction_type_id = tt_main.id
                 WHERE {$whereSql}
-                ORDER BY q.id DESC
+                ORDER BY latest_activity_at DESC, q.id DESC
             ";
 
             $stmtData = $db_connect->prepare($dataSql);
@@ -234,6 +240,12 @@ switch ($action) {
                     q.completed_at,
                     l.created_at,
                     l.created_at AS queue_entry_time,
+                    GREATEST(
+                        COALESCE(l.created_at, '1970-01-01 00:00:00'),
+                        COALESCE(q.called_at, '1970-01-01 00:00:00'),
+                        COALESCE(q.served_at, '1970-01-01 00:00:00'),
+                        COALESCE(q.completed_at, '1970-01-01 00:00:00')
+                    ) AS latest_activity_at,
                     l.visitor_type,
                     l.first_name,
                     l.middle_name,
