@@ -1946,6 +1946,34 @@ $window_page_url      = strtok($_SERVER['REQUEST_URI'] ?? '', '?');
             }
         }
 
+        function showSwalToast(title, message, iconType = 'success', duration = 2500) {
+            const swalObj = typeof swal !== 'undefined' ? swal : (typeof Swal !== 'undefined' ? Swal : null);
+            if (!swalObj) return;
+
+            if (typeof swalObj.fire === 'function') {
+                swalObj.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: iconType,
+                    title: title,
+                    text: message,
+                    showConfirmButton: false,
+                    timer: duration,
+                    timerProgressBar: true
+                });
+                return;
+            }
+
+            // Kaiadmin SweetAlert v1 auto-closing toast-style alert
+            swalObj({
+                title: title,
+                text: message,
+                icon: iconType,
+                buttons: false,
+                timer: duration
+            });
+        }
+
         function toTitleCase(str) {
             if (!str) return '';
             return str.toLowerCase().replace(/\b\w/g, function(char) {
@@ -2744,7 +2772,7 @@ $window_page_url      = strtok($_SERVER['REQUEST_URI'] ?? '', '?');
 
         let queueActionInFlight = false;
 
-        function sendQueueAction(actionName, additionalParams = {}) {
+        function sendQueueAction(actionName, additionalParams = {}, onSuccessCallback = null) {
             if (!HAS_ASSIGNMENT || !activeOfficeId || parseInt(activeCounterId, 10) <= 0) return;
             if (queueActionInFlight) return;
             queueActionInFlight = true;
@@ -2765,6 +2793,9 @@ $window_page_url      = strtok($_SERVER['REQUEST_URI'] ?? '', '?');
             .then(res => res.json())
             .then(res => {
                 if (res.success) {
+                    if (typeof onSuccessCallback === 'function') {
+                        onSuccessCallback(res);
+                    }
                     loadCounterData();
                 } else {
                     showSwalAlert("Notice", res.message || 'Failed to process request.', 'warning');
@@ -2788,7 +2819,75 @@ $window_page_url      = strtok($_SERVER['REQUEST_URI'] ?? '', '?');
         if (btnStartServe)     btnStartServe.addEventListener('click', () => sendQueueAction('serve_ticket'));
         if (btnCompleteTicket) btnCompleteTicket.addEventListener('click', () => sendQueueAction('complete_ticket'));
         if (btnRecallVoice)    btnRecallVoice.addEventListener('click', () => sendQueueAction('recall_ticket'));
-        if (btnSkipTicket)     btnSkipTicket.addEventListener('click', () => sendQueueAction('skip_ticket'));
+
+        if (btnSkipTicket) {
+            btnSkipTicket.addEventListener('click', () => {
+                if (!currentActiveTicket || !currentActiveTicket.ticket_number) {
+                    showSwalAlert("Notice", "There is no active ticket to skip.", "warning");
+                    return;
+                }
+
+                const skippedTicketNo = currentActiveTicket.ticket_number;
+                const swalObj = typeof swal !== 'undefined' ? swal : (typeof Swal !== 'undefined' ? Swal : null);
+
+                if (swalObj && typeof swalObj.fire === 'function') {
+                    // SweetAlert2 fallback if loaded
+                    swalObj.fire({
+                        title: "Skip Ticket?",
+                        text: `Are you sure you want to skip ticket ${skippedTicketNo}?`,
+                        icon: "warning",
+                        showCancelButton: true,
+                        confirmButtonText: "Yes, Skip",
+                        cancelButtonText: "Cancel",
+                        confirmButtonColor: "#dc2626",
+                        cancelButtonColor: "#6c757d"
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            sendQueueAction('skip_ticket', {}, (res) => {
+                                showSwalToast(
+                                    "Ticket Skipped",
+                                    res.message || `Ticket ${skippedTicketNo} has been skipped.`,
+                                    "warning",
+                                    2500
+                                );
+                            });
+                        }
+                    });
+                } else if (typeof swalObj === 'function') {
+                    // Existing Kaiadmin SweetAlert v1 confirmation dialog
+                    swalObj({
+                        title: "Skip Ticket?",
+                        text: `Are you sure you want to skip ticket ${skippedTicketNo}?`,
+                        icon: "warning",
+                        buttons: {
+                            cancel: {
+                                text: "Cancel",
+                                visible: true,
+                                className: "btn btn-secondary"
+                            },
+                            confirm: {
+                                text: "Yes, Skip",
+                                className: "btn btn-danger"
+                            }
+                        },
+                        dangerMode: true
+                    }).then((willSkip) => {
+                        if (willSkip) {
+                            sendQueueAction('skip_ticket', {}, (res) => {
+                                showSwalToast(
+                                    "Ticket Skipped",
+                                    res.message || `Ticket ${skippedTicketNo} has been skipped.`,
+                                    "warning",
+                                    2500
+                                );
+                            });
+                        }
+                    });
+                } else if (confirm(`Are you sure you want to skip ticket ${skippedTicketNo}?`)) {
+                    sendQueueAction('skip_ticket');
+                }
+            });
+        }
 
         if (HAS_ASSIGNMENT && activeOfficeId && parseInt(activeCounterId, 10) > 0) {
             setInterval(loadCounterData, 4000);
