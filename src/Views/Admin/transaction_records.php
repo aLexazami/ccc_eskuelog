@@ -107,6 +107,7 @@ if ($db_connect && $user_id > 0) {
             border-radius: 0.85rem;
             background: #ffffff;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+            overflow: hidden;
         }
 
         .search-input-group {
@@ -393,12 +394,12 @@ if ($db_connect && $user_id > 0) {
                     <div class="card filter-card mb-4">
                         <div class="card-body p-3 p-sm-4">
                             <form id="recordsFilterForm">
-                                <div class="row g-2 align-items-end">
+                                <div class="row g-3 align-items-end">
                                     
                                     <!-- OFFICE SELECTION -->
                                     <?php $lock_office = ($g_user_role_upper === 'ADMIN_STAFF' && !empty($assigned_office)); ?>
-                                    <div class="col-12 col-sm-6 col-md-4 col-xl-3">
-                                        <label for="filterOfficeId" class="form-label fw-bold small text-muted">
+                                    <div class="col-12 col-sm-6 col-lg-6 col-xl-3">
+                                        <label for="filterOfficeId" class="form-label fw-bold small text-muted mb-1">
                                             Office Location <?php if ($lock_office): ?><i class="bi bi-lock-fill ms-1" title="Locked to your assigned office"></i><?php endif; ?>
                                         </label>
                                         <select id="filterOfficeId" class="form-select form-select-sm" <?= $lock_office ? 'disabled style="pointer-events:none; background-color:#f1f5f9;"' : ''; ?>>
@@ -421,8 +422,8 @@ if ($db_connect && $user_id > 0) {
                                     </div>
 
                                     <!-- VISITOR TYPE -->
-                                    <div class="col-6 col-sm-6 col-md-4 col-xl-2">
-                                        <label for="filterVisitorType" class="form-label fw-bold small text-muted">Visitor Type</label>
+                                    <div class="col-6 col-sm-6 col-lg-3 col-xl-2">
+                                        <label for="filterVisitorType" class="form-label fw-bold small text-muted mb-1">Visitor Type</label>
                                         <select id="filterVisitorType" class="form-select form-select-sm">
                                             <option value="">All Types</option>
                                             <option value="STUDENT">Student</option>
@@ -432,8 +433,8 @@ if ($db_connect && $user_id > 0) {
                                     </div>
 
                                     <!-- STATUS -->
-                                    <div class="col-6 col-sm-6 col-md-4 col-xl-2">
-                                        <label for="filterStatus" class="form-label fw-bold small text-muted">Queue Status</label>
+                                    <div class="col-6 col-sm-6 col-lg-3 col-xl-2">
+                                        <label for="filterStatus" class="form-label fw-bold small text-muted mb-1">Queue Status</label>
                                         <select id="filterStatus" class="form-select form-select-sm">
                                             <option value="">All Statuses</option>
                                             <option value="COMPLETED">Completed</option>
@@ -444,26 +445,28 @@ if ($db_connect && $user_id > 0) {
                                         </select>
                                     </div>
 
-                                    <!-- DATE FROM (Wider) -->
-                                    <div class="col-12 col-sm-6 col-md-4 col-xl-2">
-                                        <label for="filterDateFrom" class="form-label fw-bold small text-muted">Date From</label>
+                                    <!-- DATE FROM -->
+                                    <div class="col-6 col-sm-6 col-lg-3 col-xl-2">
+                                        <label for="filterDateFrom" class="form-label fw-bold small text-muted mb-1">Date From</label>
                                         <input type="date" id="filterDateFrom" class="form-control form-control-sm" value="<?= date('Y-m-d'); ?>">
                                     </div>
 
-                                    <!-- DATE TO (Wider) -->
-                                    <div class="col-12 col-sm-6 col-md-4 col-xl-2">
-                                        <label for="filterDateTo" class="form-label fw-bold small text-muted">Date To</label>
+                                    <!-- DATE TO -->
+                                    <div class="col-6 col-sm-6 col-lg-3 col-xl-2">
+                                        <label for="filterDateTo" class="form-label fw-bold small text-muted mb-1">Date To</label>
                                         <input type="date" id="filterDateTo" class="form-control form-control-sm" value="<?= date('Y-m-d'); ?>">
                                     </div>
 
                                     <!-- ACTION BUTTONS -->
-                                    <div class="col-12 col-md-4 col-xl-1 d-flex gap-2">
-                                        <button type="submit" class="btn btn-primary btn-sm fw-bold px-3 text-nowrap flex-grow-1">
-                                            <i class="bi bi-filter me-1"></i>Apply
-                                        </button>
-                                        <button type="button" id="btnResetFilters" class="btn btn-outline-secondary btn-sm text-nowrap" title="Reset Filters">
-                                            <i class="bi bi-arrow-counterclockwise"></i>
-                                        </button>
+                                    <div class="col-12 col-sm-12 col-lg-6 col-xl-1">
+                                        <div class="d-flex flex-row flex-xl-column gap-1">
+                                            <button type="submit" class="btn btn-primary btn-sm fw-bold px-2 py-1 text-nowrap flex-grow-1 flex-xl-grow-0">
+                                                <i class="bi bi-filter me-1"></i>Apply
+                                            </button>
+                                            <button type="button" id="btnResetFilters" class="btn btn-outline-secondary btn-sm px-2 py-1 text-nowrap flex-grow-1 flex-xl-grow-0" title="Reset Filters">
+                                                <i class="bi bi-arrow-counterclockwise me-1"></i>Reset
+                                            </button>
+                                        </div>
                                     </div>
 
                                 </div>
@@ -607,11 +610,13 @@ if ($db_connect && $user_id > 0) {
             return isNaN(d.getTime()) ? null : d;
         }
 
+        // Displays Hour, Minute, and Second in 12-hour format (e.g., 5:00:00 PM)
         function formatClockTime(dateObj) {
             if (!dateObj) return '---';
             return dateObj.toLocaleTimeString('en-US', {
                 hour: 'numeric',
                 minute: '2-digit',
+                second: '2-digit',
                 hour12: true
             });
         }
@@ -726,6 +731,20 @@ if ($db_connect && $user_id > 0) {
                 totalSecs: hasAnyTime ? totalSecs : null,
                 isAnyLive: waitLive || callLive || procLive
             };
+        }
+
+        function refreshTableLifecycleDisplay() {
+            if (!recordsTable) return;
+            const rows = recordsTable.getRows();
+            rows.forEach(row => {
+                const data = row.getData();
+                const m = computeQueueLifecycleMetrics(data);
+                row.update({
+                    waiting_time_text: formatLifecycleDuration(m.wait.secs, selectedDurationFormat),
+                    calling_time_text: formatLifecycleDuration(m.call.secs, selectedDurationFormat),
+                    processing_time_text: formatLifecycleDuration(m.proc.secs, selectedDurationFormat)
+                });
+            });
         }
 
         function buildLifecycleTableHtml(ticket) {
@@ -925,6 +944,7 @@ if ($db_connect && $user_id > 0) {
                 container.innerHTML = buildLifecycleTableHtml(activeModalTicketRef);
                 startModalLifecycleTicker();
             }
+            refreshTableLifecycleDisplay();
         };
 
         document.getElementById('ticketDetailsModal')?.addEventListener('hidden.bs.modal', () => {
@@ -1084,6 +1104,12 @@ if ($db_connect && $user_id > 0) {
                 r.office_name    = r.office_name || '';
                 r.counter_name   = r.counter_name || '';
                 r.served_by_name = (r.served_by_name || '').trim();
+
+                const m = computeQueueLifecycleMetrics(r);
+                r.waiting_time_text    = formatLifecycleDuration(m.wait.secs, selectedDurationFormat);
+                r.calling_time_text    = formatLifecycleDuration(m.call.secs, selectedDurationFormat);
+                r.processing_time_text = formatLifecycleDuration(m.proc.secs, selectedDurationFormat);
+
                 const d    = r.created_at ? new Date(r.created_at) : null;
                 const time = (d && !isNaN(d)) ? d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
                 r.time_text     = time;
@@ -1107,7 +1133,9 @@ if ($db_connect && $user_id > 0) {
             tableInstance.setFilter(function(data) {
                 return [
                     data.ticket_number, data.full_name, data.visitor_type, data.concerns_text,
-                    data.office_name, data.counter_name, data.served_by_name, data.status, data.datetime_text
+                    data.office_name, data.counter_name, data.served_by_name,
+                    data.waiting_time_text, data.calling_time_text, data.processing_time_text,
+                    data.status, data.datetime_text
                 ].some(v => String(v ?? '').toLowerCase().includes(kw));
             });
         }
@@ -1224,6 +1252,30 @@ if ($db_connect && $user_id > 0) {
                         minWidth: 170,
                         vertAlign: 'middle',
                         formatter: cell => `<span class="text-dark">${escapeHtml(cell.getValue()) || '---'}</span>`
+                    }, colFilter),
+                    Object.assign({
+                        title: "Waiting Time",
+                        field: "waiting_time_text",
+                        minWidth: 155,
+                        vertAlign: 'middle',
+                        hozAlign: 'center',
+                        formatter: cell => `<span class="text-dark fw-semibold">${escapeHtml(cell.getValue()) || '---'}</span>`
+                    }, colFilter),
+                    Object.assign({
+                        title: "Calling Time",
+                        field: "calling_time_text",
+                        minWidth: 155,
+                        vertAlign: 'middle',
+                        hozAlign: 'center',
+                        formatter: cell => `<span class="text-dark fw-semibold">${escapeHtml(cell.getValue()) || '---'}</span>`
+                    }, colFilter),
+                    Object.assign({
+                        title: "Processing Time",
+                        field: "processing_time_text",
+                        minWidth: 165,
+                        vertAlign: 'middle',
+                        hozAlign: 'center',
+                        formatter: cell => `<span class="text-dark fw-semibold">${escapeHtml(cell.getValue()) || '---'}</span>`
                     }, colFilter),
                     {
                         title: "Status",
