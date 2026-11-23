@@ -74,6 +74,10 @@ if ($db_connect) {
             --lineup-pill-priority-border: 1.5px solid #f59e0b;
             --lineup-pill-priority-color: #fef08a;
 
+            --lineup-pill-serving-bg: linear-gradient(135deg, rgba(16, 185, 129, 0.25) 0%, rgba(5, 150, 105, 0.35) 100%);
+            --lineup-pill-serving-border: 1.5px solid #22c55e;
+            --lineup-pill-serving-color: #bbf7d0;
+
             --lineup-pill-empty-bg: rgba(15, 23, 42, 0.3);
             --lineup-pill-empty-border: 1px dashed rgba(255, 255, 255, 0.25);
             --lineup-pill-empty-color: #94a3b8;
@@ -244,7 +248,7 @@ if ($db_connect) {
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
-            min-height: clamp(105px, 16vh, 155px); /* Increased min-height for multi-line titles */
+            min-height: clamp(105px, 16vh, 155px);
             height: auto;
             box-sizing: border-box;
             position: relative;
@@ -268,7 +272,7 @@ if ($db_connect) {
         }
 
         .pillar-office-name {
-            font-size: clamp(0.72rem, 0.95vw, 1.1rem); /* Scaled down slightly for long titles */
+            font-size: clamp(0.72rem, 0.95vw, 1.1rem);
             font-weight: 800;
             color: var(--office-name-color);
             margin: 0;
@@ -277,15 +281,15 @@ if ($db_connect) {
             word-break: break-word;
             text-align: center;
             display: -webkit-box;
-            -webkit-line-clamp: 3; /* Increased from 2 to 3 lines */
+            -webkit-line-clamp: 3;
             -webkit-box-orient: vertical;
             overflow: hidden;
-            max-height: 3.8em; /* Increased max-height to accommodate line 3 */
+            max-height: 3.8em;
             width: 100%;
             text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
         }
 
-        /* NOW SERVING BLOCK - WINDOW BANNER SITS AT THE TOP, INSIDE THE CONTAINER BORDER */
+        /* NOW SERVING HERO BLOCK */
         .pillar-serving-block {
             container-type: inline-size;
             text-align: center;
@@ -347,21 +351,20 @@ if ($db_connect) {
         }
 
         .serving-ticket-number {
-            font-size: clamp(1.1rem, 9.5cqw, 3.4rem); /* Reduced container width query from 13.5cqw to 9.5cqw */
+            font-size: clamp(1.1rem, 9.5cqw, 3.4rem);
             font-weight: 900;
             color: var(--serving-ticket-color);
-            line-height: 1;
+            line-height: 1.08;
             letter-spacing: -0.02em;
             margin: clamp(0.2rem, 0.5vh, 0.5rem) 0;
             white-space: nowrap;
             overflow: hidden;
-            text-overflow: ellipsis;
             display: flex;
             align-items: center;
             justify-content: center;
             width: 100%;
             max-width: 100%;
-            padding: 0 0.3rem; /* Small internal safety padding */
+            padding: 0 0.35rem;
             box-sizing: border-box;
             text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
         }
@@ -388,6 +391,7 @@ if ($db_connect) {
             text-transform: uppercase;
         }
 
+        /* BOTTOM LINEUP BLOCK (1 COLUMN WHEN SINGLE TICKET, 2 COLUMNS WHEN 2+ ACTIVE TICKETS) */
         .pillar-lineup-block {
             border-top: var(--lineup-border-top);
             padding-top: clamp(0.35rem, 0.8vh, 0.65rem);
@@ -400,14 +404,41 @@ if ($db_connect) {
             z-index: 2;
         }
 
+        .lineup-columns-wrapper {
+            display: flex;
+            flex-direction: row;
+            gap: clamp(0.35rem, 0.6vw, 0.6rem);
+            width: 100%;
+            align-items: stretch;
+        }
+
+        .lineup-column {
+            flex: 1 1 0;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .lineup-column.serving-col-divider {
+            border-left: 1px solid rgba(255, 255, 255, 0.16);
+            padding-left: clamp(0.35rem, 0.6vw, 0.6rem);
+        }
+
         .lineup-label {
-            font-size: clamp(0.7rem, 0.8vw, 0.9rem);
+            font-size: clamp(0.64rem, 0.76vw, 0.88rem);
             font-weight: 800;
             color: var(--lineup-label-color);
-            letter-spacing: 0.08em;
+            letter-spacing: 0.06em;
             text-transform: uppercase;
             margin-bottom: clamp(0.25rem, 0.5vh, 0.45rem);
             display: block;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .lineup-label.serving-col-label {
+            color: #4ade80;
         }
 
         .lineup-pills-stack {
@@ -421,10 +452,10 @@ if ($db_connect) {
             border: var(--lineup-pill-border);
             color: var(--lineup-pill-color);
             font-weight: 800;
-            font-size: clamp(0.75rem, 0.88vw, 1.05rem); /* Reduced max size slightly for long codes */
-            padding: 0.35rem 0.5rem;
+            font-size: clamp(0.72rem, 0.85vw, 1rem);
+            padding: 0.35rem 0.45rem;
             border-radius: 0.75rem;
-            letter-spacing: 0.03em;
+            letter-spacing: 0.02em;
             height: clamp(30px, 4.2vh, 44px);
             display: flex;
             align-items: center;
@@ -432,13 +463,28 @@ if ($db_connect) {
             box-sizing: border-box;
             white-space: nowrap;
             overflow: hidden;
-            text-overflow: ellipsis;
+            position: relative;
         }
 
         .lineup-pill.is-priority {
             background: var(--lineup-pill-priority-bg) !important;
             border: var(--lineup-pill-priority-border) !important;
             color: var(--lineup-pill-priority-color) !important;
+            font-weight: 900;
+        }
+
+        .lineup-pill.is-active-serving {
+            background: var(--lineup-pill-serving-bg) !important;
+            border: var(--lineup-pill-serving-border) !important;
+            color: var(--lineup-pill-serving-color) !important;
+            font-weight: 900;
+        }
+
+        .lineup-pill.is-active-calling {
+            background: rgba(34, 197, 94, 0.28) !important;
+            border: 1.5px solid #4ade80 !important;
+            color: #ffffff !important;
+            box-shadow: 0 0 10px rgba(34, 197, 94, 0.35);
             font-weight: 900;
         }
 
@@ -450,13 +496,47 @@ if ($db_connect) {
             opacity: 0.6;
         }
 
+        /* RIGHT-TO-LEFT READING MARQUEE ANIMATION FOR LONG TICKET TEXT */
+        .ticket-marquee-track {
+            display: inline-block;
+            white-space: nowrap;
+            max-width: 100%;
+        }
+
+        .is-marquee-overflow {
+            justify-content: flex-start !important;
+        }
+
+        .is-marquee-overflow .ticket-marquee-track {
+            max-width: none;
+            padding-left: 100%;
+            animation: ticketMarqueeRead var(--marquee-duration, 7s) linear infinite;
+            will-change: transform;
+        }
+
+        @keyframes ticketMarqueeRead {
+            0% {
+                transform: translateX(0);
+            }
+            100% {
+                transform: translateX(-100%);
+            }
+        }
+
         .waiting-count-footer {
-            font-size: clamp(0.7rem, 0.8vw, 0.9rem);
+            font-size: clamp(0.66rem, 0.76vw, 0.86rem);
             color: var(--office-meta-color);
             margin-top: clamp(0.25rem, 0.5vh, 0.5rem);
             font-weight: 700;
             height: 18px;
             line-height: 18px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .waiting-count-footer.serving-count-footer {
+            color: #86efac;
         }
 
         .page-badge-wrapper {
@@ -723,7 +803,8 @@ if ($db_connect) {
             let audioUnlocked = false;
             let audioCtx = null;
             let singleFemaleVoice = null;
-            let currentUtterance = null;   // keep a reference so the browser does not garbage-collect it mid-speech
+            let currentUtterance = null;
+            let activeSpeech = null;   // { ticketId, pillarKey, abort() } while a call is being spoken
 
             function getBestFemaleVoice() {
                 if (!('speechSynthesis' in window)) return null;
@@ -809,7 +890,58 @@ if ($db_connect) {
                 });
             }
 
-            /* ---------------- DATA ---------------- */
+            /* ---------------- DATA & HERO PRIORITY RESOLVER ---------------- */
+            function getActiveTicketsList(pillar) {
+                if (Array.isArray(pillar.now_serving_list) && pillar.now_serving_list.length > 0) {
+                    return pillar.now_serving_list;
+                }
+                return pillar.now_serving ? [pillar.now_serving] : [];
+            }
+
+            /**
+             * Resolves which active ticket sits in the big NOW SERVING hero box vs. the bottom SERVING LINE:
+             * 1. If a ticket on this pillar is currently being spoken by voice synthesis -> it stays in the big hero box while speaking.
+             * 2. Otherwise, if a ticket on this pillar is waiting next in the audioQueue -> the earliest queued one gets the hero box until spoken.
+             * 3. Otherwise -> the newest called ticket (`activeList[0]`) sits in the big hero box, and all older active tickets sit in the bottom SERVING LINE.
+             */
+            function partitionActiveTickets(pillar, activeList) {
+                if (!Array.isArray(activeList) || activeList.length === 0) {
+                    return { heroTicket: null, servingLineTickets: [] };
+                }
+                if (activeList.length === 1) {
+                    return { heroTicket: activeList[0], servingLineTickets: [] };
+                }
+
+                let heroId = null;
+
+                // 1. Currently speaking on this pillar
+                if (activeSpeech && activeSpeech.pillarKey === pillar.pillar_key) {
+                    const match = activeList.find(t => t.ticket_id === activeSpeech.ticketId);
+                    if (match) heroId = match.ticket_id;
+                }
+
+                // 2. Next queued for speech on this pillar (first called = first spoken)
+                if (heroId === null && audioUnlocked) {
+                    const queuedItem = audioQueue.find(q =>
+                        q.pillarKey === pillar.pillar_key &&
+                        activeList.some(t => t.ticket_id === q.ticketId)
+                    );
+                    if (queuedItem) {
+                        heroId = queuedItem.ticketId;
+                    }
+                }
+
+                // 3. Default: latest called ticket is in the big hero box (`activeList` is already sorted newest first)
+                if (heroId === null) {
+                    heroId = activeList[0].ticket_id;
+                }
+
+                const heroTicket = activeList.find(t => t.ticket_id === heroId) || activeList[0];
+                const servingLineTickets = activeList.filter(t => t.ticket_id !== heroTicket.ticket_id);
+
+                return { heroTicket, servingLineTickets };
+            }
+
             function fetchLiveQueueData() {
                 const formData = new FormData();
                 formData.append('action', 'fetch_master_queue');
@@ -825,7 +957,7 @@ if ($db_connect) {
 
                         cachedPillars = result.data.pillars || result.data.active_offices || [];
 
-                        // 1. Drop audio for tickets that are no longer being called (completed / skipped / replaced)
+                        // 1. Drop audio for tickets that are no longer active
                         audioQueue = audioQueue.filter(item => isTicketActive(item.ticketId));
                         if (activeSpeech && !isTicketActive(activeSpeech.ticketId)) {
                             activeSpeech.abort();
@@ -834,7 +966,7 @@ if ($db_connect) {
                         // 2. Announce newly called tickets, oldest call first
                         detectNewCalls(cachedPillars);
 
-                        // 3. A pillar that was not on screen before (new office/window activity) is shown on page 1
+                        // 3. A pillar that was not on screen before is shown on page 1
                         const currentKeys = new Set(cachedPillars.map(p => p.pillar_key));
                         if (knownPillarKeys !== null) {
                             let hasNewPillar = false;
@@ -850,7 +982,6 @@ if ($db_connect) {
                             return;
                         }
 
-                        // called_age changes every poll, so it must not trigger a re-render
                         if (currentFingerprint() !== lastRenderedJson) {
                             renderCurrentPage(false);
                         }
@@ -859,14 +990,19 @@ if ($db_connect) {
             }
 
             function currentFingerprint() {
-                // called_age changes every poll, so it is excluded
-                return JSON.stringify(cachedPillars, (k, v) => (k === 'called_age' ? undefined : v));
+                const speakingId = activeSpeech ? activeSpeech.ticketId : 0;
+                const queuedIds = audioQueue.map(q => q.ticketId).join(',');
+                const dataStr = JSON.stringify(cachedPillars, (k, v) => (k === 'called_age' ? undefined : v));
+                return `${speakingId}|${queuedIds}|${dataStr}`;
             }
 
             function isTicketActive(ticketId) {
-                return cachedPillars.some(p => p.now_serving
-                    && p.now_serving.ticket_id === ticketId
-                    && (p.now_serving.status === 'CALLED' || p.now_serving.status === 'SERVING'));
+                return cachedPillars.some(p =>
+                    getActiveTicketsList(p).some(ns =>
+                        ns.ticket_id === ticketId &&
+                        (ns.status === 'CALLED' || ns.status === 'SERVING')
+                    )
+                );
             }
 
             function holdOnFirstPage() {
@@ -880,31 +1016,30 @@ if ($db_connect) {
                 const fresh = [];
 
                 pillars.forEach(p => {
-                    const ns = p.now_serving;
-                    if (!ns || !ns.ticket_number) return;
+                    const activeList = getActiveTicketsList(p);
+                    activeList.forEach(ns => {
+                        if (!ns || !ns.ticket_number) return;
 
-                    // A call is "new" while CALLED (or if the staff pressed Start Serving within seconds of calling)
-                    const isCallState = ns.status === 'CALLED' || (ns.status === 'SERVING' && ns.called_age !== null && ns.called_age <= 6);
-                    if (!isCallState) return;
+                        const isCallState = ns.status === 'CALLED' || (ns.status === 'SERVING' && ns.called_age !== null && ns.called_age <= 6);
+                        if (!isCallState) return;
 
-                    const callKey = `${ns.ticket_id}_${ns.called_at || ''}`;
-                    if (announcedCalls.has(callKey)) return;
-                    announcedCalls.add(callKey);
+                        const callKey = `${ns.ticket_id}_${ns.called_at || ''}`;
+                        if (announcedCalls.has(callKey)) return;
+                        announcedCalls.add(callKey);
 
-                    // First load of this screen: calls made a while ago were already announced earlier
-                    if (!firstPollDone && (ns.called_age === null || ns.called_age > FRESH_CALL_SECONDS)) return;
+                        if (!firstPollDone && (ns.called_age === null || ns.called_age > FRESH_CALL_SECONDS)) return;
 
-                    fresh.push({ pillar: p, ns: ns });
+                        fresh.push({ pillar: p, ns: ns });
+                    });
                 });
 
                 firstPollDone = true;
 
-                // A new call is shown on page 1 (the handler sorts newest call first): keep the screen there for a moment
                 if (fresh.length > 0) {
                     holdOnFirstPage();
                 }
 
-                // FIRST CALLED = FIRST SPOKEN (the list order is by office/window, not by call time)
+                // FIRST CALLED = FIRST SPOKEN
                 fresh.sort((a, b) => {
                     const t = String(a.ns.called_at || '').localeCompare(String(b.ns.called_at || ''));
                     return t !== 0 ? t : (a.ns.ticket_id - b.ns.ticket_id);
@@ -913,15 +1048,34 @@ if ($db_connect) {
                 fresh.forEach(item => queueVoiceCallout(item.ns.ticket_number, item.pillar.counter_name, item.pillar.pillar_key, item.ns.ticket_id));
             }
 
+            /* ---------------- MARQUEE OVERFLOW DETECTION ---------------- */
+            function applyTickerAnimations() {
+                const containers = pillarGridContainer.querySelectorAll('.lineup-pill, .serving-ticket-number');
+                containers.forEach(el => {
+                    const track = el.querySelector('.ticket-marquee-track');
+                    if (!track) return;
+
+                    el.classList.remove('is-marquee-overflow');
+                    track.style.removeProperty('--marquee-duration');
+
+                    // Measure whether the text inside overflows its pill/box width
+                    const availableWidth = el.clientWidth - 8;
+                    const textWidth = track.scrollWidth;
+
+                    if (textWidth > availableWidth && availableWidth > 0) {
+                        const durationSec = Math.max(5.5, Math.min(14, (textWidth + availableWidth) / 38));
+                        track.style.setProperty('--marquee-duration', `${durationSec.toFixed(1)}s`);
+                        el.classList.add('is-marquee-overflow');
+                    }
+                });
+            }
+
             /* ---------------- RENDER ---------------- */
             function renderCurrentPage(animate = false) {
                 if (cachedPillars.length === 0) return;
 
                 const seq = ++renderSeq;
 
-                // Everything is computed when the build actually runs (never from data captured earlier),
-                // and a newer render cancels any older pending one. This is what stops a slow page-rotation
-                // fade from putting old pillars back on the screen after fresh data arrived.
                 const build = () => {
                     if (seq !== renderSeq || cachedPillars.length === 0) return;
 
@@ -942,26 +1096,86 @@ if ($db_connect) {
 
                     pageItems.forEach(p => {
                         const pillar = document.createElement('div');
-                        const ns = p.now_serving;
-                        const isCalling = ns && ns.status === 'CALLED';
-                        const windowName = p.counter_name || 'OFFICE';
+                        const activeList = getActiveTicketsList(p);
+                        const { heroTicket, servingLineTickets } = partitionActiveTickets(p, activeList);
+                        const isCalling = activeList.some(item => item.status === 'CALLED');
+                        const windowName = p.counter_name || 'Window 1';
 
                         pillar.className = `office-pillar-card ${isCalling ? 'is-calling' : ''}`;
 
-                        let lineupHtml = '';
+                        // 1. Waiting Line Column Pills (4 slots)
+                        let waitingPillsHtml = '';
                         const upcoming = p.up_next || [];
                         for (let i = 0; i < 4; i++) {
                             if (upcoming[i]) {
                                 const isPri = upcoming[i].is_priority == 1;
-                                lineupHtml += `<div class="lineup-pill ${isPri ? 'is-priority' : ''}">${isPri ? '★ ' : ''}${escapeHtml(upcoming[i].ticket_number)}</div>`;
+                                const labelText = `${isPri ? '★ ' : ''}${escapeHtml(upcoming[i].ticket_number)}`;
+                                waitingPillsHtml += `
+                                    <div class="lineup-pill ${isPri ? 'is-priority' : ''}">
+                                        <span class="ticket-marquee-track">${labelText}</span>
+                                    </div>
+                                `;
                             } else {
-                                lineupHtml += `<div class="lineup-pill empty-pill">---</div>`;
+                                waitingPillsHtml += `<div class="lineup-pill empty-pill">---</div>`;
                             }
+                        }
+
+                        // 2. Bottom Lineup Section: 1 Column if <= 1 active ticket, 2 Columns if 2+ active tickets
+                        let bottomLineupHtml = '';
+                        if (servingLineTickets.length === 0) {
+                            bottomLineupHtml = `
+                                <span class="lineup-label">WAITING LINE</span>
+                                <div class="lineup-pills-stack">
+                                    ${waitingPillsHtml}
+                                </div>
+                                <div class="waiting-count-footer">(${p.waiting_count || 0} Waiting)</div>
+                            `;
+                        } else {
+                            let servingPillsHtml = '';
+                            for (let i = 0; i < 4; i++) {
+                                if (servingLineTickets[i]) {
+                                    const sItem = servingLineTickets[i];
+                                    const sPri = sItem.is_priority == 1;
+                                    const sCalling = sItem.status === 'CALLED';
+                                    const statusCls = sCalling ? 'is-active-calling' : 'is-active-serving';
+                                    const labelText = `${sPri ? '★ ' : ''}${escapeHtml(sItem.ticket_number)}`;
+                                    servingPillsHtml += `
+                                        <div class="lineup-pill ${statusCls}">
+                                            <span class="ticket-marquee-track">${labelText}</span>
+                                        </div>
+                                    `;
+                                } else {
+                                    servingPillsHtml += `<div class="lineup-pill empty-pill">---</div>`;
+                                }
+                            }
+
+                            bottomLineupHtml = `
+                                <div class="lineup-columns-wrapper">
+                                    <div class="lineup-column">
+                                        <span class="lineup-label">WAITING LINE</span>
+                                        <div class="lineup-pills-stack">
+                                            ${waitingPillsHtml}
+                                        </div>
+                                        <div class="waiting-count-footer">(${p.waiting_count || 0} Waiting)</div>
+                                    </div>
+                                    <div class="lineup-column serving-col-divider">
+                                        <span class="lineup-label serving-col-label">SERVING LINE</span>
+                                        <div class="lineup-pills-stack">
+                                            ${servingPillsHtml}
+                                        </div>
+                                        <div class="waiting-count-footer serving-count-footer">(${activeList.length} Active)</div>
+                                    </div>
+                                </div>
+                            `;
                         }
 
                         const logoHtml = p.office_logo ?
                             `<img src="<?= BASE_URL; ?>${escapeHtml(p.office_logo)}" class="pillar-logo-img" alt="Logo" width="46" height="46">` :
                             `<div class="pillar-logo-img text-primary fw-bold fs-4"><i class="bi bi-building"></i></div>`;
+
+                        const heroNumberHtml = heroTicket
+                            ? `<span class="ticket-marquee-track">${escapeHtml(heroTicket.ticket_number)}</span>`
+                            : '---';
 
                         pillar.innerHTML = `
                             <div class="pillar-header">
@@ -973,32 +1187,29 @@ if ($db_connect) {
                                 <div class="window-banner">${escapeHtml(windowName)}</div>
                                 <div class="serving-body">
                                     <span class="serving-label">NOW SERVING</span>
-                                    <div class="serving-ticket-number">${ns ? escapeHtml(ns.ticket_number) : '---'}</div>
+                                    <div class="serving-ticket-number">${heroNumberHtml}</div>
                                     <div class="priority-badge-container">
-                                        ${ns && ns.is_priority == 1 ? '<span class="priority-badge-tag">★ PRIORITY</span>' : ''}
+                                        ${heroTicket && heroTicket.is_priority == 1 ? '<span class="priority-badge-tag">★ PRIORITY</span>' : ''}
                                     </div>
                                 </div>
                             </div>
 
                             <div class="pillar-lineup-block">
-                                <span class="lineup-label">WAITING LINE</span>
-                                <div class="lineup-pills-stack">
-                                    ${lineupHtml}
-                                </div>
-                                <div class="waiting-count-footer">(${p.waiting_count || 0} Waiting)</div>
+                                ${bottomLineupHtml}
                             </div>
                         `;
 
                         pillarGridContainer.appendChild(pillar);
                     });
 
+                    applyTickerAnimations();
                     lastRenderedJson = currentFingerprint();
                 };
 
                 if (animate) {
                     pillarGridContainer.classList.add('fade-out');
                     setTimeout(() => {
-                        if (seq !== renderSeq) return;   // superseded by a newer render, which handles the fade itself
+                        if (seq !== renderSeq) return;
                         build();
                         requestAnimationFrame(() => pillarGridContainer.classList.remove('fade-out'));
                     }, 350);
@@ -1009,7 +1220,7 @@ if ($db_connect) {
             }
 
             function renderEmptyState() {
-                renderSeq++;   // cancel any pending animated render
+                renderSeq++;
                 if (lastRenderedJson === 'EMPTY_STATE') return;
                 lastRenderedJson = 'EMPTY_STATE';
                 pillarGridContainer.classList.remove('fade-out');
@@ -1032,7 +1243,6 @@ if ($db_connect) {
             function startPageRotation() {
                 if (rotationTimer) clearInterval(rotationTimer);
                 rotationTimer = setInterval(() => {
-                    // Hold the page while a call is being spoken (only when audio is actually working)
                     if (isHoldingCall || (audioUnlocked && (isSpeaking || audioQueue.length > 0))) {
                         return;
                     }
@@ -1056,7 +1266,7 @@ if ($db_connect) {
                     .map(char => (char === '-' ? ' ' : char))
                     .join(' ');
 
-                const windowText = counterName ? `, proceed to ${counterName}` : ', proceed to the office';
+                const windowText = `, proceed to ${counterName || 'Window 1'}`;
                 const phrase = `Now calling, ${spokenTicket}${windowText}. I repeat, ${spokenTicket}${windowText}.`;
 
                 audioQueue.push({ phrase, pillarKey, ticketId, queuedAt: Date.now() });
@@ -1068,6 +1278,10 @@ if ($db_connect) {
                 isSpeaking = false;
                 isHoldingCall = true;
 
+                // Re-render immediately so the just-spoken ticket moves down to SERVING LINE
+                // and the newest/next ticket takes the big NOW SERVING hero box
+                renderCurrentPage(false);
+
                 if (postCallHoldTimer) clearTimeout(postCallHoldTimer);
                 postCallHoldTimer = setTimeout(() => {
                     isHoldingCall = false;
@@ -1076,13 +1290,10 @@ if ($db_connect) {
                 processAudioQueue();
             }
 
-            let activeSpeech = null;   // { ticketId, abort() } while a call is being spoken
-
             function speakPhrase(item) {
                 let finished = false;
                 let watchdog = null;
 
-                // aborted = the ticket was completed/skipped while speaking: stop right away, no post-call hold
                 const finish = (aborted) => {
                     if (finished) return;
                     finished = true;
@@ -1091,6 +1302,7 @@ if ($db_connect) {
                     activeSpeech = null;
                     if (aborted) {
                         isSpeaking = false;
+                        renderCurrentPage(false);
                         processAudioQueue();
                     } else {
                         finishSpeechAndHold();
@@ -1099,6 +1311,7 @@ if ($db_connect) {
 
                 activeSpeech = {
                     ticketId: item.ticketId,
+                    pillarKey: item.pillarKey,
                     abort: () => {
                         try { window.speechSynthesis.cancel(); } catch (e) {}
                         finish(true);
@@ -1132,30 +1345,31 @@ if ($db_connect) {
             function processAudioQueue() {
                 if (isSpeaking || audioQueue.length === 0) return;
 
-                // Ticket already completed / skipped before it could be announced: do not announce it
                 if (!isTicketActive(audioQueue[0].ticketId)) {
                     audioQueue.shift();
                     processAudioQueue();
                     return;
                 }
 
-                // Show the window that is being called, even while audio is still locked
                 showPillarPage(audioQueue[0].pillarKey);
 
-                if (!audioUnlocked || !('speechSynthesis' in window)) return;   // wait for the first click
+                if (!audioUnlocked || !('speechSynthesis' in window)) return;
 
                 const nextItem = audioQueue.shift();
                 if (Date.now() - nextItem.queuedAt > PENDING_MAX_AGE_MS) {
-                    processAudioQueue();   // too old to be useful, skip to the next one
+                    processAudioQueue();
                     return;
                 }
 
                 isSpeaking = true;
+                // Put the ticket currently being announced into the big NOW SERVING hero box
+                renderCurrentPage(false);
+
                 playBellDing();
-                // Let the bell start first, then speak the ticket (if it is still being called)
                 setTimeout(() => {
                     if (!isTicketActive(nextItem.ticketId)) {
                         isSpeaking = false;
+                        renderCurrentPage(false);
                         processAudioQueue();
                         return;
                     }
@@ -1163,7 +1377,7 @@ if ($db_connect) {
                 }, 500);
             }
 
-            /* ---------------- AUDIO UNLOCK (browsers require one click) ---------------- */
+            /* ---------------- AUDIO UNLOCK ---------------- */
             const audioNoticeBanner = document.getElementById('audioNoticeBanner');
 
             function unlockAudioContext() {
@@ -1179,7 +1393,6 @@ if ($db_connect) {
                     try {
                         window.speechSynthesis.resume();
                         loadVoices();
-                        // Silent primer so the very first real announcement is not dropped by the browser
                         const primer = new SpeechSynthesisUtterance(' ');
                         primer.volume = 0;
                         window.speechSynthesis.speak(primer);
@@ -1197,13 +1410,13 @@ if ($db_connect) {
                 document.removeEventListener('keydown', unlockAudioContext);
                 document.removeEventListener('touchstart', unlockAudioContext);
 
-                // Speak anything that was called before the first click
                 processAudioQueue();
             }
 
             document.addEventListener('click', unlockAudioContext);
             document.addEventListener('keydown', unlockAudioContext);
             document.addEventListener('touchstart', unlockAudioContext);
+            window.addEventListener('resize', applyTickerAnimations);
 
             setInterval(fetchLiveQueueData, 2000);
             fetchLiveQueueData();

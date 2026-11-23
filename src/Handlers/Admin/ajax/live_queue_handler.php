@@ -49,7 +49,6 @@ if (isset($role_map[(string)$g_user_role])) {
 $g_user_role_upper = strtoupper(trim((string)$g_user_role));
 
 // 3. Resolve the office(s) an ADMIN_STAFF user is assigned to.
-//    (staff_assignments has one row per staff+window, so a user may belong to several offices.)
 $assigned_office_ids = [];
 if ($g_user_role_upper === 'ADMIN_STAFF' && $user_id > 0) {
     $stmtStaff = $db_connect->prepare("
@@ -67,7 +66,6 @@ if ($g_user_role_upper === 'ADMIN_STAFF' && $user_id > 0) {
         $stmtStaff->close();
     }
 
-    // Fallback: employee profile office
     if (empty($assigned_office_ids)) {
         $stmtEmp = $db_connect->prepare("SELECT office_id FROM employee WHERE user_id = ? AND office_id > 0 LIMIT 1");
         if ($stmtEmp) {
@@ -91,7 +89,6 @@ switch ($action) {
         try {
             $queue_mode = $_POST['queue_mode'] ?? 'all';
 
-            // Filter by visitor type based on screen mode (static strings only)
             $visitor_filter = "";
             if ($queue_mode === 'student_guest') {
                 $visitor_filter = " AND l.visitor_type IN ('STUDENT', 'GUEST') ";
@@ -99,25 +96,22 @@ switch ($action) {
                 $visitor_filter = " AND l.visitor_type = 'EMPLOYEE' ";
             }
 
-            // Office scope: ADMIN_STAFF sees only their own office(s); ADMIN / STATION_ADMIN see all
             $office_scope_sql = '';
             if (!empty($assigned_office_ids)) {
                 $office_scope_sql = ' AND o.office_id IN (' . implode(',', array_map('intval', $assigned_office_ids)) . ') ';
             }
 
-            // 1. All windows (active ones become pillars; inactive ones are only used to resolve names)
+            // 1. All windows & default Window 1 per office
             $windows = [];
             $counter_names = [];
+            $default_counter_by_office = [];
             $resWin = $db_connect->query("
                 SELECT c.id AS counter_id, c.counter_name, c.flag_status AS counter_flag,
-                       o.office_id, o.office_code, o.office_name, o.office_logo,
-                       EXISTS (
-                           SELECT 1 FROM staff_assignments sa
-                           WHERE sa.counter_id = c.id AND sa.flag_status = 0
-                       ) AS has_staff
+                       o.office_id, o.office_code, o.office_name, o.office_logo
                 FROM counters c
                 INNER JOIN office o ON o.office_id = c.office_id
                 WHERE o.flag_status = 0 {$office_scope_sql}
+                ORDER BY o.office_id ASC, c.id ASC
             ");
             $offices = [];
             while ($w = $resWin->fetch_assoc()) {
@@ -132,10 +126,15 @@ switch ($action) {
                 ];
                 if ((int)$w['counter_flag'] === 0) {
                     $windows[] = $w;
+                    if (!isset($default_counter_by_office[$oid])) {
+                        $default_counter_by_office[$oid] = [
+                            'id'   => $cid,
+                            'name' => $w['counter_name'] ?: 'Window 1',
+                        ];
+                    }
                 }
             }
 
-            // Offices without any counter (needed for office-level tickets)
             $resOff = $db_connect->query("
                 SELECT o.office_id, o.office_code, o.office_name, o.office_logo
                 FROM office o
@@ -152,11 +151,19 @@ switch ($action) {
 
             $office_ids_sql = empty($offices) ? '0' : implode(',', array_map('intval', array_keys($offices)));
 
-            // 2. Currently CALLED / SERVING ticket per window (newest first, first row per window wins)
-            $now_by_key = [];
+            // Helper: normalize unassigned counter_id (0) to the office's Window 1
+            $resolveCounterId = function (int $oid, int $rawCid) use ($default_counter_by_office): int {
+                if ($rawCid > 0) {
+                    return $rawCid;
+                }
+                return $default_counter_by_office[$oid]['id'] ?? 0;
+            };
+
+            // 2. ALL currently CALLED / SERVING tickets per window (newest first)
+            $now_list_by_key = [];
             $stmtNow = $db_connect->prepare("
                 SELECT q.id AS ticket_id, q.office_id, q.counter_id, q.ticket_number, q.status,
-                       q.is_priority, q.called_at, l.visitor_type
+                       q.is_priority, q.called_at, q.served_by_user_id, l.visitor_type
                 FROM queue_tickets q
                 INNER JOIN logbooks l ON q.logbook_id = l.id
                 WHERE q.queue_date = ?
@@ -169,24 +176,24 @@ switch ($action) {
             $stmtNow->execute();
             $resNow = $stmtNow->get_result();
             while ($r = $resNow->fetch_assoc()) {
-                $key = (int)$r['office_id'] . '_' . (int)$r['counter_id'];
-                if (isset($now_by_key[$key])) {
-                    continue;
-                }
+                $oid = (int)$r['office_id'];
+                $cid = $resolveCounterId($oid, (int)$r['counter_id']);
+                $key = $oid . '_' . $cid;
                 $calledTs = !empty($r['called_at']) ? strtotime($r['called_at']) : 0;
-                $now_by_key[$key] = [
-                    'ticket_id'     => (int)$r['ticket_id'],
-                    'ticket_number' => $r['ticket_number'],
-                    'status'        => $r['status'],
-                    'is_priority'   => (int)$r['is_priority'],
-                    'called_at'     => $r['called_at'],
-                    'called_age'    => $calledTs ? max(0, time() - $calledTs) : null,
-                    'visitor_type'  => $r['visitor_type'],
+                $now_list_by_key[$key][] = [
+                    'ticket_id'         => (int)$r['ticket_id'],
+                    'ticket_number'     => $r['ticket_number'],
+                    'status'            => $r['status'],
+                    'is_priority'       => (int)$r['is_priority'],
+                    'called_at'         => $r['called_at'],
+                    'called_age'        => $calledTs ? max(0, time() - $calledTs) : null,
+                    'served_by_user_id' => (int)($r['served_by_user_id'] ?? 0),
+                    'visitor_type'      => $r['visitor_type'],
                 ];
             }
             $stmtNow->close();
 
-            // 3. Waiting tickets, bucketed by office + designated window (counter 0 = "any window")
+            // 3. Waiting tickets (route counter_id = 0 to Window 1)
             $wait_buckets = [];
             $stmtWait = $db_connect->prepare("
                 SELECT q.id, q.office_id, q.counter_id, q.ticket_number, q.is_priority, q.queue_sequence, l.visitor_type, l.created_at AS checkin_at
@@ -202,7 +209,9 @@ switch ($action) {
             $stmtWait->execute();
             $resWait = $stmtWait->get_result();
             while ($r = $resWait->fetch_assoc()) {
-                $wait_buckets[(int)$r['office_id']][(int)$r['counter_id']][] = [
+                $oid = (int)$r['office_id'];
+                $cid = $resolveCounterId($oid, (int)$r['counter_id']);
+                $wait_buckets[$oid][$cid][] = [
                     'ticket_number'  => $r['ticket_number'],
                     'is_priority'    => (int)$r['is_priority'],
                     'visitor_type'   => $r['visitor_type'],
@@ -212,11 +221,8 @@ switch ($action) {
             }
             $stmtWait->close();
 
-            // Waiting line of a window = tickets designated to it + tickets open to any window of the office
             $build_waiting = function (int $oid, int $cid) use ($wait_buckets) {
-                $own    = $wait_buckets[$oid][$cid] ?? [];
-                $shared = ($cid > 0) ? ($wait_buckets[$oid][0] ?? []) : [];
-                $all    = array_merge($own, $shared);
+                $all = $wait_buckets[$oid][$cid] ?? [];
                 usort($all, function ($a, $b) {
                     if ($a['is_priority'] !== $b['is_priority']) {
                         return $b['is_priority'] - $a['is_priority'];
@@ -242,28 +248,37 @@ switch ($action) {
 
             // 4. One pillar per office + window
             $pillars = [];
-            $add_pillar = function (array $office, int $cid, string $counter_name) use (&$pillars, $now_by_key, $build_waiting) {
+            $add_pillar = function (array $office, int $cid, string $counter_name) use (&$pillars, $now_list_by_key, $build_waiting) {
                 $oid = (int)$office['office_id'];
                 $key = $oid . '_' . $cid;
                 if (isset($pillars[$key])) {
                     return;
                 }
                 [$up_next, $waiting_count, $latest_wait] = $build_waiting($oid, $cid);
-                $ns = $now_by_key[$key] ?? null;
-                // Latest activity of this window = newest call OR newest visitor joining its waiting line
-                $activity_at = max((string)($ns['called_at'] ?? ''), (string)$latest_wait);
+                $now_list = $now_list_by_key[$key] ?? [];
+                $primary_ns = $now_list[0] ?? null;
+
+                $latest_called = '';
+                foreach ($now_list as $item) {
+                    if ((string)($item['called_at'] ?? '') > $latest_called) {
+                        $latest_called = (string)$item['called_at'];
+                    }
+                }
+
+                $activity_at = max($latest_called, (string)$latest_wait);
                 $pillars[$key] = [
-                    'pillar_key'    => $key,
-                    'office_id'     => $oid,
-                    'office_code'   => $office['office_code'],
-                    'office_name'   => $office['office_name'],
-                    'office_logo'   => $office['office_logo'],
-                    'counter_id'    => $cid,
-                    'counter_name'  => $counter_name,
-                    'now_serving'   => $ns,
-                    'activity_at'   => $activity_at,
-                    'up_next'       => $up_next,
-                    'waiting_count' => $waiting_count,
+                    'pillar_key'       => $key,
+                    'office_id'        => $oid,
+                    'office_code'      => $office['office_code'],
+                    'office_name'      => $office['office_name'],
+                    'office_logo'      => $office['office_logo'],
+                    'counter_id'       => $cid,
+                    'counter_name'     => $counter_name ?: 'Window 1',
+                    'now_serving'      => $primary_ns,
+                    'now_serving_list' => $now_list,
+                    'activity_at'      => $activity_at,
+                    'up_next'          => $up_next,
+                    'waiting_count'    => $waiting_count,
                 ];
             };
 
@@ -271,16 +286,14 @@ switch ($action) {
                 $oid = (int)$w['office_id'];
                 $cid = (int)$w['counter_id'];
                 [, $cnt] = $build_waiting($oid, $cid);
-                $hasNow  = isset($now_by_key[$oid . '_' . $cid]);
+                $hasNow  = !empty($now_list_by_key[$oid . '_' . $cid]);
 
-                // A window only gets a pillar while it has a ticket Now Serving or people in its Waiting Line
                 if ($hasNow || $cnt > 0) {
                     $add_pillar($offices[$oid], $cid, $w['counter_name']);
                 }
             }
 
-            // Tickets that do not belong to any active window (office-level / removed window) still show
-            $orphan_keys = array_keys($now_by_key);
+            $orphan_keys = array_keys($now_list_by_key);
             foreach ($wait_buckets as $oid => $byCounter) {
                 foreach ($byCounter as $cid => $rows) {
                     $orphan_keys[] = $oid . '_' . $cid;
@@ -291,23 +304,12 @@ switch ($action) {
                 if (isset($pillars[$key]) || !isset($offices[$oid])) {
                     continue;
                 }
-                // "Any window" tickets only need their own pillar when the office has no active window to carry them
-                if ($cid === 0) {
-                    $office_has_window = false;
-                    foreach ($pillars as $p) {
-                        if ($p['office_id'] === $oid) { $office_has_window = true; break; }
-                    }
-                    if ($office_has_window) {
-                        continue;
-                    }
-                }
-                $add_pillar($offices[$oid], $cid, $counter_names[$cid] ?? '');
+                $fallbackName = $counter_names[$cid] ?? ($default_counter_by_office[$oid]['name'] ?? 'Window 1');
+                $add_pillar($offices[$oid], $cid, $fallbackName);
             }
 
             $pillars = array_values($pillars);
 
-            // Order: windows with the newest activity first (newest call OR newest visitor in the waiting line),
-            // so whatever just happened is always on page 1. Ties: office name, then window name.
             usort($pillars, function ($a, $b) {
                 $t = strcmp((string)$b['activity_at'], (string)$a['activity_at']);
                 if ($t !== 0) {
@@ -324,7 +326,7 @@ switch ($action) {
                 'success' => true,
                 'data'    => [
                     'pillars'        => $pillars,
-                    'active_offices' => $pillars   // backward-compatible key
+                    'active_offices' => $pillars
                 ]
             ]);
             exit();
