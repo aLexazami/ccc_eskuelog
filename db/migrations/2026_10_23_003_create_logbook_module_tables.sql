@@ -18,21 +18,19 @@ CREATE TABLE IF NOT EXISTS `transaction_types` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- 2. Service Counters / Windows per Office
-CREATE TABLE IF NOT EXISTS `counters` (
-    `id` INT AUTO_INCREMENT PRIMARY KEY,
-    `office_id` INT NOT NULL,                          -- References office.office_id
-    `counter_name` VARCHAR(100) NOT NULL,              -- e.g., 'Window 1', 'Counter A', 'Desk 2'
-    `flag_status` INT NOT NULL DEFAULT 0,              -- 0 = active, 1 = inactive
-
-    -- Foreign Key Constraints
-    CONSTRAINT `fk_counter_office` FOREIGN KEY (`office_id`) REFERENCES `office`(`office_id`) ON DELETE CASCADE,
-
-    -- Unique Constraint (Prevents duplicate counter names per office)
-    UNIQUE KEY `uk_office_counter_name` (`office_id`, `counter_name`),
-
-    -- Indexes
-    INDEX `idx_office_counter` (`office_id`, `flag_status`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+CREATE TABLE `counters` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `office_id` int(11) NOT NULL,
+  `counter_name` varchar(100) NOT NULL,
+  `flag_status` int(11) NOT NULL DEFAULT 0,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
+  `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_office_counter_name` (`office_id`,`counter_name`),
+  KEY `idx_office_counter` (`office_id`,`flag_status`),
+  KEY `idx_counter_activity` (`updated_at`,`created_at`,`id`),
+  CONSTRAINT `fk_counter_office` FOREIGN KEY (`office_id`) REFERENCES `office` (`office_id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- 3. Digital Logbook Master Table
 CREATE TABLE `logbooks` (

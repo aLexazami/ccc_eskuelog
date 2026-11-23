@@ -43,25 +43,37 @@ INSERT INTO `counters` (`office_id`, `counter_name`, `flag_status`) VALUES
 
 -- LIRC (office_id = 11)
 (11, 'Window 1', 0),
-(11, 'Window 2', 0)
+(11, 'Window 2', 0),
+
+-- MISD (office_id = 12)
+(12, 'Window 1', 0),
+(12, 'Window 2', 0)
 ON DUPLICATE KEY UPDATE
     `flag_status` = VALUES(`flag_status`);
 
--- 2. Seed Initial Staff Assignment for Marlon Reolo (user_id = 1)
--- Assigned to DCI (office_id = 10) at Window 1 (supports multiple staff sharing the same counter_id)
+-- Step 6: Seed Staff Assignments for MISD (office_id = 12) at Window 1 for user_id = 1 and user_id = 2
 INSERT INTO `staff_assignments` (
     `user_id`,
     `office_id`,
     `counter_id`,
     `flag_status`,
     `assigned_by_user_id`
-) VALUES (
-    1,                                                                                         -- user_id = 1 (Marlon Reolo)
-    10,                                                                                        -- office_id = 10 (DCI)
-    (SELECT `id` FROM `counters` WHERE `office_id` = 10 AND `counter_name` = 'Window 1' LIMIT 1), -- Window 1 counter_id
+) VALUES 
+(
+    1,                                                                                         -- user_id = 1
+    12,                                                                                        -- office_id = 12 (MISD)
+    (SELECT `id` FROM `counters` WHERE `office_id` = 12 AND `counter_name` = 'Window 1' LIMIT 1),
     0,                                                                                         -- 0 = Active Assignment
     1                                                                                          -- Self/Admin assigner user_id
-) ON DUPLICATE KEY UPDATE
+),
+(
+    2,                                                                                         -- user_id = 2
+    12,                                                                                        -- office_id = 12 (MISD)
+    (SELECT `id` FROM `counters` WHERE `office_id` = 12 AND `counter_name` = 'Window 1' LIMIT 1),
+    0,                                                                                         -- 0 = Active Assignment
+    1                                                                                          -- Admin assigner user_id
+)
+ON DUPLICATE KEY UPDATE
     `office_id` = VALUES(`office_id`),
     `counter_id` = VALUES(`counter_id`),
     `flag_status` = VALUES(`flag_status`),
