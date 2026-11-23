@@ -589,6 +589,10 @@ $action_buttons = [
         const AJAX_HANDLER       = "<?php echo BASE_URL; ?>admin/ajax/transaction-types";
         const IS_ADMIN_STAFF     = <?php echo $is_admin_staff ? 'true' : 'false'; ?>;
         const ASSIGNED_OFFICE_ID = <?php echo (int) $assigned_office_id; ?>;
+        const DEFAULT_SORT       = [
+            { column: "id", dir: "desc" },
+            { column: "date_modify", dir: "desc" }
+        ];
         let tabulator = null;
         let isEditMode = false;
 
@@ -1410,6 +1414,7 @@ $action_buttons = [
                     return flattenServices(response && response.data);
                 },
                 index: "row_key",
+                initialSort: DEFAULT_SORT,
                 layout: "fitDataFill",
                 resizableColumnFit: true,
                 headerFilterPlaceholder: "Search",
@@ -1551,6 +1556,8 @@ $action_buttons = [
                 $('#filterOffice').val(IS_ADMIN_STAFF ? String(ASSIGNED_OFFICE_ID) : '0');
                 tabulator.clearFilter();
                 tabulator.clearHeaderFilter();
+                tabulator.setSort(DEFAULT_SORT);
+                tabulator.setPage(1);
                 tabulator.setData();
             }
 
@@ -1804,7 +1811,11 @@ $action_buttons = [
                 complete: () => { hideLoader(); $btn.prop('disabled', false); },
                 success: (res) => {
                     if (res && res.msg_status === true) {
-                        if (tabulator) tabulator.setData();
+                        if (tabulator) {
+                            tabulator.setSort(DEFAULT_SORT);
+                            tabulator.setPage(1);
+                            tabulator.setData();
+                        }
                         $('#unified_service_modal').modal('hide');
                         showSuccess(res.msg_response);
                     } else {

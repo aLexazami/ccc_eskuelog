@@ -1357,8 +1357,8 @@ try {
                 {$whereClause}
 
                 ORDER BY
-                    o.office_name ASC,
-                    tt.transaction_name ASC
+                    tt.date_modify DESC,
+                    tt.id DESC
             ";
 
             $stmt = $db_connect->prepare($sql);
