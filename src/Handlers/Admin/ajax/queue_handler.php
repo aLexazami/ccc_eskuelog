@@ -357,6 +357,7 @@ switch ($action) {
                     q.status,
                     q.is_priority,
                     q.counter_id,
+                    q.served_by_user_id,
                     c_q.counter_name AS ticket_window_name,
                     c_tt.counter_name AS primary_trans_window_name,
                     l.id AS logbook_id,
@@ -380,10 +381,12 @@ switch ($action) {
                     d.department_name,
                     o.office_name,
                     tt.transaction_name,
-                    l.other_concern_text
+                    l.other_concern_text,
+                    CONCAT(staff_u.first_name, ' ', staff_u.last_name) AS called_by_name
                 FROM queue_tickets q
                 INNER JOIN logbooks l ON q.logbook_id = l.id
                 LEFT JOIN users u ON l.user_id = u.id
+                LEFT JOIN users staff_u ON q.served_by_user_id = staff_u.id
                 LEFT JOIN programs p ON (l.program_id > 0 AND l.program_id = p.program_id) OR (l.program_code IS NOT NULL AND TRIM(l.program_code) = TRIM(p.program_code))
                 LEFT JOIN departments d ON l.department_id = d.department_id
                 LEFT JOIN office o ON q.office_id = o.office_id
@@ -392,15 +395,17 @@ switch ($action) {
                 LEFT JOIN counters c_tt ON tt.counter_id = c_tt.id
             ";
 
-            // 1. Active CALLED or SERVING ticket for this specific staff member at this office & window
+            // 1. Hero Display Ticket for THIS staff member:
+            // Priority A: Ticket they are actively SERVING
+            // Priority B: Most recent CALLED ticket they called (if not serving anyone yet)
             $stmtServing = $db_connect->prepare("
                 {$baseTicketSelect}
                 WHERE q.office_id = ? 
                   AND q.counter_id = ?
                   AND q.served_by_user_id = ?
                   AND q.queue_date = ? 
-                  AND q.status IN ('CALLED', 'SERVING')
-                ORDER BY q.called_at DESC, q.id DESC
+                  AND q.status IN ('SERVING', 'CALLED')
+                ORDER BY (q.status = 'SERVING') DESC, q.called_at DESC, q.id DESC
                 LIMIT 1
             ");
             $stmtServing->bind_param("iiis", $office_id, $counter_id, $user_id, $today);
@@ -412,7 +417,71 @@ switch ($action) {
                 $now_serving = hydrateTicketDetails($db_connect, $now_serving);
             }
 
-            // 2. Waiting tickets lineup (Window 1 also includes legacy counter_id = 0/NULL tickets)
+            // 2. Shared Calling Line:
+            // Include CALLED tickets at this Office & Window ONLY from staff who have
+            // MORE THAN ONE (> 1) active CALLED ticket, excluding each caller's
+            // latest CALLED ticket (which is shown on that caller's own Main Display).
+            $calling_line = [];
+            $stmtCalling = $db_connect->prepare("
+                {$baseTicketSelect}
+                INNER JOIN (
+                    SELECT served_by_user_id
+                    FROM queue_tickets
+                    WHERE office_id = ?
+                      AND counter_id = ?
+                      AND queue_date = ?
+                      AND status = 'CALLED'
+                      AND served_by_user_id IS NOT NULL
+                      AND served_by_user_id > 0
+                    GROUP BY served_by_user_id
+                    HAVING COUNT(*) > 1
+                ) multi_caller ON q.served_by_user_id = multi_caller.served_by_user_id
+                WHERE q.office_id = ?
+                  AND q.counter_id = ?
+                  AND q.queue_date = ?
+                  AND q.status = 'CALLED'
+                  AND q.id NOT IN (
+                      SELECT latest_id FROM (
+                          SELECT MAX(q2.id) AS latest_id
+                          FROM queue_tickets q2
+                          INNER JOIN (
+                              SELECT served_by_user_id, MAX(called_at) AS max_called_at
+                              FROM queue_tickets
+                              WHERE office_id = ?
+                                AND counter_id = ?
+                                AND queue_date = ?
+                                AND status = 'CALLED'
+                                AND served_by_user_id IS NOT NULL
+                                AND served_by_user_id > 0
+                              GROUP BY served_by_user_id
+                              HAVING COUNT(*) > 1
+                          ) latest_per_staff
+                            ON q2.served_by_user_id = latest_per_staff.served_by_user_id
+                           AND q2.called_at = latest_per_staff.max_called_at
+                          WHERE q2.office_id = ?
+                            AND q2.counter_id = ?
+                            AND q2.queue_date = ?
+                            AND q2.status = 'CALLED'
+                          GROUP BY q2.served_by_user_id
+                      ) latest_sub
+                  )
+                ORDER BY q.called_at ASC, q.id ASC
+            ");
+            $stmtCalling->bind_param(
+                "iisiisiisiis",
+                $office_id, $counter_id, $today,
+                $office_id, $counter_id, $today,
+                $office_id, $counter_id, $today,
+                $office_id, $counter_id, $today
+            );
+            $stmtCalling->execute();
+            $resCalling = $stmtCalling->get_result();
+            while ($cRow = $resCalling->fetch_assoc()) {
+                $calling_line[] = hydrateTicketDetails($db_connect, $cRow);
+            }
+            $stmtCalling->close();
+
+            // 3. Waiting tickets lineup (Window 1 also includes legacy counter_id = 0/NULL tickets)
             $up_next = [];
             $stmtNext = $db_connect->prepare("
                 {$baseTicketSelect}
@@ -431,7 +500,7 @@ switch ($action) {
             }
             $stmtNext->close();
 
-            // 3. Total waiting count (Window 1 also includes legacy counter_id = 0/NULL tickets)
+            // 4. Total waiting count (Window 1 also includes legacy counter_id = 0/NULL tickets)
             $stmtCount = $db_connect->prepare("
                 SELECT COUNT(*) as cnt 
                 FROM queue_tickets 
@@ -449,6 +518,7 @@ switch ($action) {
                 'success' => true,
                 'data' => [
                     'now_serving'   => $now_serving,
+                    'calling_line'  => $calling_line,
                     'up_next'       => $up_next,
                     'waiting_count' => $waiting_count,
                     'shift_status'  => $shift_status
@@ -556,7 +626,7 @@ switch ($action) {
         $lock_name     = "eq_call_{$office_id}_{$counter_id}_{$category}";
         $lock_held     = false;
         $in_tx         = false;
-        $guard_seconds = 4;
+        $guard_seconds = 2;
         $response      = ['success' => false, 'message' => 'Call next failed.'];
 
         $lane_filters = [
@@ -605,40 +675,9 @@ switch ($action) {
                         'message' => "You just called ticket {$justCalled['ticket_number']}. Please wait a moment before calling the next one."
                     ];
                 } else {
-                    // 2. Fetch only THIS staff member's active ticket(s) at this window for audit logging
-                    $auto_completed_tickets = [];
-                    $stmtPrevList = $db_connect->prepare("
-                        SELECT ticket_number
-                        FROM queue_tickets
-                        WHERE office_id = ?
-                          AND counter_id = ?
-                          AND served_by_user_id = ?
-                          AND queue_date = ?
-                          AND status IN ('CALLED', 'SERVING')
-                    ");
-                    $stmtPrevList->bind_param("iiis", $office_id, $counter_id, $user_id, $today);
-                    $stmtPrevList->execute();
-                    $resPrev = $stmtPrevList->get_result();
-                    while ($pRow = $resPrev->fetch_assoc()) {
-                        $auto_completed_tickets[] = $pRow['ticket_number'];
-                    }
-                    $stmtPrevList->close();
+                    // Existing CALLED/SERVING tickets are NOT auto-completed so they remain tracked in the Calling Line.
 
-                    // 3. Auto-complete only THIS staff member's previous active ticket at this window
-                    $stmtCompletePrev = $db_connect->prepare("
-                        UPDATE queue_tickets
-                        SET status = 'COMPLETED', completed_at = NOW()
-                        WHERE office_id = ?
-                          AND counter_id = ?
-                          AND served_by_user_id = ?
-                          AND queue_date = ?
-                          AND status IN ('CALLED', 'SERVING')
-                    ");
-                    $stmtCompletePrev->bind_param("iiis", $office_id, $counter_id, $user_id, $today);
-                    $stmtCompletePrev->execute();
-                    $stmtCompletePrev->close();
-
-                    // 4. Pick + atomically claim the next FIFO ticket (Window 1 also claims counter_id = 0/NULL tickets)
+                    // 2. Pick + atomically claim the next FIFO ticket (Window 1 also claims counter_id = 0/NULL tickets)
                     $claimed_number = null;
                     $lane_empty     = false;
 
@@ -688,22 +727,14 @@ switch ($action) {
                         $in_tx = false;
 
                         $wsLabel = resolveWorkstationLabel($db_connect, $office_id, $counter_id, $my_windows);
-                        foreach ($auto_completed_tickets as $prevTicketNo) {
-                            record_activity_log(
-                                $db_connect,
-                                $user_id,
-                                "QUEUE_AUTO_COMPLETE: Auto-completed previous ticket {$prevTicketNo} at {$wsLabel}",
-                                $g_user_role_upper
-                            );
-                        }
                         record_activity_log(
                             $db_connect,
                             $user_id,
-                            "QUEUE_CALL_NEXT: Called ticket {$claimed_number} ({$category} lane) at {$wsLabel}",
+                            "QUEUE_CALL_NEXT: Added ticket {$claimed_number} ({$category} lane) to Calling Line at {$wsLabel}",
                             $g_user_role_upper
                         );
 
-                        $response = ['success' => true, 'message' => "Ticket {$claimed_number} called."];
+                        $response = ['success' => true, 'message' => "Ticket {$claimed_number} added to Calling Line."];
                     } else {
                         $db_connect->rollback();
                         $in_tx = false;
@@ -741,34 +772,76 @@ switch ($action) {
             exit();
         }
 
+        $target_ticket_id = (int)($_POST['ticket_id'] ?? 0);
+
         try {
-            $stmtFind = $db_connect->prepare("
-                SELECT id, ticket_number
+            // 1. Prevent a staff member from serving multiple tickets simultaneously
+            $stmtCheckBusy = $db_connect->prepare("
+                SELECT ticket_number
                 FROM queue_tickets
                 WHERE office_id = ?
                   AND counter_id = ?
                   AND served_by_user_id = ?
                   AND queue_date = ?
-                  AND status = 'CALLED'
-                ORDER BY called_at DESC, id DESC
+                  AND status = 'SERVING'
                 LIMIT 1
             ");
-            $stmtFind->bind_param("iiis", $office_id, $counter_id, $user_id, $today);
+            $stmtCheckBusy->bind_param("iiis", $office_id, $counter_id, $user_id, $today);
+            $stmtCheckBusy->execute();
+            $alreadyServing = $stmtCheckBusy->get_result()->fetch_assoc();
+            $stmtCheckBusy->close();
+
+            if ($alreadyServing) {
+                echo json_encode([
+                    'success' => false,
+                    'message' => "You are currently serving {$alreadyServing['ticket_number']}. Complete or skip it first before serving another ticket."
+                ]);
+                exit();
+            }
+
+            // 2. Locate target CALLED ticket at this office & window (specific ticket_id from Calling Line or staff's latest CALLED)
+            if ($target_ticket_id > 0) {
+                $stmtFind = $db_connect->prepare("
+                    SELECT id, ticket_number
+                    FROM queue_tickets
+                    WHERE id = ?
+                      AND office_id = ?
+                      AND counter_id = ?
+                      AND queue_date = ?
+                      AND status = 'CALLED'
+                    LIMIT 1
+                ");
+                $stmtFind->bind_param("iiis", $target_ticket_id, $office_id, $counter_id, $today);
+            } else {
+                $stmtFind = $db_connect->prepare("
+                    SELECT id, ticket_number
+                    FROM queue_tickets
+                    WHERE office_id = ?
+                      AND counter_id = ?
+                      AND served_by_user_id = ?
+                      AND queue_date = ?
+                      AND status = 'CALLED'
+                    ORDER BY called_at DESC, id DESC
+                    LIMIT 1
+                ");
+                $stmtFind->bind_param("iiis", $office_id, $counter_id, $user_id, $today);
+            }
             $stmtFind->execute();
             $targetTicket = $stmtFind->get_result()->fetch_assoc();
             $stmtFind->close();
 
             if ($targetTicket) {
                 $targetId = (int)$targetTicket['id'];
+                // Claim ownership (served_by_user_id = ?) so whichever staff clicks Serve gets it on their display
                 $stmtServe = $db_connect->prepare("
                     UPDATE queue_tickets 
-                    SET status = 'SERVING', served_at = NOW() 
+                    SET status = 'SERVING', served_at = NOW(), served_by_user_id = ? 
                     WHERE id = ?
+                      AND office_id = ?
                       AND counter_id = ?
-                      AND served_by_user_id = ?
                       AND status = 'CALLED'
                 ");
-                $stmtServe->bind_param("iii", $targetId, $counter_id, $user_id);
+                $stmtServe->bind_param("iiii", $user_id, $targetId, $office_id, $counter_id);
                 $stmtServe->execute();
                 $affected = $stmtServe->affected_rows;
                 $stmtServe->close();
@@ -782,12 +855,12 @@ switch ($action) {
                         $g_user_role_upper
                     );
 
-                    echo json_encode(['success' => true, 'message' => 'Started serving.']);
+                    echo json_encode(['success' => true, 'message' => "Now serving {$targetTicket['ticket_number']}."]);
                     exit();
                 }
             }
 
-            echo json_encode(['success' => false, 'message' => 'No CALLED ticket available to serve.']);
+            echo json_encode(['success' => false, 'message' => 'Ticket is no longer available in the Calling Line (may have been served by another staff).']);
             exit();
 
         } catch (Exception $e) {
@@ -801,18 +874,34 @@ switch ($action) {
             exit();
         }
 
-        $stmtRecall = $db_connect->prepare("
-            SELECT id, ticket_number 
-            FROM queue_tickets 
-            WHERE office_id = ?
-              AND counter_id = ?
-              AND served_by_user_id = ?
-              AND queue_date = ?
-              AND status IN ('CALLED', 'SERVING') 
-            ORDER BY called_at DESC, id DESC
-            LIMIT 1
-        ");
-        $stmtRecall->bind_param("iiis", $office_id, $counter_id, $user_id, $today);
+        $target_ticket_id = (int)($_POST['ticket_id'] ?? 0);
+
+        if ($target_ticket_id > 0) {
+            $stmtRecall = $db_connect->prepare("
+                SELECT id, ticket_number 
+                FROM queue_tickets 
+                WHERE id = ?
+                  AND office_id = ?
+                  AND counter_id = ?
+                  AND queue_date = ?
+                  AND status IN ('CALLED', 'SERVING')
+                LIMIT 1
+            ");
+            $stmtRecall->bind_param("iiis", $target_ticket_id, $office_id, $counter_id, $today);
+        } else {
+            $stmtRecall = $db_connect->prepare("
+                SELECT id, ticket_number 
+                FROM queue_tickets 
+                WHERE office_id = ?
+                  AND counter_id = ?
+                  AND served_by_user_id = ?
+                  AND queue_date = ?
+                  AND status IN ('SERVING', 'CALLED') 
+                ORDER BY (status = 'SERVING') DESC, called_at DESC, id DESC
+                LIMIT 1
+            ");
+            $stmtRecall->bind_param("iiis", $office_id, $counter_id, $user_id, $today);
+        }
         $stmtRecall->execute();
         $recallRow = $stmtRecall->get_result()->fetch_assoc();
         $stmtRecall->close();
@@ -822,10 +911,10 @@ switch ($action) {
                 UPDATE queue_tickets 
                 SET called_at = COALESCE(called_at, NOW()) 
                 WHERE id = ?
+                  AND office_id = ?
                   AND counter_id = ?
-                  AND served_by_user_id = ?
             ");
-            $stmtTouch->bind_param("iii", $recallRow['id'], $counter_id, $user_id);
+            $stmtTouch->bind_param("iii", $recallRow['id'], $office_id, $counter_id);
             $stmtTouch->execute();
             $stmtTouch->close();
 
@@ -849,18 +938,35 @@ switch ($action) {
             exit();
         }
 
-        $stmtFind = $db_connect->prepare("
-            SELECT id, ticket_number
-            FROM queue_tickets
-            WHERE office_id = ?
-              AND counter_id = ?
-              AND served_by_user_id = ?
-              AND queue_date = ?
-              AND status IN ('CALLED', 'SERVING')
-            ORDER BY called_at DESC, id DESC
-            LIMIT 1
-        ");
-        $stmtFind->bind_param("iiis", $office_id, $counter_id, $user_id, $today);
+        $target_ticket_id = (int)($_POST['ticket_id'] ?? 0);
+
+        if ($target_ticket_id > 0) {
+            $stmtFind = $db_connect->prepare("
+                SELECT id, ticket_number
+                FROM queue_tickets
+                WHERE id = ?
+                  AND office_id = ?
+                  AND counter_id = ?
+                  AND served_by_user_id = ?
+                  AND queue_date = ?
+                  AND status IN ('CALLED', 'SERVING')
+                LIMIT 1
+            ");
+            $stmtFind->bind_param("iiiis", $target_ticket_id, $office_id, $counter_id, $user_id, $today);
+        } else {
+            $stmtFind = $db_connect->prepare("
+                SELECT id, ticket_number
+                FROM queue_tickets
+                WHERE office_id = ?
+                  AND counter_id = ?
+                  AND served_by_user_id = ?
+                  AND queue_date = ?
+                  AND status IN ('SERVING', 'CALLED')
+                ORDER BY (status = 'SERVING') DESC, called_at DESC, id DESC
+                LIMIT 1
+            ");
+            $stmtFind->bind_param("iiis", $office_id, $counter_id, $user_id, $today);
+        }
         $stmtFind->execute();
         $activeRow = $stmtFind->get_result()->fetch_assoc();
         $stmtFind->close();
@@ -896,18 +1002,34 @@ switch ($action) {
             exit();
         }
 
-        $stmtFind = $db_connect->prepare("
-            SELECT id, ticket_number
-            FROM queue_tickets
-            WHERE office_id = ?
-              AND counter_id = ?
-              AND served_by_user_id = ?
-              AND queue_date = ?
-              AND status IN ('CALLED', 'SERVING')
-            ORDER BY called_at DESC, id DESC
-            LIMIT 1
-        ");
-        $stmtFind->bind_param("iiis", $office_id, $counter_id, $user_id, $today);
+        $target_ticket_id = (int)($_POST['ticket_id'] ?? 0);
+
+        if ($target_ticket_id > 0) {
+            $stmtFind = $db_connect->prepare("
+                SELECT id, ticket_number
+                FROM queue_tickets
+                WHERE id = ?
+                  AND office_id = ?
+                  AND counter_id = ?
+                  AND queue_date = ?
+                  AND status IN ('CALLED', 'SERVING')
+                LIMIT 1
+            ");
+            $stmtFind->bind_param("iiis", $target_ticket_id, $office_id, $counter_id, $today);
+        } else {
+            $stmtFind = $db_connect->prepare("
+                SELECT id, ticket_number
+                FROM queue_tickets
+                WHERE office_id = ?
+                  AND counter_id = ?
+                  AND served_by_user_id = ?
+                  AND queue_date = ?
+                  AND status IN ('SERVING', 'CALLED')
+                ORDER BY (status = 'SERVING') DESC, called_at DESC, id DESC
+                LIMIT 1
+            ");
+            $stmtFind->bind_param("iiis", $office_id, $counter_id, $user_id, $today);
+        }
         $stmtFind->execute();
         $activeRow = $stmtFind->get_result()->fetch_assoc();
         $stmtFind->close();
@@ -918,10 +1040,10 @@ switch ($action) {
                 UPDATE queue_tickets 
                 SET status = 'SKIPPED', completed_at = NOW() 
                 WHERE id = ?
+                  AND office_id = ?
                   AND counter_id = ?
-                  AND served_by_user_id = ?
             ");
-            $stmtSkip->bind_param("iii", $activeId, $counter_id, $user_id);
+            $stmtSkip->bind_param("iii", $activeId, $office_id, $counter_id);
             $stmtSkip->execute();
             $stmtSkip->close();
 

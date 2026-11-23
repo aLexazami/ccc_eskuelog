@@ -452,6 +452,82 @@ $window_page_url      = strtok($_SERVER['REQUEST_URI'] ?? '', '?');
             line-height: 1.2;
         }
 
+        /* FULL-WIDTH CALLING LINE CONTAINER (MATCHING 3-COLUMN CARD & GLOBAL BUTTON STYLE) */
+        .calling-line-card {
+            border: 1.5px solid #e2e8f0;
+            border-radius: 1rem;
+            background: #ffffff;
+            box-shadow: var(--kiosk-shadow-sm);
+            overflow: hidden;
+            width: 100%;
+        }
+
+        .calling-line-header {
+            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+            border-bottom: 1.5px solid #fcd34d;
+            padding: 0.85rem 1rem;
+        }
+
+        .btn-global-serve-next {
+            width: 100%;
+            border: none;
+            padding: 0.55rem 1rem;
+            border-radius: 0.6rem;
+            font-weight: 800;
+            font-size: 0.82rem;
+            letter-spacing: 0.02em;
+            color: #ffffff;
+            background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
+            cursor: pointer;
+        }
+
+        .btn-global-serve-next:hover:not(:disabled) {
+            transform: translateY(-1px);
+            filter: brightness(1.06);
+            color: #ffffff;
+        }
+
+        .btn-global-serve-next:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .calling-ticket-pill {
+            background: #f8fafc;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 0.8rem;
+            padding: 0.65rem 0.85rem;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.65rem;
+            width: 100%;
+            min-width: 0;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .calling-ticket-pill:hover {
+            border-color: #3b82f6;
+            background-color: #ffffff;
+            transform: translateX(3px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.08);
+        }
+
+        .calling-ticket-pill.is-selected-focus {
+            border-color: #2563eb;
+            background-color: #eff6ff;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.12);
+        }
+
         .controller-subcard {
             border: 1.5px solid #e2e8f0;
             border-radius: 1rem;
@@ -567,7 +643,8 @@ $window_page_url      = strtok($_SERVER['REQUEST_URI'] ?? '', '?');
             flex-shrink: 0;
         }
 
-        .ticket-pill-item:hover .ticket-pill-pos {
+        .ticket-pill-item:hover .ticket-pill-pos,
+        .calling-ticket-pill:hover .ticket-pill-pos {
             background: #dbeafe;
             color: #1d4ed8;
         }
@@ -602,7 +679,7 @@ $window_page_url      = strtok($_SERVER['REQUEST_URI'] ?? '', '?');
             border: 1px solid #c4b5fd;
         }
 
-        /* SINGLE-LINE RIGHT-TO-LEFT CONCERN TICKER ON WAITING PILLS */
+        /* SINGLE-LINE RIGHT-TO-LEFT CONCERN TICKER ON PILLS */
         .pill-concern-ticker {
             position: relative;
             overflow: hidden;
@@ -1281,6 +1358,26 @@ $window_page_url      = strtok($_SERVER['REQUEST_URI'] ?? '', '?');
                             </div>
                         </div>
 
+                        <!-- SINGLE-COLUMN FULL-WIDTH CALLING LINE CONTAINER (MATCHING 3-COLUMN STYLE + SERVE NEXT) -->
+                        <div class="mb-4" id="callingLineSection">
+                            <div class="card calling-line-card">
+                                <div class="calling-line-header">
+                                    <div class="d-flex align-items-center justify-content-between mb-2">
+                                        <h6 class="fw-bold text-warning-emphasis mb-0 d-flex align-items-center">
+                                            <i class="bi bi-megaphone-fill me-2 text-warning"></i>Calling Line
+                                        </h6>
+                                        <span class="lineup-badge-pill bg-warning text-dark" id="ctrlCallingBadge">0 Calling</span>
+                                    </div>
+                                    <button type="button" class="btn-global-serve-next" id="btnServeNextCalling" onclick="serveNextFromCallingLine()">
+                                        <i class="bi bi-play-circle-fill"></i> Serve Next
+                                    </button>
+                                </div>
+                                <div class="card-body p-2 p-sm-3">
+                                    <div class="d-flex flex-column gap-2" id="ctrlCallingList"></div>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- BOTTOM 3-COLUMN CATEGORY LINEUP SECTION (ALWAYS VISIBLE: PRIORITY, REGULAR, EMPLOYEE) -->
                         <div class="row g-3 align-items-stretch">
                             
@@ -1460,6 +1557,11 @@ $window_page_url      = strtok($_SERVER['REQUEST_URI'] ?? '', '?');
         const modalUserDetailsContent = document.getElementById('modalUserDetailsContent');
         const windowServicesModalContent = document.getElementById('windowServicesModalContent');
 
+        // Calling Line Badges, Button & List
+        const ctrlCallingBadge     = document.getElementById('ctrlCallingBadge');
+        const btnServeNextCalling  = document.getElementById('btnServeNextCalling');
+        const ctrlCallingList      = document.getElementById('ctrlCallingList');
+
         // 3-Column Badges & Lists
         const ctrlPriorityBadge = document.getElementById('ctrlPriorityBadge');
         const ctrlRegularBadge  = document.getElementById('ctrlRegularBadge');
@@ -1488,8 +1590,12 @@ $window_page_url      = strtok($_SERVER['REQUEST_URI'] ?? '', '?');
         let dynamicTimerInterval = null;
         let currentTimerBaseTime = null;
 
-        // Cache tickets for modal previewing (active + waiting)
-        let currentActiveTicket = null;
+        // Cache tickets for display & modal previewing
+        let serverNowServingTicket = null;
+        let selectedCallingTicketId = null;
+        let displayedMainTicket = null;
+        let currentCallingLine = [];
+        let callingTicketsMap = {};
         let waitingTicketsMap = {};
 
         // Live Lifecycle Table State
@@ -2075,6 +2181,78 @@ $window_page_url      = strtok($_SERVER['REQUEST_URI'] ?? '', '?');
             return html;
         }
 
+        function renderMainDisplayHero(ticket) {
+            displayedMainTicket = ticket || null;
+
+            if (counterStatusText && counterStatusContainer) {
+                if (ticket && ticket.status === 'CALLED') {
+                    counterStatusText.textContent = 'NOW CALLING';
+                    counterStatusContainer.className = 'status-pill-modern status-now-calling';
+                } else if (ticket && ticket.status === 'SERVING') {
+                    counterStatusText.textContent = 'NOW SERVING';
+                    counterStatusContainer.className = 'status-pill-modern status-now-serving';
+                } else {
+                    counterStatusText.textContent = 'READY TO SERVE';
+                    counterStatusContainer.className = 'status-pill-modern status-on-duty';
+                }
+            }
+
+            if (ticket && ticket.ticket_number) {
+                if (ctrlServingTicket) ctrlServingTicket.textContent = ticket.ticket_number;
+
+                if (ctrlWindowNumberTag) {
+                    const windowLabel = resolveTicketWindow(ticket);
+                    if (windowLabel && windowLabel !== 'N/A') {
+                        ctrlWindowNumberTag.innerHTML = `<span class="window-badge-hero"><i class="bi bi-display"></i> ${escapeHtml(windowLabel)}</span>`;
+                    } else {
+                        ctrlWindowNumberTag.innerHTML = '';
+                    }
+                }
+
+                if (ctrlPriorityTag) {
+                    if (ticket.is_priority == 1) {
+                        ctrlPriorityTag.innerHTML = '<span class="badge bg-warning text-dark fw-bold px-3 py-1.5 border-0"><i class="bi bi-star-fill text-danger me-1"></i>Priority</span>';
+                    } else {
+                        ctrlPriorityTag.innerHTML = '';
+                    }
+                }
+
+                if (ctrlVisitorTypeTag) {
+                    const visitorType = (ticket.visitor_type || 'VISITOR').toUpperCase();
+                    let visitorIcon = 'bi-person-heart';
+
+                    if (visitorType === 'STUDENT') {
+                        visitorIcon = 'bi-mortarboard-fill';
+                    } else if (visitorType === 'EMPLOYEE') {
+                        visitorIcon = 'bi-person-badge-fill';
+                    }
+
+                    ctrlVisitorTypeTag.innerHTML = `<span class="visitor-badge-modern"><i class="bi ${visitorIcon}"></i> ${visitorType}</span>`;
+                }
+
+                renderDynamicTicketDetails(ticket);
+
+                if (ticket.status === 'CALLED' && ticket.called_at) {
+                    currentTimerBaseTime = parseSqlTimestamp(ticket.called_at);
+                    startDynamicTimer();
+                } else if (ticket.status === 'SERVING' && ticket.served_at) {
+                    currentTimerBaseTime = parseSqlTimestamp(ticket.served_at);
+                    startDynamicTimer();
+                } else {
+                    stopDynamicTimer();
+                    if (digitalElapsedTimer) digitalElapsedTimer.textContent = '00:00';
+                }
+            } else {
+                if (ctrlServingTicket) ctrlServingTicket.textContent = '---';
+                if (ctrlWindowNumberTag) ctrlWindowNumberTag.innerHTML = '';
+                if (ctrlPriorityTag) ctrlPriorityTag.innerHTML = '';
+                if (ctrlVisitorTypeTag) ctrlVisitorTypeTag.innerHTML = '';
+                stopDynamicTimer();
+                if (digitalElapsedTimer) digitalElapsedTimer.textContent = '00:00';
+                renderEmptyDetailsState();
+            }
+        }
+
         if (HAS_ASSIGNMENT && activeOfficeId && parseInt(activeCounterId, 10) > 0) {
             loadCounterData();
         }
@@ -2102,77 +2280,51 @@ $window_page_url      = strtok($_SERVER['REQUEST_URI'] ?? '', '?');
             })
             .then(res => {
                 if (res.success && res.data) {
-                    const ticket = res.data.now_serving;
-                    currentActiveTicket = ticket || null;
+                    serverNowServingTicket = res.data.now_serving || null;
 
-                    if (counterStatusText && counterStatusContainer) {
-                        if (ticket && ticket.status === 'CALLED') {
-                            counterStatusText.textContent = 'NOW CALLING';
-                            counterStatusContainer.className = 'status-pill-modern status-now-calling';
-                        } else if (ticket && ticket.status === 'SERVING') {
-                            counterStatusText.textContent = 'NOW SERVING';
-                            counterStatusContainer.className = 'status-pill-modern status-now-serving';
-                        } else {
-                            counterStatusText.textContent = 'READY TO SERVE';
-                            counterStatusContainer.className = 'status-pill-modern status-on-duty';
-                        }
+                    // Shared Calling Line comes pre-filtered from backend for staff with > 1 CALLED ticket
+                    const rawCalling = (res.data.calling_line || []).filter(
+                        item => (item.status || '').toUpperCase() === 'CALLED'
+                    );
+
+                    // Exclude whichever ticket is currently displayed as CALLED in the main display
+                    const mainCalledId = (serverNowServingTicket && (serverNowServingTicket.status || '').toUpperCase() === 'CALLED')
+                        ? String(serverNowServingTicket.id)
+                        : null;
+
+                    const callingLine = mainCalledId
+                        ? rawCalling.filter(item => String(item.id) !== mainCalledId)
+                        : rawCalling;
+
+                    currentCallingLine = callingLine;
+                    callingTicketsMap = {};
+                    const activeCallingIds = new Set();
+                    callingLine.forEach(item => {
+                        callingTicketsMap[item.id] = item;
+                        activeCallingIds.add(String(item.id));
+                    });
+
+                    // Clear manual focus if that ticket left the Calling Line
+                    if (selectedCallingTicketId && !activeCallingIds.has(String(selectedCallingTicketId))) {
+                        selectedCallingTicketId = null;
                     }
 
-                    if (ticket && ticket.ticket_number) {
-                        if (ctrlServingTicket) ctrlServingTicket.textContent = ticket.ticket_number;
+                    // Main Display shows the active/called ticket (or a selected Calling Line ticket when idle/calling)
+                    const mainDisplayTicket = serverNowServingTicket
+                        ? serverNowServingTicket
+                        : (selectedCallingTicketId ? (callingTicketsMap[selectedCallingTicketId] || null) : null);
 
-                        if (ctrlWindowNumberTag) {
-                            const windowLabel = resolveTicketWindow(ticket);
-                            if (windowLabel && windowLabel !== 'N/A') {
-                                ctrlWindowNumberTag.innerHTML = `<span class="window-badge-hero"><i class="bi bi-display"></i> ${escapeHtml(windowLabel)}</span>`;
-                            } else {
-                                ctrlWindowNumberTag.innerHTML = '';
-                            }
-                        }
+                    renderMainDisplayHero(mainDisplayTicket);
 
-                        if (ctrlPriorityTag) {
-                            if (ticket.is_priority == 1) {
-                                ctrlPriorityTag.innerHTML = '<span class="badge bg-warning text-dark fw-bold px-3 py-1.5 border-0"><i class="bi bi-star-fill text-danger me-1"></i>Priority</span>';
-                            } else {
-                                ctrlPriorityTag.innerHTML = '';
-                            }
-                        }
-
-                        if (ctrlVisitorTypeTag) {
-                            const visitorType = (ticket.visitor_type || 'VISITOR').toUpperCase();
-                            let visitorIcon = 'bi-person-heart';
-
-                            if (visitorType === 'STUDENT') {
-                                visitorIcon = 'bi-mortarboard-fill';
-                            } else if (visitorType === 'EMPLOYEE') {
-                                visitorIcon = 'bi-person-badge-fill';
-                            }
-
-                            ctrlVisitorTypeTag.innerHTML = `<span class="visitor-badge-modern"><i class="bi ${visitorIcon}"></i> ${visitorType}</span>`;
-                        }
-
-                        renderDynamicTicketDetails(ticket);
-
-                        if (ticket.status === 'CALLED' && ticket.called_at) {
-                            currentTimerBaseTime = parseSqlTimestamp(ticket.called_at);
-                            startDynamicTimer();
-                        } else if (ticket.status === 'SERVING' && ticket.served_at) {
-                            currentTimerBaseTime = parseSqlTimestamp(ticket.served_at);
-                            startDynamicTimer();
-                        } else {
-                            stopDynamicTimer();
-                            if (digitalElapsedTimer) digitalElapsedTimer.textContent = '00:00';
-                        }
-
-                    } else {
-                        if (ctrlServingTicket) ctrlServingTicket.textContent = '---';
-                        if (ctrlWindowNumberTag) ctrlWindowNumberTag.innerHTML = '';
-                        if (ctrlPriorityTag) ctrlPriorityTag.innerHTML = '';
-                        if (ctrlVisitorTypeTag) ctrlVisitorTypeTag.innerHTML = '';
-                        stopDynamicTimer();
-                        if (digitalElapsedTimer) digitalElapsedTimer.textContent = '00:00';
-                        renderEmptyDetailsState();
+                    if (ctrlCallingBadge) {
+                        ctrlCallingBadge.textContent = `${callingLine.length} Calling`;
                     }
+                    if (btnServeNextCalling) {
+                        const isStaffServing = serverNowServingTicket &&
+                            (serverNowServingTicket.status || '').toUpperCase() === 'SERVING';
+                        btnServeNextCalling.disabled = callingLine.length === 0 || isStaffServing;
+                    }
+                    renderCallingLinePills(callingLine);
 
                     // Categorize Waiting Tickets into 3 FIFO Lanes: Priority, Regular (Student & Guest), Employee
                     const waiting = res.data.up_next || [];
@@ -2185,21 +2337,24 @@ $window_page_url      = strtok($_SERVER['REQUEST_URI'] ?? '', '?');
 
                     // Sync open modal if ticket status/timestamps changed during 4-second poll
                     if (activeModalTicketRef) {
-                        if (currentActiveTicket && String(currentActiveTicket.id) === String(activeModalTicketRef.id)) {
-                            syncOpenModalTicket(currentActiveTicket);
+                        if (serverNowServingTicket && String(serverNowServingTicket.id) === String(activeModalTicketRef.id)) {
+                            syncOpenModalTicket(serverNowServingTicket);
+                        } else if (callingTicketsMap[activeModalTicketRef.id]) {
+                            syncOpenModalTicket(callingTicketsMap[activeModalTicketRef.id]);
                         } else if (waitingTicketsMap[activeModalTicketRef.id]) {
                             syncOpenModalTicket(waitingTicketsMap[activeModalTicketRef.id]);
                         }
                     }
 
-                    // Clean up stored ticker indices & seen IDs for tickets no longer waiting
+                    // Clean up stored ticker indices & seen IDs for tickets no longer active in calling/waiting
+                    const allLiveIds = new Set([...activeCallingIds, ...activeWaitingIds]);
                     Object.keys(pillTickerIndices).forEach(tid => {
-                        if (!activeWaitingIds.has(tid)) {
+                        if (!allLiveIds.has(tid)) {
                             delete pillTickerIndices[tid];
                         }
                     });
                     renderedPillTicketIds.forEach(tid => {
-                        if (!activeWaitingIds.has(tid)) {
+                        if (!allLiveIds.has(tid)) {
                             renderedPillTicketIds.delete(tid);
                         }
                     });
@@ -2229,6 +2384,88 @@ $window_page_url      = strtok($_SERVER['REQUEST_URI'] ?? '', '?');
             });
         }
 
+        function renderCallingLinePills(list) {
+            clearPillTickersForContainer(ctrlCallingList);
+            if (!ctrlCallingList) return;
+
+            if (!Array.isArray(list) || list.length === 0) {
+                ctrlCallingList.innerHTML = `
+                    <div class="text-center py-4 my-2">
+                        <div class="mx-auto mb-2 d-flex align-items-center justify-content-center rounded-circle bg-light text-muted" style="width: 44px; height: 44px; border: 1.5px dashed #cbd5e1;">
+                            <i class="bi bi-broadcast fs-5 opacity-50"></i>
+                        </div>
+                        <span class="small fw-semibold text-muted d-block">No called tickets waiting in the Calling Line.</span>
+                    </div>
+                `;
+                return;
+            }
+
+            ctrlCallingList.innerHTML = list.map((item, index) => {
+                const isSelected = selectedCallingTicketId && String(selectedCallingTicketId) === String(item.id);
+                const isPriority = Number(item.is_priority) === 1;
+                const chipHtml = isPriority
+                    ? `<span class="visitor-type-chip" style="background-color:#fef3c7;color:#92400e;border:1px solid #fcd34d;"><i class="bi bi-star-fill"></i>Priority</span>`
+                    : formatVisitorTypeChip(item.visitor_type);
+
+                const concernLabels = buildSingleLineConcernLabels(item);
+                const initialIdx = (pillTickerIndices[String(item.id)] !== undefined && pillTickerIndices[String(item.id)] < concernLabels.length)
+                    ? pillTickerIndices[String(item.id)]
+                    : 0;
+                const tickerHtml = concernLabels.length > 0 ? `
+                    <div class="pill-concern-ticker" data-ticker-ticket-id="${item.id}">
+                        <span class="pill-concern-text">${escapeHtml(concernLabels[initialIdx])}</span>
+                    </div>
+                ` : '';
+
+                const calledBy = item.called_by_name ? item.called_by_name.trim() : '';
+                const pagedByHtml = calledBy
+                    ? `<span class="text-muted fw-semibold ms-2" style="font-size: 0.7rem;"><i class="bi bi-megaphone me-1"></i>${escapeHtml(calledBy)}</span>`
+                    : '';
+
+                return `
+                    <div class="calling-ticket-pill ${isSelected ? 'is-selected-focus' : ''}" onclick="selectCallingTicket(${item.id})" title="Click to inspect ${escapeHtml(item.ticket_number)} (use Serve Next to serve)">
+                        <div class="d-flex align-items-center min-w-0 overflow-hidden" style="flex: 1 1 0%;">
+                            <span class="ticket-pill-pos">${index + 1}</span>
+                            <div class="min-w-0 overflow-hidden" style="flex: 1 1 0%;">
+                                <div class="d-flex align-items-center flex-wrap">
+                                    <span class="ticket-pill-number lh-1">${escapeHtml(item.ticket_number)}</span>
+                                    ${pagedByHtml}
+                                </div>
+                                ${chipHtml}
+                                ${tickerHtml}
+                            </div>
+                        </div>
+                        <button type="button" class="btn-preview-visitor" onclick="event.stopPropagation(); openVisitorDetailsModal(${item.id})" title="View Visitor Information Details" aria-label="View Visitor Information Details">
+                            <i class="bi bi-person-bounding-box fs-5"></i>
+                        </button>
+                    </div>
+                `;
+            }).join('');
+
+            initPillConcernTickers(ctrlCallingList, list);
+        }
+
+        // Clicking a Calling Line ticket only selects/focuses it; serving happens via Serve Next
+        window.selectCallingTicket = function(ticketId) {
+            if (!callingTicketsMap[ticketId]) return;
+            selectedCallingTicketId = (String(selectedCallingTicketId) === String(ticketId)) ? null : ticketId;
+
+            if (!serverNowServingTicket) {
+                const target = selectedCallingTicketId ? (callingTicketsMap[selectedCallingTicketId] || null) : null;
+                renderMainDisplayHero(target);
+            }
+            renderCallingLinePills(currentCallingLine);
+        };
+
+        window.serveNextFromCallingLine = function() {
+            if (!Array.isArray(currentCallingLine) || currentCallingLine.length === 0) return;
+            const nextTicket = selectedCallingTicketId && callingTicketsMap[selectedCallingTicketId]
+                ? callingTicketsMap[selectedCallingTicketId]
+                : currentCallingLine[0];
+            selectedCallingTicketId = null;
+            sendQueueAction('serve_ticket', { ticket_id: nextTicket.id });
+        };
+
         function renderEmptyDetailsState() {
             if (!ticketDetailsContainer) return;
             ticketDetailsContainer.innerHTML = `
@@ -2237,7 +2474,7 @@ $window_page_url      = strtok($_SERVER['REQUEST_URI'] ?? '', '?');
                         <i class="bi bi-ticket-detailed fs-2 text-primary opacity-75"></i>
                     </div>
                     <h6 class="fw-bold text-dark mb-1">No Active Ticket Selected</h6>
-                    <p class="small text-muted mb-0">Click <span class="badge bg-primary-subtle text-primary border border-primary-subtle fw-semibold px-2 py-1"><i class="bi bi-megaphone-fill me-1"></i>Call Next</span> on any category lane below to call the next visitor.</p>
+                    <p class="small text-muted mb-0">Click <span class="badge bg-primary-subtle text-primary border border-primary-subtle fw-semibold px-2 py-1"><i class="bi bi-megaphone-fill me-1"></i>Call Next</span> on any category lane below or click <strong>Serve Next</strong> on the Calling Line.</p>
                 </div>
             `;
         }
@@ -2375,9 +2612,11 @@ $window_page_url      = strtok($_SERVER['REQUEST_URI'] ?? '', '?');
             `;
         }
 
-        // Opens the Visitor Full Details Modal for either the active ticket (null) or a waiting ticket (ticketId)
+        // Opens the Visitor Full Details Modal for displayed main ticket (null), Calling Line ticket, or Waiting ticket
         window.openVisitorDetailsModal = function(ticketId = null) {
-            const targetTicket = ticketId ? waitingTicketsMap[ticketId] : currentActiveTicket;
+            const targetTicket = ticketId
+                ? (callingTicketsMap[ticketId] || waitingTicketsMap[ticketId])
+                : displayedMainTicket;
             if (!targetTicket) {
                 showSwalAlert("Notice", "Ticket details are no longer available.", "info");
                 return;
@@ -2813,21 +3052,39 @@ $window_page_url      = strtok($_SERVER['REQUEST_URI'] ?? '', '?');
         // Global Call Next per Category Lane (FIFO: PRIORITY, REGULAR, EMPLOYEE)
         window.callNextByCategory = function(category) {
             if (!category) return;
+            selectedCallingTicketId = null;
             sendQueueAction('call_next_category', { category: category });
         };
 
-        if (btnStartServe)     btnStartServe.addEventListener('click', () => sendQueueAction('serve_ticket'));
-        if (btnCompleteTicket) btnCompleteTicket.addEventListener('click', () => sendQueueAction('complete_ticket'));
-        if (btnRecallVoice)    btnRecallVoice.addEventListener('click', () => sendQueueAction('recall_ticket'));
+        if (btnStartServe) {
+            btnStartServe.addEventListener('click', () => {
+                const params = displayedMainTicket?.id ? { ticket_id: displayedMainTicket.id } : {};
+                selectedCallingTicketId = null;
+                sendQueueAction('serve_ticket', params);
+            });
+        }
+        if (btnCompleteTicket) {
+            btnCompleteTicket.addEventListener('click', () => {
+                const params = displayedMainTicket?.id ? { ticket_id: displayedMainTicket.id } : {};
+                sendQueueAction('complete_ticket', params);
+            });
+        }
+        if (btnRecallVoice) {
+            btnRecallVoice.addEventListener('click', () => {
+                const params = displayedMainTicket?.id ? { ticket_id: displayedMainTicket.id } : {};
+                sendQueueAction('recall_ticket', params);
+            });
+        }
 
         if (btnSkipTicket) {
             btnSkipTicket.addEventListener('click', () => {
-                if (!currentActiveTicket || !currentActiveTicket.ticket_number) {
+                if (!displayedMainTicket || !displayedMainTicket.ticket_number) {
                     showSwalAlert("Notice", "There is no active ticket to skip.", "warning");
                     return;
                 }
 
-                const skippedTicketNo = currentActiveTicket.ticket_number;
+                const skippedTicketId = displayedMainTicket.id;
+                const skippedTicketNo = displayedMainTicket.ticket_number;
                 const swalObj = typeof swal !== 'undefined' ? swal : (typeof Swal !== 'undefined' ? Swal : null);
 
                 if (swalObj && typeof swalObj.fire === 'function') {
@@ -2843,7 +3100,7 @@ $window_page_url      = strtok($_SERVER['REQUEST_URI'] ?? '', '?');
                         cancelButtonColor: "#6c757d"
                     }).then((result) => {
                         if (result.isConfirmed) {
-                            sendQueueAction('skip_ticket', {}, (res) => {
+                            sendQueueAction('skip_ticket', { ticket_id: skippedTicketId }, (res) => {
                                 showSwalToast(
                                     "Ticket Skipped",
                                     res.message || `Ticket ${skippedTicketNo} has been skipped.`,
@@ -2873,7 +3130,7 @@ $window_page_url      = strtok($_SERVER['REQUEST_URI'] ?? '', '?');
                         dangerMode: true
                     }).then((willSkip) => {
                         if (willSkip) {
-                            sendQueueAction('skip_ticket', {}, (res) => {
+                            sendQueueAction('skip_ticket', { ticket_id: skippedTicketId }, (res) => {
                                 showSwalToast(
                                     "Ticket Skipped",
                                     res.message || `Ticket ${skippedTicketNo} has been skipped.`,
@@ -2884,7 +3141,7 @@ $window_page_url      = strtok($_SERVER['REQUEST_URI'] ?? '', '?');
                         }
                     });
                 } else if (confirm(`Are you sure you want to skip ticket ${skippedTicketNo}?`)) {
-                    sendQueueAction('skip_ticket');
+                    sendQueueAction('skip_ticket', { ticket_id: skippedTicketId });
                 }
             });
         }
