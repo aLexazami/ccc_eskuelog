@@ -89,9 +89,9 @@ $action = $_POST['action'] ?? '';
 $today  = date('Y-m-d');
 
 // 3. STRICT WORKSTATION ASSIGNMENT AUTHORIZATION
-$assigned_office_id  = 0;
-$assigned_counter_id = 0;
-$my_windows          = [];
+$assigned_office_id     = 0;
+$assigned_counter_id    = 0;
+$my_windows             = [];
 $needs_window_selection = false;
 
 if ($user_id > 0) {
@@ -122,7 +122,7 @@ if ($user_id > 0) {
     }
 
     if (!empty($my_windows)) {
-        $requested_counter = (int)($_POST['counter_id'] ?? 0);
+        $requested_counter = (int)($_POST['counter_id'] ?? $_SESSION['assigned_counter_id'] ?? 0);
         $picked = null;
 
         foreach ($my_windows as $w) {
@@ -142,46 +142,49 @@ if ($user_id > 0) {
         } else {
             $needs_window_selection = true;
         }
-    } else {
-        $stmtEmp = $db_connect->prepare("SELECT office_id FROM employee WHERE user_id = ? AND office_id > 0 LIMIT 1");
-        if ($stmtEmp) {
-            $stmtEmp->bind_param("i", $user_id);
-            $stmtEmp->execute();
-            $empRow = $stmtEmp->get_result()->fetch_assoc();
-            if ($empRow) {
-                $assigned_office_id  = (int)$empRow['office_id'];
-                $assigned_counter_id = 0;
-                $_SESSION['shift_status'] = 'ON_DUTY';
-            }
-            $stmtEmp->close();
-        }
     }
 }
 
-if ($g_user_role_upper === 'ADMIN') {
-    $office_id  = (int)($_POST['office_id'] ?? $assigned_office_id ?? $_SESSION['assigned_office_id'] ?? 0);
-    $counter_id = (int)($_POST['counter_id'] ?? $assigned_counter_id ?? $_SESSION['assigned_counter_id'] ?? 0);
-} else {
-    if ($assigned_office_id > 0) {
-        $office_id  = $assigned_office_id;
-        $counter_id = $assigned_counter_id;
-    } else {
-        $office_id  = 0;
-        $counter_id = 0;
-        unset($_SESSION['assigned_office_id'], $_SESSION['assigned_counter_id']);
-    }
-}
-
-if ($office_id > 0) {
+// Enforce staff_assignments consistently for all users (including ADMIN)
+$is_default_window_1 = false;
+if ($assigned_office_id > 0 && $assigned_counter_id > 0) {
+    $office_id  = $assigned_office_id;
+    $counter_id = $assigned_counter_id;
     $_SESSION['assigned_office_id']  = $office_id;
     $_SESSION['assigned_counter_id'] = $counter_id;
+
+    // Check if this counter is Window 1 (first active counter of this office)
+    $stmtFirstWin = $db_connect->prepare("
+        SELECT id FROM counters
+        WHERE office_id = ? AND flag_status = 0
+        ORDER BY id ASC
+        LIMIT 1
+    ");
+    if ($stmtFirstWin) {
+        $stmtFirstWin->bind_param("i", $office_id);
+        $stmtFirstWin->execute();
+        $firstWinRow = $stmtFirstWin->get_result()->fetch_assoc();
+        $stmtFirstWin->close();
+        $is_default_window_1 = ($firstWinRow && (int)$firstWinRow['id'] === $counter_id);
+    }
+} else {
+    $office_id  = 0;
+    $counter_id = 0;
+    unset($_SESSION['assigned_office_id'], $_SESSION['assigned_counter_id']);
 }
+
+$counter_match_sql = $is_default_window_1
+    ? "(q.counter_id = ? OR q.counter_id = 0 OR q.counter_id IS NULL)"
+    : "q.counter_id = ?";
+
+$counter_match_unaliased_sql = $is_default_window_1
+    ? "(counter_id = ? OR counter_id = 0 OR counter_id IS NULL)"
+    : "counter_id = ?";
 
 /**
  * Helper: Resolve a human-readable workstation label e.g. "DCI (Window 1)"
  */
 function resolveWorkstationLabel(\mysqli $db_connect, int $office_id, int $counter_id, array $my_windows = []): string {
-    // Fast path: check already-fetched $my_windows first
     foreach ($my_windows as $w) {
         if ((int)$w['office_id'] === $office_id && (int)$w['counter_id'] === $counter_id) {
             return "{$w['office_code']} ({$w['counter_name']})";
@@ -322,15 +325,15 @@ switch ($action) {
         echo json_encode([
             'success' => true,
             'data'    => [
-                'windows'          => $my_windows,
-                'current_counter'  => $counter_id,
-                'needs_selection'  => $needs_window_selection
+                'windows'         => $my_windows,
+                'current_counter' => $counter_id,
+                'needs_selection' => $needs_window_selection
             ]
         ]);
         exit();
 
     case 'fetch_counter_status':
-        if ($office_id <= 0) {
+        if ($office_id <= 0 || $counter_id <= 0) {
             echo json_encode([
                 'success' => false,
                 'needs_window_selection' => $needs_window_selection,
@@ -389,17 +392,18 @@ switch ($action) {
                 LEFT JOIN counters c_tt ON tt.counter_id = c_tt.id
             ";
 
-            // 1. Active CALLED or SERVING ticket for assigned office & window
+            // 1. Active CALLED or SERVING ticket for this specific staff member at this office & window
             $stmtServing = $db_connect->prepare("
                 {$baseTicketSelect}
                 WHERE q.office_id = ? 
-                  AND (? = 0 OR q.counter_id = ?)
+                  AND q.counter_id = ?
+                  AND q.served_by_user_id = ?
                   AND q.queue_date = ? 
                   AND q.status IN ('CALLED', 'SERVING')
                 ORDER BY q.called_at DESC, q.id DESC
                 LIMIT 1
             ");
-            $stmtServing->bind_param("iiis", $office_id, $counter_id, $counter_id, $today);
+            $stmtServing->bind_param("iiis", $office_id, $counter_id, $user_id, $today);
             $stmtServing->execute();
             $now_serving = $stmtServing->get_result()->fetch_assoc();
             $stmtServing->close();
@@ -408,16 +412,18 @@ switch ($action) {
                 $now_serving = hydrateTicketDetails($db_connect, $now_serving);
             }
 
-            // 2. Waiting tickets lineup (Strictly First-Come, First-Served via queue_sequence ASC)
+            // 2. Waiting tickets lineup (Window 1 also includes legacy counter_id = 0/NULL tickets)
             $up_next = [];
             $stmtNext = $db_connect->prepare("
                 {$baseTicketSelect}
-                WHERE q.office_id = ? AND q.queue_date = ? AND q.status = 'WAITING'
-                  AND (? = 0 OR q.counter_id IS NULL OR q.counter_id = ?)
+                WHERE q.office_id = ?
+                  AND q.queue_date = ?
+                  AND q.status = 'WAITING'
+                  AND {$counter_match_sql}
                 ORDER BY q.queue_sequence ASC
                 LIMIT 50
             ");
-            $stmtNext->bind_param("isii", $office_id, $today, $counter_id, $counter_id);
+            $stmtNext->bind_param("isi", $office_id, $today, $counter_id);
             $stmtNext->execute();
             $resNext = $stmtNext->get_result();
             while ($row = $resNext->fetch_assoc()) {
@@ -425,14 +431,16 @@ switch ($action) {
             }
             $stmtNext->close();
 
-            // 3. Total waiting count
+            // 3. Total waiting count (Window 1 also includes legacy counter_id = 0/NULL tickets)
             $stmtCount = $db_connect->prepare("
                 SELECT COUNT(*) as cnt 
                 FROM queue_tickets 
-                WHERE office_id = ? AND queue_date = ? AND status = 'WAITING'
-                  AND (? = 0 OR counter_id IS NULL OR counter_id = ?)
+                WHERE office_id = ?
+                  AND queue_date = ?
+                  AND status = 'WAITING'
+                  AND {$counter_match_unaliased_sql}
             ");
-            $stmtCount->bind_param("isii", $office_id, $today, $counter_id, $counter_id);
+            $stmtCount->bind_param("isi", $office_id, $today, $counter_id);
             $stmtCount->execute();
             $waiting_count = (int)($stmtCount->get_result()->fetch_assoc()['cnt'] ?? 0);
             $stmtCount->close();
@@ -454,8 +462,8 @@ switch ($action) {
         }
 
     case 'fetch_window_services':
-        if ($office_id <= 0) {
-            echo json_encode(['success' => false, 'message' => 'No active office assignment detected.']);
+        if ($office_id <= 0 || $counter_id <= 0) {
+            echo json_encode(['success' => false, 'message' => 'No active workstation assignment detected.']);
             exit();
         }
 
@@ -489,9 +497,9 @@ switch ($action) {
 
             $services = [];
             while ($tRow = $resTrans->fetch_assoc()) {
-                $transId        = (int)$tRow['id'];
-                $transCounterId = (int)($tRow['counter_id'] ?? 0);
-                $transHandlesWindow = ($counter_id <= 0 || $transCounterId === 0 || $transCounterId === $counter_id);
+                $transId            = (int)$tRow['id'];
+                $transCounterId     = (int)($tRow['counter_id'] ?? 0);
+                $transHandlesWindow = ($transCounterId === $counter_id) || ($transCounterId === 0 && $is_default_window_1);
 
                 $stmtSub->bind_param("i", $transId);
                 $stmtSub->execute();
@@ -504,9 +512,7 @@ switch ($action) {
                     $allSubs[] = $sRow;
                     $subCounterId = (int)($sRow['counter_id'] ?? 0);
 
-                    if ($counter_id <= 0) {
-                        $matchedSubs[] = $sRow;
-                    } elseif ($subCounterId === $counter_id) {
+                    if ($subCounterId === $counter_id) {
                         $matchedSubs[] = $sRow;
                     } elseif ($subCounterId === 0 && $transHandlesWindow) {
                         $matchedSubs[] = $sRow;
@@ -533,8 +539,8 @@ switch ($action) {
         }
 
     case 'call_next_category':
-        if ($office_id <= 0) {
-            echo json_encode(['success' => false, 'message' => 'No active office assignment detected.']);
+        if ($office_id <= 0 || $counter_id <= 0) {
+            echo json_encode(['success' => false, 'message' => 'No active workstation assignment detected.']);
             exit();
         }
 
@@ -546,7 +552,8 @@ switch ($action) {
             exit();
         }
 
-        $lock_name     = "eq_call_{$office_id}_{$counter_id}";
+        // Lock per office + counter + lane so different lanes/windows do not block each other
+        $lock_name     = "eq_call_{$office_id}_{$counter_id}_{$category}";
         $lock_held     = false;
         $in_tx         = false;
         $guard_seconds = 4;
@@ -567,21 +574,24 @@ switch ($action) {
             $stmtLock->close();
 
             if (!$lock_held) {
-                $response = ['success' => false, 'message' => 'This window is busy handling another Call Next. Please try again.'];
+                $response = ['success' => false, 'message' => 'This lane is busy handling another Call Next. Please try again.'];
             } else {
                 $db_connect->begin_transaction();
                 $in_tx = true;
 
-                // 1. Guard: someone at this window JUST called a ticket -> do not complete it, do not call another.
+                // 1. Guard: only block if THIS staff member just called a ticket at this window
                 $stmtGuard = $db_connect->prepare("
                     SELECT ticket_number, called_at
                     FROM queue_tickets
-                    WHERE office_id = ? AND queue_date = ? AND status = 'CALLED'
-                      AND (? = 0 OR counter_id = ?)
+                    WHERE office_id = ?
+                      AND queue_date = ?
+                      AND status = 'CALLED'
+                      AND counter_id = ?
+                      AND served_by_user_id = ?
                     ORDER BY called_at DESC, id DESC
                     LIMIT 1
                 ");
-                $stmtGuard->bind_param("isii", $office_id, $today, $counter_id, $counter_id);
+                $stmtGuard->bind_param("isii", $office_id, $today, $counter_id, $user_id);
                 $stmtGuard->execute();
                 $justCalled = $stmtGuard->get_result()->fetch_assoc();
                 $stmtGuard->close();
@@ -592,26 +602,21 @@ switch ($action) {
                     $in_tx = false;
                     $response = [
                         'success' => false,
-                        'message' => "Ticket {$justCalled['ticket_number']} was just called at this window. Please wait a moment before calling the next one."
+                        'message' => "You just called ticket {$justCalled['ticket_number']}. Please wait a moment before calling the next one."
                     ];
                 } else {
-                    // Fetch any active ticket(s) that will be auto-completed for audit logging
+                    // 2. Fetch only THIS staff member's active ticket(s) at this window for audit logging
                     $auto_completed_tickets = [];
-                    if ($counter_id > 0) {
-                        $stmtPrevList = $db_connect->prepare("
-                            SELECT ticket_number
-                            FROM queue_tickets
-                            WHERE office_id = ? AND counter_id = ? AND queue_date = ? AND status IN ('CALLED', 'SERVING')
-                        ");
-                        $stmtPrevList->bind_param("iis", $office_id, $counter_id, $today);
-                    } else {
-                        $stmtPrevList = $db_connect->prepare("
-                            SELECT ticket_number
-                            FROM queue_tickets
-                            WHERE office_id = ? AND queue_date = ? AND status IN ('CALLED', 'SERVING')
-                        ");
-                        $stmtPrevList->bind_param("is", $office_id, $today);
-                    }
+                    $stmtPrevList = $db_connect->prepare("
+                        SELECT ticket_number
+                        FROM queue_tickets
+                        WHERE office_id = ?
+                          AND counter_id = ?
+                          AND served_by_user_id = ?
+                          AND queue_date = ?
+                          AND status IN ('CALLED', 'SERVING')
+                    ");
+                    $stmtPrevList->bind_param("iiis", $office_id, $counter_id, $user_id, $today);
                     $stmtPrevList->execute();
                     $resPrev = $stmtPrevList->get_result();
                     while ($pRow = $resPrev->fetch_assoc()) {
@@ -619,26 +624,21 @@ switch ($action) {
                     }
                     $stmtPrevList->close();
 
-                    // 2. Auto-complete the ticket currently active at this window
-                    if ($counter_id > 0) {
-                        $stmtCompletePrev = $db_connect->prepare("
-                            UPDATE queue_tickets
-                            SET status = 'COMPLETED', completed_at = NOW()
-                            WHERE office_id = ? AND counter_id = ? AND queue_date = ? AND status IN ('CALLED', 'SERVING')
-                        ");
-                        $stmtCompletePrev->bind_param("iis", $office_id, $counter_id, $today);
-                    } else {
-                        $stmtCompletePrev = $db_connect->prepare("
-                            UPDATE queue_tickets
-                            SET status = 'COMPLETED', completed_at = NOW()
-                            WHERE office_id = ? AND queue_date = ? AND status IN ('CALLED', 'SERVING')
-                        ");
-                        $stmtCompletePrev->bind_param("is", $office_id, $today);
-                    }
+                    // 3. Auto-complete only THIS staff member's previous active ticket at this window
+                    $stmtCompletePrev = $db_connect->prepare("
+                        UPDATE queue_tickets
+                        SET status = 'COMPLETED', completed_at = NOW()
+                        WHERE office_id = ?
+                          AND counter_id = ?
+                          AND served_by_user_id = ?
+                          AND queue_date = ?
+                          AND status IN ('CALLED', 'SERVING')
+                    ");
+                    $stmtCompletePrev->bind_param("iiis", $office_id, $counter_id, $user_id, $today);
                     $stmtCompletePrev->execute();
                     $stmtCompletePrev->close();
 
-                    // 3. Pick + atomically claim the next FIFO ticket of the lane
+                    // 4. Pick + atomically claim the next FIFO ticket (Window 1 also claims counter_id = 0/NULL tickets)
                     $claimed_number = null;
                     $lane_empty     = false;
 
@@ -650,12 +650,12 @@ switch ($action) {
                             WHERE q.office_id = ?
                               AND q.queue_date = ?
                               AND q.status = 'WAITING'
-                              AND (? = 0 OR q.counter_id IS NULL OR q.counter_id = ?)
+                              AND {$counter_match_sql}
                               {$lane_sql}
                             ORDER BY q.queue_sequence ASC
                             LIMIT 1
                         ");
-                        $stmtNextTicket->bind_param("isii", $office_id, $today, $counter_id, $counter_id);
+                        $stmtNextTicket->bind_param("isi", $office_id, $today, $counter_id);
                         $stmtNextTicket->execute();
                         $ticket = $stmtNextTicket->get_result()->fetch_assoc();
                         $stmtNextTicket->close();
@@ -668,21 +668,14 @@ switch ($action) {
                         $ticket_id = (int)$ticket['id'];
                         $now       = date('Y-m-d H:i:s');
 
-                        if ($counter_id > 0) {
-                            $stmtUpdate = $db_connect->prepare("
-                                UPDATE queue_tickets
-                                SET status = 'CALLED', called_at = ?, counter_id = ?, served_by_user_id = ?
-                                WHERE id = ? AND status = 'WAITING' AND (counter_id IS NULL OR counter_id = ?)
-                            ");
-                            $stmtUpdate->bind_param("siiii", $now, $counter_id, $user_id, $ticket_id, $counter_id);
-                        } else {
-                            $stmtUpdate = $db_connect->prepare("
-                                UPDATE queue_tickets
-                                SET status = 'CALLED', called_at = ?, served_by_user_id = ?
-                                WHERE id = ? AND status = 'WAITING'
-                            ");
-                            $stmtUpdate->bind_param("sii", $now, $user_id, $ticket_id);
-                        }
+                        $stmtUpdate = $db_connect->prepare("
+                            UPDATE queue_tickets
+                            SET status = 'CALLED', called_at = ?, served_by_user_id = ?, counter_id = ?
+                            WHERE id = ?
+                              AND status = 'WAITING'
+                              AND {$counter_match_unaliased_sql}
+                        ");
+                        $stmtUpdate->bind_param("siiii", $now, $user_id, $counter_id, $ticket_id, $counter_id);
                         $stmtUpdate->execute();
                         if ($stmtUpdate->affected_rows > 0) {
                             $claimed_number = $ticket['ticket_number'];
@@ -743,31 +736,24 @@ switch ($action) {
         exit();
 
     case 'serve_ticket':
-        if ($office_id <= 0) {
-            echo json_encode(['success' => false, 'message' => 'No active office assignment detected.']);
+        if ($office_id <= 0 || $counter_id <= 0) {
+            echo json_encode(['success' => false, 'message' => 'No active workstation assignment detected.']);
             exit();
         }
 
         try {
-            if ($counter_id > 0) {
-                $stmtFind = $db_connect->prepare("
-                    SELECT id, ticket_number
-                    FROM queue_tickets
-                    WHERE office_id = ? AND counter_id = ? AND queue_date = ? AND status = 'CALLED'
-                    ORDER BY called_at DESC, id DESC
-                    LIMIT 1
-                ");
-                $stmtFind->bind_param("iis", $office_id, $counter_id, $today);
-            } else {
-                $stmtFind = $db_connect->prepare("
-                    SELECT id, ticket_number
-                    FROM queue_tickets
-                    WHERE office_id = ? AND queue_date = ? AND status = 'CALLED'
-                    ORDER BY called_at DESC, id DESC
-                    LIMIT 1
-                ");
-                $stmtFind->bind_param("is", $office_id, $today);
-            }
+            $stmtFind = $db_connect->prepare("
+                SELECT id, ticket_number
+                FROM queue_tickets
+                WHERE office_id = ?
+                  AND counter_id = ?
+                  AND served_by_user_id = ?
+                  AND queue_date = ?
+                  AND status = 'CALLED'
+                ORDER BY called_at DESC, id DESC
+                LIMIT 1
+            ");
+            $stmtFind->bind_param("iiis", $office_id, $counter_id, $user_id, $today);
             $stmtFind->execute();
             $targetTicket = $stmtFind->get_result()->fetch_assoc();
             $stmtFind->close();
@@ -777,9 +763,12 @@ switch ($action) {
                 $stmtServe = $db_connect->prepare("
                     UPDATE queue_tickets 
                     SET status = 'SERVING', served_at = NOW() 
-                    WHERE id = ? AND status = 'CALLED'
+                    WHERE id = ?
+                      AND counter_id = ?
+                      AND served_by_user_id = ?
+                      AND status = 'CALLED'
                 ");
-                $stmtServe->bind_param("i", $targetId);
+                $stmtServe->bind_param("iii", $targetId, $counter_id, $user_id);
                 $stmtServe->execute();
                 $affected = $stmtServe->affected_rows;
                 $stmtServe->close();
@@ -807,30 +796,23 @@ switch ($action) {
         }
 
     case 'recall_ticket':
-        if ($office_id <= 0) {
-            echo json_encode(['success' => false, 'message' => 'No active office assignment detected.']);
+        if ($office_id <= 0 || $counter_id <= 0) {
+            echo json_encode(['success' => false, 'message' => 'No active workstation assignment detected.']);
             exit();
         }
 
-        if ($counter_id > 0) {
-            $stmtRecall = $db_connect->prepare("
-                SELECT id, ticket_number 
-                FROM queue_tickets 
-                WHERE office_id = ? AND counter_id = ? AND queue_date = ? AND status IN ('CALLED', 'SERVING') 
-                ORDER BY called_at DESC, id DESC
-                LIMIT 1
-            ");
-            $stmtRecall->bind_param("iis", $office_id, $counter_id, $today);
-        } else {
-            $stmtRecall = $db_connect->prepare("
-                SELECT id, ticket_number 
-                FROM queue_tickets 
-                WHERE office_id = ? AND queue_date = ? AND status IN ('CALLED', 'SERVING') 
-                ORDER BY called_at DESC, id DESC
-                LIMIT 1
-            ");
-            $stmtRecall->bind_param("is", $office_id, $today);
-        }
+        $stmtRecall = $db_connect->prepare("
+            SELECT id, ticket_number 
+            FROM queue_tickets 
+            WHERE office_id = ?
+              AND counter_id = ?
+              AND served_by_user_id = ?
+              AND queue_date = ?
+              AND status IN ('CALLED', 'SERVING') 
+            ORDER BY called_at DESC, id DESC
+            LIMIT 1
+        ");
+        $stmtRecall->bind_param("iiis", $office_id, $counter_id, $user_id, $today);
         $stmtRecall->execute();
         $recallRow = $stmtRecall->get_result()->fetch_assoc();
         $stmtRecall->close();
@@ -840,8 +822,10 @@ switch ($action) {
                 UPDATE queue_tickets 
                 SET called_at = COALESCE(called_at, NOW()) 
                 WHERE id = ?
+                  AND counter_id = ?
+                  AND served_by_user_id = ?
             ");
-            $stmtTouch->bind_param("i", $recallRow['id']);
+            $stmtTouch->bind_param("iii", $recallRow['id'], $counter_id, $user_id);
             $stmtTouch->execute();
             $stmtTouch->close();
 
@@ -860,38 +844,37 @@ switch ($action) {
         exit();
 
     case 'complete_ticket':
-        if ($office_id <= 0) {
-            echo json_encode(['success' => false, 'message' => 'No active office assignment detected.']);
+        if ($office_id <= 0 || $counter_id <= 0) {
+            echo json_encode(['success' => false, 'message' => 'No active workstation assignment detected.']);
             exit();
         }
 
-        if ($counter_id > 0) {
-            $stmtFind = $db_connect->prepare("
-                SELECT id, ticket_number
-                FROM queue_tickets
-                WHERE office_id = ? AND counter_id = ? AND queue_date = ? AND status IN ('CALLED', 'SERVING')
-                ORDER BY called_at DESC, id DESC
-                LIMIT 1
-            ");
-            $stmtFind->bind_param("iis", $office_id, $counter_id, $today);
-        } else {
-            $stmtFind = $db_connect->prepare("
-                SELECT id, ticket_number
-                FROM queue_tickets
-                WHERE office_id = ? AND queue_date = ? AND status IN ('CALLED', 'SERVING')
-                ORDER BY called_at DESC, id DESC
-                LIMIT 1
-            ");
-            $stmtFind->bind_param("is", $office_id, $today);
-        }
+        $stmtFind = $db_connect->prepare("
+            SELECT id, ticket_number
+            FROM queue_tickets
+            WHERE office_id = ?
+              AND counter_id = ?
+              AND served_by_user_id = ?
+              AND queue_date = ?
+              AND status IN ('CALLED', 'SERVING')
+            ORDER BY called_at DESC, id DESC
+            LIMIT 1
+        ");
+        $stmtFind->bind_param("iiis", $office_id, $counter_id, $user_id, $today);
         $stmtFind->execute();
         $activeRow = $stmtFind->get_result()->fetch_assoc();
         $stmtFind->close();
 
         if ($activeRow) {
             $activeId = (int)$activeRow['id'];
-            $stmtComplete = $db_connect->prepare("UPDATE queue_tickets SET status = 'COMPLETED', completed_at = NOW() WHERE id = ?");
-            $stmtComplete->bind_param("i", $activeId);
+            $stmtComplete = $db_connect->prepare("
+                UPDATE queue_tickets 
+                SET status = 'COMPLETED', completed_at = NOW() 
+                WHERE id = ?
+                  AND counter_id = ?
+                  AND served_by_user_id = ?
+            ");
+            $stmtComplete->bind_param("iii", $activeId, $counter_id, $user_id);
             $stmtComplete->execute();
             $stmtComplete->close();
 
@@ -908,38 +891,37 @@ switch ($action) {
         exit();
 
     case 'skip_ticket':
-        if ($office_id <= 0) {
-            echo json_encode(['success' => false, 'message' => 'No active office assignment detected.']);
+        if ($office_id <= 0 || $counter_id <= 0) {
+            echo json_encode(['success' => false, 'message' => 'No active workstation assignment detected.']);
             exit();
         }
 
-        if ($counter_id > 0) {
-            $stmtFind = $db_connect->prepare("
-                SELECT id, ticket_number
-                FROM queue_tickets
-                WHERE office_id = ? AND counter_id = ? AND queue_date = ? AND status IN ('CALLED', 'SERVING')
-                ORDER BY called_at DESC, id DESC
-                LIMIT 1
-            ");
-            $stmtFind->bind_param("iis", $office_id, $counter_id, $today);
-        } else {
-            $stmtFind = $db_connect->prepare("
-                SELECT id, ticket_number
-                FROM queue_tickets
-                WHERE office_id = ? AND queue_date = ? AND status IN ('CALLED', 'SERVING')
-                ORDER BY called_at DESC, id DESC
-                LIMIT 1
-            ");
-            $stmtFind->bind_param("is", $office_id, $today);
-        }
+        $stmtFind = $db_connect->prepare("
+            SELECT id, ticket_number
+            FROM queue_tickets
+            WHERE office_id = ?
+              AND counter_id = ?
+              AND served_by_user_id = ?
+              AND queue_date = ?
+              AND status IN ('CALLED', 'SERVING')
+            ORDER BY called_at DESC, id DESC
+            LIMIT 1
+        ");
+        $stmtFind->bind_param("iiis", $office_id, $counter_id, $user_id, $today);
         $stmtFind->execute();
         $activeRow = $stmtFind->get_result()->fetch_assoc();
         $stmtFind->close();
 
         if ($activeRow) {
             $activeId = (int)$activeRow['id'];
-            $stmtSkip = $db_connect->prepare("UPDATE queue_tickets SET status = 'SKIPPED', completed_at = NOW() WHERE id = ?");
-            $stmtSkip->bind_param("i", $activeId);
+            $stmtSkip = $db_connect->prepare("
+                UPDATE queue_tickets 
+                SET status = 'SKIPPED', completed_at = NOW() 
+                WHERE id = ?
+                  AND counter_id = ?
+                  AND served_by_user_id = ?
+            ");
+            $stmtSkip->bind_param("iii", $activeId, $counter_id, $user_id);
             $stmtSkip->execute();
             $stmtSkip->close();
 
