@@ -61,6 +61,28 @@ if ($db_connect) {
         }
     }
 }
+
+# Fetch Default Window (Window 1 / first active counter) per Office
+$office_default_counters = [];
+if ($db_connect) {
+    $stmtDefCounters = $db_connect->query("
+        SELECT id, office_id, counter_name
+        FROM counters
+        WHERE flag_status = 0
+        ORDER BY office_id ASC, id ASC
+    ");
+    if ($stmtDefCounters) {
+        while ($cRow = $stmtDefCounters->fetch_assoc()) {
+            $oId = (int)$cRow['office_id'];
+            if (!isset($office_default_counters[$oId])) {
+                $office_default_counters[$oId] = [
+                    'id'   => (int)$cRow['id'],
+                    'name' => trim((string)$cRow['counter_name']) ?: 'Window 1',
+                ];
+            }
+        }
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en" class="h-100">
@@ -311,7 +333,7 @@ if ($db_connect) {
             color: #64748b !important;
         }
 
-        /* SUBTLE WINDOW BADGE */
+        /* SUBTLE WINDOW BADGE (UNIFORM BLUE FOR ALL WINDOWS INCLUDING WINDOW 1) */
         .window-assign-badge {
             display: inline-flex;
             align-items: center;
@@ -326,12 +348,6 @@ if ($db_connect) {
             border: 1px solid #bfdbfe;
             text-transform: uppercase;
             margin-bottom: 0.3rem;
-        }
-
-        .window-assign-badge.window-default {
-            background-color: #f1f5f9;
-            color: #475569;
-            border-color: #cbd5e1;
         }
 
         /* REDUCED FONT WEIGHT FOR PRIMARY & SUB TRANSACTION NAMES */
@@ -1408,11 +1424,22 @@ if ($db_connect) {
         const step5LockedFormCont  = document.getElementById('step5LockedFormContainer');
         const kioskForm            = document.getElementById('kioskForm');
 
+        // Default Window (Window 1 / first active counter) per office_id
+        const officeDefaultCounters = <?= json_encode($office_default_counters ?? [], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT); ?>;
+
         let selectedConcernIds     = [];
         let selectedSubConcernsMap = {};
         let officeTransactionsMap  = {};
         let pendingVisitorData     = null;
         let visitorRecordFound     = false;
+
+        function getOfficeDefaultWindow(officeId = officeInput.value) {
+            const def = officeDefaultCounters[String(officeId)] || officeDefaultCounters[Number(officeId)];
+            if (def && def.id) {
+                return { id: Number(def.id), name: def.name || 'Window 1' };
+            }
+            return { id: null, name: 'Window 1' };
+        }
 
         function escapeHtml(str) {
             return String(str ?? '')
@@ -2214,23 +2241,17 @@ if ($db_connect) {
         });
 
         /**
-         * Build subtle window badge HTML for Primary Transactions & Sub-Transactions.
-         * Defaults to "Any Window" when no specific counter is assigned.
+         * Build uniform blue window badge HTML for Primary Transactions & Sub-Transactions.
+         * Defaults to the office's Window 1 when no specific counter is assigned.
          */
         function buildWindowBadgeHtml(counterId, counterName) {
-            if (counterId && counterName) {
-                return `
-                    <div>
-                        <span class="window-assign-badge">
-                            <i class="bi bi-window-sidebar"></i> ${escapeHtml(counterName)}
-                        </span>
-                    </div>
-                `;
-            }
+            const defWin    = getOfficeDefaultWindow();
+            const finalName = (counterId && counterName) ? counterName : defWin.name;
+
             return `
                 <div>
-                    <span class="window-assign-badge window-default">
-                        <i class="bi bi-window-sidebar"></i> Any Window
+                    <span class="window-assign-badge">
+                        <i class="bi bi-window-sidebar"></i> ${escapeHtml(finalName)}
                     </span>
                 </div>
             `;
@@ -2238,8 +2259,11 @@ if ($db_connect) {
 
         /**
          * Determine currently active Window ID and Window Name based on selected primary/sub-transactions.
+         * Ignores 'OTHERS' so 'OTHERS' dynamically inherits whichever window is selected (or defaults to Window 1 if alone).
          */
         function getActiveSelectedWindowInfo() {
+            const defWin = getOfficeDefaultWindow();
+
             for (const tid of selectedConcernIds) {
                 if (tid === 'OTHERS') continue;
                 const transObj = officeTransactionsMap[tid];
@@ -2250,41 +2274,60 @@ if ($db_connect) {
                     const pickedSubIds = selectedSubConcernsMap[tid] || [];
                     for (const sid of pickedSubIds) {
                         const subObj = transObj.sub_concerns.find(s => Number(s.id) === Number(sid));
-                        const subWin = subObj && subObj.counter_id
+                        const subWin = (subObj && subObj.counter_id)
                             ? Number(subObj.counter_id)
-                            : (transObj.counter_id ? Number(transObj.counter_id) : null);
+                            : (transObj.counter_id ? Number(transObj.counter_id) : defWin.id);
                         if (subWin) {
-                            const winName = (subObj && subObj.counter_name) || transObj.counter_name || `Window ${subWin}`;
+                            const winName = (subObj && subObj.counter_name) || transObj.counter_name || defWin.name;
                             return { id: subWin, name: winName };
                         }
                     }
                     if (transObj.counter_id) {
                         const winId = Number(transObj.counter_id);
-                        return { id: winId, name: transObj.counter_name || `Window ${winId}` };
+                        return { id: winId, name: transObj.counter_name || defWin.name };
                     }
-                } else if (transObj.counter_id) {
-                    const winId = Number(transObj.counter_id);
-                    return { id: winId, name: transObj.counter_name || `Window ${winId}` };
+                } else {
+                    const winId = transObj.counter_id ? Number(transObj.counter_id) : defWin.id;
+                    if (winId) {
+                        return { id: winId, name: transObj.counter_name || defWin.name };
+                    }
                 }
             }
-            return { id: null, name: 'Any Window' };
+            return defWin;
         }
 
         function getActiveSelectedWindowId() {
-            return getActiveSelectedWindowInfo().id;
+            const hasNonOthersSelected = selectedConcernIds.some(id => id !== 'OTHERS');
+            return hasNonOthersSelected ? getActiveSelectedWindowInfo().id : null;
         }
 
         /**
          * Enable/disable primary transaction cards and sub-transaction buttons
          * so users can only combine services assigned to the same window.
+         * "Others" remains enabled and dynamically adopts the active window (or defaults to Window 1).
          */
         function enforceSameWindowSelectionState() {
+            const activeWinInfo  = getActiveSelectedWindowInfo();
             const activeWindowId = getActiveSelectedWindowId();
 
             transactionContainer.querySelectorAll('.transaction-card').forEach(card => {
                 const tid = card.dataset.transId;
                 if (tid === 'OTHERS') {
                     card.classList.remove('window-disabled');
+
+                    // Dynamically update "Others" window badge to match the selected window (or default Window 1)
+                    const othersObj = officeTransactionsMap['OTHERS'];
+                    if (othersObj) {
+                        othersObj.counter_id   = activeWinInfo.id;
+                        othersObj.counter_name = activeWinInfo.name;
+                    }
+                    card.dataset.counterId = activeWinInfo.id || '';
+
+                    const badgeEl = card.querySelector('.window-assign-badge');
+                    if (badgeEl) {
+                        badgeEl.className = 'window-assign-badge';
+                        badgeEl.innerHTML = `<i class="bi bi-window-sidebar"></i> ${escapeHtml(activeWinInfo.name)}`;
+                    }
                     return;
                 }
 
@@ -2450,19 +2493,35 @@ if ($db_connect) {
             .then(result => {
                 transactionContainer.innerHTML = '';
                 let dataList = (result.success && result.data) ? result.data : [];
+                const defWin = getOfficeDefaultWindow(officeId);
                 
                 dataList.push({
                     id: 'OTHERS',
                     transaction_name: 'Others (Please Specify Concern)',
                     estimated_minutes: 10,
                     counter_id: null,
-                    counter_name: null,
+                    counter_name: defWin.name,
                     is_others: true,
                     direct_details: null,
                     sub_concerns: []
                 });
 
                 dataList.forEach(trans => {
+                    // Default unassigned primary transactions (except dynamic OTHERS) to Window 1
+                    if (!trans.is_others && !trans.counter_id) {
+                        trans.counter_id   = defWin.id;
+                        trans.counter_name = defWin.name;
+                    }
+                    if (Array.isArray(trans.sub_concerns)) {
+                        trans.sub_concerns.forEach(sub => {
+                            // Default unassigned sub-transactions to parent window or Window 1
+                            if (!sub.counter_id) {
+                                sub.counter_id   = trans.counter_id || defWin.id;
+                                sub.counter_name = trans.counter_name || defWin.name;
+                            }
+                        });
+                    }
+
                     officeTransactionsMap[trans.id] = trans;
                     const hasSubConcerns = Array.isArray(trans.sub_concerns) && trans.sub_concerns.length > 0;
 
@@ -2481,8 +2540,8 @@ if ($db_connect) {
                                 <label class="form-label text-primary fw-bold small d-block mb-2">Select Specific Transaction(s):</label>
                                 <div class="sub-concerns-grid">
                                     ${trans.sub_concerns.map(sub => {
-                                        const effectiveSubCounterId   = sub.counter_id || trans.counter_id || null;
-                                        const effectiveSubCounterName = sub.counter_name || trans.counter_name || null;
+                                        const effectiveSubCounterId   = sub.counter_id || trans.counter_id || defWin.id;
+                                        const effectiveSubCounterName = sub.counter_name || trans.counter_name || defWin.name;
                                         const subDrawerHtml = buildInlineDetailsDrawerHtml(`sub_${sub.id}`, sub.parsed_details);
                                         return `
                                             <div class="sub-concern-item-wrapper" data-sub-wrapper-id="${sub.id}">
@@ -2506,7 +2565,7 @@ if ($db_connect) {
                         primaryInlineDetailsHtml = buildInlineDetailsDrawerHtml(`type_${trans.id}`, trans.direct_details);
                     }
 
-                    // Show Window Badge above Primary Transaction Name (defaults to Any Window)
+                    // Show Window Badge above Primary Transaction Name (defaults to Window 1)
                     const primaryWindowBadgeHtml = (!hasSubConcerns || trans.counter_id)
                         ? buildWindowBadgeHtml(trans.counter_id, trans.counter_name)
                         : '';
@@ -2948,7 +3007,7 @@ if ($db_connect) {
                     <div class="row g-2 g-sm-3 mb-3">
                         <div class="col-12">
                             <label class="form-label fw-normal text-dark small">Assigned Service Window</label>
-                            <input type="text" class="form-control form-control-kiosk kiosk-locked-field fw-bold text-primary" value="${escapeHtml(winInfo.name || 'Any Window')}" readonly disabled>
+                            <input type="text" class="form-control form-control-kiosk kiosk-locked-field fw-bold text-primary" value="${escapeHtml(winInfo.name || getOfficeDefaultWindow().name)}" readonly disabled>
                         </div>
                     </div>
                     <div class="d-flex flex-column gap-3">
@@ -3029,7 +3088,7 @@ if ($db_connect) {
                 `;
             });
 
-            const fallbackWindowName = getActiveSelectedWindowInfo().name || 'Any Window';
+            const fallbackWindowName = getActiveSelectedWindowInfo().name || getOfficeDefaultWindow().name;
 
             const activeBtn = triggerBtn || btnFinalSubmit;
             const originalBtnHtml = activeBtn.innerHTML;

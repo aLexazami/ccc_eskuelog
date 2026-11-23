@@ -336,7 +336,25 @@ switch ($action) {
             }
         }
 
-        // Validate selected transaction types against the target office
+        // Resolve the office's default counter (first active counter = Window 1)
+        $defaultCounterId   = null;
+        $defaultCounterName = 'Window 1';
+        $stmtDefaultWin = $db_connect->prepare("
+            SELECT id, counter_name
+            FROM counters
+            WHERE office_id = ? AND flag_status = 0
+            ORDER BY id ASC
+            LIMIT 1
+        ");
+        $stmtDefaultWin->bind_param("i", $office_id);
+        $stmtDefaultWin->execute();
+        if ($rowDefWin = $stmtDefaultWin->get_result()->fetch_assoc()) {
+            $defaultCounterId   = (int)$rowDefWin['id'];
+            $defaultCounterName = trim((string)$rowDefWin['counter_name']) ?: 'Window 1';
+        }
+        $stmtDefaultWin->close();
+
+        // Validate selected transaction types against the target office (defaulting unassigned to Window 1)
         $trans_ids = [];
         $validTransLookup = [];
 
@@ -354,11 +372,18 @@ switch ($action) {
 
             while ($rowT = $resValidTrans->fetch_assoc()) {
                 $tid = (int)$rowT['id'];
+                $resolvedTCountId = ($rowT['counter_id'] !== null && (int)$rowT['counter_id'] > 0)
+                    ? (int)$rowT['counter_id']
+                    : $defaultCounterId;
+                $resolvedTCountName = !empty($rowT['counter_name'])
+                    ? $rowT['counter_name']
+                    : $defaultCounterName;
+
                 $validTransLookup[$tid] = [
                     'name'              => $rowT['transaction_name'],
                     'estimated_minutes' => (int)($rowT['estimated_minutes'] ?? 5),
-                    'counter_id'        => $rowT['counter_id'] !== null ? (int)$rowT['counter_id'] : null,
-                    'counter_name'      => $rowT['counter_name'] ?? null
+                    'counter_id'        => $resolvedTCountId,
+                    'counter_name'      => $resolvedTCountName
                 ];
             }
 
@@ -374,7 +399,7 @@ switch ($action) {
             exit();
         }
 
-        // Fetch active sub-concerns & their individual estimated_minutes + counter_id
+        // Fetch active sub-concerns & their individual estimated_minutes + counter_id (defaulting to Window 1)
         $validated_sub_map = [];
         $transHasActiveSubs = [];
         $validSubInfo = [];
@@ -392,11 +417,22 @@ switch ($action) {
                 $tId = (int)$rowS['transaction_type_id'];
                 $sId = (int)$rowS['id'];
                 $transHasActiveSubs[$tId] = true;
+
+                $parentCounterId   = $validTransLookup[$tId]['counter_id'] ?? $defaultCounterId;
+                $parentCounterName = $validTransLookup[$tId]['counter_name'] ?? $defaultCounterName;
+
+                $resolvedSCountId = ($rowS['counter_id'] !== null && (int)$rowS['counter_id'] > 0)
+                    ? (int)$rowS['counter_id']
+                    : $parentCounterId;
+                $resolvedSCountName = !empty($rowS['counter_name'])
+                    ? $rowS['counter_name']
+                    : $parentCounterName;
+
                 $validSubInfo[$tId][$sId] = [
                     'name'              => $rowS['sub_concern_name'],
                     'estimated_minutes' => (int)($rowS['estimated_minutes'] ?? 5),
-                    'counter_id'        => $rowS['counter_id'] !== null ? (int)$rowS['counter_id'] : null,
-                    'counter_name'      => $rowS['counter_name'] ?? null
+                    'counter_id'        => $resolvedSCountId,
+                    'counter_name'      => $resolvedSCountName
                 ];
             }
 
@@ -428,26 +464,32 @@ switch ($action) {
 
         // Enforce Single-Window Rule & Resolve Assigned Window Name
         $assignedCounterIds = [];
-        $resolvedWindowName = 'Any Window';
+        $resolvedWindowName = $defaultCounterName;
 
         foreach ($trans_ids as $tid) {
             if (!empty($transHasActiveSubs[$tid])) {
                 foreach ($validated_sub_map[$tid] as $sid) {
-                    $cId   = $validSubInfo[$tid][$sid]['counter_id'] ?? $validTransLookup[$tid]['counter_id'];
-                    $cName = $validSubInfo[$tid][$sid]['counter_name'] ?? $validTransLookup[$tid]['counter_name'];
+                    $cId   = $validSubInfo[$tid][$sid]['counter_id'] ?? $defaultCounterId;
+                    $cName = $validSubInfo[$tid][$sid]['counter_name'] ?? $defaultCounterName;
                     if ($cId !== null && $cId > 0) {
                         $assignedCounterIds[] = $cId;
                         $resolvedWindowName   = $cName ?: "Window {$cId}";
                     }
                 }
             } else {
-                $cId   = $validTransLookup[$tid]['counter_id'];
-                $cName = $validTransLookup[$tid]['counter_name'];
+                $cId   = $validTransLookup[$tid]['counter_id'] ?? $defaultCounterId;
+                $cName = $validTransLookup[$tid]['counter_name'] ?? $defaultCounterName;
                 if ($cId !== null && $cId > 0) {
                     $assignedCounterIds[] = $cId;
                     $resolvedWindowName   = $cName ?: "Window {$cId}";
                 }
             }
+        }
+
+        // "Others" inherits the selected transaction's window; if selected alone, it defaults to Window 1
+        if ($has_others && empty($assignedCounterIds) && $defaultCounterId !== null && $defaultCounterId > 0) {
+            $assignedCounterIds[] = $defaultCounterId;
+            $resolvedWindowName   = $defaultCounterName;
         }
 
         $distinctWindows = array_values(array_unique($assignedCounterIds));
@@ -758,9 +800,8 @@ switch ($action) {
             $prefix        = $is_priority ? "P-" . $visitor_prefix : $visitor_prefix;
             $ticket_number = sprintf("%s-%03d", $prefix, $display_num);
 
-            // Designated window: all selected items share ONE window (single-window rule above).
-            // NULL = "Any Window" -> every window of this office may call the ticket.
-            $ticket_counter_id = !empty($distinctWindows) ? (int)$distinctWindows[0] : null;
+            // Designated window: resolves to the selected window, or defaults to Window 1 ($defaultCounterId)
+            $ticket_counter_id = !empty($distinctWindows) ? (int)$distinctWindows[0] : $defaultCounterId;
 
             $stmtQueue = $db_connect->prepare("
                 INSERT INTO queue_tickets (
