@@ -261,6 +261,8 @@ switch ($action) {
                 c.office_id,
                 c.counter_name,
                 c.flag_status,
+                c.created_at,
+                c.updated_at,
                 o.office_name,
                 o.office_code,
                 GROUP_CONCAT(sa.user_id ORDER BY u.last_name ASC, u.first_name ASC SEPARATOR ',') AS assigned_user_ids_csv,
@@ -277,8 +279,8 @@ switch ($action) {
                AND sa.flag_status = 0
             LEFT JOIN users u ON u.id = sa.user_id AND u.flag_status = 0
             {$whereClause}
-            GROUP BY c.id, c.office_id, c.counter_name, c.flag_status, o.office_name, o.office_code
-            ORDER BY o.office_name ASC, c.counter_name ASC
+            GROUP BY c.id, c.office_id, c.counter_name, c.flag_status, c.created_at, c.updated_at, o.office_name, o.office_code
+            ORDER BY c.updated_at DESC, c.created_at DESC, c.id DESC
         ";
 
         if ($result = $db_connect->query($query)) {
@@ -292,6 +294,8 @@ switch ($action) {
                 $row['office_id']            = (int)$row['office_id'];
                 $row['flag_status']          = (int)$row['flag_status'];
                 $row['staff_count']          = (int)$row['staff_count'];
+                $row['created_at']           = (string)($row['created_at'] ?? '');
+                $row['updated_at']           = (string)($row['updated_at'] ?? '');
                 $row['assigned_user_ids']    = $idsArray;
                 $row['assigned_staff_names'] = trim((string)($row['assigned_staff_names'] ?? ''));
                 unset($row['assigned_user_ids_csv']);
@@ -442,7 +446,11 @@ switch ($action) {
         $db_connect->begin_transaction();
 
         try {
-            $stmt = $db_connect->prepare("UPDATE counters SET office_id = ?, counter_name = ?, flag_status = ? WHERE id = ?");
+            $stmt = $db_connect->prepare("
+                UPDATE counters
+                SET office_id = ?, counter_name = ?, flag_status = ?, updated_at = CURRENT_TIMESTAMP()
+                WHERE id = ?
+            ");
             $stmt->bind_param("isii", $office_id, $counter_name, $flag_status, $counter_id);
 
             if (!$stmt || !$stmt->execute()) {

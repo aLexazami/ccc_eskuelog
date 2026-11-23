@@ -244,6 +244,7 @@ $action_buttons = [
 
         #tabulator-container .tabulator-cell[tabulator-field="counter_name"],
         #tabulator-container .tabulator-cell[tabulator-field="status_label"],
+        #tabulator-container .tabulator-cell[tabulator-field="updated_at_label"],
         #tabulator-container .tabulator-cell:first-child {
             display: inline-flex !important;
             align-items: center !important;
@@ -530,6 +531,22 @@ $action_buttons = [
                 .replace(/'/g, "&#039;");
         }
 
+        function formatTimestampDisplay(rawTs) {
+            if (!rawTs) return '—';
+            const normalized = String(rawTs).trim().replace(' ', 'T');
+            const dt = new Date(normalized);
+            if (Number.isNaN(dt.getTime())) {
+                return String(rawTs);
+            }
+            return dt.toLocaleString('en-US', {
+                month: 'short',
+                day: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
         function initStaffMultiSelect() {
             if ($.fn && typeof $.fn.select2 === 'function') {
                 $('#add_assigned_user_ids').select2({
@@ -567,6 +584,12 @@ $action_buttons = [
             return `<div class="w-100 text-center">${escapeHtml(cell.getValue())}</div>`;
         }
 
+        function updatedAtFormatter(cell) {
+            const rowData = cell.getRow().getData();
+            const titleAttr = rowData.created_at ? ` title="Created: ${escapeHtml(rowData.created_at)}"` : '';
+            return `<div class="w-100 text-center text-muted small"${titleAttr}>${escapeHtml(cell.getValue())}</div>`;
+        }
+
         const colFilter = {
             headerFilter: "input",
             headerFilterFunc: "like",
@@ -585,7 +608,8 @@ $action_buttons = [
                 const counter = (data.counter_name || '').toLowerCase();
                 const staff   = (data.assigned_staff_names || '').toLowerCase();
                 const status  = (data.status_label || '').toLowerCase();
-                return office.includes(keyword) || code.includes(keyword) || counter.includes(keyword) || staff.includes(keyword) || status.includes(keyword);
+                const updated = (data.updated_at || '').toLowerCase();
+                return office.includes(keyword) || code.includes(keyword) || counter.includes(keyword) || staff.includes(keyword) || status.includes(keyword) || updated.includes(keyword);
             });
         }
 
@@ -607,10 +631,14 @@ $action_buttons = [
                     return (response.data || []).map(r => Object.assign({}, r, {
                         office_label: `${r.office_name || ''} (${r.office_code || ''})`,
                         staff_label: r.assigned_staff_names && String(r.assigned_staff_names).trim() !== '' ? r.assigned_staff_names : 'Unassigned',
-                        status_label: Number(r.flag_status) === 0 ? 'Active' : 'Disabled'
+                        status_label: Number(r.flag_status) === 0 ? 'Active' : 'Disabled',
+                        updated_at_label: formatTimestampDisplay(r.updated_at || r.created_at)
                     }));
                 },
                 index: "counter_id",
+                initialSort: [
+                    { column: "updated_at", dir: "desc" }
+                ],
                 layout: "fitColumns",
                 resizableColumnFit: true,
                 headerFilterPlaceholder: "Search",
@@ -673,15 +701,15 @@ $action_buttons = [
                             }
                         }
                     },
-                    Object.assign({ title: "Office Location", field: "office_label", sorter: "string", minWidth: 280, vertAlign: 'middle', hozAlign: 'left',
+                    Object.assign({ title: "Office Location", field: "office_label", sorter: "string", minWidth: 250, vertAlign: 'middle', hozAlign: 'left',
                         formatter: (cell) => escapeHtml(cell.getValue()) }, colFilter),
-                    Object.assign({ title: "Counter Name", field: "counter_name", formatter: counterNameFormatter, minWidth: 160, vertAlign: 'middle', hozAlign: 'center' }, colFilter),
-                    Object.assign({ title: "Assigned Staff", field: "staff_label", formatter: staffFormatter, minWidth: 260, vertAlign: 'middle', hozAlign: 'left' }, colFilter),
+                    Object.assign({ title: "Counter Name", field: "counter_name", formatter: counterNameFormatter, minWidth: 150, vertAlign: 'middle', hozAlign: 'center' }, colFilter),
+                    Object.assign({ title: "Assigned Staff", field: "staff_label", formatter: staffFormatter, minWidth: 240, vertAlign: 'middle', hozAlign: 'left' }, colFilter),
                     {
                         title: "Status",
                         field: "status_label",
                         formatter: statusFormatter,
-                        minWidth: 140,
+                        minWidth: 120,
                         vertAlign: 'middle',
                         hozAlign: 'center',
                         headerFilter: "select",
@@ -693,7 +721,20 @@ $action_buttons = [
                                 "Disabled": "Disabled"
                             }
                         }
-                    }
+                    },
+                    Object.assign({
+                        title: "Last Updated",
+                        field: "updated_at_label",
+                        sorter: function(a, b, aRow, bRow) {
+                            const tA = Date.parse(String(aRow.getData().updated_at || aRow.getData().created_at || '').replace(' ', 'T')) || 0;
+                            const tB = Date.parse(String(bRow.getData().updated_at || bRow.getData().created_at || '').replace(' ', 'T')) || 0;
+                            return tA - tB;
+                        },
+                        formatter: updatedAtFormatter,
+                        minWidth: 175,
+                        vertAlign: 'middle',
+                        hozAlign: 'center'
+                    }, colFilter)
                 ]
             });
 
