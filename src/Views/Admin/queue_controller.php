@@ -1636,6 +1636,7 @@ $window_page_url      = strtok($_SERVER['REQUEST_URI'] ?? '', '?');
             return dateObj.toLocaleTimeString('en-US', {
                 hour: 'numeric',
                 minute: '2-digit',
+                second: '2-digit',
                 hour12: true
             });
         }
