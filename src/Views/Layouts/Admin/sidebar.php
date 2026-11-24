@@ -228,7 +228,10 @@ function render_action_links($links = [])
                     </li>
 
                     <li class="nav-item <?php echo navigation_active("queue-controller"); ?>">
-                        <a href="<?php echo BASE_URL . "admin/queue-controller"; ?>" target="_blank">
+                        <a href="<?php echo BASE_URL . "admin/queue-controller"; ?>"
+                           target="_blank"
+                           rel="noopener noreferrer"
+                           onclick="window.open(this.href, 'e_eskuelog_service_counter', 'noopener,noreferrer,width=' + screen.availWidth + ',height=' + screen.availHeight + ',left=0,top=0,menubar=no,toolbar=no,location=no,status=no,resizable=yes,scrollbars=yes'); return false;">
                             <i class="bi bi-person-workspace"></i>
                             <p>Service Counter</p>
                         </a>
@@ -236,7 +239,10 @@ function render_action_links($links = [])
 
                     <!-- Live Queue Monitor Display for Staff Workstation -->
                     <li class="nav-item <?php echo navigation_active("live-queue"); ?>">
-                        <a href="<?php echo BASE_URL . "admin/live-queue"; ?>" target="_blank">
+                        <a href="<?php echo BASE_URL . "admin/live-queue"; ?>"
+                           target="_blank"
+                           rel="noopener noreferrer"
+                           onclick="window.open(this.href, 'e_eskuelog_staff_live_queue', 'noopener,noreferrer,width=' + screen.availWidth + ',height=' + screen.availHeight + ',left=0,top=0,menubar=no,toolbar=no,location=no,status=no,resizable=yes,scrollbars=yes'); return false;">
                             <i class="bi bi-tv-fill"></i>
                             <p>Live Queue Monitor</p>
                         </a>
@@ -285,7 +291,10 @@ function render_action_links($links = [])
 
                     <!-- DIGITAL LOGBOOK NAVIGATION -->
                     <li class="nav-item <?php echo navigation_active("digital-logbook"); ?>">
-                        <a href="<?php echo BASE_URL . "admin/digital-logbook"; ?>" target="_blank">
+                        <a href="<?php echo BASE_URL . "admin/digital-logbook"; ?>"
+                           target="_blank"
+                           rel="noopener noreferrer"
+                           onclick="window.open(this.href, 'e_eskuelog_digital_logbook', 'noopener,noreferrer,width=' + screen.availWidth + ',height=' + screen.availHeight + ',left=0,top=0,menubar=no,toolbar=no,location=no,status=no,resizable=yes,scrollbars=yes'); return false;">
                             <i class="bi bi-journal-check"></i>
                             <p>Digital Logbook</p>
                         </a>
@@ -301,17 +310,26 @@ function render_action_links($links = [])
                         <div class="collapse <?php echo navigation_active("live-queue", "show"); ?>" id="live_queue_nav">
                             <ul class="nav nav-collapse">
                                 <li>
-                                    <a href="<?php echo BASE_URL . "admin/live-queue?mode=all"; ?>" target="_blank">
+                                    <a href="<?php echo BASE_URL . "admin/live-queue?mode=all"; ?>"
+                                       target="_blank"
+                                       rel="noopener noreferrer"
+                                       onclick="window.open(this.href, 'e_eskuelog_live_queue_all', 'noopener,noreferrer,width=' + screen.availWidth + ',height=' + screen.availHeight + ',left=0,top=0,menubar=no,toolbar=no,location=no,status=no,resizable=yes,scrollbars=yes'); return false;">
                                         <span class="sub-item">Master Queue (All)</span>
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="<?php echo BASE_URL . "admin/live-queue?mode=student_guest"; ?>" target="_blank">
+                                    <a href="<?php echo BASE_URL . "admin/live-queue?mode=student_guest"; ?>"
+                                       target="_blank"
+                                       rel="noopener noreferrer"
+                                       onclick="window.open(this.href, 'e_eskuelog_live_queue_student_guest', 'noopener,noreferrer,width=' + screen.availWidth + ',height=' + screen.availHeight + ',left=0,top=0,menubar=no,toolbar=no,location=no,status=no,resizable=yes,scrollbars=yes'); return false;">
                                         <span class="sub-item">Students & Guests</span>
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="<?php echo BASE_URL . "admin/live-queue?mode=employee"; ?>" target="_blank">
+                                    <a href="<?php echo BASE_URL . "admin/live-queue?mode=employee"; ?>"
+                                       target="_blank"
+                                       rel="noopener noreferrer"
+                                       onclick="window.open(this.href, 'e_eskuelog_live_queue_employee', 'noopener,noreferrer,width=' + screen.availWidth + ',height=' + screen.availHeight + ',left=0,top=0,menubar=no,toolbar=no,location=no,status=no,resizable=yes,scrollbars=yes'); return false;">
                                         <span class="sub-item">Employees</span>
                                     </a>
                                 </li>
