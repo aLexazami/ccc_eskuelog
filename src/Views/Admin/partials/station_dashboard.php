@@ -13,96 +13,6 @@ $active_links = [
 ];
 $page_header = render_page_header((string) $title_page, $active_links) ?? '';
 
-# Resolve Logged-In Station Administrator First Name & Active Role (from config.php SYSTEM_ACCESS)
-$current_user_id = (int) ($g_user_id ?? 0);
-if ($current_user_id <= 0 && isset($session_class) && method_exists($session_class, 'getValue')) {
-    $current_user_id = (int) (
-        $session_class->getValue('user_id') ??
-        $session_class->getValue('id') ??
-        $session_class->getValue('sys_user_id') ??
-        0
-    );
-}
-if ($current_user_id <= 0) {
-    $current_user_id = (int) ($_SESSION['user_id'] ?? $_SESSION['id'] ?? $_SESSION['sys_user_id'] ?? 0);
-}
-
-$role_map         = SYSTEM_ACCESS[SYSTEM_ACCESS_NAME]['role'] ?? [];
-$reverse_role_map = array_map('intval', array_flip($role_map));
-
-$raw_role = (string) ($g_user_role ?? '');
-if ($raw_role === '' && isset($session_class) && method_exists($session_class, 'getValue')) {
-    $raw_role = (string) (
-        $session_class->getValue('user_role') ??
-        $session_class->getValue('system_role') ??
-        ''
-    );
-}
-if ($raw_role === '') {
-    $raw_role = (string) ($_SESSION['user_role'] ?? $_SESSION['role'] ?? '');
-}
-
-$raw_role_upper = strtoupper(trim($raw_role));
-$active_role_id = isset($role_map[$raw_role_upper])
-    ? (int) $raw_role_upper
-    : ($reverse_role_map[$raw_role_upper] ?? (int) (isset($session_class) && method_exists($session_class, 'getValue') ? ($session_class->getValue('user_role_id') ?? 0) : 0));
-
-$station_first_name = 'Station Admin';
-if ($db_connect && $current_user_id > 0) {
-    $stmtUser = $db_connect->prepare("SELECT first_name FROM users WHERE id = ? AND flag_status = 0 LIMIT 1");
-    if ($stmtUser) {
-        $stmtUser->bind_param("i", $current_user_id);
-        $stmtUser->execute();
-        if ($uRow = $stmtUser->get_result()->fetch_assoc()) {
-            $rawFirstName = trim((string) ($uRow['first_name'] ?? ''));
-            if ($rawFirstName !== '') {
-                $station_first_name = ucwords(strtolower($rawFirstName));
-            }
-        }
-        $stmtUser->close();
-    }
-
-    // Verify active role against system_access table
-    $sysName = SYSTEM_ACCESS_NAME;
-    if ($active_role_id > 0) {
-        $stmtRole = $db_connect->prepare("
-            SELECT system_role
-            FROM system_access
-            WHERE user_id = ? AND system_type = ? AND system_role = ? AND flag_access = 0
-            LIMIT 1
-        ");
-        if ($stmtRole) {
-            $stmtRole->bind_param("isi", $current_user_id, $sysName, $active_role_id);
-            $stmtRole->execute();
-            if ($roleRow = $stmtRole->get_result()->fetch_assoc()) {
-                $active_role_id = (int) $roleRow['system_role'];
-            }
-            $stmtRole->close();
-        }
-    } else {
-        $stmtRole = $db_connect->prepare("
-            SELECT system_role
-            FROM system_access
-            WHERE user_id = ? AND system_type = ? AND flag_access = 0
-            ORDER BY system_role ASC
-            LIMIT 1
-        ");
-        if ($stmtRole) {
-            $stmtRole->bind_param("is", $current_user_id, $sysName);
-            $stmtRole->execute();
-            if ($roleRow = $stmtRole->get_result()->fetch_assoc()) {
-                $active_role_id = (int) $roleRow['system_role'];
-            }
-            $stmtRole->close();
-        }
-    }
-}
-
-$resolved_role_code = $role_map[(string) $active_role_id] ?? ($raw_role_upper !== '' ? $raw_role_upper : 'STATION_ADMIN');
-$display_role_label = (defined('ACCESS_NAME') && isset(ACCESS_NAME[$resolved_role_code]))
-    ? ACCESS_NAME[$resolved_role_code]
-    : ucwords(strtolower(str_replace('_', ' ', $resolved_role_code)));
-
 $today_date = defined('DATE_NOW') ? DATE_NOW : date('Y-m-d');
 ?>
 <!DOCTYPE html>
@@ -234,6 +144,25 @@ $today_date = defined('DATE_NOW') ? DATE_NOW : date('Y-m-d');
             margin: 0;
         }
 
+        /* Graph Period Filter Pills */
+        .station-dashboard .graph-period-group .btn {
+            font-size: 0.78rem;
+            font-weight: 600;
+            padding: 0.3rem 0.75rem;
+            border-color: #cbd5e1;
+            color: #475569;
+            background-color: #ffffff;
+        }
+        .station-dashboard .graph-period-group .btn:hover {
+            background-color: #f1f5f9;
+            color: var(--sd-ink);
+        }
+        .station-dashboard .graph-period-group .btn.active {
+            background-color: var(--sd-blue);
+            border-color: var(--sd-blue);
+            color: #ffffff;
+        }
+
         /* Chart Containers & Horizontal Scroll Wrapper for >12 Offices */
         .station-dashboard .chart-container {
             position: relative;
@@ -343,18 +272,7 @@ $today_date = defined('DATE_NOW') ? DATE_NOW : date('Y-m-d');
             <?php include_once ADMIN_HEADER_PATH; ?>
 
             <div class="container">
-                <div class="page-inner px-2 px-sm-3 station-dashboard">
-
-                    <!-- STATION ADMINISTRATOR GREETING -->
-                    <div class="border-start border-4 border-primary ps-3 py-1 mb-4">
-                        <h1 class="fw-bold mb-1" style="color: #1e293b; font-size: 2.15rem; letter-spacing: -0.02em;">
-                            Welcome, <span class="text-primary"><?= htmlspecialchars($station_first_name); ?></span>!
-                        </h1>
-                        <p class="text-muted mb-0" style="font-size: 0.95rem;">
-                            <i class="bi bi-shield-check text-primary me-1"></i>
-                            You are logged in as <span class="fw-semibold text-dark"><?= htmlspecialchars($display_role_label); ?></span>
-                        </p>
-                    </div>
+                <div class="page-inner px-2 px-sm-3 station-dashboard pt-3">
 
                     <!-- DAILY KPI CARDS -->
                     <div class="row g-3 mb-4">
@@ -469,6 +387,24 @@ $today_date = defined('DATE_NOW') ? DATE_NOW : date('Y-m-d');
                         </div>
                     </div>
 
+                    <!-- GRAPH DATE FILTER BAR -->
+                    <div class="card border-0 shadow-sm rounded-4 mb-3">
+                        <div class="card-body py-2 px-3 px-sm-4 d-flex flex-wrap align-items-center justify-content-between gap-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="fw-bold text-dark small">
+                                    <i class="bi bi-calendar-range text-primary me-1"></i>Analytics Period:
+                                </span>
+                                <span class="text-muted small" id="activeGraphDateLabel">Today</span>
+                            </div>
+                            <div class="btn-group graph-period-group" role="group" aria-label="Graph Date Filter">
+                                <button type="button" class="btn active" data-period="today">Today</button>
+                                <button type="button" class="btn" data-period="weekly">Weekly</button>
+                                <button type="button" class="btn" data-period="monthly">Monthly</button>
+                                <button type="button" class="btn" data-period="yearly">Yearly</button>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- REPORTS & ANALYTICS SUMMARY (2 COLUMNS) -->
                     <div class="row g-4">
                         <!-- Left Column: Queue Volume by Office (Horizontal Scroll when >12 offices) -->
@@ -506,7 +442,7 @@ $today_date = defined('DATE_NOW') ? DATE_NOW : date('Y-m-d');
                                     <h6 class="section-heading mb-0">
                                         <i class="bi bi-pie-chart-fill me-2 text-primary"></i>Visitor Distribution
                                     </h6>
-                                    <span class="badge bg-light text-muted border small">Today</span>
+                                    <span class="badge bg-light text-muted border small" id="visitorPeriodBadge">Today</span>
                                 </div>
                                 <div class="card-body p-3 p-sm-4">
                                     <div class="chart-container" id="visitorChartContainer">
@@ -533,7 +469,22 @@ $today_date = defined('DATE_NOW') ? DATE_NOW : date('Y-m-d');
             const MAX_VISIBLE_BARS  = 12;    // Enable horizontal scroll if > 12 offices
             const PX_PER_OFFICE_BAR = 68;    // Minimum width per office group when scrolling
 
+            const PERIOD_LABELS = {
+                today:   'Today',
+                weekly:  'This Week (Last 7 Days)',
+                monthly: 'This Month',
+                yearly:  'This Year'
+            };
+
+            const PERIOD_BADGE_LABELS = {
+                today:   'Today',
+                weekly:  'Weekly',
+                monthly: 'Monthly',
+                yearly:  'Yearly'
+            };
+
             const charts = {};
+            let selectedPeriod = 'today';
             let pollTimer = null;
             let isFetching = false;
             let lastPayloadHash = '';
@@ -542,9 +493,30 @@ $today_date = defined('DATE_NOW') ? DATE_NOW : date('Y-m-d');
                 .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
                 .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
 
-            const getTodayDate = () => {
+            const formatYMD = (dateObj) => {
+                const y = dateObj.getFullYear();
+                const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+                const d = String(dateObj.getDate()).padStart(2, '0');
+                return `${y}-${m}-${d}`;
+            };
+
+            const getDateRangeForPeriod = (period) => {
                 const now = new Date();
-                return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+                const dateTo = formatYMD(now);
+                let startObj = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+                if (period === 'weekly') {
+                    startObj.setDate(startObj.getDate() - 6);
+                } else if (period === 'monthly') {
+                    startObj = new Date(now.getFullYear(), now.getMonth(), 1);
+                } else if (period === 'yearly') {
+                    startObj = new Date(now.getFullYear(), 0, 1);
+                }
+
+                return {
+                    dateFrom: formatYMD(startObj),
+                    dateTo: dateTo
+                };
             };
 
             function parseVisitorCounts(visitorData) {
@@ -582,7 +554,7 @@ $today_date = defined('DATE_NOW') ? DATE_NOW : date('Y-m-d');
                 charts[key] = new Chart(canvas.getContext('2d'), config);
             }
 
-            function toggleChartEmptyState(key, outerContainerId, toggleTargetEl, isEmpty, title = 'No data available', subtitle = 'No records found for today.') {
+            function toggleChartEmptyState(key, outerContainerId, toggleTargetEl, isEmpty, title = 'No data available', subtitle = 'No records found for the selected period.') {
                 const outerContainer = document.getElementById(outerContainerId);
                 if (!outerContainer || !toggleTargetEl) return;
                 let emptyEl = outerContainer.querySelector('.chart-empty-state');
@@ -615,6 +587,7 @@ $today_date = defined('DATE_NOW') ? DATE_NOW : date('Y-m-d');
                 const scrollWrapper = document.getElementById('officeChartScrollWrapper');
                 const scrollInner   = document.getElementById('officeChartScrollInner');
                 const scrollHint    = document.getElementById('officeScrollHint');
+                const periodText    = (PERIOD_BADGE_LABELS[selectedPeriod] || 'Today').toLowerCase();
 
                 toggleChartEmptyState(
                     'office',
@@ -622,7 +595,7 @@ $today_date = defined('DATE_NOW') ? DATE_NOW : date('Y-m-d');
                     scrollWrapper,
                     !hasData,
                     'No office queue volume recorded',
-                    'No queue tickets were issued across offices today.'
+                    `No queue tickets were issued across offices for this ${periodText} period.`
                 );
 
                 if (!hasData) {
@@ -672,11 +645,12 @@ $today_date = defined('DATE_NOW') ? DATE_NOW : date('Y-m-d');
             }
 
             function renderVisitorType(data) {
-                const counts  = parseVisitorCounts(data);
-                const labels  = ['Student', 'Employee', 'Guest'];
-                const values  = [counts.Student, counts.Employee, counts.Guest];
-                const hasData = values.some(v => v > 0);
-                const canvas  = document.getElementById('visitorTypeChart');
+                const counts     = parseVisitorCounts(data);
+                const labels     = ['Student', 'Employee', 'Guest'];
+                const values     = [counts.Student, counts.Employee, counts.Guest];
+                const hasData    = values.some(v => v > 0);
+                const canvas     = document.getElementById('visitorTypeChart');
+                const periodText = (PERIOD_BADGE_LABELS[selectedPeriod] || 'Today').toLowerCase();
 
                 toggleChartEmptyState(
                     'visitor',
@@ -684,7 +658,7 @@ $today_date = defined('DATE_NOW') ? DATE_NOW : date('Y-m-d');
                     canvas,
                     !hasData,
                     'No visitor records found',
-                    'No student, employee, or guest activity recorded today.'
+                    `No student, employee, or guest activity recorded for this ${periodText} period.`
                 );
                 if (!hasData) return;
 
@@ -712,14 +686,14 @@ $today_date = defined('DATE_NOW') ? DATE_NOW : date('Y-m-d');
                 if (isFetching) return;
                 isFetching = true;
 
-                const today = getTodayDate();
+                const { dateFrom, dateTo } = getDateRangeForPeriod(selectedPeriod);
                 const fd = new FormData();
                 fd.append('action', 'fetch_analytics');
                 fd.append('office_id', '0');
                 fd.append('counter_id', '0');
                 fd.append('visitor_type', '');
-                fd.append('date_from', today);
-                fd.append('date_to', today);
+                fd.append('date_from', dateFrom);
+                fd.append('date_to', dateTo);
 
                 fetch(HANDLER_URL, {
                     method: 'POST',
@@ -738,6 +712,7 @@ $today_date = defined('DATE_NOW') ? DATE_NOW : date('Y-m-d');
                         }
 
                         const payloadHash = JSON.stringify({
+                            period: selectedPeriod,
                             kpi: res.data.kpi || {},
                             office: res.data.office_breakdown || [],
                             visitor: res.data.visitor_distribution || []
@@ -760,6 +735,30 @@ $today_date = defined('DATE_NOW') ? DATE_NOW : date('Y-m-d');
                     .finally(() => {
                         isFetching = false;
                     });
+            }
+
+            function bindPeriodFilterButtons() {
+                const buttons     = document.querySelectorAll('.graph-period-group .btn[data-period]');
+                const dateLabelEl = document.getElementById('activeGraphDateLabel');
+                const badgeEl     = document.getElementById('visitorPeriodBadge');
+
+                buttons.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const period = btn.getAttribute('data-period') || 'today';
+                        if (period === selectedPeriod) return;
+
+                        selectedPeriod = period;
+                        lastPayloadHash = '';
+
+                        buttons.forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+
+                        if (dateLabelEl) dateLabelEl.textContent = PERIOD_LABELS[period] || 'Today';
+                        if (badgeEl) badgeEl.textContent = PERIOD_BADGE_LABELS[period] || 'Today';
+
+                        loadDashboardAnalytics(true);
+                    });
+                });
             }
 
             function startPolling() {
@@ -788,6 +787,7 @@ $today_date = defined('DATE_NOW') ? DATE_NOW : date('Y-m-d');
             });
 
             const bootDashboard = () => {
+                bindPeriodFilterButtons();
                 loadDashboardAnalytics(true);
                 startPolling();
             };
